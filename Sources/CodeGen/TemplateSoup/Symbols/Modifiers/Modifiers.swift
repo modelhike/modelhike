@@ -1,0 +1,82 @@
+//
+// Modifiers.swift
+// DiagSoup
+// https://www.github.com/diagsoup/diagsoup
+//
+
+import Foundation
+
+public enum Modifiers  {
+    public static func apply<T>(to value: T, modifiers: [ModifierInstance], lineNo: Int, with ctx: Context) throws -> Optional<Any> {
+        var result : T = value
+        for modifier in modifiers {
+            if let resultValue = try modifier.applyTo(value: result, lineNo: lineNo, with: ctx) as? T {
+                result = resultValue
+            } else {
+                return nil
+            }
+        }
+        
+        return result
+    }
+    
+    public static func parse(string: String?, context: Context) throws -> [ModifierInstance] {
+        guard let string = string else { return [] }
+        
+        let components = string.trim().split(separator: TemplateConstants.multiModifierSplit).trim()
+        guard components.count > 0 else { return [] }
+        
+        var result : [ModifierInstance] = []
+        
+        for component in components {
+            let str = String(component)
+            
+            if str.isPattern(CommonRegEx.functionName) { //without any args
+                
+                if let modifierSymbol = context.symbols.template.modifiers[str] as? ModifierWithoutArgsProtocol {
+                    let instance = modifierSymbol.instance()
+                    
+                    result.append(instance)
+                } else {
+                    throw TemplateSoup_ParsingError.modifierInvalidSyntax(str)
+                }
+
+            } else if let match = str.wholeMatch(of: CommonRegEx.functionInvocation_unNamedArgs_Capturing) {
+                
+                let (_, fnName, argsString) = match.output
+
+                if let modifierSymbol = context.symbols.template.modifiers[fnName] as? ModifierWithUnNamedArgsProtocol {
+                    
+                    let args = argsString.split(separator: ",").map { String($0)}
+                    
+                    let instance = modifierSymbol.instance()
+                    if var instanceWithUnNamedArgs = instance as? ModifierInstanceWithUnNamedArgsProtocol {
+                        
+                        instanceWithUnNamedArgs.setArgsGiven(arguments: args)
+                        result.append(instanceWithUnNamedArgs)
+                    }
+                } else {
+                    throw TemplateSoup_ParsingError.modifierInvalidSyntax(str)
+                }
+            } else {
+                throw TemplateSoup_ParsingError.modifierNotFound(str)
+            }
+        }
+        
+        return result
+    }
+}
+
+public extension Array where Element == ModifierInstance {
+    func nameString() -> String {
+        var modifiersStr = "none"
+
+        if self.count > 0 {
+            modifiersStr = self.reduce("") { (res, item) in
+                return res + item.name
+            }
+        }
+        
+        return modifiersStr
+    }
+}

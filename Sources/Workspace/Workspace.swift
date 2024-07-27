@@ -1,0 +1,169 @@
+//
+// Workspace.swift
+// DiagSoup
+// https://www.github.com/diagsoup/diagsoup
+//
+
+import Foundation
+
+open class Workspace {
+    private var sandbox: Sandbox
+    private var model: AppModel
+    
+    private var modifiers: [Modifier] = []
+    private var statements: [any FileTemplateStmtConfig] = []
+    public private(set) var context: Context
+    private var isModelsLoaded = false
+    private var isSymbolsLoaded = false
+
+    //MARK: event handlers
+    public var onLoadTemplate : LoadTemplateHandler {
+        get { sandbox.onLoadTemplate }
+        set { sandbox.onLoadTemplate = newValue }
+    }
+    
+    public func loadModels(from repo: ModelRepository) throws {
+        try repo.loadModel(to: model)
+        try repo.didLoad(model: model)
+        
+        isModelsLoaded = true
+    }
+    
+    public func loadSymbols(_ sym : Set<PreDefinedSymbols>? = nil) throws {
+        if let sym = sym {
+            if let _ = sym.firstIndex(of: .typescript) {
+                self.add(modifiers: TypescriptLib.functions)
+                
+                if let _ = sym.firstIndex(of: .mongodb_typescript) {
+                    self.add(modifiers: MongoDBLib.functions(sandbox: sandbox))
+                }
+            }
+            
+            if sym.firstIndex(of: .noMocking) == nil {
+                //"no mock" is not specified; so, load default mocking
+                self.add(modifiers: MockDataLib.functions(sandbox: sandbox))
+            }
+            
+        } else { //nothing provided; so, just load some common modifiers alsone
+            
+            self.add(modifiers: MockDataLib.functions(sandbox: sandbox))
+        }
+        
+        context.symbols.template.add(stmts: self.statements)
+        context.symbols.template.add(modifiers: self.modifiers)
+        
+        isSymbolsLoaded = true
+    }
+    
+    @discardableResult
+    public func generateCodebase(container: String = "", usingTemplatesFrom templateLoader: TemplateRepository) -> String? {
+        do {
+            if !isModelsLoaded {
+                throw EvaluationError.invalidAppState("No models Loaded!!!")
+            }
+            
+            if !isSymbolsLoaded {
+                try loadSymbols()
+            }
+            
+            try output.ensureExists()
+            try output.clearFiles()
+            
+            let rendering = try sandbox.generateFilesFor(container: container, usingTemplatesFrom: templateLoader)
+            
+            print("✅ Generated \(context.generatedFiles.count) files ...")
+            return rendering
+            
+        } catch let err {
+            printError(err)
+            print("❌❌❌ TERMINATED DUE TO ERROR ❌❌❌")
+            return nil
+        }
+    }
+    
+    public func render(string input: String, data: [String : Any]) -> String? {
+        do {
+            if !isSymbolsLoaded {
+                try loadSymbols()
+            }
+
+            let rendering = try sandbox.renderTemplate(string: input, data: data)
+            return rendering?.trim()
+
+        } catch let err {
+            printError(err)
+            print("❌❌❌ TERMINATED DUE TO ERROR ❌❌❌")
+            return nil
+        }
+    }
+    
+    fileprivate func printError(_ err: Error) {
+        if let parseErr = err as? TemplateSoup_ParsingError {
+            print(parseErr.info)
+        } else if let evalErr = err as? TemplateSoup_EvaluationError {
+            print(evalErr.info)
+        } else if let parseErr = err as? ParsingError {
+                print(parseErr.info)
+                //print(Thread.callStackSymbols)
+        } else if let evalErr = err as? EvaluationError {
+                print(evalErr.info)
+                //print(Thread.callStackSymbols)
+        } else {
+            print(err)
+        }
+    }
+    
+    fileprivate func setupDefaultSymbols() {
+        context.symbols.template.add(stmts: StatementsLibrary.statements)
+        context.symbols.template.add(modifiers: DefaultModifiersLibrary.modifiers)
+        context.symbols.template.add(infixOperators : DefaultOperatorsLibrary.infixOperators)
+        
+        context.symbols.template.add(modifiers: ModelLib.functions(sandbox: sandbox))
+        context.symbols.template.add(modifiers: GenerationLib.functions)
+    }
+    
+    public func add(modifiers modifiersList: [Modifier]...) {
+        let modifiers = modifiersList.flatMap( { $0 })
+        self.modifiers.append(contentsOf: modifiers)
+    }
+    
+    public func add(stmts stmtsList: [any FileTemplateStmtConfig]...) {
+        let stmts = stmtsList.flatMap( { $0 })
+        self.statements.append(contentsOf: stmts)
+    }
+    
+    public var output : OutputFolder {
+        get { self.context.paths.output }
+        set {
+            self.context.paths.output = newValue
+        }
+    }
+    
+    public var basePath : LocalPath {
+        get { self.context.paths.basePath }
+        set {
+            self.context.paths = ContextPaths(basePath: newValue)
+        }
+    }
+    
+    public var debugLog : ContextDebugLog {
+        get { self.context.debugLog }
+        set { self.context.debugLog = newValue }
+    }
+    
+    public init() {
+        let basePath = SystemFolder.documents.path / "codegen"
+        let paths = ContextPaths(basePath: basePath)
+        
+        self.context = Context(paths: paths)
+
+        self.sandbox = CodeGenerationSandbox(context: context)
+        self.model = sandbox.model
+                
+        setupDefaultSymbols()
+    }
+}
+
+public enum PreDefinedSymbols {
+    case typescript, mongodb_typescript, noMocking
+}

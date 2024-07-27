@@ -1,0 +1,66 @@
+//
+// FunctionCallStmt.swift
+// DiagSoup
+// https://www.github.com/diagsoup/diagsoup
+//
+
+import Foundation
+import RegexBuilder
+
+public class FunctionCallStmt: LineTemplateStmt, CustomDebugStringConvertible {
+    static let START_KEYWORD = "call"
+
+    public private(set) var FnName: String = ""
+    public private(set) var Args: String = ""
+    
+    let stmtRegex = Regex {
+        START_KEYWORD
+        OneOrMore(.whitespace)
+        CommonRegEx.functionInvocation_namedArgs_Capturing
+        
+        CommonRegEx.comments
+    }
+    
+    override func matchLine(line: String, level: Int, with ctx: Context) throws -> Bool {
+        guard let match = line.wholeMatch(of: stmtRegex ) else { return false }
+        
+        let (_, macroFnName, argsString) = match.output
+
+        self.FnName = macroFnName
+        self.Args = argsString
+        
+        return true
+    }
+    
+    public override func execute(with ctx: Context) throws -> String? {
+        guard FnName.isNotEmpty,
+              Args.isNotEmpty else { return nil }
+                
+        let args = Args.getArray_UsingNamedArgsPattern()
+
+        if let macroFn  = ctx.macroFunctions[FnName] {
+            let body = try macroFn.execute(args: args, with: ctx)
+            return body
+        } else {
+            throw TemplateSoup_ParsingError.modifierNotFound(FnName)
+        }
+    }
+    
+    public var debugDescription: String {
+        let str =  """
+        CALL Function stmt (level: \(level))
+        - fn name: \(self.FnName)
+        - args: \(self.Args)
+        
+        """
+                
+        return str
+    }
+    
+    public init() {
+        super.init(keyword: Self.START_KEYWORD)
+    }
+    
+    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) { FunctionCallStmt() }
+}
+
