@@ -1,12 +1,12 @@
 //
-// MacroFunctionContainer.swift
+// TemplateFunctionContainer.swift
 // DiagSoup
 // https://www.github.com/diagsoup/diagsoup
 //
 
 import Foundation
 
-public class MacroFunctionContainer : TemplateStmtContainer {
+public class TemplateFunctionContainer : TemplateStmtContainer {
     let container : GenericStmtsContainer
     
     let params: [String]
@@ -18,9 +18,9 @@ public class MacroFunctionContainer : TemplateStmtContainer {
 
         //IMPORTANT : ctx push/pop should not be used here as 
         //any variable modification
-        //that is done inside the macro fn body should be persisted
-        //only the macro fn args are to be removed after execution
-        //so, the macro fn args are removed manually
+        //that is done inside the template fn body should be persisted
+        //only the template fn args are to be removed after execution
+        //so, the template fn args are removed manually
         
         //ctx.pushSnapshot()
         

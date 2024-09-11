@@ -35,7 +35,7 @@ public extension ModelRepository {
                     component.appendAPI(.update, for: cls)
                     component.appendAPI(.delete, for: cls)
                     component.appendAPI(.getById, for: cls)
-                    let getAll = component.appendAPI(.getAll, for: cls)
+                    let getAll = component.appendAPI(.list, for: cls)
                     
                     if let getAllAnnotation = e.annotations["get-all"] {
                         if let mapping = getAllAnnotation as? MappingAnnotation {
@@ -52,8 +52,8 @@ public extension ModelRepository {
         }
         
         
-        print("loaded domain entities: ", model.containers.getEntities().count)
-        print("loaded common models: ", model.commonModel.getEntities().count)
+        print("💡 Loaded domain entities: ", model.containers.getEntities().count)
+        print("💡 Loaded common models: ", model.commonModel.getEntities().count)
 
     }
 }

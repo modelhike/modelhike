@@ -46,8 +46,8 @@ public class FileTemplateParser : CustomDebugStringConvertible {
                 return
             }
             
-            if secondWord == TemplateConstants.macroFunction_start {
-                if try parseStartMacroFunction(secondWord: secondWord, templateParser: templateParser, with: ctx) {
+            if secondWord == TemplateConstants.templateFunction_start {
+                if try parseStartTemplateFunction(secondWord: secondWord, templateParser: templateParser, with: ctx) {
                     return //continue after macro fn
                 }
             }
@@ -111,21 +111,21 @@ public class FileTemplateParser : CustomDebugStringConvertible {
         }
     }
     
-    fileprivate static func parseStartMacroFunction(secondWord: String, templateParser: FileTemplateParser, with ctx: Context) throws -> Bool {
-        let macroFnLine = templateParser.lineParser.currentLine(after: secondWord)
+    fileprivate static func parseStartTemplateFunction(secondWord: String, templateParser: FileTemplateParser, with ctx: Context) throws -> Bool {
+        let templateFnLine = templateParser.lineParser.currentLine(after: secondWord)
         
-        if let match = macroFnLine.wholeMatch(of: CommonRegEx.functionDeclaration_unNamedArgs_Capturing) {
-            let (_, macroFnName, paramsString) = match.output
+        if let match = templateFnLine.wholeMatch(of: CommonRegEx.functionDeclaration_unNamedArgs_Capturing) {
+            let (_, templateFnName, paramsString) = match.output
             let params = paramsString.getArray_UsingUnNamedArgsPattern()
 
-            let macroFn  = MacroFunctionContainer(name: macroFnName, params: params, lineNo: templateParser.lineParser.curLineNoForDisplay)
-            templateParser.context.macroFunctions[macroFnName] = macroFn
+            let fnContainer  = TemplateFunctionContainer(name: templateFnName, params: params, lineNo: templateParser.lineParser.curLineNoForDisplay)
+            templateParser.context.templateFunctions[templateFnName] = fnContainer
             
             //templateParser.lineParser.skipLine()
             let topLevel = 0
             
-            let startingFrom = "\(TemplateConstants.macroFunction_start) \(macroFnName)"
-            try FileTemplateParser.parseLines(startingFrom: startingFrom, till: TemplateConstants.macroFunction_end, to: macroFn.container, templateParser: templateParser, level:  topLevel + 1, with: ctx)
+            let startingFrom = "\(TemplateConstants.templateFunction_start) \(templateFnName)"
+            try FileTemplateParser.parseLines(startingFrom: startingFrom, till: TemplateConstants.templateFunction_end, to: fnContainer.container, templateParser: templateParser, level:  topLevel + 1, with: ctx)
             
             return true
         } else {

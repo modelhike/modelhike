@@ -20,9 +20,9 @@ public extension Context {
         set { currentState.debugInfo = newValue }
     }
     
-    var macroFunctions: [String: MacroFunctionContainer]  {
-        get { currentState.macroFunctions }
-        set { currentState.macroFunctions = newValue }
+    var templateFunctions: [String: TemplateFunctionContainer]  {
+        get { currentState.templateFunctions }
+        set { currentState.templateFunctions = newValue }
     }
     
     var loopIsFirst: Bool { variables["__first"] as? Bool ?? false}
@@ -39,7 +39,7 @@ public extension Context {
 public struct ContextState {
     public internal(set) var variables: StringDictionary = [:]
     public internal(set) var debugInfo: DebugDictionary = [:]
-    public internal(set) var macroFunctions: [String: MacroFunctionContainer] = [:]
+    public internal(set) var templateFunctions: [String: TemplateFunctionContainer] = [:]
 }
 
 public struct ContextSymbols {

@@ -6,7 +6,7 @@
 
 import Foundation
 
-public protocol TemplateRepository : InputFileRepository {
+public protocol BlueprintRepository : InputFileRepository {
     func loadTemplate(fileName: String) throws -> TemplateSoupTemplate
 }
 

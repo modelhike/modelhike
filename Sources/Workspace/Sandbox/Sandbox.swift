@@ -14,7 +14,7 @@ public protocol Sandbox {
     
     var onLoadTemplate : LoadTemplateHandler {get set}
     
-    mutating func generateFilesFor(container: String, usingTemplatesFrom templateLoader: TemplateRepository) throws -> String?
+    mutating func generateFilesFor(container: String, usingBlueprintsFrom templateLoader: BlueprintRepository) throws -> String?
     func renderTemplate(string templateString: String, data: [String: Any]) throws -> String?
 }
  

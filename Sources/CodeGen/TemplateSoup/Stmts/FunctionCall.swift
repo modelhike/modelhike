@@ -24,9 +24,9 @@ public class FunctionCallStmt: LineTemplateStmt, CustomDebugStringConvertible {
     override func matchLine(line: String, level: Int, with ctx: Context) throws -> Bool {
         guard let match = line.wholeMatch(of: stmtRegex ) else { return false }
         
-        let (_, macroFnName, argsString) = match.output
+        let (_, fnName, argsString) = match.output
 
-        self.FnName = macroFnName
+        self.FnName = fnName
         self.Args = argsString
         
         return true
@@ -38,8 +38,8 @@ public class FunctionCallStmt: LineTemplateStmt, CustomDebugStringConvertible {
                 
         let args = Args.getArray_UsingNamedArgsPattern()
 
-        if let macroFn  = ctx.macroFunctions[FnName] {
-            let body = try macroFn.execute(args: args, with: ctx)
+        if let templateFn  = ctx.templateFunctions[FnName] {
+            let body = try templateFn.execute(args: args, with: ctx)
             return body
         } else {
             throw TemplateSoup_ParsingError.modifierNotFound(FnName)

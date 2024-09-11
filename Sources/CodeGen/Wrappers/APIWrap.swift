@@ -31,8 +31,8 @@ public class API_Wrap : ObjectWrapper {
             case "is-update" : item.type == .update
             case "is-delete" : item.type == .delete
             case "is-get-by-id" : item.type == .getById
-            case "is-get-all" :  item.type == .getAll
-            default: 
+            case "is-list" :  item.type == .list
+            default:
             //nothing found; so check in module attributes}
             item.attribs[member] as Any
         }
@@ -46,7 +46,7 @@ public class API_Wrap : ObjectWrapper {
 }
 
 public class APIParam_Wrap : DynamicMemberLookup {
-    public private(set) var item: APIParamWrapper
+    public private(set) var item: APIQueryParamWrapper
     
     public subscript(member: String) -> Any {
 
@@ -63,7 +63,7 @@ public class APIParam_Wrap : DynamicMemberLookup {
         return value
     }
     
-    public init(_ item: APIParamWrapper) {
+    public init(_ item: APIQueryParamWrapper) {
         self.item = item
     }
 }

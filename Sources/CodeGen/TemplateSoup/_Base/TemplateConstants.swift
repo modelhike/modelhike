@@ -9,8 +9,8 @@ import Foundation
 public enum TemplateConstants {
     public static var TemplateExtension = "teso"
 
-    public static var macroFunction_start = "func"
-    public static var macroFunction_end = "endfunc"
+    public static var templateFunction_start = "func"
+    public static var templateFunction_end = "endfunc"
     public static var comments = "//"
     public static var stmtKeyWord = ":"
     public static var modifierSplitInExpression = "|"

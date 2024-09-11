@@ -17,14 +17,14 @@ public class API : Artifact {
     public var path: String
     public var baseUrl: String
     public var version: Int
-    public private(set) var queryParams: [APIParamWrapper] = []
+    public private(set) var queryParams: [APIQueryParamWrapper] = []
     
     public subscript(key: String) -> String? {
         get {
             return queryParams.first(where: {$0.queryParam.name == key})?.propMaping.givenString
         }
         set {
-            let wrapped = APIParamWrapper(queryParam: QueryParam(key), propMaping: PropNameMapping(newValue), entity: entity)
+            let wrapped = APIQueryParamWrapper(queryParam: QueryParam_KeyMapping(key), propMaping: QueryParam_PropertyNameMapping(newValue), entity: entity)
             queryParams.append(wrapped)
         }
     }
@@ -40,7 +40,7 @@ public class API : Artifact {
             self.path = ":id"
         case .delete:
             self.path = ":id"
-        case .getAll:
+        case .list:
             self.path = ""
         case .associate: //will be create for the association
             self.path = ""
@@ -57,7 +57,7 @@ public class API : Artifact {
 }
 
 public enum APIType {
-    case create, update, delete, getById, getAll,
+    case create, update, delete, getById, list,
          associate, deassosiate, activate, deactivate
 }
 
@@ -65,19 +65,19 @@ public enum QueryParamKind {
     case unKnown, int, string, date
 }
 
-public struct APIParamWrapper {
-    public var queryParam: QueryParam
-    public var propMaping : PropNameMapping
+public struct APIQueryParamWrapper {
+    public var queryParam: QueryParam_KeyMapping
+    public var propMaping : QueryParam_PropertyNameMapping
     public var entity: CodeObject
     
-    public init(queryParam: QueryParam, propMaping: PropNameMapping, entity: CodeObject) {
+    public init(queryParam: QueryParam_KeyMapping, propMaping: QueryParam_PropertyNameMapping, entity: CodeObject) {
         self.queryParam = queryParam
         self.propMaping = propMaping
         self.entity = entity
     }
 }
 
-public struct QueryParam : Hashable {
+public struct QueryParam_KeyMapping : Hashable {
     public var name: String
     public var SecondName: String
     public var canHaveMultipleValues: Bool = false
@@ -114,7 +114,7 @@ public struct QueryParam : Hashable {
     }
 }
 
-public struct PropNameMapping {
+public struct QueryParam_PropertyNameMapping {
     public private(set) var givenString: String
     public var split: [String]
     

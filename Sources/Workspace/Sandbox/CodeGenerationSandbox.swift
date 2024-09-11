@@ -24,7 +24,7 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
     
     var lineParser : LineParser
     
-    public func generateFilesFor(container: String, usingTemplatesFrom templateLoader: TemplateRepository) throws -> String? {
+    public func generateFilesFor(container: String, usingBlueprintsFrom templateLoader: BlueprintRepository) throws -> String? {
         guard let container = model.container(named: container) else {
             throw EvaluationError.invalidInput("There is no container called \(container)")
         }

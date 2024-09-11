@@ -16,7 +16,7 @@ public struct SampleQueryString {
     }
     
     static func toQueryString(_ api: API, appModel: ParsedModelCache) -> String {
-        let reqdParams:[APIParamWrapper] = api.queryParams
+        let reqdParams:[APIQueryParamWrapper] = api.queryParams
         
         return StringTemplate {
             
@@ -38,7 +38,7 @@ public struct SampleQueryString {
         }.string
     }
     
-    static func toPropString(_ mapping: PropNameMapping, isEndValueInRange: Bool, api: API, appModel: ParsedModelCache, includeSeparator: Bool) -> String {
+    static func toPropString(_ mapping: QueryParam_PropertyNameMapping, isEndValueInRange: Bool, api: API, appModel: ParsedModelCache, includeSeparator: Bool) -> String {
         let propName = mapping.first
         
         guard let prop = appModel.getLastPropInRecursive(propName, inObj: api.entity.name) else { return "" }

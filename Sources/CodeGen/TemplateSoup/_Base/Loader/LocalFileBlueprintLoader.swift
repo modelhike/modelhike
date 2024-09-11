@@ -1,12 +1,12 @@
 //
-// LocalFileTemplateLoader.swift
+// LocalFileBlueprintLoader.swift
 // DiagSoup
 // https://www.github.com/diagsoup/diagsoup
 //
 
 import Foundation
 
-public class LocalFileTemplateLoader: TemplateRepository {
+public class LocalFileBlueprintLoader: BlueprintRepository {
     private var templateCache : [String: TemplateSoupTemplate] = [:]
     public let defaultTemplatesPath: LocalPath
     public let context: Context

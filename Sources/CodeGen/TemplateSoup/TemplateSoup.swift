@@ -6,12 +6,12 @@
 
 import Foundation
 
-public typealias LoadTemplateHandler = (_ templateName: String,_ loader: TemplateRepository, _ ctx: Context) throws -> Template
+public typealias LoadTemplateHandler = (_ templateName: String,_ loader: BlueprintRepository, _ ctx: Context) throws -> Template
 
 public class TemplateSoup : TemplateRenderer {
     var templateEval: TemplateEvaluator
     let context: Context
-    var repo: TemplateRepository
+    var repo: BlueprintRepository
     
     var onLoadTemplate : LoadTemplateHandler = { (templateName, loader, ctx) throws -> Template in
         do {
@@ -79,7 +79,7 @@ public class TemplateSoup : TemplateRenderer {
         return rendering
     }
     
-    public init(loader: TemplateRepository, context: Context) {
+    public init(loader: BlueprintRepository, context: Context) {
         self.repo = loader
 
         self.templateEval = TemplateEvaluator()
@@ -87,7 +87,7 @@ public class TemplateSoup : TemplateRenderer {
     }
 
     public init(context: Context) {
-        let fsLoader = LocalFileTemplateLoader(path: context.paths.basePath, with: context)
+        let fsLoader = LocalFileBlueprintLoader(path: context.paths.basePath, with: context)
         self.repo = fsLoader
 
         self.templateEval = TemplateEvaluator()

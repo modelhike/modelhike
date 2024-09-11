@@ -28,7 +28,7 @@ public struct MongoDBLib {
         }
     }
     
-    private static func getFilterString( queryParam: QueryParam, propMap: PropNameMapping, entity : CodeObject, sandbox: Sandbox) -> String {
+    private static func getFilterString( queryParam: QueryParam_KeyMapping, propMap: QueryParam_PropertyNameMapping, entity : CodeObject, sandbox: Sandbox) -> String {
         let canBeMultiple = queryParam.canHaveMultipleValues
         let queryParamName = queryParam.name
         let appModel = sandbox.model.parsedModel
@@ -100,7 +100,7 @@ public struct MongoDBLib {
         }
     }
     
-    private static func getIndividualFilterString(_ queryParam: QueryParam, propName: String, isSingle: Bool, entity : CodeObject, sandbox: Sandbox) -> String {
+    private static func getIndividualFilterString(_ queryParam: QueryParam_KeyMapping, propName: String, isSingle: Bool, entity : CodeObject, sandbox: Sandbox) -> String {
         let canBeMultiple = queryParam.canHaveMultipleValues
         let queryParamName = queryParam.name
         let appModel = sandbox.model.parsedModel

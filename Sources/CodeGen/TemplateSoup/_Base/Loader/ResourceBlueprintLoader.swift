@@ -1,12 +1,12 @@
 //
-// ResourceTemplateLoader.swift
+// ResourceBlueprintLoader.swift
 // DiagSoup
 // https://www.github.com/diagsoup/diagsoup
 //
 
 import Foundation
 
-open class ResourceTemplateLoader : TemplateRepository {
+open class ResourceBlueprintLoader : BlueprintRepository {
     private var templateCache : [String: TemplateSoupTemplate] = [:]
 
     let bundle: Bundle
