@@ -30,6 +30,20 @@ open class ResourceBlueprintLoader : BlueprintRepository {
 
     }
     
+    public func hasFolder(_ foldername: String) -> Bool {
+        do {
+            let folder = resourceRoot + foldername
+            guard let resourceURL = bundle.resourceURL?.appendingPathComponent(folder) else { return false }
+            
+            let fm = FileManager.default
+            let resourcePaths = try fm.contentsOfDirectory(at: resourceURL, includingPropertiesForKeys: nil)
+            
+            return resourcePaths.count > 0
+        } catch {
+            return false
+        }
+    }
+    
     public func copyFiles(foldername: String, to outputFolder: LocalFolder) throws {
         let folder = resourceRoot + foldername
         guard let resourceURL = bundle.resourceURL?.appendingPathComponent(folder) else { return }
@@ -55,6 +69,53 @@ open class ResourceBlueprintLoader : BlueprintRepository {
                 } else { //resource folder
                     let newResUrl = resUrl.appendingPathComponent(resourceName)
                     try copyResourceFiles(from: newResUrl, to: outputPath / resourceName)
+                }
+            }
+        } catch {
+            print(error)
+            throw ResourceDoesNotExist(resName: resUrl.absoluteString)
+        }
+    }
+    
+    public func renderFiles(foldername: String, to outputFolder: LocalFolder, using templateSoup: TemplateSoup) throws {
+        let folder = resourceRoot + foldername
+        guard let resourceURL = bundle.resourceURL?.appendingPathComponent(folder) else { return }
+        
+        try renderResourceFiles(from: resourceURL, to: outputFolder.path, using: templateSoup)
+    }
+    
+    fileprivate func renderResourceFiles(from resUrl: URL, to outputPath: LocalPath, using templateSoup: TemplateSoup) throws {
+        let fm = FileManager.default
+        try outputPath.ensureExists()
+
+        do {
+            let resourcePaths = try fm.contentsOfDirectory(at: resUrl, includingPropertiesForKeys: nil)
+            for resourcePath in resourcePaths {
+                var resourceName = resourcePath.lastPathComponent
+                
+                if !resourcePath.hasDirectoryPath { //resource file
+                    let contents = try String(contentsOf: resourcePath)
+
+                    if resourceName.fileExtension() == TemplateConstants.TemplateExtension { //if tempalte file
+                        
+                        resourceName = resourceName.withoutFileExtension()
+                        
+                        //render the filename if it has an expression within '{{' and '}}'
+                        let filename = try ContentLine.eval(line: resourceName, with: templateSoup.context) ?? resourceName
+                        
+                        let renderedString = try templateSoup.renderTemplate(string: contents) ?? ""
+                        
+                        let outFile = LocalFile(path: outputPath / filename)
+                        try outFile.write(renderedString)
+                    } else { //not a template file
+
+                        let filename = resourceName
+                        let outFile = LocalFile(path: outputPath / filename)
+                        try outFile.write(contents)
+                    }
+                } else { //resource folder
+                    let newResUrl = resUrl.appendingPathComponent(resourceName)
+                    try renderResourceFiles(from: newResUrl, to: outputPath / resourceName, using: templateSoup)
                 }
             }
         } catch {

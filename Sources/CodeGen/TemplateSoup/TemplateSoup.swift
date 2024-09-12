@@ -66,7 +66,7 @@ public class TemplateSoup : TemplateRenderer {
         return rendering
     }
     
-    public func renderTemplate(string templateString: String, data: StringDictionary) throws -> String? {
+    public func renderTemplate(string templateString: String, data: StringDictionary = [:]) throws -> String? {
         context.pushSnapshot()
         context.append(variables: data)
         

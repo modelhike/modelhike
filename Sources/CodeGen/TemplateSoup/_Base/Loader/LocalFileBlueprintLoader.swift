@@ -34,6 +34,15 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
         throw TemplateDoesNotExist(templateName: fileName)
     }
     
+    public func hasFolder(_ foldername: String) -> Bool {
+        guard self.defaultTemplatesPath.exists else {
+            return false
+        }
+        
+        let inFolder = LocalFolder(path: self.defaultTemplatesPath / foldername)
+        return inFolder.path.exists
+    }
+    
     public func copyFiles(foldername: String, to outputFolder: LocalFolder) throws {
         guard self.defaultTemplatesPath.exists else {
             throw EvaluationError.invalidInput("There is no folder called \(self.defaultTemplatesPath.string)")
@@ -41,6 +50,49 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
         
         let inFolder = LocalFolder(path: self.defaultTemplatesPath / foldername)
         try inFolder.copyFiles(to: outputFolder)
+    }
+    
+    public func renderFiles(foldername: String, to outputFolder: LocalFolder, using templateSoup: TemplateSoup) throws {
+        guard self.defaultTemplatesPath.exists else {
+            throw EvaluationError.invalidInput("There is no folder called \(self.defaultTemplatesPath.string)")
+        }
+        
+        let inFolder = LocalFolder(path: self.defaultTemplatesPath / foldername)
+        
+        try renderLocalFiles(from: inFolder, to: outputFolder, using: templateSoup)
+        
+    }
+    
+    private func renderLocalFiles(from inFolder: LocalFolder, to outputFolder: LocalFolder, using templateSoup: TemplateSoup) throws {
+
+        try outputFolder.ensureExists()
+                
+        let files = inFolder.files
+        
+        for file in files {
+            if file.extension == TemplateConstants.TemplateExtension { //template file
+                let actualFilename = file.nameExcludingExtension
+
+                //render the filename if it has an expression within '{{' and '}}'
+                let filename = try ContentLine.eval(line: actualFilename, with: templateSoup.context) ?? actualFilename
+                
+                let contents = try file.readTextContents()
+                let renderedString = try templateSoup.renderTemplate(string: contents) ?? ""
+                
+                let outFile = LocalFile(path: outputFolder.path / filename)
+                try outFile.write(renderedString)
+            } else { //not a template file
+                try file.copy(to: outputFolder)
+            }
+        }
+        
+        //copy files from subfolders also
+        for subFolder in inFolder.subFolders {
+            let newFolder = outputFolder / subFolder.name
+            try newFolder.ensureExists()
+            try renderLocalFiles(from: subFolder, to: newFolder, using: templateSoup)
+        }
+        
     }
     
     public func readTextContents(filename: String) throws -> String {

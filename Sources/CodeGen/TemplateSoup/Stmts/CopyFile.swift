@@ -23,7 +23,7 @@ public class CopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible {
         
         Optionally {
             OneOrMore(.whitespace)
-            "to"
+            "as"
             OneOrMore(.whitespace)
             Capture {
                 CommonRegEx.validStringValue

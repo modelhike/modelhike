@@ -56,7 +56,7 @@ open class Workspace {
     }
     
     @discardableResult
-    public func generateCodebase(container: String = "", usingBlueprintsFrom templateLoader: BlueprintRepository) -> String? {
+    public func generateCodebase(container: String = "", usingBlueprintsFrom blueprintLoader: BlueprintRepository) -> String? {
         do {
             if !isModelsLoaded {
                 throw EvaluationError.invalidAppState("No models Loaded!!!")
@@ -71,7 +71,7 @@ open class Workspace {
             try output.ensureExists()
             try output.clearFiles()
             
-            let rendering = try sandbox.generateFilesFor(container: container, usingBlueprintsFrom: templateLoader)
+            let rendering = try sandbox.generateFilesFor(container: container, usingBlueprintsFrom: blueprintLoader)
             
             print("✅ Generated \(context.generatedFiles.count) files ...")
             return rendering

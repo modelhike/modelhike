@@ -12,7 +12,10 @@ public protocol BlueprintRepository : InputFileRepository {
 
 public protocol InputFileRepository {
     func copyFiles(foldername: String, to folder: LocalFolder) throws
+    func renderFiles(foldername: String, to folder: LocalFolder, using templateSoup: TemplateSoup) throws
+
     func readTextContents(filename: String) throws -> String
+    func hasFolder(_ foldername: String) -> Bool
 }
 
 public struct TemplateDoesNotExist : Error {

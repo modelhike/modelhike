@@ -1,5 +1,5 @@
 //
-// RenderFileWithTemplateStmt.swift
+// RenderTemplateFileStmt.swift
 // DiagSoup
 // https://www.github.com/diagsoup/diagsoup
 //
@@ -7,7 +7,7 @@
 import Foundation
 import RegexBuilder
 
-public class RenderFileWithTemplateStmt: LineTemplateStmt, CustomDebugStringConvertible {
+public class RenderTemplateFileStmt: LineTemplateStmt, CustomDebugStringConvertible {
     static let START_KEYWORD = "render-file"
 
     public private(set) var ToFile: String = ""
@@ -20,14 +20,15 @@ public class RenderFileWithTemplateStmt: LineTemplateStmt, CustomDebugStringConv
         Capture {
             CommonRegEx.validStringValue
         } transform: { String($0) }
-        OneOrMore(.whitespace)
         
-        "with-template"
-        
-        OneOrMore(.whitespace)
-        Capture {
-            CommonRegEx.validStringValue
-        } transform: { String($0) }
+        Optionally {
+            OneOrMore(.whitespace)
+            "as"
+            OneOrMore(.whitespace)
+            Capture {
+                CommonRegEx.validStringValue
+            } transform: { String($0) }
+        }
         
         CommonRegEx.comments
     }
@@ -35,32 +36,42 @@ public class RenderFileWithTemplateStmt: LineTemplateStmt, CustomDebugStringConv
     override func matchLine(line: String, level: Int, with ctx: Context) throws -> Bool {
         guard let match = line.wholeMatch(of: stmtRegex ) else { return false }
         
-        let (_, toFile, fromTemplate) = match.output
+        let (_, fromTemplate, toFile) = match.output
         
-        self.ToFile = toFile
+        self.ToFile = toFile ?? ""
         self.FromTemplate = fromTemplate
         
         return true
     }
     
     public override func execute(with ctx: Context) throws -> String? {
-        guard ToFile.isNotEmpty,
-              FromTemplate.isNotEmpty else { return nil }
+        guard FromTemplate.isNotEmpty else { return nil }
         
         if ctx.workingDirectoryString.isEmpty {
             throw EvaluationError.workingDirectoryNotSet(lineNo)
         }
         
-        guard let toFile = try? ctx.evaluate(value: ToFile, lineNo: lineNo) as? String ,
-              let fromTemplate = try? ctx.evaluate(value: FromTemplate, lineNo: lineNo) as? String
-                                                                        else { return nil }
-        let fileName = toFile
+        guard let fromTemplate = try? ctx.evaluate(value: FromTemplate, lineNo: lineNo) as? String
+                                                                                else { return nil }
+        
         try ctx.fileGenerator.setRelativePath(ctx.workingDirectoryString)
+
+        var filename = ""
         
-        ctx.debugLog.generatingFile(fileName, with: fromTemplate)
-        let file = try ctx.fileGenerator.generateFile(fileName, template: fromTemplate)
+        if ToFile.isEmpty {
+            filename = fromTemplate
+        } else {
+            guard let toFile = try? ctx.evaluate(value: ToFile, lineNo: lineNo) as? String
+                                                                        else { return nil }
+            filename = toFile
+        }
         
-        ctx.addGenerated(filePath: file.outputPath.string + fileName)
+        //render the filename if it has an expression within '{{' and '}}'
+        filename = try ContentLine.eval(line: filename, with: ctx) ?? filename
+
+        ctx.debugLog.generatingFile(filename, with: fromTemplate)
+        let file = try ctx.fileGenerator.generateFile(filename, template: fromTemplate)
+        ctx.addGenerated(filePath: file.outputPath.string + filename)
         
         return nil
     }
@@ -80,6 +91,6 @@ public class RenderFileWithTemplateStmt: LineTemplateStmt, CustomDebugStringConv
         super.init(keyword: Self.START_KEYWORD)
     }
     
-    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) { RenderFileWithTemplateStmt() }
+    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) { RenderTemplateFileStmt() }
 }
 

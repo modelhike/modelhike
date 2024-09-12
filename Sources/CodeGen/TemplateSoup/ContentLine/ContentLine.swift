@@ -115,6 +115,10 @@ public class ContentLine: FileTemplateItem, CustomDebugStringConvertible {
         return str
     }
     
+    public static func eval(line: String, with ctx: Context) throws -> String? {
+        let expn = try ContentLine(line, lineNo: -1, level: -1, with: ctx)
+        return try expn.execute(with: ctx)?.trimTrailing() //remove the extra newline
+    }
     
     public init(_ content: String, lineNo: Int, level: Int, with ctx: Context) throws {
         self.lineNo = lineNo

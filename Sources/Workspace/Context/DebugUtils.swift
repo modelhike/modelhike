@@ -171,6 +171,12 @@ public struct ContextDebugLog {
         }
     }
     
+    public func renderingFolder(_ path: String, to newPath: String) {
+        if flags.fileGeneration {
+            print("Rendering folder \(path) to \(newPath)...")
+        }
+    }
+    
     public func generatingFile(_ filepath: String, with template: String) {
         if flags.fileGeneration {
             print("Generating \(filepath) [template \(template)] ...")

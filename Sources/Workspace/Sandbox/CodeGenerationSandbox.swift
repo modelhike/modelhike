@@ -24,7 +24,7 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
     
     var lineParser : LineParser
     
-    public func generateFilesFor(container: String, usingBlueprintsFrom templateLoader: BlueprintRepository) throws -> String? {
+    public func generateFilesFor(container: String, usingBlueprintsFrom blueprintLoader: BlueprintRepository) throws -> String? {
         guard let container = model.container(named: container) else {
             throw EvaluationError.invalidInput("There is no container called \(container)")
         }
@@ -32,9 +32,27 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
         let variables = container.toDictionary(using: model)
         self.context.replace(variables: variables)
         
-        self.templateSoup.repo = templateLoader
+        self.templateSoup.repo = blueprintLoader
+        try self.setRelativePath("")
         
-        return try templateSoup.renderTemplateWithFrontMatter(fileName: "main")
+        //handle special folders
+        if blueprintLoader.hasFolder(SpecialFolderNames.root) {
+            try renderSpecialFolder(SpecialFolderNames.root, to: "/", msg: "🏷️ Generating Root folder...")
+        }
+        
+        return try templateSoup.renderTemplateWithFrontMatter(fileName: TemplateConstants.MainTemplateFile)
+    }
+    
+    
+    @discardableResult
+    private func renderSpecialFolder(_ fromFolder: String, to toFolder: String, msg: String = "") throws -> RenderedFolder {
+        if msg.isNotEmpty {
+            print(msg)
+        }
+        
+        context.debugLog.renderingFolder(fromFolder, to: toFolder)
+        let folder = try context.fileGenerator.renderFolder(fromFolder, to: toFolder)
+        return folder
     }
     
     public func renderTemplate(string templateString: String, data: [String: Any]) throws -> String? {
@@ -97,6 +115,12 @@ public extension CodeGenerationSandbox  { //file generation protocol
     func copyFolder(_ foldername: String, to newPath: String) throws -> StaticFolder {
         let folder = StaticFolder(foldername: foldername, repo: templateSoup.repo, to: newPath, path: generation_dir)
         try folder.copyFiles()
+        return folder
+    }
+    
+    func renderFolder(_ foldername: String, to newPath: String) throws -> RenderedFolder {
+        let folder = RenderedFolder(foldername: foldername, templateSoup: templateSoup, to: newPath, path: generation_dir)
+        try folder.renderFiles()
         return folder
     }
     

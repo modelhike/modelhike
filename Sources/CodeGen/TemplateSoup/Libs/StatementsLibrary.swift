@@ -15,11 +15,12 @@ public struct StatementsLibrary {
             FunctionCallStmt.register,
             
             CopyFileStmt.register,
-            RenderFileWithTemplateStmt.register,
+            RenderTemplateFileStmt.register,
             FillAndCopyFileStmt.register,
             
             CopyFolderStmt.register,
-            
+            RenderFolderStmt.register,
+
             RunShellCmdStmt.register,
             ConsoleLogStmt.register,
             

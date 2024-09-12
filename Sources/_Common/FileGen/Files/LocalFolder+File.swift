@@ -234,12 +234,8 @@ public struct LocalFile : File, LocalFileSystemItem {
     }
     
     public func write(_ string: String, encoding: String.Encoding) throws {
-        guard let data = string.data(using: encoding) else {
-            throw WriteError(path: path, reason: .stringEncodingFailed(string))
-        }
-
         do {
-            try data.write(to: url)
+            try string.write(to: url, atomically: true, encoding: encoding)
         } catch {
             throw WriteError(path: path, reason: .writeFailed(error))
         }

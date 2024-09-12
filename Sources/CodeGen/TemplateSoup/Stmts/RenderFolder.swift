@@ -1,5 +1,5 @@
 //
-// CopyFolderStmt.swift
+// RenderFolderStmt.swift
 // DiagSoup
 // https://www.github.com/diagsoup/diagsoup
 //
@@ -7,8 +7,8 @@
 import Foundation
 import RegexBuilder
 
-public class CopyFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
-    static let START_KEYWORD = "copy-folder"
+public class RenderFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
+    static let START_KEYWORD = "render-folder"
 
     public private(set) var FromFolder: String = ""
     public private(set) var ToFolder: String = ""
@@ -56,27 +56,31 @@ public class CopyFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
         
         try ctx.fileGenerator.setRelativePath(ctx.workingDirectoryString)
         
-        if ToFolder.isEmpty {
-            let folderName = fromFolder
+        var foldername = ""
 
-            ctx.debugLog.copyingFolder(folderName)
-            let file = try ctx.fileGenerator.copyFolder(folderName)
-            try ctx.addGenerated(folderPath: file.outputFolder)
+        if ToFolder.isEmpty {
+            foldername = fromFolder
+
         } else {
             guard let toFolder = try? ctx.evaluate(value: ToFolder, lineNo: lineNo) as? String
                                                                         else { return nil }
             
-            ctx.debugLog.copyingFolder(fromFolder, to: toFolder)
-            let folder = try ctx.fileGenerator.copyFolder(fromFolder, to: toFolder)
-            try ctx.addGenerated(folderPath: folder.outputFolder)
+            foldername = toFolder
         }
+        
+        //render the foldername if it has an expression within '{{' and '}}'
+        foldername = try ContentLine.eval(line: foldername, with: ctx) ?? foldername
+        
+        ctx.debugLog.renderingFolder(fromFolder, to: foldername)
+        let folder = try ctx.fileGenerator.renderFolder(fromFolder, to: foldername)
+        try ctx.addGenerated(folderPath: folder.outputFolder)
         
         return nil
     }
     
     public var debugDescription: String {
         let str =  """
-        COPY FOLDER stmt (level: \(level))
+        RENDER FOLDER stmt (level: \(level))
         - from: \(self.FromFolder)
         - to: \(self.ToFolder)
         
@@ -89,6 +93,6 @@ public class CopyFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
         super.init(keyword: Self.START_KEYWORD)
     }
     
-    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) { CopyFolderStmt()}
+    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) { RenderFolderStmt()}
 }
 

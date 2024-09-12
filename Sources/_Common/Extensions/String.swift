@@ -164,6 +164,18 @@ public extension String {
         }
     }
     
+    func withoutFileExtension() -> String {
+        let url = URL(string: self)
+        let filename = url?.deletingPathExtension().lastPathComponent
+        return filename ?? self
+    }
+    
+    func fileExtension() -> String {
+        let url = URL(string: self)
+        let ext = url?.pathExtension
+        return ext ?? self
+    }
+    
     //removes all spaces in the string
     func spaceless() -> String {
         return self.components(separatedBy: .whitespacesAndNewlines)

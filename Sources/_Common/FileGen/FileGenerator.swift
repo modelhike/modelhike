@@ -16,7 +16,8 @@ public protocol FileGeneratorProtocol {
     func copyFile(_ filename: String, to newFilename: String) throws -> StaticFile
     func copyFolder(_ path: String) throws -> StaticFolder
     func copyFolder(_ path: String, to newPath: String) throws -> StaticFolder
-    
+    func renderFolder(_ path: String, to newPath: String) throws -> RenderedFolder
+
     func fillPlaceholdersAndCopyFile(_ filename: String) throws -> PlaceHolderFile
     func fillPlaceholdersAndCopyFile(_ filename: String, to newFilename: String) throws -> PlaceHolderFile
 }
