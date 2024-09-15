@@ -15,8 +15,10 @@ public class LocalFileModelLoader : ModelRepository {
     public func loadModel(to model: AppModel) throws {
         let file = LocalFile(path: loadPath.path / commonsFileName)
         
-        if let commonsContainer = try ModelFileParser(with: ctx).parse(file: file, with: ctx).containers.first {
-            model.commonModel = commonsContainer.components
+        if file.exists { //commons file found
+            if let commonsContainer = try ModelFileParser(with: ctx).parse(file: file, with: ctx).containers.first {
+                model.commonModel = commonsContainer.components
+            }
         }
         
         for file in loadPath.files {
