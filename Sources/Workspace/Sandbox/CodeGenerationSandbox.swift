@@ -38,6 +38,8 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
         self.context.replace(variables: variables)
         
         self.templateSoup.repo = blueprintLoader
+        
+        context.setWorkingDirectory("/")
         try self.setRelativePath("")
         
         //handle special folders

@@ -31,9 +31,16 @@ public extension Context {
     var workingDirectoryString: String { variables[working_dir_var] as? String ?? "" }
     var workingDirectory: LocalPath { paths.output.path / workingDirectoryString }
 
+    @discardableResult
+    internal func setWorkingDirectory(_ foldername: String) -> Bool {
+        variables[working_dir_var] = foldername
+        return true
+    }
+    
     func isWorkingDirectoryVariable(_ name: String) -> Bool {
         return name == working_dir_var
     }
+    
 }
 
 public struct ContextState {
