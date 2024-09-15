@@ -16,17 +16,22 @@ public class LocalFileModelLoader : ModelRepository {
         let file = LocalFile(path: loadPath.path / commonsFileName)
         
         if file.exists { //commons file found
-            if let commonsContainer = try ModelFileParser(with: ctx).parse(file: file, with: ctx).containers.first {
-                model.commonModel = commonsContainer.components
-            }
+            let commons = try ModelFileParser(with: ctx)
+                                            .parse(file: file, with: ctx)
+            
+            model.appendToCommonModel(contentsOf: commons)
         }
         
         for file in loadPath.files {
             if file.name != commonsFileName && file.extension == ModelConstants.ModelFile_Extension {
-                let modelContainers = try ModelFileParser(with: ctx).parse(file: file, with: ctx)
-                model.append(contentsOf: modelContainers.containers)
+                let modelSpace = try ModelFileParser(with: ctx)
+                                                .parse(file: file, with: ctx)
+                
+                model.append(contentsOf: modelSpace)
             }
         }
+        
+        model.resolveAndLinkItems()
     }
     
     public init(path: LocalPath, with ctx: Context) {

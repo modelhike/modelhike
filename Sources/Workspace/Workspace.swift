@@ -60,7 +60,7 @@ open class Workspace {
     }
     
     @discardableResult
-    public func generateCodebase(container: String = "", usingBlueprintsFrom blueprintLoader: BlueprintRepository) -> String? {
+    public func generateCodebase(container: String, usingBlueprintsFrom blueprintLoader: BlueprintRepository) -> String? {
         do {
             if !isModelsLoaded {
                 throw EvaluationError.invalidAppState("No models Loaded!!!")

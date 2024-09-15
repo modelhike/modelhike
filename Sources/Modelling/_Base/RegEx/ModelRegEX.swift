@@ -171,4 +171,22 @@ public enum ModelRegEx {
     
         CommonRegEx.comments
     }
+    
+    public static let container_Member_Capturing: Regex<(Substring, String, String?, String?)> = Regex {
+        Capture {
+            CommonRegEx.anything
+        } transform: { String($0) }
+                
+        Optionally {
+            attributes
+        }
+        
+        Optionally {
+            Capture {
+                tags
+            } transform: { String($0) }
+        }
+    
+        CommonRegEx.comments
+    }
 }

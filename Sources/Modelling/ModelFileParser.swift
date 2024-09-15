@@ -7,23 +7,22 @@
 import Foundation
 
 public class ModelFileParser {
-    var system = C4System()
-    var container = C4Container()
+    var modelSpace = ModelSpace()
     var component = C4Component()
     var lineParser : LineParser
     let ctx: Context
     
-    public func parse(file: LocalFile, with ctx: Context) throws -> C4System {
+    public func parse(file: LocalFile, with ctx: Context) throws -> ModelSpace {
         let lines = try file.readTextLines(ignoreEmptyLines: true)
         return try self.parse(lines: lines, with: ctx)
     }
     
-    public func parse(string: String, with ctx: Context) throws -> C4System {
+    public func parse(string: String, with ctx: Context) throws -> ModelSpace {
         let lines = string.components(separatedBy: .newlines)
         return try self.parse(lines: lines, with: ctx)
     }
     
-    public func parse(lines contents: [String], with ctx: Context) throws -> C4System {
+    public func parse(lines contents: [String], with ctx: Context) throws -> ModelSpace {
         let lineParser = LineParser(lines: contents, with: ctx)
         self.lineParser = lineParser
 
@@ -31,8 +30,12 @@ public class ModelFileParser {
             
             try lineParser.parse() {firstWord, secondWord, line, ctx in
                 
-                if firstWord == "#" {
-                    parseModule(firstWord: firstWord, parser: lineParser)
+                if ContainerParser.canParse(parser: lineParser) {
+                    try parseContainer(firstWord: firstWord, parser: lineParser)
+                }
+                
+                if ModuleParser.canParse(parser: lineParser) {
+                    try parseModule(firstWord: firstWord, parser: lineParser)
                 }
                 
                 //check for class starting
@@ -44,7 +47,7 @@ public class ModelFileParser {
                 
             }
             
-            return system
+            return modelSpace
         } catch let err {
             if let parseErr = err as? Model_ParsingError {
                 throw ParsingError.invalidLine(self.lineParser.curLineNoForDisplay, parseErr.info, parseErr)
@@ -54,23 +57,21 @@ public class ModelFileParser {
         }
     }
     
-    func parseModule(firstWord: String, parser: LineParser) {
-        let moduleName = parser.currentLine(after: firstWord)
+    func parseModule(firstWord: String, parser: LineParser) throws {
+        guard let module = try ModuleParser.parse(parser: lineParser, with: ctx) else { return }
         
-        //if the placeholder container is empty, remove it as an actual module is detected
-        if self.component.isEmpty && self.container.count == 1 { self.container.removeAll()
-        }
+        self.component = module
+        self.modelSpace.append(module: module)
+    }
+    
+    func parseContainer(firstWord: String, parser: LineParser) throws {
+        guard let container = try ContainerParser.parse(parser: lineParser, with: ctx) else { return }
         
-        //add new module
-        self.component = C4Component(name: moduleName)
-        self.container.append(component)
+        self.modelSpace.append(container: container)
     }
     
     public init(with context: Context) {
         lineParser = LineParser(context: context)
         self.ctx = context
-        
-        container.append(component)
-        system.append(container)
     }
 }

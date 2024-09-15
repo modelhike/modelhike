@@ -10,6 +10,7 @@ public enum Model_ParsingError: Error {
     case objectNotFound(String)
     case invalidMapping(String)
     case invalidPropertyLine(String)
+    case invalidContainerMemberLine(String)
     case invalidAnnotation(String)
     case moduleNameEmpty
 
@@ -20,6 +21,7 @@ public enum Model_ParsingError: Error {
             case .invalidMapping(let mapping) : return "mapping: \(mapping) is invalid"
             case .invalidAnnotation(let annotation) : return "annotation: \(annotation) is invalid"
             
+            case .invalidContainerMemberLine(let line) : return "container member: \(line) invalid"
             case .moduleNameEmpty : return "moduleNameEmpty"
 
         }

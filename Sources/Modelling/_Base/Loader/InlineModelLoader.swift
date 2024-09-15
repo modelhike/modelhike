@@ -20,15 +20,19 @@ public class InlineModelLoader : ModelRepository {
             }
         }
         
-        if let commonsContainer = try ModelFileParser(with: ctx).parse(string: commonsString, with: ctx).containers.first {
-            model.commonModel = commonsContainer.components
-        }
+        //common models
+        let commons = try ModelFileParser(with: ctx)
+                                        .parse(string: commonsString, with: ctx)
+        
+        model.appendToCommonModel(contentsOf: commons)
         
         //parse rest of the models
         for item in items {
             if let modelItem = item as? InlineModel {
-                let modelContainers = try ModelFileParser(with: ctx).parse(string: modelItem.string, with: ctx)
-                model.append(contentsOf: modelContainers.containers)
+                let modelSpace = try ModelFileParser(with: ctx)
+                                                .parse(string: modelItem.string, with: ctx)
+                
+                model.append(contentsOf: modelSpace)
             }
         }
     }
