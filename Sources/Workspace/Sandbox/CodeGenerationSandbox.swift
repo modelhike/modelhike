@@ -25,6 +25,11 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
     var lineParser : LineParser
     
     public func generateFilesFor(container: String, usingBlueprintsFrom blueprintLoader: BlueprintRepository) throws -> String? {
+        
+        if !blueprintLoader.blueprintExists() {
+            throw EvaluationError.invalidInput("There is no blueprint called \(blueprintLoader.blueprintName)")
+        }
+        
         guard let container = model.container(named: container) else {
             throw EvaluationError.invalidInput("There is no container called \(container)")
         }

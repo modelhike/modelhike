@@ -11,7 +11,8 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
     public let defaultTemplatesPath: LocalPath
     public let context: Context
     public var paths: [LocalPath]
-
+    public let blueprintName: String
+    
     public func loadTemplate(fileName: String) throws -> TemplateSoupTemplate {
         for loadPath in paths {
             let templateName = "\(fileName).\(TemplateConstants.TemplateExtension)"
@@ -32,6 +33,10 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
         }
 
         throw TemplateDoesNotExist(templateName: fileName)
+    }
+    
+    public func blueprintExists() -> Bool {
+        return self.defaultTemplatesPath.exists
     }
     
     public func hasFolder(_ foldername: String) -> Bool {
@@ -111,12 +116,14 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
         self.paths = [path]
         self.context = ctx
         self.defaultTemplatesPath = path
+        self.blueprintName = blueprint
     }
     
-    public init(path: LocalPath, with ctx: Context) {
+    internal init(path: LocalPath, with ctx: Context) {
         self.paths = [path]
         self.context = ctx
         self.defaultTemplatesPath = path
+        self.blueprintName = ""
     }
     
     public func add(paths: LocalPath...) {

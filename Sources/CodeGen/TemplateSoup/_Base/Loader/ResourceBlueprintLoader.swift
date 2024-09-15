@@ -9,6 +9,7 @@ import Foundation
 open class ResourceBlueprintLoader : BlueprintRepository {
     private var templateCache : [String: TemplateSoupTemplate] = [:]
 
+    public let blueprintName: String
     let bundle: Bundle
     var resourceRoot: String
     
@@ -28,6 +29,20 @@ open class ResourceBlueprintLoader : BlueprintRepository {
             throw TemplateDoesNotExist(templateName: fileName)
         }
 
+    }
+    
+    public func blueprintExists() -> Bool {
+        do {
+            let folder = resourceRoot
+            guard let resourceURL = bundle.resourceURL?.appendingPathComponent(folder) else { return false }
+            
+            let fm = FileManager.default
+            let resourcePaths = try fm.contentsOfDirectory(at: resourceURL, includingPropertiesForKeys: nil)
+            
+            return resourcePaths.count > 0
+        } catch {
+            return false
+        }
     }
     
     public func hasFolder(_ foldername: String) -> Bool {
@@ -141,6 +156,7 @@ open class ResourceBlueprintLoader : BlueprintRepository {
     
     public init(blueprint: String, bundle: Bundle, with ctx: Context) {
         self.bundle = bundle
+        self.blueprintName = blueprint
         self.resourceRoot = "/Resources/\(blueprint)/"
     }
 

@@ -7,6 +7,8 @@
 import Foundation
 
 public protocol BlueprintRepository : InputFileRepository {
+    var blueprintName: String {get}
+    func blueprintExists() -> Bool
     func loadTemplate(fileName: String) throws -> TemplateSoupTemplate
 }
 
