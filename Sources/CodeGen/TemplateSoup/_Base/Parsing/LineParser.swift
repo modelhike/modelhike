@@ -182,6 +182,14 @@ public class LineParser {
         }
     }
     
+    public func lookAheadLine(by lineCount: Int) -> String {
+        if _curLineNo < self.lines.count - lineCount {
+            return (self.lines[self._curLineNo + lineCount]).trim()
+        } else {
+            return ""
+        }
+    }
+    
     public init(context: Context) {
         self.ctx = context
         self._curLineNo = 0

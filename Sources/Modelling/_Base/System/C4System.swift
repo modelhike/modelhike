@@ -18,6 +18,12 @@ public class C4System : ArtifactContainer {
         containers.append(item)
     }
     
+    public var count: Int { containers.count }
+    
+    public func removeAll() {
+        containers.removeAll()
+    }
+    
     public var debugDescription: String {
         return """
         \(self.name)

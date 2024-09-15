@@ -37,13 +37,7 @@ public extension String {
     func secondWord() -> String? {
         let arr = self.components(separatedBy: " ")
         
-        var nonEmptyArray : [String] = []
-        
-        for item in arr {
-            if item.trim().isNotEmpty {
-                nonEmptyArray.append(item)
-            }
-        }
+        let nonEmptyArray = arr.filter({ $0.trim().isNotEmpty })
                 
         if nonEmptyArray.count > 1 {
             return nonEmptyArray[1] //second item
@@ -55,13 +49,7 @@ public extension String {
     func firstAndsecondWord() -> (String?, String?) {
         let arr = self.components(separatedBy: " ")
         
-        var nonEmptyArray : [String] = []
-        
-        for item in arr {
-            if item.trim().isNotEmpty {
-                nonEmptyArray.append(item)
-            }
-        }
+        let nonEmptyArray = arr.filter({ $0.trim().isNotEmpty })
                 
         if nonEmptyArray.count > 1 {
             return (nonEmptyArray[0], nonEmptyArray[1])
@@ -70,6 +58,32 @@ public extension String {
         }else {
             return (nil, nil)
         }
+    }
+    
+    func lastWord() -> String? {
+        let arr = self.components(separatedBy: " ")
+        
+        let nonEmptyArray = arr.filter({ $0.trim().isNotEmpty })
+        return nonEmptyArray.last
+    }
+    
+    func dropFirstWord() -> String {
+        if let firstWord = firstWord() {
+            return remainingLine(after: firstWord)
+        } else {
+            return self
+        }
+    }
+    
+    func dropLastWord() -> String {
+        let strWithoutLastWord = self.components(separatedBy: " ").dropLast()
+                                     .joined(separator: " ")
+        return strWithoutLastWord
+    }
+    
+    func dropFirstAndLastWords() -> String {
+        let firstWordDropped = dropFirstWord()
+        return firstWordDropped.dropLastWord()
     }
     
     func trim() -> String {

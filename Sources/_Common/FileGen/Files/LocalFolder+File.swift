@@ -261,6 +261,8 @@ public struct LocalFile : File, LocalFileSystemItem {
         return outFile
     }
     
+    public var exists:  Bool { path.exists }
+    
     public init(path value: String) {
         self.path = LocalPath(value)
     }

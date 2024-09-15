@@ -13,6 +13,7 @@ public class C4Container : ArtifactContainer {
 
     public var name: String = ""
     public internal(set) var components = C4ComponentList()
+    public internal(set) var unresolvedMembers: [ContainerModuleMember] = []
 
     public func toDictionary(using appModel: AppModel) -> [String: Any] {
         let dict: [String: Any] = [
@@ -36,10 +37,16 @@ public class C4Container : ArtifactContainer {
         return (self.components.first != nil) ? C4Component_Wrap(self.components.first!, model: appModel) : nil
     }
     
+    public func append(unResolved item: ContainerModuleMember) {
+        unresolvedMembers.append(item)
+    }
+    
     public func append(_ item: C4Component) {
         components.append(item)
     }
     
+    public var isEmpty: Bool { components.count == 0 }
+
     public var first : C4Component? { components.first }
 
     public var count: Int { components.count }
