@@ -105,8 +105,8 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
         return inFileContents
     }
     
-    public init(command: String, path templatesPath: LocalPath, with ctx: Context) {
-        let path = templatesPath / command
+    public init(blueprint: String, path templatesPath: LocalPath, with ctx: Context) {
+        let path = templatesPath / blueprint
 
         self.paths = [path]
         self.context = ctx

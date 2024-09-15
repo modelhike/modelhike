@@ -27,7 +27,7 @@ public class C4System : ArtifactContainer {
     public var debugDescription: String {
         return """
         \(self.name)
-        \(self.containers.count) items
+        \(self.containers.count) containers
         """
     }
     

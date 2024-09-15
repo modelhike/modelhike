@@ -40,8 +40,10 @@ public class C4ComponentList : ArtifactContainer, IteratorProtocol, Sequence {
         }
     }
     
-    public func addTo(model appModel: ParsedModelCache) {
-        self.forEach{ c in appModel.append(c.types) }
+    public func addTypesTo(model appModel: ParsedModelCache) {
+        for component in components {
+            appModel.append(component.types)
+        }
     }
     
     public func getEntities() -> [CodeObject] {
@@ -54,6 +56,10 @@ public class C4ComponentList : ArtifactContainer, IteratorProtocol, Sequence {
     
     public func append(contentsOf newItems: [C4Component]) {
         self.components.append(contentsOf: newItems)
+    }
+    
+    public func append(contentsOf item: C4Container) {
+        self.components.append(contentsOf: item.components)
     }
     
     public func removeAll() {

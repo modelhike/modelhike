@@ -15,7 +15,13 @@ public class C4ContainerList : ArtifactContainer, IteratorProtocol, Sequence {
     public internal(set) var containers : [C4Container] = []
     private var currentIndex = 0
     
-    public func forEach(by transform: (inout C4Container) throws -> Void) rethrows {
+    public func addTypesTo(model appModel: ParsedModelCache) {
+        for container in containers {
+            container.components.addTypesTo(model: appModel)
+        }
+    }
+    
+    public func forEach(_ transform: (inout C4Container) throws -> Void) rethrows {
         _ = try containers.map { el in
             var el = el
             try transform(&el)
@@ -23,7 +29,7 @@ public class C4ContainerList : ArtifactContainer, IteratorProtocol, Sequence {
         }
     }
     
-    public func forEachComponent(by transform: (inout C4Component) throws -> Void) rethrows {
+    public func forEachComponent(_ transform: (inout C4Component) throws -> Void) rethrows {
         _ = try containers.map { container in
                 try container.components.forEach { el in
                     try transform(&el)
@@ -31,7 +37,7 @@ public class C4ContainerList : ArtifactContainer, IteratorProtocol, Sequence {
         }
     }
     
-    public func forEachEntity(by transform: (inout CodeObject, inout C4Component) throws -> Void) rethrows {
+    public func forEachEntity(_ transform: (inout CodeObject, inout C4Component) throws -> Void) rethrows {
         _ = try containers.map { container in
             try container.components.forEachEntity{ entity, component in
                 try transform(&entity, &component)

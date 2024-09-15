@@ -39,9 +39,9 @@ struct Development {
         try ws.loadModels(from: modelRepo)
         
         let templatesPath = ws.basePath / "_gen.templates"
-        let templatesRepo = LocalFileBlueprintLoader(command: "nestjs-monorepo", path: templatesPath, with: ws.context)
+        let templatesRepo = LocalFileBlueprintLoader(blueprint: "nestjs-monorepo", path: templatesPath, with: ws.context)
 
-        ws.generateCodebase(usingBlueprintsFrom: templatesRepo)
+        ws.generateCodebase(container: "APIs", usingBlueprintsFrom: templatesRepo)
     }
     
     
@@ -49,7 +49,13 @@ struct Development {
         return InlineModelLoader(with: ws.context) {
             InlineModel {
                 """
-                # Registry Management
+                ===
+                APIs
+                ====
+                + Registry Management
+                
+                
+                === Registry Management ===
                 
                 Registry
                 ========
@@ -71,6 +77,8 @@ struct Development {
     private static func getCommonTypes() -> InlineCommonTypes {
         return InlineCommonTypes {
                 """
+                === Commons ===
+                
                 CodedValue
                 ==========
                 * vsRef: String

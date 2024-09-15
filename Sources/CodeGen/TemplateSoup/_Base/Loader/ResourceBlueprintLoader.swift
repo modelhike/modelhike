@@ -139,9 +139,9 @@ open class ResourceBlueprintLoader : BlueprintRepository {
         }
     }
     
-    public init(command: String, bundle: Bundle, with ctx: Context) {
+    public init(blueprint: String, bundle: Bundle, with ctx: Context) {
         self.bundle = bundle
-        self.resourceRoot = "/Resources/\(command)/"
+        self.resourceRoot = "/Resources/\(blueprint)/"
     }
 
 }

@@ -41,6 +41,10 @@ public class C4Container : ArtifactContainer {
         unresolvedMembers.append(item)
     }
     
+    public func remove(unResolved item: ContainerModuleMember) {
+        unresolvedMembers.removeAll(where: { $0.name == item.name })
+    }
+    
     public func append(_ item: C4Component) {
         components.append(item)
     }
@@ -58,7 +62,7 @@ public class C4Container : ArtifactContainer {
     public var debugDescription: String {
         return """
         \(self.name)
-        \(self.components.count) items
+        \(self.components.count) components
         """
     }
     

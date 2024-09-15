@@ -35,6 +35,8 @@ public class InlineModelLoader : ModelRepository {
                 model.append(contentsOf: modelSpace)
             }
         }
+        
+        model.resolveAndLinkItems()
     }
     
     public init(with ctx: Context, @InlineModelBuilder _ builder: () -> [InlineModelProtocol]) {

@@ -37,7 +37,7 @@ public extension ModelRepository {
                     component.appendAPI(.getById, for: cls)
                     let getAll = component.appendAPI(.list, for: cls)
                     
-                    if let getAllAnnotation = e.annotations["get-all"] {
+                    if let getAllAnnotation = e.annotations["list"] {
                         if let mapping = getAllAnnotation as? MappingAnnotation {
                             for item in mapping.mappings {
                                 getAll[item.key] = item.value
