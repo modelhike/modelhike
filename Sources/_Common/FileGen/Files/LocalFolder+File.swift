@@ -89,7 +89,7 @@ public struct LocalFolder : Folder, LocalFileSystemItem {
         let fm = FileManager.default
 
         do {
-            let items = try fm.contentsOfDirectory(at: url, includingPropertiesForKeys: nil)
+            let items = try fm.contentsOfDirectory(at: url, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles])
 
             for item in items {
                 if let keys = try? item.resourceValues(forKeys: [.isDirectoryKey, .isRegularFileKey, .isSymbolicLinkKey]) {
