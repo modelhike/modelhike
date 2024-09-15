@@ -15,7 +15,7 @@ public protocol Path: StringWrapper {
 public struct LocalPath : Path {
     public static let separator = "/"
     
-    public var string: String { url.path() }
+    public var string: String { url.path(percentEncoded: false) }
     public var url: URL
 
     public var name: String { url.lastPathComponent }
@@ -129,7 +129,7 @@ public struct WebPath : Path {
     
     public init(_ url: URL) {
         self.url = url
-        self.string = url.path()
+        self.string = url.path(percentEncoded: false)
     }
 }
 

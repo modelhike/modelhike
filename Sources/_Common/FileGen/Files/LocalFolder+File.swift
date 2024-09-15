@@ -61,7 +61,7 @@ public struct LocalFolder : Folder, LocalFileSystemItem {
     }
     
     public func createTextFile(named fileName: String, contents: String) throws -> LocalFile {
-        let filePath = url.appending(path: fileName).path()
+        let filePath = url.appending(path: fileName).path(percentEncoded: false)
 
         do {
             try contents.write(toFile: filePath, atomically: true, encoding: .utf8)
@@ -73,7 +73,7 @@ public struct LocalFolder : Folder, LocalFileSystemItem {
     }
     
     public func readTextFile(named fileName: String) throws -> String {
-        let filePath = url.appending(path: fileName).path()
+        let filePath = url.appending(path: fileName).path(percentEncoded: false)
 
         do {
             let stringContent = try String(contentsOfFile: filePath, encoding: .utf8)
@@ -175,7 +175,7 @@ public struct LocalFolder : Folder, LocalFileSystemItem {
         
         do {
             for item in items {
-                try fileManager.removeItem(atPath: item.path())
+                try fileManager.removeItem(atPath: item.path(percentEncoded: false))
             }
         } catch {
             throw LocationError(path: path, reason: .deleteFailed(error))
