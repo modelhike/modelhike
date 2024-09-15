@@ -20,7 +20,7 @@ public enum AnnotationParser {
             let annotationName = split[0].trim()
             let remainingLine = split[1]
             
-            if annotationName == "get-all" {
+            if annotationName == "list" {
                 return try MappingAnnotation(annotationName, line: remainingLine)
             }
         } else {

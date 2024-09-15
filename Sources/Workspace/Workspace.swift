@@ -35,8 +35,12 @@ open class Workspace {
                 self.add(modifiers: TypescriptLib.functions)
                 
                 if let _ = sym.firstIndex(of: .mongodb_typescript) {
-                    self.add(modifiers: MongoDBLib.functions(sandbox: sandbox))
+                    self.add(modifiers: MongoDB_TypescriptLib.functions(sandbox: sandbox))
                 }
+            }
+            
+            if let _ = sym.firstIndex(of: .java) {
+                self.add(modifiers: JavaLib.functions)
             }
             
             if sym.firstIndex(of: .noMocking) == nil {
@@ -167,5 +171,5 @@ open class Workspace {
 }
 
 public enum PreDefinedSymbols {
-    case typescript, mongodb_typescript, noMocking
+    case typescript, mongodb_typescript, java, noMocking
 }
