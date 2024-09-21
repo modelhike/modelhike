@@ -26,6 +26,10 @@ public class C4Component_Wrap : ObjectWrapper {
         if $0.dataType == .entity {CodeObject_Wrap($0)} else {nil}})
     }()
     
+    public lazy var inputObjects : [CodeObject_Wrap] = { item.types.compactMap({
+        if $0.dataType == .apiInput {CodeObject_Wrap($0)} else {nil}})
+    }()
+    
     public lazy var apis : [API_Wrap] = { item.items.compactMap({
         if let e = $0 as? API { return API_Wrap(e) } else {return nil}
     }) }()
@@ -36,7 +40,8 @@ public class C4Component_Wrap : ObjectWrapper {
             case "types" : types
             case "embeddedTypes" : embeddedTypes
             case "entities" : entities
-            default: 
+            case "inputObjects" : inputObjects
+            default:
             //nothing found; so check in module attributes}
             item.attribs[member] as Any
         }

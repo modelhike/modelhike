@@ -24,7 +24,7 @@ public protocol CodeObject : ArtifactContainer, CustomDebugStringConvertible {
 }
 
 public enum CodeElementKind {
-    case unKnown, entity, embeddedType, valueType, dto, cache, workflow, event, agent, data, ui, uxFlow, custom
+    case unKnown, entity, embeddedType, valueType, dto, apiInput, cache, workflow, event, agent, data, ui, uxFlow, custom
 }
 
 typealias CodeObjectBuilder = ResultBuilder<CodeObject>

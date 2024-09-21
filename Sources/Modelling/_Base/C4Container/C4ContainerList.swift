@@ -37,9 +37,9 @@ public class C4ContainerList : ArtifactContainer, IteratorProtocol, Sequence {
         }
     }
     
-    public func forEachEntity(_ transform: (inout CodeObject, inout C4Component) throws -> Void) rethrows {
+    public func forEachType(_ transform: (inout CodeObject, inout C4Component) throws -> Void) rethrows {
         _ = try containers.map { container in
-            try container.components.forEachEntity{ entity, component in
+            try container.components.forEachType{ entity, component in
                 try transform(&entity, &component)
             }
         }

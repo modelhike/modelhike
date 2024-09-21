@@ -16,7 +16,7 @@ public enum TemplateSoup_EvaluationError: Error {
             case .objectNotFound(let lineNo, let obj) :  return "[line \(lineNo)] object: \(obj) not found"
             case .unIdentifiedStmt(let lineNo, let line) :
             var str = """
-                [Line \(lineNo) - udentified stmt]  \(line)
+                [Line \(lineNo) - unidentified stmt]  \(line)
                 """
 
             var modifiedLine = line.trim()

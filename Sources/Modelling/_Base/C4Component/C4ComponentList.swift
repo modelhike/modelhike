@@ -15,7 +15,7 @@ public class C4ComponentList : ArtifactContainer, IteratorProtocol, Sequence {
     public internal(set) var components : [C4Component] = []
     private var currentIndex = 0
 
-    public func forEachEntity(by transform: (inout CodeObject, inout C4Component) throws -> Void) throws {
+    public func forEachType(by transform: (inout CodeObject, inout C4Component) throws -> Void) throws {
         try components.forEach { item in
             try item.types.forEach { e in try transform(&e, &item) }
         }
