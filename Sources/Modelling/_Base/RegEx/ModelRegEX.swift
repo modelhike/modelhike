@@ -12,7 +12,22 @@ public enum ModelRegEx {
     public static let whitespace: ZeroOrMore<Substring> = CommonRegEx.whitespace
     
     public static let variable: Regex<Regex<Substring>.RegexOutput> = CommonRegEx.variable
-    
+    public static let nameWithWhitespace: Regex<Regex<Substring>.RegexOutput> = Regex {
+        CharacterClass(
+            .anyOf("_ "),
+            ("A"..."Z"),
+            ("a"..."z")
+        )
+        ZeroOrMore {
+            CharacterClass(
+                .anyOf("_- "),
+                ("A"..."Z"),
+                ("a"..."z"),
+                ("0"..."9")
+            )
+        }
+    }
+
     public static let variableValue = Regex {
         ChoiceOf {
             CommonRegEx.objectPropertyPattern
@@ -139,7 +154,7 @@ public enum ModelRegEx {
     
     public static let property_Capturing: Regex<Regex<(Substring, String, String, String?, String?, String??, String?)>.RegexOutput> = Regex {
         Capture {
-            variable
+            nameWithWhitespace
         } transform: { String($0) }
         
         whitespace

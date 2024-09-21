@@ -11,6 +11,7 @@ public struct Property : CodeMember {
     public var tags = Tags()
     
     public var name: String
+    public var givename : String
     public var type: PropertyKind = .unKnown
     public var isUnique: Bool = false
     public var isObjectID: Bool = false
@@ -30,15 +31,15 @@ public struct Property : CodeMember {
     
     static func parse(_ originalLine: String, firstWord: String) throws -> Property? {
         
-        var prop = Property()
-
         let line = originalLine.remainingLine(after: firstWord) //remove first word
         
         guard let match = line.wholeMatch(of: ModelRegEx.property_Capturing)                                                    else { return nil }
         
         let (_, propName, typeName, typeMultiplicity, attributeString, _, tagString) = match.output
         
-        prop.name = propName.trim()
+        let givenName = propName.trim()
+
+        var prop = Property(givenName)
         
         //check if has attributes
         if let attributeString = attributeString {
@@ -179,30 +180,30 @@ public struct Property : CodeMember {
         }
     }
     
-    public init(_ name: String) {
-        self.name = name.normalizeForVariableName()
+    public init(_ givenName: String) {
+        self.givename = givenName
+        self.name = givenName.normalizeForVariableName()
     }
     
-    public init() {
-        self.name = "unKnown"
-    }
-    
-    public init(_ name: String, type: PropertyKind, isUnique: Bool = false, required: RequiredKind = .no) {
-        self.name = name.normalizeForVariableName()
+    public init(_ givenName: String, type: PropertyKind, isUnique: Bool = false, required: RequiredKind = .no) {
+        self.givename = givenName
+        self.name = givenName.normalizeForVariableName()
         self.type = type
         self.isUnique = isUnique
         self.required = required
     }
     
-    public init(_ name: String, type: PropertyKind, isObjectID: Bool, required: RequiredKind = .no) {
-        self.name = name.normalizeForVariableName()
+    public init(_ givenName: String, type: PropertyKind, isObjectID: Bool, required: RequiredKind = .no) {
+        self.givename = givenName
+        self.name = givenName.normalizeForVariableName()
         self.type = type
         self.isObjectID = isObjectID
         self.required = required
     }
     
-    public init(_ name: String, type: PropertyKind, isArray: Bool, arrayMultiplicity: MultiplicityKind, required: RequiredKind = .no) {
-        self.name = name.normalizeForVariableName()
+    public init(_ givenName: String, type: PropertyKind, isArray: Bool, arrayMultiplicity: MultiplicityKind, required: RequiredKind = .no) {
+        self.givename = givenName
+        self.name = givenName.normalizeForVariableName()
         self.type = type
         self.required = required
         self.isArray = isArray
@@ -212,7 +213,7 @@ public struct Property : CodeMember {
 
 
 public enum PropertyKind : Equatable {
-    case unKnown, int, double, bool, string, date, buffer, id, any, reference(String), multiReference([String]), extendedReference(String), multiExtendedReference([String]), codedValue(String), customType(String)
+    case unKnown, int, double, float, bool, string, date, datetime, buffer, id, any, reference(String), multiReference([String]), extendedReference(String), multiExtendedReference([String]), codedValue(String), customType(String)
     
     static func parse(_ str: String) -> PropertyKind {
         let split1 = str.trim().components(separatedBy: "@")
@@ -221,8 +222,9 @@ public enum PropertyKind : Equatable {
             case "int", "integer" : return .int
             case "number", "decimal", "double", "float" : return .double
             case "bool", "boolean", "yesno", "yes/no" : return .bool
-            case "string": return .string
-            case "date", "datetime" : return .date
+            case "string", "text": return .string
+            case "date" : return .date
+            case "datetime" : return .datetime
             case "buffer": return .buffer
             case "id": return .id
             case "any": return .any
