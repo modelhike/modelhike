@@ -129,7 +129,9 @@ open class ResourceBlueprintLoader : BlueprintRepository {
                         try outFile.write(contents)
                     }
                 } else { //resource folder
-                    let newResUrl = resUrl.appendingPathComponent(resourceName)
+                    let subfoldername = try ContentLine.eval(line: resourceName, with: templateSoup.context) ?? resourceName
+                    
+                    let newResUrl = resUrl.appendingPathComponent(subfoldername)
                     try renderResourceFiles(from: newResUrl, to: outputPath / resourceName, using: templateSoup)
                 }
             }

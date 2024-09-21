@@ -93,7 +93,9 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
         
         //copy files from subfolders also
         for subFolder in inFolder.subFolders {
-            let newFolder = outputFolder / subFolder.name
+            let subfoldername = try ContentLine.eval(line: subFolder.name, with: templateSoup.context) ?? subFolder.name
+            
+            let newFolder = outputFolder / subfoldername
             try newFolder.ensureExists()
             try renderLocalFiles(from: subFolder, to: newFolder, using: templateSoup)
         }
