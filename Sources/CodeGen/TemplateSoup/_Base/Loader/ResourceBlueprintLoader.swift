@@ -76,7 +76,8 @@ open class ResourceBlueprintLoader : BlueprintRepository {
                 let resourceName = resourcePath.lastPathComponent
                 
                 if !resourcePath.hasDirectoryPath { //resource file
-                    let contents = try String(contentsOf: resourcePath)
+                    //let contents = try String(contentsOf: resourcePath)
+                    let contents = try Data(contentsOf: resourcePath)
 
                     let filename = resourceName
                     let outFile = LocalFile(path: outputPath / filename)
@@ -103,13 +104,13 @@ open class ResourceBlueprintLoader : BlueprintRepository {
         let fm = FileManager.default
         try outputPath.ensureExists()
 
-        do {
-            let resourcePaths = try fm.contentsOfDirectory(at: resUrl, includingPropertiesForKeys: nil)
-            for resourcePath in resourcePaths {
+        let resourcePaths = try fm.contentsOfDirectory(at: resUrl, includingPropertiesForKeys: nil)
+        for resourcePath in resourcePaths {
+            do {
                 var resourceName = resourcePath.lastPathComponent
                 
                 if !resourcePath.hasDirectoryPath { //resource file
-                    let contents = try String(contentsOf: resourcePath)
+                    let data = try Data(contentsOf: resourcePath)
 
                     if resourceName.fileExtension() == TemplateConstants.TemplateExtension { //if tempalte file
                         
@@ -118,26 +119,31 @@ open class ResourceBlueprintLoader : BlueprintRepository {
                         //render the filename if it has an expression within '{{' and '}}'
                         let filename = try ContentLine.eval(line: resourceName, with: templateSoup.context) ?? resourceName
                         
-                        let renderedString = try templateSoup.renderTemplate(string: contents) ?? ""
+                        if let contents = String(data: data, encoding: .utf8) {
+                            //print("Successfully decoded: \(contents)")
+                            let renderedString = try templateSoup.renderTemplate(string: contents) ?? ""
+                            
+                            let outFile = LocalFile(path: outputPath / filename)
+                            try outFile.write(renderedString)
+                        }
                         
-                        let outFile = LocalFile(path: outputPath / filename)
-                        try outFile.write(renderedString)
                     } else { //not a template file
 
                         let filename = resourceName
                         let outFile = LocalFile(path: outputPath / filename)
-                        try outFile.write(contents)
+                        try outFile.write(data)
                     }
                 } else { //resource folder
                     let subfoldername = try ContentLine.eval(line: resourceName, with: templateSoup.context) ?? resourceName
                     
-                    let newResUrl = resUrl.appendingPathComponent(subfoldername)
-                    try renderResourceFiles(from: newResUrl, to: outputPath / resourceName, using: templateSoup)
+                    let newResUrl = resUrl.appendingPathComponent(resourceName)
+                    try renderResourceFiles(from: newResUrl, to: outputPath / subfoldername, using: templateSoup)
                 }
+                
+            } catch {
+                print(error)
+                throw ResourceReadingError(resName: resourcePath.absoluteString)
             }
-        } catch {
-            print(error)
-            throw ResourceDoesNotExist(resName: resUrl.absoluteString)
         }
     }
     
