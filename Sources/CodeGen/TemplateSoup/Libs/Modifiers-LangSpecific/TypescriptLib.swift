@@ -25,11 +25,11 @@ public struct TypescriptLib {
             let prop = wrapped.item
             
             switch prop.type {
-                case .int, .double : return "number"
+                case .int, .double, .float : return "number"
                 case .bool: return "boolean"
                 case .string, .id: return "string"
                 case .any: return "any"
-                case .date: return "Date"
+                case .date, .datetime: return "Date"
                 case .buffer: return "Buffer"
                 case .reference(_):
                     return "Reference"
@@ -50,7 +50,7 @@ public struct TypescriptLib {
     }
     
     public static var defaultValue: Modifier {
-        return CreateModifier.withoutParams("defaultValue") { (value: Any, lineNo: Int) -> String? in
+        return CreateModifier.withoutParams("default-value") { (value: Any, lineNo: Int) -> String? in
             
             guard let wrapped = value as? TypeProperty_Wrap else {
               return "----ERROR----"
@@ -59,12 +59,12 @@ public struct TypescriptLib {
             let prop = wrapped.item
             
             switch prop.type {
-                case .int, .double : return "0"
+                case .int, .double, .float : return "0"
                 case .bool: return "false"
                 case .id: return "\"\""
                 case .string: return "null"
                 case .any: return "null"
-                case .date: return "Date"
+                case .date, .datetime: return "Date"
                 case .buffer: return "null"
                 case .reference(_):
                     return "null"

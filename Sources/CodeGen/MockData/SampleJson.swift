@@ -69,13 +69,13 @@ public struct SampleJson {
         let mocking = MockData_Generator()
         
         switch prop.type {
-            case .int, .double :
+            case .int, .double, .float :
                 return prefix + " \(num)" + suffix
             case .bool: return prefix + " true" + suffix
             case .string: return prefix + " \"\(prop.name) \(num)\"" + suffix
             case .id: return prefix + " \"" + mocking.randomObjectId_MongoDb() + "\"" + suffix
             case .any: return prefix + " \"" + mocking.randomObjectId_MongoDb() + "\"" + suffix
-            case .date: return prefix + " \"\(Date.now.ISO8601Format())\"" + suffix
+            case .date, .datetime: return prefix + " \"\(Date.now.ISO8601Format())\"" + suffix
             case .buffer: return prefix + " Buffer" + suffix
             case .reference(_), .multiReference(_):
                 return prefix +

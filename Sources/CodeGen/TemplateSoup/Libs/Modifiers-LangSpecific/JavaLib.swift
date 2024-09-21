@@ -26,11 +26,12 @@ public struct JavaLib {
             
             switch prop.type {
                 case .int : return "int"
+                case .float : return "float"
                 case .double : return "double"
                 case .bool: return "boolean"
                 case .string, .id: return "String"
                 case .any: return "Object"
-                case .date: return "Date"
+                case .date, .datetime: return "Date"
                 case .buffer: return "byte[]"
                 case .reference(_):
                     return "Reference"
@@ -51,7 +52,7 @@ public struct JavaLib {
     }
     
     public static var defaultValue: Modifier {
-        return CreateModifier.withoutParams("defaultValue") { (value: Any, lineNo: Int) -> String? in
+        return CreateModifier.withoutParams("default-value") { (value: Any, lineNo: Int) -> String? in
             
             guard let wrapped = value as? TypeProperty_Wrap else {
               return "----ERROR----"
@@ -60,12 +61,12 @@ public struct JavaLib {
             let prop = wrapped.item
             
             switch prop.type {
-                case .int, .double : return "0"
+                case .int, .double, .float : return "0"
                 case .bool: return "false"
                 case .id: return "\"\""
                 case .string: return "null"
                 case .any: return "null"
-                case .date: return "Date"
+                case .date, .datetime: return "new Date()"
                 case .buffer: return "null"
                 case .reference(_):
                     return "null"

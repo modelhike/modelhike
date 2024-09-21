@@ -56,13 +56,13 @@ public struct SampleQueryString {
         let mocking = MockData_Generator()
         
         switch prop.type {
-            case .int, .double :
+            case .int, .double, .float :
                 return  "\(num)" + suffix
             case .bool: return "true" + suffix
             case .string: return "\(prop.name)" + suffix
             case .id: return  mocking.randomObjectId_MongoDb() + suffix
             case .any: return  mocking.randomObjectId_MongoDb() + suffix
-            case .date: 
+            case .date, .datetime: 
                 if isEndValueInRange {
                     return "\"\(Date.now.ISO8601Format())\"" + suffix
                 } else {
