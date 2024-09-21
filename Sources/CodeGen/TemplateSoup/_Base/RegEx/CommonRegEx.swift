@@ -201,7 +201,7 @@ public enum CommonRegEx {
     }
     
     public static let namedArguments: Regex<Regex<OneOrMore<Substring>.RegexOutput>.RegexOutput> = Regex {
-        OneOrMore {
+        ZeroOrMore {
             whitespace
             namedArgument
             whitespace
@@ -215,7 +215,7 @@ public enum CommonRegEx {
     }
     
     public static let unNamedArguments: Regex<Regex<OneOrMore<Substring>.RegexOutput>.RegexOutput> = Regex {
-        OneOrMore {
+        ZeroOrMore {
             whitespace
             unNamedArgument
             whitespace
@@ -259,12 +259,12 @@ public enum CommonRegEx {
             functionName
         } transform: { String($0) }
         "("
-        whitespace
+        //whitespace
         Capture {
             namedArguments
         } transform: { String($0) }
 
-        whitespace
+        //whitespace
         ")"
     }
     

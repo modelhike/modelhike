@@ -33,8 +33,7 @@ public class FunctionCallStmt: LineTemplateStmt, CustomDebugStringConvertible {
     }
     
     public override func execute(with ctx: Context) throws -> String? {
-        guard FnName.isNotEmpty,
-              Args.isNotEmpty else { return nil }
+        guard FnName.isNotEmpty else { return nil }
                 
         let args = Args.getArray_UsingNamedArgsPattern()
 
