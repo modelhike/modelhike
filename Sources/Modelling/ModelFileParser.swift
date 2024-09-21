@@ -29,19 +29,23 @@ public class ModelFileParser {
         do {
             
             try lineParser.parse() {firstWord, secondWord, line, ctx in
-                
+                if lineParser.isCurrentLineEmpty() { return }
+
                 if ContainerParser.canParse(parser: lineParser) {
                     try parseContainer(firstWord: firstWord, parser: lineParser)
+                    return
                 }
                 
                 if ModuleParser.canParse(parser: lineParser) {
                     try parseModule(firstWord: firstWord, parser: lineParser)
+                    return
                 }
                 
                 //check for class starting
                 if DomainObjectParser.canParse(parser: lineParser) {
                     if let item = try DomainObjectParser.parse(parser: lineParser, with: ctx) {
                         self.component.append(item)
+                        return
                     }
                 }
                 
