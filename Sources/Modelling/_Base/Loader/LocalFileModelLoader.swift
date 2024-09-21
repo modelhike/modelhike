@@ -11,6 +11,7 @@ public class LocalFileModelLoader : ModelRepository {
     let ctx: Context
     
     public var commonsFileName = "common.classes." + ModelConstants.ModelFile_Extension
+    public let configFileName = TemplateConstants.MainTemplateFile + "." + ModelConstants.ConfigFile_Extension
 
     public func loadModel(to model: AppModel) throws {
         let file = LocalFile(path: loadPath.path / commonsFileName)
@@ -32,6 +33,16 @@ public class LocalFileModelLoader : ModelRepository {
         }
         
         model.resolveAndLinkItems()
+    }
+    
+    public func loadGenerationConfigIfAny() throws {
+        let file = LocalFile(path: loadPath.path / configFileName)
+        
+        if file.exists { //config file found
+            try ConfigFileParser()
+                .parse(file: file, with: ctx)
+        }
+        
     }
     
     public init(path: LocalPath, with ctx: Context) {

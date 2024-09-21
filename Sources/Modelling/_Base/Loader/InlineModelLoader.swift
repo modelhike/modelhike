@@ -39,6 +39,16 @@ public class InlineModelLoader : ModelRepository {
         model.resolveAndLinkItems()
     }
     
+    public func loadGenerationConfigIfAny() throws {
+        for item in items {
+            if let modelConfig = item as? InlineConfig {
+                try ConfigFileParser()
+                    .parse(string: modelConfig.string, with: ctx)
+                
+            }
+        }
+    }
+    
     public init(with ctx: Context, @InlineModelBuilder _ builder: () -> [InlineModelProtocol]) {
         self.ctx = ctx
         self.items = builder()
@@ -61,6 +71,14 @@ public struct InlineCommonTypes : InlineModelProtocol {
     }
 }
     
+public struct InlineConfig : InlineModelProtocol {
+    public var items: [StringConvertible] = []
+    
+    public init(@StringConvertibleBuilder _ builder : () -> [StringConvertible]) {
+        items = builder()
+    }
+}
+
 public protocol InlineModelProtocol {
     var items: [StringConvertible] { get set}
     var string: String {get}

@@ -8,26 +8,37 @@ import Foundation
 
 public protocol ModelRepository {
     func loadModel(to model: AppModel) throws
-    func didLoad(model: AppModel) throws
+    func processAfterLoad(model: AppModel, with ctx: Context) throws
+    func loadGenerationConfigIfAny() throws
 }
 
 public extension ModelRepository {
-    func didLoad(model: AppModel) throws {
+    func processAfterLoad(model: AppModel, with ctx: Context) throws {
+        //set specific port for each mobile
         var portNumber = 3000
-
-        try model.commonModel.forEachEntity {  e, _ in e.dataType = .valueType }
+        if ctx.variables.has(ModelConfigConstants.API_StartingPort) {
+            if let value = ctx.variables[ModelConfigConstants.API_StartingPort] as? String {
+                portNumber = Int(value) ?? portNumber
+            }
+        }
+        
         model.containers.forEachComponent{  component in
             portNumber += 1
             component.attribs["port"] = "\(portNumber)"
         }
         
-        model.containers.forEachEntity {  e, component in
+        //set dataType for each parsed type
+        try model.commonModel.forEachType {  e, _ in e.dataType = .valueType }
+        
+        model.containers.forEachType {  e, component in
             
             if let cls = e as? DomainObject {
                 if cls.givename.hasSuffix("Cache"){
                     e.dataType = .cache
                 } else if cls.givename.hasSuffix("Dto"){
                     e.dataType = .dto
+                } else if cls.givename.hasSuffix("Input"){
+                    e.dataType = .apiInput
                 } else if cls.hasProp("_id") || cls.hasProp("id") {
                     e.dataType = .entity
                     

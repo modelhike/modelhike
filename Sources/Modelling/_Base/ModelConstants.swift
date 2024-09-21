@@ -21,4 +21,5 @@ public enum ModelConstants {
     public static let NamePrefixLineChar = "="
 
     public static let ModelFile_Extension = "diagsoup"
+    public static let ConfigFile_Extension = "tconfig"
 }

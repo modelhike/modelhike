@@ -35,7 +35,7 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
         }
         
         let variables = container.toDictionary(using: model)
-        self.context.replace(variables: variables)
+        self.context.append(variables: variables)
         
         self.templateSoup.repo = blueprintLoader
         

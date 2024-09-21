@@ -24,8 +24,10 @@ open class Workspace {
     
     public func loadModels(from repo: ModelRepository) throws {
         try repo.loadModel(to: model)
-        try repo.didLoad(model: model)
+        try repo.loadGenerationConfigIfAny()
         
+        try repo.processAfterLoad(model: model, with: context)
+
         isModelsLoaded = true
     }
     
@@ -42,6 +44,9 @@ open class Workspace {
             if let _ = sym.firstIndex(of: .java) {
                 self.add(modifiers: JavaLib.functions)
             }
+            
+            //add GraphQL related fns
+            self.add(modifiers: GraphQLLib.functions)
             
             if sym.firstIndex(of: .noMocking) == nil {
                 //"no mock" is not specified; so, load default mocking
