@@ -12,7 +12,10 @@ public protocol HasAttributes {
 
 public struct Attribute: Hashable {
     public let key: String
+    public let givenKey: String
     public var value: Optional<Any>
+    
+    public var name : String { givenKey }
     
     public func hash(into hasher: inout Hasher) {
        hasher.combine(key)
@@ -22,19 +25,41 @@ public struct Attribute: Hashable {
         return lhs.key == rhs.key
     }
     
+    public init(key: String, givenKey: String, value: Any) {
+        self.key = key
+        self.givenKey = givenKey
+        self.value = value
+    }
+    
     public init(_ key: String, value: Any) {
         self.key = key
+        self.givenKey = key
         self.value = value
     }
 }
 
-public class Attributes : ExpressibleByDictionaryLiteral {
+public class Attributes : ExpressibleByDictionaryLiteral, CustomDebugStringConvertible {
     public typealias Key = String
     public typealias Value = Optional<Any>
     
     private var items: Set<Attribute> = Set()
     
     public var isEmpty: Bool { items.isEmpty }
+    
+    public func processEach(by process: (Attribute) throws -> Attribute?) throws {
+        var itemsToRemove: [Attribute] = []
+
+        for item in items {
+            if try process(item) == nil {
+                itemsToRemove.append(item)
+            }
+        }
+        
+        // Remove the collected elements from the attributes set
+        for item in itemsToRemove {
+            items.remove(item)
+        }
+    }
     
     public func has(_ name: String) -> Bool {
         let nameToCheck = name.lowercased()
@@ -56,7 +81,7 @@ public class Attributes : ExpressibleByDictionaryLiteral {
                 item.value = newValue
                 items.update(with: item)
             } else { // new attr
-                items.insert(Attribute(keyToFind, value: newValue as Any))
+                items.insert(Attribute(key: keyToFind, givenKey: key, value: newValue as Any))
             }
             
         }
@@ -79,6 +104,20 @@ public class Attributes : ExpressibleByDictionaryLiteral {
         } else {
             return false
         }
+    }
+    
+    public var debugDescription: String {
+        var str =  """
+                    Attributes \(self.items.count) items:
+                    """
+        str += .newLine
+        
+        for item in items {
+            str += item.key + .newLine
+            
+        }
+        
+        return str
     }
     
     public init() { }
