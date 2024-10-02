@@ -7,19 +7,19 @@
 import Foundation
 
 public enum ParsingError: Error {
-    case invalidLine(Int, String, Error)
-    case invalidLineWithoutErr(Int, String)
+    case invalidLine(Int, String, String, Error)
+    case invalidLineWithoutErr(Int, String, String)
 
     public var info: String {
         switch (self) {
-            case .invalidLine(let lineNo, let info, _) :
+            case .invalidLine(let lineNo, let info, let identifier, _) :
             return """
-                [line no : \(lineNo)] \(info)
+                🐞🐞 \(identifier) >> [line no : \(lineNo)] \(info)
                 """
             
-            case .invalidLineWithoutErr(let lineNo, let info) :
+            case .invalidLineWithoutErr(let lineNo, let info, let identifier) :
             return """
-                [line no : \(lineNo)] \(info)
+                🐞🐞 \(identifier) >> [line no : \(lineNo)] \(info)
                 """
         }
     }

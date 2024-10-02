@@ -18,29 +18,39 @@ public enum TemplateSoup_ParsingError: Error, Equatable {
     case infixOperatorNotFound(String)
     case infixOperatorCalledOnwrongLhsType(String, String)
     case infixOperatorCalledOnwrongRhsType(String, String)
-    case macroFunctionNotFound(String)
+    case templateFunctionNotFound(String)
 
-    public var info: String { 
+    public var info: String {
+        let suffix = ""
+        
         switch (self) {
-            case .invalidFrontMatter(let line) : return "front matter: \(line) is invalid"
-            case .invalidStmt(let line) : return "stmt: \(line) is invalid"
+            case .invalidFrontMatter(let line) : 
+                return suffix + "invalid front matter: \(line)"
+            case .invalidStmt(let line) :
+                return suffix + "invalid stmt: \(line)"
             case .invalidMultiBlockStmt(let lineNo, let line) :
-            return """
-                [Line \(lineNo) - Invalid syntax]  \(line)
-                """
+                return suffix + "[Line \(lineNo) - Invalid syntax]  \(line)"
+            case .objectNotFound(let obj) : 
+                return suffix + "object: \(obj) not found"
+            case .modifierNotFound(let modifier) :
+                return suffix + "modifier: \(modifier) not found"
+            case .modifierInvalidSyntax(let modifier) :
+                return suffix + "modifier - invalid syntax: \(modifier)"
+            case .modifierCalledOnwrongType(let modifier, let typeName) :
+                return suffix + "modifier: '\(modifier)' called on wrong type:\(typeName)"
+
+            case .infixOperatorNotFound(let infix) : 
+                return suffix + "infix operator: \(infix) not found"
+            case .infixOperatorCalledOnwrongLhsType(let infix, let typeName) : 
+                return suffix + "operator: '\(infix)' called on wrong LHS type:\(typeName)"
+            case .infixOperatorCalledOnwrongRhsType(let infix, let typeName) :
+                return suffix + "operator: '\(infix)' called on wrong RHS type:\(typeName)"
             
-            case .objectNotFound(let obj) : return "object: \(obj) not found"
-            case .modifierNotFound(let modifier) : return "modifier: \(modifier) not found"
-            case .modifierInvalidSyntax(let modifier) : return "modifier: \(modifier) invalid syntax"
-            case .modifierCalledOnwrongType(let modifier, let typeName) : return "modifier: '\(modifier)' called on wrong type:\(typeName)"
+            case .invalidExpression(_, let expn) :
+                return suffix + "expression - invalid syntax: \(expn)"
             
-            case .infixOperatorNotFound(let infix) : return "infix operator: \(infix) not found"
-            case .infixOperatorCalledOnwrongLhsType(let infix, let typeName) : return "operator: '\(infix)' called on wrong LHS type:\(typeName)"
-            case .infixOperatorCalledOnwrongRhsType(let infix, let typeName) : return "operator: '\(infix)' called on wrong RHS type:\(typeName)"
-            
-            case .invalidExpression(_, let expn) : return "expression: \(expn) invalid syntax"
-            
-            case .macroFunctionNotFound(let fnName) : return "macro fn: \(fnName) not found"
+            case .templateFunctionNotFound(let fnName) : 
+                return suffix + "fn: \(fnName) not found"
             
         }
     }

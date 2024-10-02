@@ -48,7 +48,7 @@ public class CopyFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
         guard FromFolder.isNotEmpty else { return nil }
         
         if ctx.workingDirectoryString.isEmpty {
-            throw EvaluationError.workingDirectoryNotSet(lineNo)
+            throw TemplateSoup_EvaluationError.workingDirectoryNotSet(lineNo)
         }
         
         guard let fromFolder = try? ctx.evaluate(value: FromFolder, lineNo: lineNo) as? String

@@ -48,7 +48,7 @@ public class RenderTemplateFileStmt: LineTemplateStmt, CustomDebugStringConverti
         guard FromTemplate.isNotEmpty else { return nil }
         
         if ctx.workingDirectoryString.isEmpty {
-            throw EvaluationError.workingDirectoryNotSet(lineNo)
+            throw TemplateSoup_EvaluationError.workingDirectoryNotSet(lineNo)
         }
         
         guard let fromTemplate = try? ctx.evaluate(value: FromTemplate, lineNo: lineNo) as? String

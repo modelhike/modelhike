@@ -38,8 +38,13 @@ public class ConsoleLogStmt: LineTemplateStmt, CustomDebugStringConvertible {
         
         guard let expn = try? ctx.evaluate(value: Expression, lineNo: lineNo)
                                                                     else { return nil }
-        //log to stdout
-        print("🏷️ \(expn)")
+        
+        if let printValue = deepUnwrap(expn) {
+            //log to stdout
+            print("🏷️ \(printValue)")
+        } else {
+            print("🏷️🎈nothing to show")
+        }
         
         return nil
     }

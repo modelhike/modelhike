@@ -48,7 +48,7 @@ public class FillAndCopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible
         guard FromFile.isNotEmpty else { return nil }
         
         if ctx.workingDirectoryString.isEmpty {
-            throw EvaluationError.workingDirectoryNotSet(lineNo)
+            throw TemplateSoup_EvaluationError.workingDirectoryNotSet(lineNo)
         }
         
         guard let fromFile = try? ctx.evaluate(value: FromFile, lineNo: lineNo) as? String

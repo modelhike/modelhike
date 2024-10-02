@@ -10,9 +10,11 @@ public enum TemplateSoup_EvaluationError: Error {
     case objectNotFound(Int, String)
     case unIdentifiedStmt(Int, String)
     case errorInExpression(Int, String)
+    case workingDirectoryNotSet(Int)
     
     public var info: String {
         switch (self) {
+            case .workingDirectoryNotSet(let lineNo) : return "[line no : \(lineNo)] Working Directory not set!!!"
             case .objectNotFound(let lineNo, let obj) :  return "[line \(lineNo)] object: \(obj) not found"
             case .unIdentifiedStmt(let lineNo, let line) :
             var str = """
