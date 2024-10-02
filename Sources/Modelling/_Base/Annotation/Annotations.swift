@@ -42,6 +42,11 @@ public class Annotations : ExpressibleByArrayLiteral, ExpressibleByDictionaryLit
         }
     }
     
+    public func append(_ item: any Annotation) {
+        let keyToFind = item.name.lowercased()
+        items[keyToFind] = item
+    }
+    
     public var annotationsList : [any Annotation] {
         var arr:[any Annotation] = []
         

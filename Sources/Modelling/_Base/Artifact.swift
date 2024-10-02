@@ -16,6 +16,10 @@ public protocol ArtifactContainer : Artifact {
 
 }
 
+public protocol ArtifactContainerWithAttachedSections : ArtifactContainer, HasAttachedSections {
+
+}
+
 typealias ArtifactContainerBuilder = ResultBuilder<ArtifactContainer>
 
 
