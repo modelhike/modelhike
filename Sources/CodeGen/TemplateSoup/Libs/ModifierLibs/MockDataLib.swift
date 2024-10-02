@@ -25,7 +25,7 @@ public struct MockDataLib {
           
           let obj = wrapped.item
           
-          return SampleJson(entity: obj, appModel: sandbox.model.parsedModel).string
+          return SampleJson(entity: obj, typesModel: sandbox.model.types).string()
         }
     }
 
@@ -50,9 +50,12 @@ public struct MockDataLib {
                 case .bool: return prefix + " true" + suffix
                 case .string: return prefix + " \"\(prop.name) \(num)\"" + suffix
                 case .id: return prefix + " \"" + mocking.randomObjectId_MongoDb() + "\"" + suffix
-                case .any: return prefix + " \"" + mocking.randomObjectId_MongoDb() + "\"" + suffix
-                case .date: return prefix + " \"\(Date.now.ISO8601Format())\"" + suffix
-                default : return ""
+                case .date, .datetime: return prefix + " \"\(Date.now.ISO8601Format())\"" + suffix
+                default : 
+                    if let obj = sandbox.model.types.get(for: prop.objectTypeString()) {
+                        return SampleJson(entity: obj, typesModel: sandbox.model.types)
+                               .string(openCloseBraces: true, openCloseQuotesInNames: false)
+                    } else { return "" }
             }
         }
     }
@@ -66,7 +69,7 @@ public struct MockDataLib {
           
           let obj = wrapped.item
           
-          return SampleQueryString(api: obj, appModel: sandbox.model.parsedModel).string
+          return SampleQueryString(api: obj, typesModel: sandbox.model.types).string
         }
     }
 }
