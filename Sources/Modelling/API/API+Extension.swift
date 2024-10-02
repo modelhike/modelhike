@@ -158,7 +158,7 @@ public extension CodeObject {
     }
     
     @discardableResult
-    mutating func appendAPI(_ type : APIType) -> API {
+    func appendAPI(_ type : APIType) -> API {
         let api = API(entity: self, type: type)
         attached.append(api)
         return api

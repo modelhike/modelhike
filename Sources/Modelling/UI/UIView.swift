@@ -66,4 +66,10 @@ public extension UIObject {
     func isSameAs(_ obj: UIObject) ->  Bool {
         return self.givename == obj.givename
     }
+    
+    @discardableResult
+    func appendAttached(_ item: Artifact) -> Self {
+        attached.append(item)
+        return self
+    }
 }

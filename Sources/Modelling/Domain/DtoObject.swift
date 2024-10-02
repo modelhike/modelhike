@@ -7,7 +7,6 @@
 import Foundation
 
 public class DtoObject : CodeObject {
-    
     public var givename: String
     public var name: String
     public var members : [CodeMember] = []
