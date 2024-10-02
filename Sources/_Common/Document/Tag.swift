@@ -10,11 +10,11 @@ public protocol HasTags {
     var tags: Tags {get set}
 }
 
-public struct Tags {
+public class Tags {
     public var items: [String] = []
     
     @discardableResult
-    mutating func append(_ str: String) -> Self {
+    func append(_ str: String) -> Self {
         items.append(str)
         return self
     }

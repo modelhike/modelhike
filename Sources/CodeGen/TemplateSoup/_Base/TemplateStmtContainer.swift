@@ -7,7 +7,7 @@
 import Foundation
 
 public protocol TemplateStmtContainer : IteratorProtocol, Sequence, CustomDebugStringConvertible {
-    func append(_ item: FileTemplateItem)
+    func append(_ item: TemplateItem)
 }
 
 public class GenericStmtsContainer : TemplateStmtContainer {
@@ -15,16 +15,16 @@ public class GenericStmtsContainer : TemplateStmtContainer {
     public var kind: TemplateStmtContainerKind = .global
     public var name: String?
     
-    var items : [FileTemplateItem] = []
+    var items : [TemplateItem] = []
     public var isEmpty: Bool { items.count == 0 }
     var count: Int { items.count }
     private var currentIndex = 0
 
-    public func append(_ item: FileTemplateItem) {
+    public func append(_ item: TemplateItem) {
         items.append(item)
     }
     
-    public func next() -> FileTemplateItem? {
+    public func next() -> TemplateItem? {
         if currentIndex <= items.count - 1 {
             let compo = items[currentIndex]
             currentIndex += 1

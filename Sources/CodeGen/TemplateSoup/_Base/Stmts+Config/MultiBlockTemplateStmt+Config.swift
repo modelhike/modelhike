@@ -92,7 +92,7 @@ public class MultiBlockTemplateStmt : FileTemplateStatement {
     }
 }
 
-public struct MultiBlockTemplateStmtConfig<T>: FileTemplateStmtConfig, InitialiserWithArg where T: MultiBlockTemplateStmt {
+public struct MultiBlockTemplateStmtConfig<T>: FileTemplateStmtConfig, TemplateInitialiserWithArg where T: MultiBlockTemplateStmt {
     public let keyword : String
     private let endKeyword : String
     public let initialiser: (String) -> T

@@ -34,7 +34,7 @@ public class LineTemplateStmt: FileTemplateStatement {
     }
 }
 
-public struct LineTemplateStmtConfig<T>: FileTemplateStmtConfig, InitialiserWithNoArg where T: LineTemplateStmt {
+public struct LineTemplateStmtConfig<T>: FileTemplateStmtConfig, TemplateInitialiserWithNoArg where T: LineTemplateStmt {
     public let keyword : String
     public let initialiser: () -> T
     public var kind: TemplateStmtKind { .line }

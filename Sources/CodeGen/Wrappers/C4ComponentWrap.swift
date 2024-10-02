@@ -26,8 +26,8 @@ public class C4Component_Wrap : ObjectWrapper {
         if $0.dataType == .entity {CodeObject_Wrap($0)} else {nil}})
     }()
     
-    public lazy var inputObjects : [CodeObject_Wrap] = { item.types.compactMap({
-        if $0.dataType == .apiInput {CodeObject_Wrap($0)} else {nil}})
+    public lazy var dtos : [CodeObject_Wrap] = { item.types.compactMap({
+        if $0.dataType == .dto, let dto = $0 as? DtoObject {CodeObject_Wrap(dto)} else {nil}})
     }()
     
     public lazy var apis : [API_Wrap] = { item.items.compactMap({
@@ -38,9 +38,12 @@ public class C4Component_Wrap : ObjectWrapper {
         let value: Any = switch member {
             case "name": item.name
             case "types" : types
-            case "embeddedTypes" : embeddedTypes
+            case "embedded-types" : embeddedTypes
+            case "has-embedded-types" : embeddedTypes.count != 0
             case "entities" : entities
-            case "inputObjects" : inputObjects
+            case "has-entities" : entities.count != 0
+            case "dtos" : dtos
+            case "has-dtos" : dtos.count != 0
             default:
             //nothing found; so check in module attributes}
             item.attribs[member] as Any

@@ -12,6 +12,9 @@ public class C4Component : ArtifactContainer {
     public var annotations = Annotations()
 
     public var name: String = ""
+    public var givename: String = ""
+    public let dataType: ArtifactKind = .container
+
     public internal(set) var items : [Artifact] = []
     public internal(set) var types : [CodeObject] = []
     
@@ -26,31 +29,46 @@ public class C4Component : ArtifactContainer {
         types.append(item)
     }
     
-    public func append(_ item: C4Component) {
+    public func append(_ item: UIObject) {
+        items.append(item)
+    }
+    
+    public func append(submodule item: C4Component) {
         items.append(item)
     }
     
     public var isEmpty: Bool { items.count == 0 }
     
     public var debugDescription: String {
-        return """
-        \(self.name)
-        \(self.items.count) items
-        """
+        var str =  """
+                    \(self.name)
+                    items \(self.items.count):
+                    """
+        str += .newLine
+
+        for item in items {
+            str += item.givename + .newLine
+            
+        }
+        
+        return str
     }
     
     public init(name: String = "", @ArtifactContainerBuilder _ builder: () -> [ArtifactContainer]) {
         self.name = name
+        self.givename = name
         self.items = builder()
     }
     
     public init(name: String = "", _ items: ArtifactContainer...) {
         self.name = name
+        self.givename = name
         self.items = items
     }
     
     public init(name: String = "", _ items: [ArtifactContainer]) {
         self.name = name
+        self.givename = name
         self.items = items
     }
     

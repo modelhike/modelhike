@@ -12,6 +12,9 @@ public class C4ComponentList : ArtifactContainer, IteratorProtocol, Sequence {
     public var annotations = Annotations()
     
     public var name: String = ""
+    public var givename: String = ""
+    public let dataType: ArtifactKind = .container
+
     public internal(set) var components : [C4Component] = []
     private var currentIndex = 0
 
@@ -40,13 +43,13 @@ public class C4ComponentList : ArtifactContainer, IteratorProtocol, Sequence {
         }
     }
     
-    public func addTypesTo(model appModel: ParsedModelCache) {
+    public func addTypesTo(model appModel: ParsedTypesCache) {
         for component in components {
             appModel.append(component.types)
         }
     }
     
-    public func getEntities() -> [CodeObject] {
+    public var types : [CodeObject] {
         return components.flatMap({ $0.types })
     }
     
@@ -71,19 +74,29 @@ public class C4ComponentList : ArtifactContainer, IteratorProtocol, Sequence {
     public var count: Int { components.count }
     
     public var debugDescription: String {
-        return """
-        \(self.name)
-        \(self.components.count) items
-        """
+        var str =  """
+                    \(self.name)
+                    items \(self.components.count):
+                    """
+        str += .newLine
+
+        for item in components {
+            str += item.givename + .newLine
+            
+        }
+        
+        return str
     }
     
     public init(name: String = "", _ items: C4Component...) {
         self.name = name
+        self.givename = name
         self.components = items
     }
     
     public init(name: String = "", _ items: [C4Component]) {
         self.name = name
+        self.givename = name
         self.components = items
     }
     

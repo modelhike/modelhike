@@ -7,7 +7,7 @@
 import Foundation
 import RegexBuilder
 
-public class ContentLine: FileTemplateItem, CustomDebugStringConvertible {
+public class ContentLine: TemplateItem, CustomDebugStringConvertible {
     public var items: [ContentLineItem] = []
     public let level: Int
     public let lineNo: Int

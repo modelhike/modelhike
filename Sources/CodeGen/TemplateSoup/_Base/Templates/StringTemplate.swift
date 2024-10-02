@@ -6,7 +6,9 @@
 
 import Foundation
 
-public struct StringTemplate : Template, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {    
+public struct StringTemplate : Template, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {   
+    public var name: String = "string"
+    
     var items: [StringConvertible]
     
     @discardableResult
@@ -35,6 +37,11 @@ public struct StringTemplate : Template, ExpressibleByStringLiteral, Expressible
     
     public init(_ value: String) {
         items = [value]
+    }
+    
+    public init(contents: String, name: String) {
+        self.items = [contents]
+        self.name = name
     }
     
     static func +(lhs: StringTemplate, rhs: any StringConvertible) -> StringTemplate {

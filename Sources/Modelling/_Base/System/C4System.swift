@@ -12,6 +12,9 @@ public class C4System : ArtifactContainer {
     public var annotations = Annotations()
 
     public var name: String = ""
+    public var givename: String = ""
+    public let dataType: ArtifactKind = .container
+
     public internal(set) var containers = C4ContainerList()
     
     public func append(_ item: C4Container) {
@@ -25,24 +28,35 @@ public class C4System : ArtifactContainer {
     }
     
     public var debugDescription: String {
-        return """
-        \(self.name)
-        \(self.containers.count) containers
-        """
+        var str =  """
+                    \(self.name)
+                    containers \(self.containers.count):
+                    """
+        str += .newLine
+        
+        for item in containers {
+            str += item.givename + .newLine
+            
+        }
+        
+        return str
     }
     
     public init(name: String, items: C4Container...) {
         self.name = name
+        self.givename = name
         self.containers.append(contentsOf: items)
     }
     
     public init(name: String, items: [C4Container]) {
         self.name = name
+        self.givename = name
         self.containers.append(contentsOf: items)
     }
     
     public init(name: String, items: C4ContainerList) {
         self.name = name
+        self.givename = name
         self.containers = items
     }
     

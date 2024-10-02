@@ -56,11 +56,11 @@ public class TemplateFunctionContainer : TemplateStmtContainer {
         return rendering.isNotEmpty ? rendering : nil
     }
     
-    public func next() -> FileTemplateItem? {
+    public func next() -> TemplateItem? {
         return container.next()
     }
     
-    public func append(_ item: FileTemplateItem) {
+    public func append(_ item: TemplateItem) {
         container.append(item)
     }
     

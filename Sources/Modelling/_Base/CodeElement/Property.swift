@@ -21,15 +21,9 @@ public struct Property : CodeMember {
     public var arrayMultiplicity: MultiplicityKind = .noBounds
     public var comment: String?
     
-    public func hasAttrib(_ name: String) -> Bool {
-        return attribs.has(name)
-    }
-    
-    public func hasAttrib(_ name: AttributeNamePresets) -> Bool {
-        return hasAttrib(name.rawValue)
-    }
-    
-    static func parse(_ originalLine: String, firstWord: String) throws -> Property? {
+    public static func parse(with pctx: ParsingContext) throws -> Property? {
+        let originalLine = pctx.line
+        let firstWord = pctx.firstWord
         
         let line = originalLine.remainingLine(after: firstWord) //remove first word
         
@@ -43,18 +37,7 @@ public struct Property : CodeMember {
         
         //check if has attributes
         if let attributeString = attributeString {
-            let attribMatches = attributeString.matches(of: ModelRegEx.attributes_Capturing)
-            
-            let _ = attribMatches.map( { match in
-                let (_, name, value) = match.output
-                
-                if let name = name, let value = value { // key-value attribute
-                    prop.attribs[name.trim()] = value as Any
-                } else if let name = name {
-                    //add the key as value
-                    prop.attribs[name.trim()] = name.trim()
-                }
-            })
+            ParserUtil.populateAttributes(for: prop, from: attributeString)
         }
         
         prop.type = PropertyKind.parse(typeName)
@@ -77,26 +60,45 @@ public struct Property : CodeMember {
         
         //check if has tags
         if let tagString = tagString {
-            let tagMatches = tagString.matches(of: ModelRegEx.tags_Capturing)
-            
-            let _ = tagMatches.map( { match in
-                let (_, tag) = match.output
-                prop.tags.append(String(tag))
-            })
+            ParserUtil.populateTags(for: prop, from: tagString)
         }
         
         switch firstWord {
-            case ModelConstants.Attribute_Mandatory : prop.required = .yes
-            case ModelConstants.Attribute_Optional : prop.required = .no
+            case ModelConstants.Member_Mandatory : prop.required = .yes
+            case ModelConstants.Member_Optional : prop.required = .no
             default :
-            if firstWord.starts(with: ModelConstants.Attribute_Conditional) {
+            if firstWord.starts(with: ModelConstants.Member_Conditional) {
                 prop.required = .conditional
             } else {
                 prop.required = .no
             }
         }
         
+        pctx.parser.skipLine()
+
         return prop
+    }
+    
+    
+    public static func canParse(firstWord: String) -> Bool {
+        switch firstWord {
+            case ModelConstants.Member_Mandatory : return true
+            case ModelConstants.Member_Optional : return true
+            default :
+                if firstWord.starts(with: ModelConstants.Member_Conditional) {
+                    return true
+                } else {
+                    return false
+                }
+        }
+    }
+    
+    public func hasAttrib(_ name: String) -> Bool {
+        return attribs.has(name)
+    }
+    
+    public func hasAttrib(_ name: AttributeNamePresets) -> Bool {
+        return hasAttrib(name.rawValue)
     }
     
     public func isObject() ->  Bool {
@@ -148,7 +150,7 @@ public struct Property : CodeMember {
         }
     }
     
-    func getObjectString() -> String {
+    func objectTypeString() -> String {
         switch self.type {
             case .reference(_):
                 return "Reference"
@@ -164,19 +166,6 @@ public struct Property : CodeMember {
                 return typeName
             default:
                 return ""
-        }
-    }
-    
-    public static func canParse(firstWord: String) -> Bool {
-        switch firstWord {
-            case ModelConstants.Attribute_Mandatory : return true
-            case ModelConstants.Attribute_Optional : return true
-            default :
-            if firstWord.starts(with: ModelConstants.Attribute_Conditional) {
-                return true
-            } else {
-                return false
-            }
         }
     }
     

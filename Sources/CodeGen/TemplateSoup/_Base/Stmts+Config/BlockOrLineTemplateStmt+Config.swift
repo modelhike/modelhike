@@ -84,7 +84,7 @@ public class BlockOrLineTemplateStmt : FileTemplateStatement {
     }
 }
 
-public struct BlockOrLineTemplateStmtConfig<T>: FileTemplateStmtConfig, InitialiserWithArg where T: BlockOrLineTemplateStmt {
+public struct BlockOrLineTemplateStmtConfig<T>: FileTemplateStmtConfig, TemplateInitialiserWithArg where T: BlockOrLineTemplateStmt {
     public let keyword : String
     private let endKeyword : String
     public let initialiser: (String) -> T

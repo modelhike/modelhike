@@ -22,7 +22,7 @@ public class InlineModelLoader : ModelRepository {
         
         //common models
         let commons = try ModelFileParser(with: ctx)
-                                        .parse(string: commonsString, with: ctx)
+                        .parse(string: commonsString, identifier: "InlineCommons", with: ctx)
         
         model.appendToCommonModel(contentsOf: commons)
         
@@ -30,13 +30,13 @@ public class InlineModelLoader : ModelRepository {
         for item in items {
             if let modelItem = item as? InlineModel {
                 let modelSpace = try ModelFileParser(with: ctx)
-                                                .parse(string: modelItem.string, with: ctx)
+                    .parse(string: modelItem.string, identifier: "InlineDomain", with: ctx)
                 
                 model.append(contentsOf: modelSpace)
             }
         }
         
-        model.resolveAndLinkItems()
+        try model.resolveAndLinkItems(with: ctx)
     }
     
     public func loadGenerationConfigIfAny() throws {

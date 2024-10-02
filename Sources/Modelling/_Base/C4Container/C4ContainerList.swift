@@ -12,10 +12,13 @@ public class C4ContainerList : ArtifactContainer, IteratorProtocol, Sequence {
     public var annotations = Annotations()
     
     public var name: String = ""
+    public var givename: String = ""
+    public let dataType: ArtifactKind = .container
+
     public internal(set) var containers : [C4Container] = []
     private var currentIndex = 0
     
-    public func addTypesTo(model appModel: ParsedModelCache) {
+    public func addTypesTo(model appModel: ParsedTypesCache) {
         for container in containers {
             container.components.addTypesTo(model: appModel)
         }
@@ -45,8 +48,8 @@ public class C4ContainerList : ArtifactContainer, IteratorProtocol, Sequence {
         }
     }
     
-    public func getEntities() -> [CodeObject] {
-        return containers.flatMap({ $0.getEntities() })
+    public var types : [CodeObject] {
+        return containers.flatMap({ $0.types })
     }
     
     public func next() -> C4Container? {
@@ -77,19 +80,29 @@ public class C4ContainerList : ArtifactContainer, IteratorProtocol, Sequence {
     public var count: Int { containers.count }
     
     public var debugDescription: String {
-        return """
-        \(self.name)
-        \(self.containers.count) items
-        """
+        var str =  """
+                    \(self.name)
+                    containers \(self.containers.count):
+                    """
+        str += .newLine
+
+        for item in containers {
+            str += item.givename + .newLine
+            
+        }
+        
+        return str
     }
     
     public init(name: String = "", _ items: C4Container...) {
         self.name = name
+        self.givename = name
         self.containers = items
     }
     
     public init(name: String = "", _ items: [C4Container]) {
         self.name = name
+        self.givename = name
         self.containers = items
     }
     

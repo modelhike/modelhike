@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class EmptyLine: FileTemplateItem, StringConvertible, CustomDebugStringConvertible {
+public class EmptyLine: TemplateItem, StringConvertible, CustomDebugStringConvertible {
     let linesCount: Int
     static public let characters: String = .newLine
     

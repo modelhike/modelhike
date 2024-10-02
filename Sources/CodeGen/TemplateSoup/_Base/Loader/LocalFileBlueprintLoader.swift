@@ -7,13 +7,13 @@
 import Foundation
 
 public class LocalFileBlueprintLoader: BlueprintRepository {
-    private var templateCache : [String: TemplateSoupTemplate] = [:]
+    private var templateCache : [String: Template] = [:]
     public let defaultTemplatesPath: LocalPath
     public let context: Context
     public var paths: [LocalPath]
     public let blueprintName: String
     
-    public func loadTemplate(fileName: String) throws -> TemplateSoupTemplate {
+    public func loadTemplate(fileName: String) throws -> Template {
         for loadPath in paths {
             let templateName = "\(fileName).\(TemplateConstants.TemplateExtension)"
 
@@ -23,8 +23,7 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
 
             let file = LocalFile(path: templatePath )
 
-            if let content: String = try? file.readTextContents() {
-                let template = TemplateSoupTemplate(contents: content, file: file)
+            if let template = LocalFileTemplate(file: file) {
                 self.templateCache[fileName] = template
                 return template
             } else {

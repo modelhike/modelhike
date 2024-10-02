@@ -16,11 +16,11 @@ public enum ModuleParser {
         if let currentFirstWord = currentLine.firstWord(),
            let currentLastWord = currentLine.lastWord() {
             
-            if !currentFirstWord.hasOnly(ModelConstants.NameOverlineChar) {
+            if !currentFirstWord.hasOnly(3, of: ModelConstants.NameOverlineChar) {
                 return false
             }
             
-            if !currentLastWord.hasOnly(ModelConstants.NameUnderlineChar) {
+            if !currentLastWord.hasOnly(ModelConstants.NameOverlineChar) {
                 return false
             }
             
@@ -31,9 +31,22 @@ public enum ModuleParser {
     }
     
     public static func parse(parser: LineParser, with ctx: Context) throws -> C4Component? {
-        let line = parser.currentLine()
-        let containerName = line.dropFirstAndLastWords()
-        let item = C4Component(name: containerName)
+        let line = parser.currentLine().dropFirstAndLastWords()
+        guard let match = line.wholeMatch(of: ModelRegEx.moduleName_Capturing)                                                                                  else { return nil }
+        
+        let (_, moduleName, attributeString, tagString) = match.output
+        let item = C4Component(name: moduleName.trim())
+        
+        //check if has attributes
+        if let attributeString = attributeString {
+            ParserUtil.populateAttributes(for: item, from: attributeString)
+        }
+        
+        //check if has tags
+        if let tagString = tagString {
+            ParserUtil.populateTags(for: item, from: tagString)
+        }
+        
         parser.skipLine()//skip module name
         
         return item

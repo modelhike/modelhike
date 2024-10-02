@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class UnIdentifiedStmt: FileTemplateItem, CustomDebugStringConvertible {
+public class UnIdentifiedStmt: TemplateItem, CustomDebugStringConvertible {
     public let line: String
     public let lineNo: Int
     public let level: Int

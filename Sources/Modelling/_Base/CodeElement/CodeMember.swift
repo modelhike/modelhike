@@ -6,8 +6,14 @@
 
 import Foundation
 
-public protocol CodeMember : HasAttributes, HasTags {
+public protocol CodeMember : HasAttributes, HasTags, CustomDebugStringConvertible {
     
 }
 
-typealias CodeMemberBuilder = ResultBuilder<CodeMember> 
+public extension CodeMember {
+    var debugDescription: String {
+        return String(describing: self)
+    }
+}
+
+typealias CodeMemberBuilder = ResultBuilder<CodeMember>

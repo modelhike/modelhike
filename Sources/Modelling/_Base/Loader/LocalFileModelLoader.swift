@@ -10,7 +10,7 @@ public class LocalFileModelLoader : ModelRepository {
     let loadPath: LocalFolder
     let ctx: Context
     
-    public var commonsFileName = "common.classes." + ModelConstants.ModelFile_Extension
+    public var commonsFileName = "common." + ModelConstants.ModelFile_Extension
     public let configFileName = TemplateConstants.MainTemplateFile + "." + ModelConstants.ConfigFile_Extension
 
     public func loadModel(to model: AppModel) throws {
@@ -32,7 +32,7 @@ public class LocalFileModelLoader : ModelRepository {
             }
         }
         
-        model.resolveAndLinkItems()
+        try model.resolveAndLinkItems(with: ctx)
     }
     
     public func loadGenerationConfigIfAny() throws {

@@ -12,12 +12,17 @@ public class C4Container : ArtifactContainer {
     public var annotations = Annotations()
 
     public var name: String = ""
+    public var givename: String = ""
+    public let dataType: ArtifactKind = .container
+
+    public var containerType: ContainerKind
+
     public internal(set) var components = C4ComponentList()
     public internal(set) var unresolvedMembers: [ContainerModuleMember] = []
 
     public func toDictionary(using appModel: AppModel) -> [String: Any] {
         let dict: [String: Any] = [
-            "model": appModel.parsedModel,
+            "model": appModel.types,
             "modules" : components(self.components, appModel: appModel),
             "commons" : components(appModel.commonModel, appModel: appModel),
             "module-default" : getFirstModule(appModel: appModel) as Any,
@@ -26,8 +31,8 @@ public class C4Container : ArtifactContainer {
         return dict
     }
     
-    public func getEntities() -> [CodeObject] {
-        return components.getEntities()
+    public var types : [CodeObject] {
+        return components.types
     }
     
     private func components(_ items: C4ComponentList, appModel: AppModel) -> [C4Component_Wrap]  { return items.compactMap({ C4Component_Wrap($0, model: appModel)})
@@ -60,28 +65,55 @@ public class C4Container : ArtifactContainer {
     }
     
     public var debugDescription: String {
-        return """
-        \(self.name)
-        \(self.components.count) components
-        """
+        var str =  """
+                    \(self.name)
+                    components \(self.components.count):
+                    """
+        str += .newLine
+
+        for item in components {
+            str += item.givename + .newLine
+            
+        }
+        
+        return str
     }
     
-    public init(name: String, items: C4Component...) {
+    public init(name: String, type: ContainerKind = .unKnown, items: C4Component...) {
         self.name = name
+        self.givename = name
+        self.containerType = type
         self.components.append(contentsOf: items)
     }
     
-    public init(name: String, items: [C4Component]) {
+    public init(name: String, type: ContainerKind = .unKnown, items: [C4Component]) {
         self.name = name
+        self.givename = name
+        self.containerType = type
         self.components.append(contentsOf: items)
     }
     
-    public init(name: String, items: C4ComponentList) {
+    public init(name: String, type: ContainerKind = .unKnown, items: C4ComponentList) {
         self.name = name
+        self.givename = name
+        self.containerType = type
         self.components = items
+    }
+    
+    public init(name: String, type: ContainerKind = .unKnown) {
+        self.name = name.normalizeForVariableName()
+        self.givename = name
+        self.containerType = type
     }
     
     internal init() {
         self.name = ""
+        self.givename = ""
+        self.containerType = .unKnown
     }
+}
+
+
+public enum ContainerKind : Equatable {
+    case unKnown, microservices, webApp, mobileApp
 }
