@@ -1,12 +1,12 @@
 //
-// UIView_Wrap.swift
+// UIObject_Wrap.swift
 // DiagSoup
 // https://www.github.com/diagsoup/diagsoup
 //
 
 import Foundation
 
-public class UIView_Wrap : ObjectWrapper {
+public class UIObject_Wrap : ObjectWrapper {
     public private(set) var item: UIObject
     
     public var attribs: Attributes {

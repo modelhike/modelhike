@@ -17,7 +17,7 @@ public struct TemplateEvaluator: TemplateSoupEvaluator {
     
     public func execute(identifier: String, lineparser: LineParser, with ctx: Context) throws -> String? {
 
-        let parser = FileTemplateParser(lineparser: lineparser, context: ctx)
+        let parser = TemplateSoupParser(lineparser: lineparser, context: ctx)
 
         do {
             

@@ -38,7 +38,7 @@ public class MultiBlockTemplateStmt : FileTemplateStatement {
         children.append(item)
     }
     
-    func parseStmtLineAndBlocks(parser: FileTemplateParser, level: Int, with ctx: Context) throws {
+    func parseStmtLineAndBlocks(parser: TemplateSoupParser, level: Int, with ctx: Context) throws {
         self.level = level
         self.lineNo = parser.lineParser.curLineNoForDisplay
         
@@ -46,7 +46,7 @@ public class MultiBlockTemplateStmt : FileTemplateStatement {
             
         let stmts = GenericStmtsContainer()
 
-        try FileTemplateParser.parseLines(startingFrom: keyword, till: endKeyword, to: stmts, templateParser: parser, level: level + 1, with: ctx)
+        try TemplateSoupParser.parseLines(startingFrom: keyword, till: endKeyword, to: stmts, templateParser: parser, level: level + 1, with: ctx)
         
         var container = self.children
         

@@ -34,13 +34,13 @@ public class BlockTemplateStmt : FileTemplateStatement {
         children.append(item)
     }
     
-    func parseStmtLineAndChildren(parser: FileTemplateParser, level: Int, with ctx: Context) throws {
+    func parseStmtLineAndChildren(parser: TemplateSoupParser, level: Int, with ctx: Context) throws {
         self.level = level
         self.lineNo = parser.lineParser.curLineNoForDisplay
         
         try parseStmtLine(lineParser: parser.lineParser, level: level, with: ctx)
                 
-        try FileTemplateParser.parseLines(startingFrom: keyword, till: endKeyword, to: self.children, templateParser: parser, level: level + 1, with: ctx)
+        try TemplateSoupParser.parseLines(startingFrom: keyword, till: endKeyword, to: self.children, templateParser: parser, level: level + 1, with: ctx)
         
     }
     

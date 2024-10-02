@@ -45,16 +45,16 @@ public class BlockOrLineTemplateStmt : FileTemplateStatement {
         children.append(item)
     }
     
-    private func parseStmtLineAndChildren(line : String, parser: FileTemplateParser, level: Int, with ctx: Context) throws {
+    private func parseStmtLineAndChildren(line : String, parser: TemplateSoupParser, level: Int, with ctx: Context) throws {
         self.level = level
         self.lineNo = parser.lineParser.curLineNoForDisplay
         
         try parseStmtLine_BlockVariant(line : line, lineParser: parser.lineParser, level: level, with: ctx)
                 
-        try FileTemplateParser.parseLines(startingFrom: keyword, till: endKeyword, to: self.children, templateParser: parser, level: level + 1, with: ctx)
+        try TemplateSoupParser.parseLines(startingFrom: keyword, till: endKeyword, to: self.children, templateParser: parser, level: level + 1, with: ctx)
     }
 
-    func parseAsPerVariant(parser: FileTemplateParser, level: Int, with ctx: Context) throws {
+    func parseAsPerVariant(parser: TemplateSoupParser, level: Int, with ctx: Context) throws {
         let line = parser.lineParser.currentLineWithoutStmtKeyword()
 
         if checkIfLineVariant(line: line, level: level) {

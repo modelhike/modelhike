@@ -1,24 +1,24 @@
 //
-// FileTemplateParser.swift
+// TemplateSoupParser.swift
 // DiagSoup
 // https://www.github.com/diagsoup/diagsoup
 //
 
 import Foundation
 
-public class FileTemplateParser : CustomDebugStringConvertible {
+public class TemplateSoupParser : CustomDebugStringConvertible {
     let context : Context
     var containers = TemplateStmtContainerList()
 
     var currentContainer: any TemplateStmtContainer
     var lineParser: LineParser
     
-    static func parseAllLines(to container: any TemplateStmtContainer, templateParser: FileTemplateParser, level: Int, with ctx: Context) throws {
+    static func parseAllLines(to container: any TemplateStmtContainer, templateParser: TemplateSoupParser, level: Int, with ctx: Context) throws {
         
         return try parseLines(startingFrom: nil, till: nil, to: container, templateParser: templateParser, level: level, with: ctx)
     }
     
-    static func parseLines(startingFrom startKeyword : String?, till endKeyWord: String?, to container: any TemplateStmtContainer, templateParser: FileTemplateParser, level: Int, with ctx: Context) throws {
+    static func parseLines(startingFrom startKeyword : String?, till endKeyWord: String?, to container: any TemplateStmtContainer, templateParser: TemplateSoupParser, level: Int, with ctx: Context) throws {
         
         let lineParser = templateParser.lineParser
 
@@ -64,7 +64,7 @@ public class FileTemplateParser : CustomDebugStringConvertible {
         }
     }
     
-    fileprivate static func parseStmts(_ secondWord: String, line: String, level: Int, templateParser: FileTemplateParser, to container: any TemplateStmtContainer, with ctx: Context) throws {
+    fileprivate static func parseStmts(_ secondWord: String, line: String, level: Int, templateParser: TemplateSoupParser, to container: any TemplateStmtContainer, with ctx: Context) throws {
         
         var isStmtIdentified = false
         let lineParser = templateParser.lineParser
@@ -116,7 +116,7 @@ public class FileTemplateParser : CustomDebugStringConvertible {
         }
     }
     
-    fileprivate static func parseStartTemplateFunction(secondWord: String, templateParser: FileTemplateParser, with ctx: Context) throws -> Bool {
+    fileprivate static func parseStartTemplateFunction(secondWord: String, templateParser: TemplateSoupParser, with ctx: Context) throws -> Bool {
         let templateFnLine = templateParser.lineParser.currentLine(after: secondWord)
         
         if let match = templateFnLine.wholeMatch(of: CommonRegEx.functionDeclaration_unNamedArgs_Capturing) {
@@ -130,7 +130,7 @@ public class FileTemplateParser : CustomDebugStringConvertible {
             let topLevel = 0
             
             let startingFrom = "\(TemplateConstants.templateFunction_start) \(templateFnName)"
-            try FileTemplateParser.parseLines(startingFrom: startingFrom, till: TemplateConstants.templateFunction_end, to: fnContainer.container, templateParser: templateParser, level:  topLevel + 1, with: ctx)
+            try TemplateSoupParser.parseLines(startingFrom: startingFrom, till: TemplateConstants.templateFunction_end, to: fnContainer.container, templateParser: templateParser, level:  topLevel + 1, with: ctx)
             
             return true
         } else {
@@ -156,7 +156,7 @@ public class FileTemplateParser : CustomDebugStringConvertible {
     public func populateContainers(containerName: String = "string") throws -> TemplateStmtContainerList? {
                 
         containers = TemplateStmtContainerList(name: containerName, currentContainer)
-        try FileTemplateParser.parseAllLines(to: self.currentContainer, templateParser: self, level: 0, with: context)
+        try TemplateSoupParser.parseAllLines(to: self.currentContainer, templateParser: self, level: 0, with: context)
         
         return containers
     }
