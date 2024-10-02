@@ -9,13 +9,13 @@ import Foundation
 public struct SampleJson {
     private static let UNKNOWN = "--UnKnown--"
     private let entity: CodeObject
-    private let appModel: ParsedModelCache
+    private let typesModel: ParsedTypesCache
     
-    public var string: String {
-        return Self.toObjectString(entity, appModel: self.appModel, openClose: false)
+    public func string(openCloseBraces: Bool = false, openCloseQuotesInNames: Bool = true) -> String {
+        return Self.toObjectString(entity, typesModel: self.typesModel, openCloseBraces: openCloseBraces, openCloseQuotesInNames: openCloseQuotesInNames)
     }
     
-    static func toObjectString(_ object: CodeObject, appModel: ParsedModelCache, openClose:  Bool) -> String {
+    static func toObjectString(_ object: CodeObject, typesModel: ParsedTypesCache, openCloseBraces:  Bool, openCloseQuotesInNames: Bool) -> String {
         var reqdProperties:[Property] = []
         
         for prop in object.properties {
@@ -25,7 +25,7 @@ public struct SampleJson {
         }
         
         return StringTemplate {
-            if openClose {
+            if openCloseBraces {
                 """
                 {
                 
@@ -39,16 +39,22 @@ public struct SampleJson {
             
             for (index, prop) in reqdProperties.enumerated() {
                 let includeComma = reqdProperties.count - 1 != index
+                if openCloseQuotesInNames {
             """
                 \"\(prop.name)\":
             """
-                Self.toPropString(prop, appModel: appModel, includeComma: includeComma)
+                } else {
+             """
+                \(prop.name):
+            """
+                }
+                Self.toPropString(prop, typesModel: typesModel, includeComma: includeComma, openCloseQuotesInNames: openCloseQuotesInNames)
                 
                 TabChar()
                 EmptyLine()
             }
             
-            if openClose {
+            if openCloseBraces {
                 """
                     }
                 """
@@ -58,7 +64,7 @@ public struct SampleJson {
         }.string
     }
     
-    static func toPropString(_ prop: Property, appModel: ParsedModelCache, includeComma: Bool) -> String {
+    static func toPropString(_ prop: Property, typesModel: ParsedTypesCache, includeComma: Bool, openCloseQuotesInNames: Bool) -> String {
         let prefix = prop.isArray ? " [" : ""
         var suffix = prop.isArray ? "]" : ""
         if includeComma {
@@ -106,19 +112,19 @@ public struct SampleJson {
                 """
                 + suffix
             case let .customType(typeName):
-            guard let entity = appModel.get(for: typeName) else { return Self.UNKNOWN }
+            guard let entity = typesModel.get(for: typeName) else { return Self.UNKNOWN }
                 if prop.isArray {
-                    return prefix + Self.toObjectString(entity, appModel: appModel, openClose: true) + suffix
+                    return prefix + Self.toObjectString(entity, typesModel: typesModel, openCloseBraces: true, openCloseQuotesInNames: openCloseQuotesInNames) + suffix
                 } else {
-                    return prefix + Self.toObjectString(entity, appModel: appModel, openClose: true)  + suffix
+                    return prefix + Self.toObjectString(entity, typesModel: typesModel, openCloseBraces: true, openCloseQuotesInNames: openCloseQuotesInNames)  + suffix
                 }
             case .unKnown:
                 return Self.UNKNOWN
         }
     }
     
-    public init(entity: CodeObject, appModel: ParsedModelCache) {
+    public init(entity: CodeObject, typesModel: ParsedTypesCache) {
         self.entity = entity
-        self.appModel = appModel
+        self.typesModel = typesModel
     }
 }
