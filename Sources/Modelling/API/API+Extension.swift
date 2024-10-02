@@ -161,6 +161,16 @@ public extension CodeObject {
     func appendAPI(_ type : APIType) -> API {
         let api = API(entity: self, type: type)
         attached.append(api)
+        
+        if type == .list {
+            if let getAllAnnotation = self.annotations[AnnotationConstants.listApi] {
+                if let mapping = getAllAnnotation as? MappingAnnotation {
+                    for item in mapping.mappings {
+                        api[item.key] = item.value
+                    }
+                }
+            }
+        }
         return api
     }
     

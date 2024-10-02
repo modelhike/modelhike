@@ -32,7 +32,7 @@ public extension ModelRepository {
         
         model.containers.forEachType {  e, component in
             
-            if var cls = e as? DomainObject {
+            if let cls = e as? DomainObject {
                 if cls.givename.hasSuffix("Cache"){
                     e.dataType = .cache
                 } else if cls.givename.hasSuffix("Input"){
@@ -41,19 +41,11 @@ public extension ModelRepository {
                     e.dataType = .entity
                     
                     if e.hasNoAPIs() {
-                        cls.appendAPI(.create)
-                        cls.appendAPI(.update)
-                        cls.appendAPI(.delete)
-                        cls.appendAPI(.getById)
-                        let getAll = cls.appendAPI(.list)
-                        
-                        if let getAllAnnotation = e.annotations["list"] {
-                            if let mapping = getAllAnnotation as? MappingAnnotation {
-                                for item in mapping.mappings {
-                                    getAll[item.key] = item.value
-                                }
-                            }
-                        }
+                        e.appendAPI(.create)
+                        e.appendAPI(.update)
+                        e.appendAPI(.delete)
+                        e.appendAPI(.getById)
+                        e.appendAPI(.list)
                     }
                 } else {
                     e.dataType = .embeddedType
@@ -61,7 +53,7 @@ public extension ModelRepository {
                 return
             }
             
-            if var cls = e as? DtoObject {
+            if let cls = e as? DtoObject {
                 if cls.givename.hasSuffix("Input"){
                     e.dataType = .apiInput
                 } else {

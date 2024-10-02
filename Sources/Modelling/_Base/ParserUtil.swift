@@ -32,7 +32,7 @@ public class ParserUtil {
     }
     
     public static func extractMixins(for artifact: CodeObject, with ctx: Context) throws {
-        var item = artifact
+        let item = artifact
         try item.attribs.processEach { attrib in
             if let entity = ctx.model.types.get(for: attrib.name) {
                 item.mixins.append(entity)

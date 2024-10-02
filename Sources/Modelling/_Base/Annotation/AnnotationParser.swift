@@ -20,13 +20,15 @@ public enum AnnotationParser {
             let annotationName = split[0].trim()
             let remainingLine = split[1]
             
-            if annotationName == "list" {
-                return try MappingAnnotation(annotationName, line: remainingLine)
+            switch annotationName {
+                case AnnotationConstants.listApi:
+                    return try MappingAnnotation(annotationName, line: remainingLine)
+                default: 
+                    throw Model_ParsingError.invalidAnnotation(originalLine)
             }
         } else {
             throw Model_ParsingError.invalidAnnotation(originalLine)
         }
         
-        return nil
     }
 }
