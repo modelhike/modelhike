@@ -81,7 +81,7 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
 
     }
     
-    //file generation protocol
+    //MARK: File generation protocol
         
     public func setRelativePath(_ path: String) throws {
         generation_dir = context.paths.output.path / path

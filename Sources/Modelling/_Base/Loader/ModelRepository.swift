@@ -74,9 +74,8 @@ public extension ModelRepository {
             }
         }
         
-        
-        print("💡 Loaded domain types: ", model.containers.types.count)
-        print("💡 Loaded common types: ", model.commonModel.types.count)
-
+        let domainTypesCount = model.containers.types.count
+        let commonTypesCount = model.commonModel.types.count
+        print("💡 Loaded domain types: \(domainTypesCount), common types: \(commonTypesCount)")
     }
 }

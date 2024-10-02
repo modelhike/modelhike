@@ -80,7 +80,7 @@ open class Workspace {
                 try loadSymbols()
             }
             
-            print("🛠️ Container: \(container)")
+            print("🛠️ Container used: \(container)")
             print("🛠️ Output folder: \(output.path.string)")
 
             try output.ensureExists()
