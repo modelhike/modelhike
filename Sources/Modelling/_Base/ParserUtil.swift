@@ -43,19 +43,3 @@ public class ParserUtil {
     }
 }
 
-public extension HasAnnotations
-{
-    func tryParseAnnotations(with pctx: ParsingContext) throws -> Bool {
-        if AnnotationParser.canParse(firstWord: pctx.firstWord) {
-            if let annotation = try AnnotationParser.parse(pctx.line, firstWord: pctx.firstWord) {
-                self.annotations[annotation.name] = annotation
-                pctx.parser.skipLine()
-                return true
-            } else {
-                throw Model_ParsingError.invalidAnnotation(pctx.line)
-            }
-        }
-        
-        return false
-    }
-}

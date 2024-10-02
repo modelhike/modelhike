@@ -63,7 +63,7 @@ public enum ContainerParser {
                 }
             }
             
-            if try item.tryParseAnnotations(with: pctx) {
+            if try pctx.tryParseAnnotations(with: item) {
                 continue
             }
             

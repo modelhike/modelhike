@@ -56,11 +56,11 @@ public enum DomainObjectParser {
                 }
             }
             
-            if try item.tryParseAnnotations(with: pctx) {
+            if try pctx.tryParseAnnotations(with: item) {
                 continue
             }
             
-            if try item.tryParseAttachedSections(with: pctx) {
+            if try pctx.tryParseAttachedSections(with: item) {
                 continue
             }
             
