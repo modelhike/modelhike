@@ -241,14 +241,6 @@ public struct LocalFile : File, LocalFileSystemItem {
         }
     }
     
-    public func write(_ data: Data) throws {
-        do {
-            try data.write(to: url)
-        } catch {
-            throw WriteError(path: path, reason: .writeFailed(error))
-        }
-    }
-    
     @discardableResult
     public func copy(to folder: LocalFolder) throws -> Self {
         let newPathString = (folder.path / name).string

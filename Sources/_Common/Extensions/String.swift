@@ -11,15 +11,32 @@ public extension String {
 
     static var empty: String { "" }
     
-    func isOnly(_ txt: String) -> Bool {
-        return self.trim() == txt
-    }
+//    func isOnly(_ txt: String) -> Bool {
+//        return self.trim() == txt
+//    }
     
     func hasOnly(_ txt: String) -> Bool {
         let trimmed = self.trim()
         let selfCount = trimmed.count
         let comparedString = String(repeating: String(txt), count: selfCount)
         return trimmed == comparedString
+    }
+    
+    func hasOnly(_ times: Int, of txt: String) -> Bool {
+        let trimmed = self.trim()
+        let comparedString = String(repeating: String(txt), count: times)
+        return trimmed == comparedString
+    }
+    
+    func has(prefix: String, filler txt: String, suffix: String) -> Bool {
+        if self.hasPrefix(prefix) && self.hasSuffix(suffix) {
+            if let filler = between(prefix: prefix, suffix: suffix),
+                filler.hasOnly(ModelConstants.NameOverlineChar) {
+                return true
+            }
+        }
+        
+        return false
     }
     
     func firstWord() -> String? {
@@ -119,7 +136,21 @@ public extension String {
         }
     }
     
-    func moduleName() -> String {
+    func between(prefix: String, suffix: String) -> String? {
+        guard let prefixRange = self.range(of: prefix) else { return nil }
+        
+        let startIndex = prefixRange.upperBound
+        guard let suffixRange = self[startIndex...].range(of: suffix) else { return nil }
+        
+        let endIndex = suffixRange.lowerBound
+        return String(self[startIndex..<endIndex])
+    }
+    
+    var isStartingWithAlphabet : Bool {
+        return first?.isAsciiLetter == true
+    }
+    
+    func slugify() -> String {
         return self.lowercased().normalizeForFolderName().camelCaseToSnakeCase()
     }
     
@@ -134,11 +165,11 @@ public extension String {
             code = "value" + code
         }
         
-        //make all lower case to upper case names, so as not to clash with js keywords which are all lowercase
-        if  let first = code.first, first.isLowercase {
-            let dropped = code.dropFirst()
-            code = first.uppercased() + String(dropped)
-        }
+//        //make all lower case to upper case names, so as not to clash with js keywords which are all lowercase
+//        if  let first = code.first, first.isLowercase {
+//            let dropped = code.dropFirst()
+//            code = first.uppercased() + String(dropped)
+//        }
         
         return code
     }
@@ -263,4 +294,8 @@ public extension String {
       let range = NSRange(location: 0, length: count)
       return regex?.stringByReplacingMatches(in: self, options: [], range: range, withTemplate: "$1-$2")
     }
+}
+
+extension Character {
+    var isAsciiLetter: Bool { "A"..."Z" ~= self || "a"..."z" ~= self }
 }
