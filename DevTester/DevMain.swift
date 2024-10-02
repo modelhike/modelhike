@@ -31,15 +31,18 @@ struct Development {
         ws.basePath = SystemFolder.documents.path / "diagsoup"
         //ws.debugLog.flags.fileGeneration = true
         
-        try ws.loadSymbols([.typescript, .mongodb_typescript])
-        
-        //let modelRepo = LocalFileModelLoader(path: ws.basePath, with: ws.context)
-        let modelRepo = inlineModel(ws)
+        //let blueprint = "nestjs-monorepo"
+        //try ws.loadSymbols([.typescript, .mongodb_typescript])
+        let blueprint = "springboot-monorepo"
+        try ws.loadSymbols([.java])
+
+        let modelRepo = LocalFileModelLoader(path: ws.basePath, with: ws.context)
+        //let modelRepo = inlineModel(ws)
         
         try ws.loadModels(from: modelRepo)
         
         let templatesPath = ws.basePath / "_gen.templates"
-        let templatesRepo = LocalFileBlueprintLoader(blueprint: "nestjs-monorepo", path: templatesPath, with: ws.context)
+        let templatesRepo = LocalFileBlueprintLoader(blueprint: blueprint, path: templatesPath, with: ws.context)
 
         ws.generateCodebase(container: "APIs", usingBlueprintsFrom: templatesRepo)
     }
