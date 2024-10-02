@@ -9,13 +9,13 @@ import Foundation
 public struct SampleQueryString {
     private static let UNKNOWN = "--UnKnown--"
     private let api: API
-    private let appModel: ParsedModelCache
+    private let typesModel: ParsedTypesCache
     
     public var string: String {
-        return Self.toQueryString(api, appModel: self.appModel)
+        return Self.toQueryString(api, typesModel: self.typesModel)
     }
     
-    static func toQueryString(_ api: API, appModel: ParsedModelCache) -> String {
+    static func toQueryString(_ api: API, typesModel: ParsedTypesCache) -> String {
         let reqdParams:[APIQueryParamWrapper] = api.queryParams
         
         return StringTemplate {
@@ -25,23 +25,23 @@ public struct SampleQueryString {
 
                 if param.queryParam.hasSecondParamName {
                     "\(param.queryParam.name)="
-                    Self.toPropString(param.propMaping, isEndValueInRange: false, api: api, appModel: appModel, includeSeparator: false)
+                    Self.toPropString(param.propMaping, isEndValueInRange: false, api: api, typesModel: typesModel, includeSeparator: false)
                     
                     "&\(param.queryParam.SecondName)="
 
-                    Self.toPropString(param.propMaping, isEndValueInRange: true, api: api, appModel: appModel, includeSeparator: includeSeparator)
+                    Self.toPropString(param.propMaping, isEndValueInRange: true, api: api, typesModel: typesModel, includeSeparator: includeSeparator)
                 } else { // only single param
                     "\(param.queryParam.name)="
-                    Self.toPropString(param.propMaping, isEndValueInRange: true, api: api, appModel: appModel, includeSeparator: includeSeparator)
+                    Self.toPropString(param.propMaping, isEndValueInRange: true, api: api, typesModel: typesModel, includeSeparator: includeSeparator)
                 }
             }
         }.string
     }
     
-    static func toPropString(_ mapping: QueryParam_PropertyNameMapping, isEndValueInRange: Bool, api: API, appModel: ParsedModelCache, includeSeparator: Bool) -> String {
+    static func toPropString(_ mapping: QueryParam_PropertyNameMapping, isEndValueInRange: Bool, api: API, typesModel: ParsedTypesCache, includeSeparator: Bool) -> String {
         let propName = mapping.first
         
-        guard let prop = appModel.getLastPropInRecursive(propName, inObj: api.entity.name) else { return "" }
+        guard let prop = typesModel.getLastPropInRecursive(propName, inObj: api.entity.name) else { return "" }
         
         var suffix = ""
         if includeSeparator {
@@ -83,8 +83,8 @@ public struct SampleQueryString {
         }
     }
     
-    public init(api: API, appModel: ParsedModelCache) {
+    public init(api: API, typesModel: ParsedTypesCache) {
         self.api = api
-        self.appModel = appModel
+        self.typesModel = typesModel
     }
 }

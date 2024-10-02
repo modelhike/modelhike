@@ -74,11 +74,11 @@ public class TypeProperty_Wrap : ObjectWrapper {
             case "is-array" : item.isArray
             case "is-object" : item.isObject()
             case "is-number" : item.type == .int || item.type == .double
-            case "is-bool", "is-booleab", "is-yesno" : item.type == .bool
+            case "is-bool", "is-boolean", "is-yesno" : item.type == .bool
             case "is-string" : item.type == .string
             case "is-id" : item.type == .id
             case "is-any" : item.type == .any
-            case "is-date" : item.type == .date
+            case "is-date" : item.type == .date || item.type == .datetime
             case "is-buffer" : item.type == .buffer
             case "is-reference" :  item.isReference()
             case "is-extended-reference" : item.isExtendedReference()
@@ -88,6 +88,7 @@ public class TypeProperty_Wrap : ObjectWrapper {
                 if case let .customType(typeName) = item.type {
                     typeName
                 } else { "" }
+            case "obj-type" : item.objectTypeString()
             case "is-required": item.required == .yes
             default: 
             //nothing found; so check in module attributes}

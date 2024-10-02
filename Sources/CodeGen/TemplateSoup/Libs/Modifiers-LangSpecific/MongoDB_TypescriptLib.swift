@@ -31,7 +31,7 @@ public struct MongoDB_TypescriptLib {
     private static func getFilterString( queryParam: QueryParam_KeyMapping, propMap: QueryParam_PropertyNameMapping, entity : CodeObject, sandbox: Sandbox) -> String {
         let canBeMultiple = queryParam.canHaveMultipleValues
         let queryParamName = queryParam.name
-        let appModel = sandbox.model.parsedModel
+        let appModel = sandbox.model.types
         
         if propMap.hasMultipleMappings { //has multiple property mapping
             guard let prop = entity.getLastPropInRecursive(propMap.first, appModel: appModel) else {return ""}
@@ -103,7 +103,7 @@ public struct MongoDB_TypescriptLib {
     private static func getIndividualFilterString(_ queryParam: QueryParam_KeyMapping, propName: String, isSingle: Bool, entity : CodeObject, sandbox: Sandbox) -> String {
         let canBeMultiple = queryParam.canHaveMultipleValues
         let queryParamName = queryParam.name
-        let appModel = sandbox.model.parsedModel
+        let appModel = sandbox.model.types
 
         var isRecursiveProperty = false
         

@@ -7,11 +7,16 @@
 import Foundation
 
 public enum ModelConstants {
-    public static let Attribute_Optional = "-"
-    public static let Attribute_Mandatory = "*"
-    public static let Attribute_Conditional = "*?"
+    public static let Member_Optional = "-"
+    public static let Member_Mandatory = "*"
+    public static let Member_Conditional = "*?"
     
-    public static let Container_Module_Member = "+"
+    public static let Member_Method = "~"
+
+    public static let Member_Calculated = "="
+    public static let Member_Derived_For_Dto = "."
+    
+    public static let External_Import_File = "+"
     
     public static let Annotation_Start = "@"
     public static let Annotation_Split = "::"
@@ -19,6 +24,8 @@ public enum ModelConstants {
     public static let NameUnderlineChar = "="
     public static let NameOverlineChar = "="
     public static let NamePrefixLineChar = "="
+
+    public static let UIViewUnderlineChar = "~"
 
     public static let ModelFile_Extension = "diagsoup"
     public static let ConfigFile_Extension = "tconfig"
