@@ -11,15 +11,21 @@ public enum EvaluationError: Error {
     case invalidInput(String)
     case invalidAppState(String)
     case workingDirectoryNotSet(Int, String)
-    
+    case templateDoesNotExist(Int, String, String)
+    case readingError(Int, String, String)
+
     public var info: String {
         switch (self) {
-            case .invalidLine(let lineNo, let info, let identifier,  _) :
+            case .invalidLine(let lineNo, let identifier, let info,  _) :
                 return "🐞🐞 \(identifier) >> [line no : \(lineNo)] \(info)"
             case .invalidInput(let msg): return msg
             case .invalidAppState(let msg): return msg
             case .workingDirectoryNotSet(let lineNo, let identifier) : 
-                return "🐞🐞 \(identifier) >> [line no : \(lineNo)] Working Directory not set!!!"
+                return "🐞🐞 \(identifier) >> [line no : \(lineNo)] Working info not set!!!"
+            case .templateDoesNotExist(let lineNo, let identifier, let info) :
+                return "🐞🐞 \(identifier) >> [line no : \(lineNo)] \(info)"
+            case .readingError(let lineNo, let identifier, let info) :
+                return "🐞🐞 \(identifier) >> [line no : \(lineNo)] \(info)"
         }
     }
 

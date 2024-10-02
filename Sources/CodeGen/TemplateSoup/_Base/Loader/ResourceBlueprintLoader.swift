@@ -23,10 +23,10 @@ open class ResourceBlueprintLoader : BlueprintRepository {
                 self.templateCache[fileName] = template
                 return template
             } catch {
-                throw TemplateReadingError(templateName: fileName)
+                throw TemplateSoup_EvaluationError.templateReadingError(fileName)
             }
         } else {
-            throw TemplateDoesNotExist(templateName: fileName)
+            throw TemplateSoup_EvaluationError.templateDoesNotExist(fileName)
         }
 
     }
@@ -118,7 +118,7 @@ open class ResourceBlueprintLoader : BlueprintRepository {
                         //render the filename if it has an expression within '{{' and '}}'
                         let filename = try ContentLine.eval(line: resourceName, with: templateSoup.context) ?? resourceName
                         
-                        let renderedString = try templateSoup.renderTemplate(string: contents) ?? ""
+                        let renderedString = try templateSoup.renderTemplate(string: contents, identifier: resourceName) ?? ""
                         
                         let outFile = LocalFile(path: outputPath / filename)
                         try outFile.write(renderedString)

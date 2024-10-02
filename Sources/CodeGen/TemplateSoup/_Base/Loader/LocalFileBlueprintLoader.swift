@@ -27,11 +27,11 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
                 self.templateCache[fileName] = template
                 return template
             } else {
-                throw TemplateReadingError(templateName: fileName)
+                throw TemplateSoup_EvaluationError.templateReadingError( fileName)
             }
         }
 
-        throw TemplateDoesNotExist(templateName: fileName)
+        throw TemplateSoup_EvaluationError.templateDoesNotExist(fileName)
     }
     
     public func blueprintExists() -> Bool {
@@ -81,7 +81,7 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
                 let filename = try ContentLine.eval(line: actualFilename, with: templateSoup.context) ?? actualFilename
                 
                 let contents = try file.readTextContents()
-                let renderedString = try templateSoup.renderTemplate(string: contents) ?? ""
+                let renderedString = try templateSoup.renderTemplate(string: contents, identifier: actualFilename) ?? ""
                 
                 let outFile = LocalFile(path: outputFolder.path / filename)
                 try outFile.write(renderedString)

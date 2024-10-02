@@ -19,19 +19,3 @@ public protocol InputFileRepository {
     func readTextContents(filename: String) throws -> String
     func hasFolder(_ foldername: String) -> Bool
 }
-
-public struct TemplateDoesNotExist : Error {
-    let templateName: String
-    
-    public init(templateName: String) {
-        self.templateName = templateName
-    }
-}
-
-public struct TemplateReadingError: Error {
-    let templateName: String
-    
-    public init(templateName: String) {
-        self.templateName = templateName
-    }
-}

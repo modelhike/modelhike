@@ -11,15 +11,17 @@ public enum TemplateSoup_EvaluationError: Error {
     case unIdentifiedStmt(Int, String)
     case errorInExpression(Int, String)
     case workingDirectoryNotSet(Int)
+    case templateDoesNotExist(String)
+    case templateReadingError(String)
     
     public var info: String {
         switch (self) {
             case .workingDirectoryNotSet(let lineNo) : return "[line no : \(lineNo)] Working Directory not set!!!"
+            case .templateDoesNotExist(let templateName) : return "Template '\(templateName)' not found!!!"
+            case .templateReadingError(let templateName) : return "Template '\(templateName)' reading error!!!"
             case .objectNotFound(let lineNo, let obj) :  return "[line \(lineNo)] object: \(obj) not found"
             case .unIdentifiedStmt(let lineNo, let line) :
-            var str = """
-                [Line \(lineNo) - unidentified stmt]  \(line)
-                """
+            var str = "[Line \(lineNo) - unidentified stmt]  \(line)"
 
             var modifiedLine = line.trim()
             

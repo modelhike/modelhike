@@ -44,7 +44,7 @@ public struct TemplateEvaluator: TemplateSoupEvaluator {
                 if case let .workingDirectoryNotSet(lineNo) = evalErr {
                     throw EvaluationError.workingDirectoryNotSet(lineNo, identifier)
                 } else {
-                    throw EvaluationError.invalidLine(parser.lineParser.curLineNoForDisplay, evalErr.info,  identifier, evalErr)
+                    throw EvaluationError.invalidLine(parser.lineParser.curLineNoForDisplay, identifier, evalErr.info,   evalErr)
                 }
             } else {
                 throw err
