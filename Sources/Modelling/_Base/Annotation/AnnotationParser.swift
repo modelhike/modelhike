@@ -23,7 +23,9 @@ public enum AnnotationParser {
             switch annotationName {
                 case AnnotationConstants.listApi:
                     return try MappingAnnotation(annotationName, line: remainingLine)
-                default: 
+                case AnnotationConstants.apisToGenerate:
+                    return try ValuesAnnotation(annotationName, line: remainingLine)
+                default:
                     throw Model_ParsingError.invalidAnnotation(originalLine)
             }
         } else {
