@@ -80,64 +80,63 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
         context.fileGenerator = self
 
     }
-}
-
-public extension CodeGenerationSandbox  { //file generation protocol
+    
+    //file generation protocol
         
-    func setRelativePath(_ path: String) throws {
+    public func setRelativePath(_ path: String) throws {
         generation_dir = context.paths.output.path / path
         try generation_dir.ensureExists()
     }
     
-    func generateFile(_ filename: String, template: String) throws -> RenderedFile {
+    public func generateFile(_ filename: String, template: String) throws -> RenderedFile {
         let file = RenderedFile(filename: filename, filePath: generation_dir, template: template, renderer: self.templateSoup)
         try file.persist()
         return file
     }
     
-    func generateFileWithData(_ filename: String, template: String, data: [String: Any]) throws -> RenderedFile {
+    public func generateFileWithData(_ filename: String, template: String, data: [String: Any]) throws -> RenderedFile {
         let file = RenderedFile(filename: filename, filePath: generation_dir, template: template, data: data, renderer: self.templateSoup)
         try file.persist()
         return file
     }
     
-    func copyFile(_ filename: String) throws -> StaticFile {
+    public func copyFile(_ filename: String) throws -> StaticFile {
         let file = StaticFile(filename: filename, repo: templateSoup.repo, to: filename, path: generation_dir)
         try file.persist()
         return file
     }
         
-    func copyFile(_ filename: String, to newFilename: String) throws -> StaticFile {
+    public func copyFile(_ filename: String, to newFilename: String) throws -> StaticFile {
         let file = StaticFile(filename: filename, repo: templateSoup.repo, to: newFilename, path: generation_dir)
         try file.persist()
         return file
     }
     
-    func copyFolder(_ foldername: String) throws -> StaticFolder {
+    public func copyFolder(_ foldername: String) throws -> StaticFolder {
         let folder = StaticFolder(foldername: foldername, repo: templateSoup.repo, to: foldername, path: generation_dir)
         try folder.copyFiles()
         return folder
     }
     
-    func copyFolder(_ foldername: String, to newPath: String) throws -> StaticFolder {
+    public func copyFolder(_ foldername: String, to newPath: String) throws -> StaticFolder {
         let folder = StaticFolder(foldername: foldername, repo: templateSoup.repo, to: newPath, path: generation_dir)
         try folder.copyFiles()
         return folder
     }
     
-    func renderFolder(_ foldername: String, to newPath: String) throws -> RenderedFolder {
+    public func renderFolder(_ foldername: String, to newPath: String) throws -> RenderedFolder {
         let folder = RenderedFolder(foldername: foldername, templateSoup: templateSoup, to: newPath, path: generation_dir)
         try folder.renderFiles()
         return folder
     }
     
-    func fillPlaceholdersAndCopyFile(_ filename: String) throws -> PlaceHolderFile {
+    public func fillPlaceholdersAndCopyFile(_ filename: String) throws -> PlaceHolderFile {
         let file = PlaceHolderFile(filename: filename, repo: templateSoup.repo, to: filename, path: generation_dir, renderer: self.templateSoup)
         try file.persist()
         return file
     }
 
-    func fillPlaceholdersAndCopyFile(_ filename: String, to newFilename: String) throws -> PlaceHolderFile {
+    public func fillPlaceholdersAndCopyFile(_ filename: String, to newFilename: String) throws -> PlaceHolderFile {
         let file = PlaceHolderFile(filename: filename, repo: templateSoup.repo, to: newFilename, path: generation_dir, renderer: self.templateSoup)
         try file.persist()
         return file
