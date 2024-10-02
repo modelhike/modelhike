@@ -14,30 +14,35 @@ public class ModelFileParser {
     
     public func parse(file: LocalFile, with ctx: Context) throws -> ModelSpace {
         let lines = try file.readTextLines(ignoreEmptyLines: true)
-        return try self.parse(lines: lines, with: ctx)
+        return try self.parse(lines: lines, identifier: file.name, with: ctx)
     }
     
-    public func parse(string: String, with ctx: Context) throws -> ModelSpace {
+    public func parse(string: String, identifier: String, with ctx: Context) throws -> ModelSpace {
         let lines = string.components(separatedBy: .newlines)
-        return try self.parse(lines: lines, with: ctx)
+        return try self.parse(lines: lines, identifier: identifier, with: ctx)
     }
     
-    public func parse(lines contents: [String], with ctx: Context) throws -> ModelSpace {
-        let lineParser = LineParser(lines: contents, with: ctx)
+    public func parse(lines contents: [String], identifier: String, with ctx: Context) throws -> ModelSpace {
+        let lineParser = LineParser(lines: contents, with: ctx, autoIncrementLineNoForEveryLoop: false)
         self.lineParser = lineParser
 
         do {
             
             try lineParser.parse() {firstWord, secondWord, line, ctx in
-                if lineParser.isCurrentLineEmpty() { return }
+                if lineParser.isCurrentLineEmpty() { lineParser.skipLine(); return }
 
                 if ContainerParser.canParse(parser: lineParser) {
-                    try parseContainer(firstWord: firstWord, parser: lineParser)
+                    try parseContainer(firstWord: firstWord, line: line, parser: lineParser)
                     return
                 }
                 
                 if ModuleParser.canParse(parser: lineParser) {
-                    try parseModule(firstWord: firstWord, parser: lineParser)
+                    try parseModule(firstWord: firstWord, line: line, parser: lineParser)
+                    return
+                }
+                
+                if SubModuleParser.canParse(parser: lineParser) {
+                    try parseSubModule(firstWord: firstWord, line: line, parser: lineParser)
                     return
                 }
                 
@@ -49,29 +54,56 @@ public class ModelFileParser {
                     }
                 }
                 
+                if DtoObjectParser.canParse(parser: lineParser) {
+                    if let item = try DtoObjectParser.parse(parser: lineParser, with: ctx) {
+                        self.component.append(item)
+                        return
+                    }
+                }
+                
+                if UIViewParser.canParse(parser: lineParser) {
+                    if let item = try UIViewParser.parse(parser: lineParser, with: ctx) {
+                        self.component.append(item)
+                        return
+                    }
+                }
+                
+                lineParser.skipLine();
             }
             
             return modelSpace
         } catch let err {
             if let parseErr = err as? Model_ParsingError {
-                throw ParsingError.invalidLine(self.lineParser.curLineNoForDisplay, parseErr.info, parseErr)
+                throw ParsingError.invalidLine(self.lineParser.curLineNoForDisplay, parseErr.info, identifier, parseErr)
             } else {
                 throw err
             }
         }
     }
     
-    func parseModule(firstWord: String, parser: LineParser) throws {
-        guard let module = try ModuleParser.parse(parser: lineParser, with: ctx) else { return }
-        
-        self.component = module
-        self.modelSpace.append(module: module)
+    func parseModule(firstWord: String, line: String, parser: LineParser) throws {
+        if let module = try ModuleParser.parse(parser: lineParser, with: ctx) {
+            self.component = module
+            self.modelSpace.append(module: module)
+        } else {
+            throw Model_ParsingError.invalidModuleLine(line)
+        }
     }
     
-    func parseContainer(firstWord: String, parser: LineParser) throws {
-        guard let container = try ContainerParser.parse(parser: lineParser, with: ctx) else { return }
-        
-        self.modelSpace.append(container: container)
+    func parseSubModule(firstWord: String, line: String, parser: LineParser) throws {
+        if let submodule = try SubModuleParser.parse(parser: lineParser, with: ctx) {
+            self.component.append(submodule: submodule)
+        } else {
+            throw Model_ParsingError.invalidSubModuleLine(line)
+        }
+    }
+    
+    func parseContainer(firstWord: String, line: String, parser: LineParser) throws {
+        if let container = try ContainerParser.parse(parser: lineParser, with: ctx) {
+            self.modelSpace.append(container: container)
+        } else {
+            throw Model_ParsingError.invalidContainerLine(line)
+        }
     }
     
     public init(with context: Context) {
