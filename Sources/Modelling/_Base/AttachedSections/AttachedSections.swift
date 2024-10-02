@@ -6,8 +6,13 @@
 
 import Foundation
 
-public protocol HasAttachedSections {
+public protocol HasAttachedSections : HasAttachedItems {
     var attachedSections : AttachedSections {get set}
+}
+
+public protocol HasAttachedItems : AnyObject {
+    var attached : [Artifact] {get set}
+    @discardableResult func appendAttached(_ item: Artifact) -> Self
 }
 
 public class AttachedSections : ExpressibleByArrayLiteral, ExpressibleByDictionaryLiteral {

@@ -94,4 +94,10 @@ public extension CodeObject {
     func isSameAs(_ CodeObject: CodeObject) ->  Bool {
         return self.givename == CodeObject.givename
     }
+    
+    @discardableResult
+    func appendAttached(_ item: Artifact) -> Self {
+        attached.append(item)
+        return self
+    }
 }

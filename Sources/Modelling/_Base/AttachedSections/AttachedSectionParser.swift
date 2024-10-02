@@ -6,22 +6,6 @@
 
 import Foundation
 
-public extension HasAttachedSections
-{
-    func tryParseAttachedSections(with pctx: ParsingContext) throws -> Bool {
-        if AttachedSectionParser.canParse(firstWord: pctx.firstWord) {
-            if let section = try AttachedSectionParser.parse(with: pctx) {
-                self.attachedSections[section.name] = section
-                return true
-            } else {
-                throw Model_ParsingError.invalidAttachedSection(pctx.line)
-            }
-        }
-        
-        return false
-    }
-}
-
 public enum AttachedSectionParser {
     // Attached Section start should be of the format:
     //
@@ -35,7 +19,7 @@ public enum AttachedSectionParser {
         return false
     }
     
-    public static func parse(with pctx: ParsingContext) throws -> AttachedSection? {
+    public static func parse(for obj: HasAttachedItems, with pctx: ParsingContext) throws -> AttachedSection? {
         let line = pctx.line.dropFirstWord()
         guard let match = line.wholeMatch(of: ModelRegEx.moduleName_Capturing)                                                                                  else { return nil }
         
@@ -60,24 +44,14 @@ public enum AttachedSectionParser {
             
             guard let pctx = parser.currentParsingContext() else { parser.skipLine(); continue }
             
-            if try item.tryParseAnnotations(with: pctx) {
+            if try pctx.tryParseAnnotations(with: item) {
                 continue
             }
             
-            if pctx.firstWord == ModelConstants.AttachedSection {
-                //either it is the starting of another attached section
-                // or it is the end of this attached sections, which is
-                // having only '#' in the line
-                
-                if pctx.line.secondWord() == nil { //marks end of attached section
-                    parser.skipLine()
-                }
-                
-                break
+            let attachedItems = try pctx.parseAttachedItems(for: item)
+            for attachedItem in attachedItems {
+                obj.appendAttached(attachedItem)
             }
-            
-            item.append(pctx.line)
-            parser.skipLine()
         }
         
         return item

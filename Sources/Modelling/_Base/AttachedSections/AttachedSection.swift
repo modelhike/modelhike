@@ -16,16 +16,14 @@ public class AttachedSection : ArtifactContainer {
     public let dataType: ArtifactKind = .attachedSection
 
     public internal(set) var items : [Artifact]
-    public internal(set) var lines : [String]
 
-    public func append(_ line: String) {
-        self.lines.append(line)
+    public func appendAttached(_ item: Artifact) {
+        self.items.append(item)
     }
     
     public init(code: String) {
         self.name = code
         self.givename = code
         self.items = []
-        self.lines = []
     }
 }
