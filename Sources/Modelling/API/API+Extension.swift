@@ -6,10 +6,14 @@
 
 import Foundation
 
-public class API : Artifact {    
+public class API : Artifact {
     public var attribs = Attributes()
     public var tags = Tags()
     public var annotations = Annotations()
+
+    public var name: String = ""
+    public var givename: String = ""
+    public let dataType: ArtifactKind = .api
 
     public let entity : CodeObject
     public let type: APIType
@@ -32,7 +36,7 @@ public class API : Artifact {
     public init(entity: CodeObject, type: APIType, version: Int = 1) {
         self.entity = entity
         self.type = type
-        self.baseUrl = entity.name.moduleName()
+        self.baseUrl = entity.name.slugify()
         self.version = version
         
         switch type {
@@ -141,12 +145,12 @@ public struct QueryParam_PropertyNameMapping {
     
 }
 
-public extension C4Component {
-    func getAPIsFor(entity: CodeObject) -> APIList {
+public extension CodeObject {
+    func getAPIs() -> APIList {
         let apis = APIList()
-
-        for item in items {
-            if let api = item as? API, api.entity.isSameAs(entity){
+        
+        for item in attached {
+            if let api = item as? API{
                 apis.append(api)
             }
         }
@@ -154,9 +158,9 @@ public extension C4Component {
     }
     
     @discardableResult
-    func appendAPI(_ type : APIType, `for` entity: CodeObject) -> API {
-        let api = API(entity: entity, type: type)
-        items.append(api)
+    mutating func appendAPI(_ type : APIType) -> API {
+        let api = API(entity: self, type: type)
+        attached.append(api)
         return api
     }
 }

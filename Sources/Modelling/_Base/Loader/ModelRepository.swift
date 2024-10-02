@@ -32,7 +32,7 @@ public extension ModelRepository {
         
         model.containers.forEachType {  e, component in
             
-            if let cls = e as? DomainObject {
+            if var cls = e as? DomainObject {
                 if cls.givename.hasSuffix("Cache"){
                     e.dataType = .cache
                 } else if cls.givename.hasSuffix("Dto"){
@@ -42,11 +42,11 @@ public extension ModelRepository {
                 } else if cls.hasProp("_id") || cls.hasProp("id") {
                     e.dataType = .entity
                     
-                    component.appendAPI(.create, for: cls)
-                    component.appendAPI(.update, for: cls)
-                    component.appendAPI(.delete, for: cls)
-                    component.appendAPI(.getById, for: cls)
-                    let getAll = component.appendAPI(.list, for: cls)
+                    cls.appendAPI(.create)
+                    cls.appendAPI(.update)
+                    cls.appendAPI(.delete)
+                    cls.appendAPI(.getById)
+                    let getAll = cls.appendAPI(.list)
                     
                     if let getAllAnnotation = e.annotations["list"] {
                         if let mapping = getAllAnnotation as? MappingAnnotation {
@@ -59,12 +59,22 @@ public extension ModelRepository {
                 } else {
                     e.dataType = .embeddedType
                 }
+                return
+            }
+            
+            if var cls = e as? DtoObject {
+                if cls.givename.hasSuffix("Input"){
+                    e.dataType = .apiInput
+                } else {
+                    e.dataType = .dto
+                    cls.appendAPI(.list)
+                }
             }
         }
         
         
-        print("💡 Loaded domain entities: ", model.containers.getEntities().count)
-        print("💡 Loaded common models: ", model.commonModel.getEntities().count)
+        print("💡 Loaded domain types: ", model.containers.types.count)
+        print("💡 Loaded common types: ", model.commonModel.types.count)
 
     }
 }
