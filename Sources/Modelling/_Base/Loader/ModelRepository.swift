@@ -35,27 +35,26 @@ public extension ModelRepository {
             if var cls = e as? DomainObject {
                 if cls.givename.hasSuffix("Cache"){
                     e.dataType = .cache
-                } else if cls.givename.hasSuffix("Dto"){
-                    e.dataType = .dto
                 } else if cls.givename.hasSuffix("Input"){
                     e.dataType = .apiInput
                 } else if cls.hasProp("_id") || cls.hasProp("id") {
                     e.dataType = .entity
                     
-                    cls.appendAPI(.create)
-                    cls.appendAPI(.update)
-                    cls.appendAPI(.delete)
-                    cls.appendAPI(.getById)
-                    let getAll = cls.appendAPI(.list)
-                    
-                    if let getAllAnnotation = e.annotations["list"] {
-                        if let mapping = getAllAnnotation as? MappingAnnotation {
-                            for item in mapping.mappings {
-                                getAll[item.key] = item.value
+                    if e.hasNoAPIs() {
+                        cls.appendAPI(.create)
+                        cls.appendAPI(.update)
+                        cls.appendAPI(.delete)
+                        cls.appendAPI(.getById)
+                        let getAll = cls.appendAPI(.list)
+                        
+                        if let getAllAnnotation = e.annotations["list"] {
+                            if let mapping = getAllAnnotation as? MappingAnnotation {
+                                for item in mapping.mappings {
+                                    getAll[item.key] = item.value
+                                }
                             }
                         }
                     }
-                    
                 } else {
                     e.dataType = .embeddedType
                 }
@@ -67,7 +66,10 @@ public extension ModelRepository {
                     e.dataType = .apiInput
                 } else {
                     e.dataType = .dto
-                    cls.appendAPI(.list)
+                    
+                    if e.hasNoAPIs() {
+                        cls.appendAPI(.list)
+                    }
                 }
             }
         }

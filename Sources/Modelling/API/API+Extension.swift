@@ -150,7 +150,7 @@ public extension CodeObject {
         let apis = APIList()
         
         for item in attached {
-            if let api = item as? API{
+            if let api = item as? API {
                 apis.append(api)
             }
         }
@@ -162,5 +162,17 @@ public extension CodeObject {
         let api = API(entity: self, type: type)
         attached.append(api)
         return api
+    }
+    
+    func hasNoAPIs() -> Bool {
+        let apis = APIList()
+        
+        for item in attached {
+            if let api = item as? API {
+                apis.append(api)
+            }
+        }
+        
+        return apis.count == 0
     }
 }
