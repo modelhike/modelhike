@@ -32,7 +32,7 @@ open class Workspace {
             isModelsLoaded = true
         } catch let err {
             printModelError(err)
-            print("❌❌❌ TERMINATED DUE TO ERROR ❌❌❌")
+            print("❌❌ ERROR IN LOADING MODELS ❌❌")
         }
     }
     
@@ -131,6 +131,9 @@ open class Workspace {
     
     fileprivate func printModelError(_ err: Error) {
         if let parseErr = err as? Model_ParsingError {
+            print(parseErr.info)
+            //print(Thread.callStackSymbols)
+        } else if let parseErr = err as? ParsingError {
             print(parseErr.info)
             //print(Thread.callStackSymbols)
         } else {
