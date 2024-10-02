@@ -23,12 +23,17 @@ open class Workspace {
     }
     
     public func loadModels(from repo: ModelRepository) throws {
-        try repo.loadModel(to: model)
-        try repo.loadGenerationConfigIfAny()
-        
-        try repo.processAfterLoad(model: model, with: context)
-
-        isModelsLoaded = true
+        do {
+            try repo.loadModel(to: model)
+            try repo.loadGenerationConfigIfAny()
+            
+            try repo.processAfterLoad(model: model, with: context)
+            
+            isModelsLoaded = true
+        } catch let err {
+            printModelError(err)
+            print("❌❌❌ TERMINATED DUE TO ERROR ❌❌❌")
+        }
     }
     
     public func loadSymbols(_ sym : Set<PreDefinedSymbols>? = nil) throws {
@@ -75,8 +80,9 @@ open class Workspace {
                 try loadSymbols()
             }
             
+            print("🛠️ Container: \(container)")
             print("🛠️ Output folder: \(output.path.string)")
-            
+
             try output.ensureExists()
             try output.clearFiles()
             
@@ -86,7 +92,7 @@ open class Workspace {
             return rendering
             
         } catch let err {
-            printError(err)
+            printRenderingError(err)
             print("❌❌❌ TERMINATED DUE TO ERROR ❌❌❌")
             return nil
         }
@@ -102,25 +108,33 @@ open class Workspace {
             return rendering?.trim()
 
         } catch let err {
-            printError(err)
+            printRenderingError(err)
             print("❌❌❌ TERMINATED DUE TO ERROR ❌❌❌")
             return nil
         }
     }
     
-    fileprivate func printError(_ err: Error) {
-        if let parseErr = err as? TemplateSoup_ParsingError {
+    fileprivate func printRenderingError(_ err: Error) {
+        if let parseErr = err as? ParsingError {
             print(parseErr.info)
-        } else if let evalErr = err as? TemplateSoup_EvaluationError {
-            print(evalErr.info)
-        } else if let parseErr = err as? ParsingError {
-                print(parseErr.info)
-                //print(Thread.callStackSymbols)
+            //print(Thread.callStackSymbols)
+        } else if let parseErr = err as? Model_ParsingError {
+            print(parseErr.info)
+            //print(Thread.callStackSymbols)
         } else if let evalErr = err as? EvaluationError {
                 print(evalErr.info)
                 //print(Thread.callStackSymbols)
         } else {
-            print(err)
+            print("❌❌ UNKNOWN INTERNAL ERROR ❌❌")
+        }
+    }
+    
+    fileprivate func printModelError(_ err: Error) {
+        if let parseErr = err as? Model_ParsingError {
+            print(parseErr.info)
+            //print(Thread.callStackSymbols)
+        } else {
+            print("❌❌ UNKNOWN INTERNAL ERROR ❌❌")
         }
     }
     
