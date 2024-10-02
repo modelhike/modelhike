@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class ParsedModelCache {
+public class ParsedTypesCache : CustomDebugStringConvertible {
     public private(set) var items: [CodeObject] = []
     
     public func getLastPropInRecursive(_ propName: String, inObj objectName: String) -> Property? {
@@ -20,7 +20,8 @@ public class ParsedModelCache {
     }
         
     public func get(for name: String) -> CodeObject? {
-        return items.first(where: { $0.givename == name || $0.name == name })
+        return items.first(where: { $0.givename.lowercased() == name.lowercased()
+            || $0.name.lowercased() == name.lowercased() })
     }
      
     public func append(_ item: CodeObject) {
@@ -29,6 +30,20 @@ public class ParsedModelCache {
     
     public func append(_ newItems : [CodeObject]) {
         items.append(contentsOf: newItems)
+    }
+    
+    public var debugDescription: String {
+        var str =  """
+                    Types \(self.items.count) items:
+                    """
+        str += .newLine
+        
+        for item in items {
+            str += item.givename + .newLine
+            
+        }
+        
+        return str
     }
     
     public init() {}

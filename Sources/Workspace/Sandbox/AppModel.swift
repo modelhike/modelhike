@@ -7,13 +7,14 @@
 import Foundation
 
 open class AppModel {
-    var parsedModel = ParsedModelCache()
+    var types = ParsedTypesCache()
     public internal(set) var commonModel = C4ComponentList()
     private var modules = C4ComponentList()
     public internal(set) var containers = C4ContainerList()
     
-    public func resolveAndLinkItems() {
+    public func resolveAndLinkItems(with ctx: Context) throws {
 
+        //resolve modules
         containers.forEach { container in
             for unresolvedMember in container.unresolvedMembers {
                 if let module = module(named: unresolvedMember.name) {
@@ -23,8 +24,20 @@ open class AppModel {
             }
         }
         
-        commonModel.addTypesTo(model: parsedModel)
-        containers.addTypesTo(model: parsedModel)
+        commonModel.addTypesTo(model: types)
+        containers.addTypesTo(model: types)
+        
+        //process types
+        try containers.forEach { container in
+            
+            for type in container.types {
+                try ParserUtil.extractMixins(for: type, with: ctx)
+                
+                if let dto = type as? DtoObject {
+                    try dto.populateDerivedProperties()
+                }
+            }
+        }
     }
     
     public func container(named name: String) -> C4Container? {

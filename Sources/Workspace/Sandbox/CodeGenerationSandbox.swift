@@ -10,7 +10,7 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
     public private(set) var templateSoup: TemplateSoup
     public private(set) var generation_dir: LocalPath
     
-    public let model: AppModel
+    public var model: AppModel { context.model }
     
     public var basePath: LocalPath { context.paths.basePath }
     public var outputPath: LocalPath { context.paths.output.path }
@@ -44,7 +44,9 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
         
         //handle special folders
         if blueprintLoader.hasFolder(SpecialFolderNames.root) {
-            try renderSpecialFolder(SpecialFolderNames.root, to: "/", msg: "🏷️ Generating Root folder...")
+            try renderSpecialFolder(SpecialFolderNames.root, to: "/")
+        } else {
+            print("⚠️ Didn't find 'Root' folder in Blueprint !!!")
         }
         
         return try templateSoup.renderTemplateWithFrontMatter(fileName: TemplateConstants.MainTemplateFile)
@@ -70,8 +72,6 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
     public init(context: Context) {
         self.context = context
         self.lineParser  = LineParser(context: context)
-
-        self.model = AppModel()
         
         self.templateSoup  = TemplateSoup(context: context)
 

@@ -119,8 +119,12 @@ public class Context {
         try objManager.setObjAttribute(objName: objName, attributeName: propName, body: body, modifiers: modifiers, lineNo: lineNo, with: self)
     }
     
+    //parsed model
+    public let model: AppModel
+
     public init(paths: ContextPaths) {
         self.paths = paths
+        self.model = AppModel()
 
         defer {
             self.objManager = ObjectAttributeManager(context: self)
