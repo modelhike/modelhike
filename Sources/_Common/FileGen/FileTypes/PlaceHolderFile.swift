@@ -13,11 +13,9 @@ open class PlaceHolderFile : OutputFile {
     public var outputPath: LocalPath!
     let renderer: TemplateRenderer
     
-    public func persist() throws {
-        let inFileContents = try repo.readTextContents(filename: self.oldFilename)
-        
+    public func persist() throws {        
         let data : [String: Any] = [:]
-        let contents = try renderer.renderTemplate(string: inFileContents, data: data) ?? ""
+        let contents = try renderer.renderTemplate(fileName: self.oldFilename, data: data) ?? ""
         
         let outFile = LocalFile(path: outputPath / filename)
         try outFile.write(contents)

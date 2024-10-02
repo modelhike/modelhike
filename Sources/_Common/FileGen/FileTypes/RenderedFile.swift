@@ -19,9 +19,9 @@ open class RenderedFile : OutputFile {
         var contents = ""
         
         if let data = data {
-            contents = try renderer.renderTemplateWithoutFrontMatter(fileName: template, data: data) ?? ""
+            contents = try renderer.renderTemplate(fileName: template, data: data) ?? ""
         } else {
-            contents = try renderer.renderTemplateWithoutFrontMatter(fileName: template, data: [:]) ?? ""
+            contents = try renderer.renderTemplate(fileName: template, data: [:]) ?? ""
         }
         
         try file.write(contents)

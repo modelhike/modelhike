@@ -16,7 +16,7 @@ public class TemplateSoup : TemplateRenderer {
         do {
             return try loader.loadTemplate(fileName: templateName)
         } catch {
-          throw TemplateDoesNotExist(templateName: templateName)
+            throw TemplateSoup_EvaluationError.templateDoesNotExist(templateName)
         }
     }
     
@@ -25,47 +25,50 @@ public class TemplateSoup : TemplateRenderer {
     }
     
     //MARK: TemplateRenderer protocol implementation
-    public func renderTemplateWithFrontMatter(fileName templateFile: String) throws -> String? {
-        let fileTemplate = try self.loadTemplate(fileName: templateFile)
-        
-        let content = fileTemplate.toString()
-        let lineParser = LineParser(string: content, with: context)
-        
-        let curLine = lineParser.currentLine()
+    public func renderTemplate(fileName templateFile: String, data: StringDictionary = [:]) throws -> String? {
+        do {
             
-        if curLine.hasOnly(TemplateConstants.frontMatterIndicator) {
-            try FrontMatter (lineParser: lineParser, with: context)
+            let fileTemplate = try self.loadTemplate(fileName: templateFile)
+            
+            let content = fileTemplate.toString()
+            let lineParser = LineParser(string: content, with: context)
+            
+            let curLine = lineParser.currentLine()
+            
+            if curLine.hasOnly(TemplateConstants.frontMatterIndicator) {
+                try FrontMatter (lineParser: lineParser, with: context)
+            }
+            
+            context.pushSnapshot()
+            context.append(variables: data)
+            
+            let templateEval = TemplateEvaluator()
+            let rendering = try templateEval.execute(identifier: templateFile, lineparser: lineParser, with: context)
+            
+            context.popSnapshot()
+            
+            return rendering
+        } catch let err {
+            if let evalErr = err as? TemplateSoup_EvaluationError {
+                let lineNo = 0 //parser.lineParser.curLineNoForDisplay
+                let identifier = templateFile
+                if case .templateDoesNotExist(_) = evalErr {
+                    throw EvaluationError.templateDoesNotExist(lineNo, identifier, evalErr.info)
+                } else if case .templateReadingError(_) = evalErr {
+                    throw EvaluationError.readingError(lineNo, identifier, evalErr.info)
+                }
+            }
+            
+            throw err
         }
-        
-        context.pushSnapshot()
-        
-        let templateEval = TemplateEvaluator()
-        let rendering = try templateEval.execute(identifier: templateFile, lineparser: lineParser, with: context)
-        
-        context.popSnapshot()
-        
-        return rendering
     }
     
-    public func renderTemplateWithoutFrontMatter(fileName: String, data: StringDictionary = [:]) throws -> String? {
+    public func renderTemplate(string templateString: String, identifier: String = "", data: StringDictionary = [:]) throws -> String? {
         context.pushSnapshot()
         context.append(variables: data)
         
-        let template = try loadTemplate(fileName: fileName)     
-        let templateEval = TemplateEvaluator()
-        let rendering =  try templateEval.execute(template: template, context: context)
-        
-        context.popSnapshot()
-        
-        //print(rendering)
-        return rendering
-    }
-    
-    public func renderTemplate(string templateString: String, data: StringDictionary = [:]) throws -> String? {
-        context.pushSnapshot()
-        context.append(variables: data)
-        
-        let template: StringTemplate = "\(templateString)"
+        let template = StringTemplate(contents: templateString, name: identifier)
+
         let templateEval = TemplateEvaluator()
         let rendering = try templateEval.execute(template: template, context: context)
         
@@ -88,7 +91,6 @@ public class TemplateSoup : TemplateRenderer {
 }
 
 public protocol TemplateRenderer {
-    func renderTemplateWithFrontMatter(fileName templateFile: String) throws -> String?
-    func renderTemplateWithoutFrontMatter(fileName: String, data: StringDictionary) throws -> String?
-    func renderTemplate(string templateString: String, data: StringDictionary) throws -> String?
+    func renderTemplate(fileName templateFile: String, data: StringDictionary) throws -> String?
+    func renderTemplate(string templateString: String, identifier: String, data: StringDictionary) throws -> String?
 }

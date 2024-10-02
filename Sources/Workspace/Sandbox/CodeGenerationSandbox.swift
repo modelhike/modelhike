@@ -49,7 +49,7 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
             print("⚠️ Didn't find 'Root' folder in Blueprint !!!")
         }
         
-        return try templateSoup.renderTemplateWithFrontMatter(fileName: TemplateConstants.MainTemplateFile)
+        return try templateSoup.renderTemplate(fileName: TemplateConstants.MainTemplateFile)
     }
     
     
