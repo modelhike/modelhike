@@ -14,7 +14,7 @@ public enum ModelRegEx {
     public static let variable: Regex<Regex<Substring>.RegexOutput> = CommonRegEx.variable
     public static let nameWithWhitespace: Regex<Regex<Substring>.RegexOutput> = Regex {
         CharacterClass(
-            .anyOf("_ "),
+            .anyOf("_"),
             ("A"..."Z"),
             ("a"..."z")
         )
@@ -128,31 +128,29 @@ public enum ModelRegEx {
     
     static let atribute_Capturing = Regex {
         Capture {
-            variable
+            nameWithWhitespace
         } transform: { String($0) }
         
-        ZeroOrMore(.whitespace)
+        whitespace
         
         Optionally {
             ":"
-            ZeroOrMore(.whitespace)
+            whitespace
             Capture {
                 variableValue
             } transform: { String($0) }
         }
     }
     
-    static let attributes_Capturing: Regex<Regex<ZeroOrMore<(Substring, String?, String??)>.RegexOutput>.RegexOutput> = Regex {
-        ZeroOrMore {
-            ZeroOrMore(.whitespace)
-            atribute_Capturing
-            ZeroOrMore(.whitespace)
-            Optionally(",")
-            ZeroOrMore(.whitespace)
-        }
+    static let attributes_Capturing: Regex<(Substring, String, String?)> = Regex {
+        whitespace
+        atribute_Capturing
+        whitespace
+        Optionally(",")
+        whitespace
     }
     
-    public static let property_Capturing: Regex<Regex<(Substring, String, String, String?, String?, String??, String?)>.RegexOutput> = Regex {
+    public static let property_Capturing: Regex<(Substring, String, String, String?, String?, String??, String?)> = Regex {
         Capture {
             nameWithWhitespace
         } transform: { String($0) }
@@ -187,9 +185,27 @@ public enum ModelRegEx {
         CommonRegEx.comments
     }
     
+    public static let derivedProperty_Capturing: Regex<(Substring, String, String?, String?)> = Regex {
+        Capture {
+            nameWithWhitespace
+        } transform: { String($0) }
+        
+        Optionally {
+            attributes
+        }
+        
+        Optionally {
+            Capture {
+                tags
+            } transform: { String($0) }
+        }
+        
+        CommonRegEx.comments
+    }
+    
     public static let container_Member_Capturing: Regex<(Substring, String, String?, String?)> = Regex {
         Capture {
-            CommonRegEx.anything
+            nameWithWhitespace
         } transform: { String($0) }
                 
         Optionally {
@@ -204,4 +220,12 @@ public enum ModelRegEx {
     
         CommonRegEx.comments
     }
+    
+    public static let moduleName_Capturing: Regex<(Substring, String, String?, String?)> = container_Member_Capturing
+    
+    public static let containerName_Capturing: Regex<(Substring, String, String?, String?)> = container_Member_Capturing
+    
+    public static let className_Capturing: Regex<(Substring, String, String?, String?)> = container_Member_Capturing
+    
+    public static let uiviewName_Capturing: Regex<(Substring, String, String?, String?)> = container_Member_Capturing
 }
