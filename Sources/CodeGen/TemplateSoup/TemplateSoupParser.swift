@@ -134,7 +134,7 @@ public class TemplateSoupParser : CustomDebugStringConvertible {
             
             return true
         } else {
-            return false
+            throw TemplateSoup_ParsingError.invalidTemplateFunctionStmt(templateFnLine)
         }
     }
     

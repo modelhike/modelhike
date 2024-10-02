@@ -10,6 +10,7 @@ public enum TemplateSoup_ParsingError: Error, Equatable {
     case invalidFrontMatter(String)
     case invalidStmt(String)
     case invalidMultiBlockStmt(Int, String)
+    case invalidTemplateFunctionStmt(String)
     case objectNotFound(String)
     case modifierNotFound(String)
     case modifierInvalidSyntax(String)
@@ -30,7 +31,9 @@ public enum TemplateSoup_ParsingError: Error, Equatable {
                 return suffix + "invalid stmt: \(line)"
             case .invalidMultiBlockStmt(let lineNo, let line) :
                 return suffix + "[Line \(lineNo) - Invalid syntax]  \(line)"
-            case .objectNotFound(let obj) : 
+            case .invalidTemplateFunctionStmt(let line) :
+                return suffix + "invalid fn definition: \(line)"
+            case .objectNotFound(let obj) :
                 return suffix + "object: \(obj) not found"
             case .modifierNotFound(let modifier) :
                 return suffix + "modifier: \(modifier) not found"
