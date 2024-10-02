@@ -60,6 +60,10 @@ public enum DomainObjectParser {
                 continue
             }
             
+            if try item.tryParseAttachedSections(with: pctx) {
+                continue
+            }
+            
             //nothing can be recognised by this
             break
         }

@@ -11,9 +11,9 @@ public extension String {
 
     static var empty: String { "" }
     
-//    func isOnly(_ txt: String) -> Bool {
-//        return self.trim() == txt
-//    }
+    func isOnly(_ txt: String) -> Bool {
+        return self.trim() == txt
+    }
     
     func hasOnly(_ txt: String) -> Bool {
         let trimmed = self.trim()

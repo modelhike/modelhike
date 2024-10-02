@@ -59,6 +59,10 @@ public enum DtoObjectParser {
                 continue
             }
             
+            if try item.tryParseAttachedSections(with: pctx) {
+                continue
+            }
+            
             //nothing can be recognised by this
             break
         }

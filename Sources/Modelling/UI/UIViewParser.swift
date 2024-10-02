@@ -46,6 +46,13 @@ public enum UIViewParser {
             
             guard let pctx = parser.currentParsingContext() else { parser.skipLine(); continue }
 
+            if try item.tryParseAnnotations(with: pctx) {
+                continue
+            }
+            
+            if try item.tryParseAttachedSections(with: pctx) {
+                continue
+            }
             
             //nothing can be recognised by this
             break

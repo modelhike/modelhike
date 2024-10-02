@@ -18,6 +18,8 @@ public enum ModelConstants {
     
     public static let External_Import_File = "+"
     
+    public static let AttachedSection = "#"
+
     public static let Annotation_Start = "@"
     public static let Annotation_Split = "::"
 

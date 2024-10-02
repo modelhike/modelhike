@@ -20,5 +20,5 @@ typealias ArtifactContainerBuilder = ResultBuilder<ArtifactContainer>
 
 
 public enum ArtifactKind {
-    case unKnown, entity, embeddedType, valueType, dto, api, apiInput, cache, workflow, event, agent, data, ui, uxFlow, container, custom
+    case unKnown, entity, embeddedType, valueType, dto, api, apiInput, cache, workflow, event, agent, data, ui, uxFlow, container, attachedSection, custom
 }

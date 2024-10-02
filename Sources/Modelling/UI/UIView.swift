@@ -10,6 +10,10 @@ public class UIView : UIObject {
     public var givename: String
     public var name: String
     public var members : [CodeMember] = []
+    public var attachedSections = AttachedSections()
+    public var attached : [Artifact] = []
+    public var mixins : [CodeObject] = []
+    
     public var attribs = Attributes()
     public var tags = Tags()
     public var annotations = Annotations()
@@ -42,7 +46,7 @@ public class UIView : UIObject {
     }
 }
 
-public protocol UIObject : ArtifactContainer, CustomDebugStringConvertible {
+public protocol UIObject : ArtifactContainer, HasAttachedSections, CustomDebugStringConvertible {
     var givename: String {get}
     var name: String {get}
     var dataType: ArtifactKind {get set}

@@ -11,6 +11,7 @@ public class DtoObject : CodeObject {
     public var givename: String
     public var name: String
     public var members : [CodeMember] = []
+    public var attachedSections = AttachedSections()
     public var attached : [Artifact] = []
     public var mixins : [CodeObject] = []
 

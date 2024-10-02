@@ -16,6 +16,7 @@ public enum Model_ParsingError: Error {
     case invalidModuleLine(String)
     case invalidSubModuleLine(String)
     case invalidAnnotation(String)
+    case invalidAttachedSection(String)
     case moduleNameEmpty
 
     public var info: String {
@@ -30,6 +31,8 @@ public enum Model_ParsingError: Error {
             case .invalidContainerMemberLine(let line) : return "invalid container member: \(line)"
             case .invalidModuleLine(let line) : return "invalid module: \(line)"
             case .invalidSubModuleLine(let line) : return "invalid sub module: \(line)"
+            
+            case .invalidAttachedSection(let line) : return "invalid attached section: \(line)"
             case .moduleNameEmpty : return "module Name Empty"
 
         }

@@ -6,7 +6,7 @@
 
 import Foundation
 
-public protocol CodeObject : ArtifactContainer, CustomDebugStringConvertible {
+public protocol CodeObject : ArtifactContainer, HasAttachedSections, CustomDebugStringConvertible {
     var dataType: ArtifactKind {get set}
     var properties : [Property] {get}
         
