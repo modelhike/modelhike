@@ -46,6 +46,11 @@ public class FileTemplateParser : CustomDebugStringConvertible {
                 return
             }
             
+            //visual separators; just ignore
+            if secondWord.hasPrefix("---") || secondWord.hasPrefix("***") {
+                return
+            }
+            
             if secondWord == TemplateConstants.templateFunction_start {
                 if try parseStartTemplateFunction(secondWord: secondWord, templateParser: templateParser, with: ctx) {
                     return //continue after macro fn
@@ -133,26 +138,25 @@ public class FileTemplateParser : CustomDebugStringConvertible {
         }
     }
     
-    public func parse(string: String, with ctx: Context) throws -> TemplateStmtContainerList? {
-        let lineParser = LineParser(string: string, with: ctx)
-        return try populateContainers(containerName: "string", lineParser: lineParser, with: ctx)
+    public func parse(string: String) throws -> TemplateStmtContainerList? {
+        self.lineParser = LineParser(string: string, with: context)
+        return try populateContainers()
     }
     
-    public func parse(file: LocalFile, with ctx: Context) throws -> TemplateStmtContainerList? {
-        guard let lineParser = LineParser(file: file, with: ctx) else {return nil}
-        return try populateContainers(containerName: file.pathString, lineParser: lineParser, with: ctx)
-    }
-    
-    public func parse(fileName: String, with ctx: Context) throws -> TemplateStmtContainerList? {
-        return try self.parse(file: LocalFile(path: fileName), with: ctx)
-    }
-    
-    fileprivate func populateContainers(containerName: String, lineParser: LineParser, with ctx: Context) throws -> TemplateStmtContainerList? {
-        
+    public func parse(file: LocalFile) throws -> TemplateStmtContainerList? {
+        guard let lineParser = LineParser(file: file, with: context) else {return nil}
         self.lineParser = lineParser
-        
+        return try populateContainers(containerName: file.pathString)
+    }
+    
+    public func parse(fileName: String) throws -> TemplateStmtContainerList? {
+        return try self.parse(file: LocalFile(path: fileName))
+    }
+    
+    public func populateContainers(containerName: String = "string") throws -> TemplateStmtContainerList? {
+                
         containers = TemplateStmtContainerList(name: containerName, currentContainer)
-        try FileTemplateParser.parseAllLines(to: self.currentContainer, templateParser: self, level: 0, with: ctx)
+        try FileTemplateParser.parseAllLines(to: self.currentContainer, templateParser: self, level: 0, with: context)
         
         return containers
     }
@@ -164,7 +168,13 @@ public class FileTemplateParser : CustomDebugStringConvertible {
     public init(context: Context) {
         self.context = context
         self.currentContainer = GenericStmtsContainer()
-        lineParser = LineParser(context: context)
+        self.lineParser = LineParser(context: context)
+    }
+    
+    public init(lineparser: LineParser, context: Context) {
+        self.context = context
+        self.currentContainer = GenericStmtsContainer()
+        self.lineParser = lineparser
     }
 }
 

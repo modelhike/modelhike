@@ -12,6 +12,7 @@ public class LineParser {
     private var _breakParsing: Bool = false
     private var file: LocalFile?
     private let ctx: Context
+    private let autoIncrementLineNoForEveryLoop: Bool
     
     public var curLineNoForDisplay: Int { _curLineNo + 1 }
     
@@ -49,7 +50,9 @@ public class LineParser {
             
             if _breakParsing {break}
             
-            incrementLineNo()
+            if autoIncrementLineNoForEveryLoop {
+                incrementLineNo()
+            }
         }
             
         resetFlags()
@@ -149,7 +152,11 @@ public class LineParser {
         let line = (self.lines[self._curLineNo]).trim()
         return line.hasPrefix(TemplateConstants.comments)
     }
-    
+        
+    public func currentParsingContext() -> ParsingContext? {
+        return ParsingContext(parser: self)
+    }
+        
     public func currentLineWithoutStmtKeyword() -> String {
         return String(currentLine().remainingLine(after: TemplateConstants.stmtKeyWord))
     }
@@ -193,18 +200,21 @@ public class LineParser {
     public init(context: Context) {
         self.ctx = context
         self._curLineNo = 0
+        self.autoIncrementLineNoForEveryLoop = true
     }
     
     public init(string: String, with context: Context) {
         self.ctx = context
         self._curLineNo = 0
         self.lines = string.components(separatedBy: .newlines)
+        self.autoIncrementLineNoForEveryLoop = true
     }
     
-    public init(lines: [String], with context: Context) {
+    public init(lines: [String], with context: Context, autoIncrementLineNoForEveryLoop : Bool = true) {
         self.ctx = context
         self._curLineNo = 0
         self.lines = lines
+        self.autoIncrementLineNoForEveryLoop = autoIncrementLineNoForEveryLoop
     }
     
     public convenience init?(fileName: String, with context: Context) {
@@ -220,5 +230,28 @@ public class LineParser {
         } catch {
             return nil
         }
+    }
+}
+
+public extension LineParser {
+    
+    func isCurrentLineEmptyOrCommented() -> Bool {
+        return isCurrentLineEmpty() || isCurrentLineCommented()
+    }
+
+    func isCurrentLineHumaneComment(_ pctx: ParsingContext) -> Bool {
+        if pctx.firstWord.isStartingWithAlphabet {
+            let nextLine = pctx.parser.nextLine().trim()
+            if nextLine.isEmpty {
+                return true
+            }
+            
+            if let firstWord = nextLine.firstWord(), firstWord.isStartingWithAlphabet {
+                return true
+            }
+        }
+        
+        return false
+
     }
 }

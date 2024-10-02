@@ -9,7 +9,6 @@ import Foundation
 public typealias LoadTemplateHandler = (_ templateName: String,_ loader: BlueprintRepository, _ ctx: Context) throws -> Template
 
 public class TemplateSoup : TemplateRenderer {
-    var templateEval: TemplateEvaluator
     let context: Context
     var repo: BlueprintRepository
     
@@ -27,9 +26,7 @@ public class TemplateSoup : TemplateRenderer {
     
     //MARK: TemplateRenderer protocol implementation
     public func renderTemplateWithFrontMatter(fileName templateFile: String) throws -> String? {
-        var templateString = ""
-        
-        guard let fileTemplate = try self.loadTemplate(fileName: templateFile) as? TemplateSoupTemplate else { return nil }
+        let fileTemplate = try self.loadTemplate(fileName: templateFile)
         
         let content = fileTemplate.toString()
         let lineParser = LineParser(string: content, with: context)
@@ -38,15 +35,12 @@ public class TemplateSoup : TemplateRenderer {
             
         if curLine.hasOnly(TemplateConstants.frontMatterIndicator) {
             try FrontMatter (lineParser: lineParser, with: context)
-            templateString = lineParser.getRemainingLinesAsString()
-        } else {
-            templateString = lineParser.getRemainingLinesAsString()
         }
         
         context.pushSnapshot()
         
-        let template: StringTemplate = "\(templateString)"
-        let rendering = try templateEval.execute(template: template, context: context)
+        let templateEval = TemplateEvaluator()
+        let rendering = try templateEval.execute(identifier: templateFile, lineparser: lineParser, with: context)
         
         context.popSnapshot()
         
@@ -57,7 +51,8 @@ public class TemplateSoup : TemplateRenderer {
         context.pushSnapshot()
         context.append(variables: data)
         
-        let template = try loadTemplate(fileName: fileName)        
+        let template = try loadTemplate(fileName: fileName)     
+        let templateEval = TemplateEvaluator()
         let rendering =  try templateEval.execute(template: template, context: context)
         
         context.popSnapshot()
@@ -71,6 +66,7 @@ public class TemplateSoup : TemplateRenderer {
         context.append(variables: data)
         
         let template: StringTemplate = "\(templateString)"
+        let templateEval = TemplateEvaluator()
         let rendering = try templateEval.execute(template: template, context: context)
         
         context.popSnapshot()
@@ -81,16 +77,12 @@ public class TemplateSoup : TemplateRenderer {
     
     public init(loader: BlueprintRepository, context: Context) {
         self.repo = loader
-
-        self.templateEval = TemplateEvaluator()
         self.context = context
     }
 
     public init(context: Context) {
         let fsLoader = LocalFileBlueprintLoader(path: context.paths.basePath, with: context)
         self.repo = fsLoader
-
-        self.templateEval = TemplateEvaluator()
         self.context = context
     }
 }
