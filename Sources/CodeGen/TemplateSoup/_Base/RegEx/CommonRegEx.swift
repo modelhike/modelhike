@@ -242,6 +242,7 @@ public enum CommonRegEx {
         Capture {
             functionName
         } transform: { String($0) }
+        whitespace
         "("
         whitespace
         Capture {
