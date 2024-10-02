@@ -19,7 +19,7 @@ public enum AttachedSectionParser {
         return false
     }
     
-    public static func parse(for obj: HasAttachedItems, with pctx: ParsingContext) throws -> AttachedSection? {
+    public static func parse(for obj: ArtifactContainerWithAttachedSections, with pctx: ParsingContext) throws -> AttachedSection? {
         let line = pctx.line.dropFirstWord()
         guard let match = line.wholeMatch(of: ModelRegEx.moduleName_Capturing)                                                                                  else { return nil }
         
@@ -48,9 +48,21 @@ public enum AttachedSectionParser {
                 continue
             }
             
-            let attachedItems = try pctx.parseAttachedItems(for: item)
+            let attachedItems = try pctx.parseAttachedItems(for: obj, with: item)
             for attachedItem in attachedItems {
                 obj.appendAttached(attachedItem)
+            }
+            
+            if pctx.firstWord == ModelConstants.AttachedSection {
+                //either it is the starting of another attached section
+                // or it is the end of this attached sections, which is
+                // having only '#' in the line
+                
+                if pctx.line.secondWord() == nil { //marks end of attached section
+                    parser.skipLine()
+                }
+                
+                break
             }
         }
         
