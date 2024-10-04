@@ -17,6 +17,12 @@ public class CodeObject_Wrap : ObjectWrapper {
     public lazy var properties : [TypeProperty_Wrap] = { item.properties.compactMap({ TypeProperty_Wrap($0) })
     }()
     
+    public lazy var pushDataApis : [API_Wrap] = {
+        self.item.getAPIs().compactMap({
+            if ($0.type == .pushData ||
+                $0.type == .pushDataList ) { return API_Wrap($0) } else {return nil}    })
+    }()
+    
     public subscript(member: String) -> Any {
         if member.hasPrefix("has-prop-") {
             let propName = member.removingPrefix("has-prop-")
@@ -32,6 +38,8 @@ public class CodeObject_Wrap : ObjectWrapper {
             case "common" : item.dataType == .valueType
             case "cache" : item.dataType == .cache
             case "workflow" : item.dataType == .workflow
+            case "has-push-apis" : pushDataApis.count != 0
+            
             default:
             //nothing found; so check in module attributes}
             item.attribs[member] as Any
@@ -40,6 +48,8 @@ public class CodeObject_Wrap : ObjectWrapper {
         return value
     }
     
+    public var debugDescription: String { item.debugDescription }
+
     public init(_ item: CodeObject) {
         self.item = item
     }
@@ -98,6 +108,8 @@ public class TypeProperty_Wrap : ObjectWrapper {
         return value
     }
     
+    public var debugDescription: String { item.debugDescription }
+
     public init(_ item: Property) {
         self.item = item
     }

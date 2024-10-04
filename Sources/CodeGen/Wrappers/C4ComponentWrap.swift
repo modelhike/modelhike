@@ -30,9 +30,32 @@ public class C4Component_Wrap : ObjectWrapper {
         if $0.dataType == .dto, let dto = $0 as? DtoObject {CodeObject_Wrap(dto)} else {nil}})
     }()
     
-    public lazy var apis : [API_Wrap] = { item.items.compactMap({
-        if let e = $0 as? API { return API_Wrap(e) } else {return nil}
+    public lazy var entitiesAndDtos : [CodeObject_Wrap] = {
+        var list = entities
+        list.append(contentsOf: dtos)
+        return list
+    }()
+    
+    public lazy var apis : [API_Wrap] = { item.types.flatMap({
+        $0.getAPIs().compactMap({ API_Wrap($0) })
     }) }()
+    
+    public lazy var pushDataApis : [API_Wrap] = { self.apis.compactMap({
+        if ($0.item.type == .pushData ||
+            $0.item.type == .pushDataList ) { return $0 } else {return nil}    }) }()
+    
+    public lazy var mutationApis : [API_Wrap] = { self.apis.compactMap({
+        if ($0.item.type == .create ||
+            $0.item.type == .update ||
+            $0.item.type == .delete ) { return $0 } else {return nil}
+    }) }()
+    
+    public lazy var queryApis : [API_Wrap] = { self.apis.compactMap({
+        if ($0.item.type == .getById ||
+            $0.item.type == .getByCustom ||
+            $0.item.type == .getUsingCustomLogic ||
+            $0.item.type == .list ||
+            $0.item.type == .listByCustom ) { return $0 } else {return nil}    }) }()
     
     public subscript(member: String) -> Any {
         let value: Any = switch member {
@@ -44,6 +67,13 @@ public class C4Component_Wrap : ObjectWrapper {
             case "has-entities" : entities.count != 0
             case "dtos" : dtos
             case "has-dtos" : dtos.count != 0
+            case "entities-and-dtos" : entitiesAndDtos
+            case "push-apis" : pushDataApis
+            case "has-push-apis" : pushDataApis.count != 0
+            case "query-apis" : queryApis
+            case "has-query-apis" : queryApis.count != 0
+            case "mutation-apis" : mutationApis
+            case "has-mutation-apis" : mutationApis.count != 0
             default:
             //nothing found; so check in module attributes}
             item.attribs[member] as Any
@@ -52,6 +82,8 @@ public class C4Component_Wrap : ObjectWrapper {
         return value
     }
     
+    public var debugDescription: String { item.debugDescription }
+
     public init(_ item: C4Component, model: AppModel ) {
         self.item = item
         self.model = model

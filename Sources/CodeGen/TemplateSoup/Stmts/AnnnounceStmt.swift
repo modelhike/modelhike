@@ -1,5 +1,5 @@
 //
-// ConsoleLogStmt.swift
+// AnnnounceStmt.swift
 // DiagSoup
 // https://www.github.com/diagsoup/diagsoup
 //
@@ -7,9 +7,9 @@
 import Foundation
 import RegexBuilder
 
-public class ConsoleLogStmt: LineTemplateStmt, CustomDebugStringConvertible {
-    static let START_KEYWORD = "console-log"
-
+public class AnnnounceStmt: LineTemplateStmt, CustomDebugStringConvertible {
+    static let START_KEYWORD = "announce"
+    
     public private(set) var Expression: String = ""
     
     let stmtRegex = Regex {
@@ -38,37 +38,21 @@ public class ConsoleLogStmt: LineTemplateStmt, CustomDebugStringConvertible {
         
         //see if it is an object
         if let expn = try? ctx.evaluate(value: Expression, lineNo: lineNo) {
-            if expn is String {
-                print("🏷️ [Line \(lineNo)] \(expn)")
-            } else if let obj = deepUnwrap(expn) {
-                //log to stdout
-                
-                if let debugInfo = obj as? CustomDebugStringConvertible {
-                    print("🏷️ [Line \(lineNo)] \(debugInfo.debugDescription)")
-                } else {
-                    print("🏷️ [Line \(lineNo)] \(obj)")
-                }
-            }
-            return nil
+            print("🔈 \(expn)")
+        } else {
+            print("🔈🎈[Line no: \(lineNo)] - nothing to announce")
         }
         
-        //see if it is an expression
-        if let expn = try? ctx.evaluate(expression: Expression, lineNo: lineNo) {
-            print("🏷️ [Line \(lineNo)] \(expn)")
-            return nil
-        }
-            
-        print("🏷️🎈[Line no: \(lineNo)] - nothing to show")
         return nil
     }
     
     public var debugDescription: String {
         let str =  """
-        CONSOLE LOG stmt (level: \(level))
+        ANNOUNCE stmt (level: \(level))
         - expn: \(self.Expression)
         
         """
-                
+        
         return str
     }
     
@@ -76,7 +60,7 @@ public class ConsoleLogStmt: LineTemplateStmt, CustomDebugStringConvertible {
         super.init(keyword: Self.START_KEYWORD)
     }
     
-    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) { ConsoleLogStmt() }
+    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) { AnnnounceStmt() }
 }
 
 

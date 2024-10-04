@@ -27,6 +27,8 @@ public class UIObject_Wrap : ObjectWrapper {
         return value
     }
     
+    public var debugDescription: String { item.debugDescription }
+
     public init(_ item: UIObject) {
         self.item = item
     }

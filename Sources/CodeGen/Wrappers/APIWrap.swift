@@ -22,8 +22,11 @@ public class API_Wrap : ObjectWrapper {
         
         let value: Any = switch member {
             case "entity": CodeObject_Wrap(item.entity)
+            case "return-type" : item.entity.name
+            case "input-type" : item.entity.name
             case "has-path" : item.path.isNotEmpty
             case "path" : item.path
+            case "name" : item.name
             case "base-url" : item.baseUrl
             case "version" : item.version
             case "query-params" : params()
@@ -32,6 +35,8 @@ public class API_Wrap : ObjectWrapper {
             case "is-delete" : item.type == .delete
             case "is-get-by-id" : item.type == .getById
             case "is-list" :  item.type == .list
+            case "is-push-data" :  item.type == .pushData
+            case "is-push-datalist" :  item.type == .pushDataList
             default:
             //nothing found; so check in module attributes}
             item.attribs[member] as Any
@@ -40,6 +45,8 @@ public class API_Wrap : ObjectWrapper {
         return value
     }
 
+    public var debugDescription: String { item.debugDescription }
+    
     public init(_ item: API) {
         self.item = item
     }

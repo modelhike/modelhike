@@ -10,6 +10,6 @@ public protocol DynamicMemberLookup {
   subscript(member: String) -> Any { get }
 }
 
-public protocol ObjectWrapper : DynamicMemberLookup, HasAttributes {
+public protocol ObjectWrapper : DynamicMemberLookup, HasAttributes, CustomDebugStringConvertible {
     
 }
