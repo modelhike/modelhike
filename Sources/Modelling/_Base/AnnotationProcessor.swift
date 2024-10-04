@@ -7,7 +7,7 @@
 import Foundation
 
 public enum AnnotationProcessor {
-    public static func process(_ annotation: any Annotation, for obj: HasAnnotations, with pctx: ParsingContext) throws {
+    public static func process(_ annotation: any Annotation, for obj: HasAnnotations) throws {
         switch annotation.name {
             case AnnotationConstants.listApi:
                 if let cls = obj as? CodeObject {
@@ -23,13 +23,21 @@ public enum AnnotationProcessor {
                             case "delete": cls.appendAPI(.delete)
                             case "get-by-id": cls.appendAPI(.getById)
                             case "list": cls.appendAPI(.list)
+                            case "subscribe, push-data": cls.appendAPI(.pushData)
+                            case "subscribe-list, push-datalist": cls.appendAPI(.pushData)
+                            case "crud":
+                                cls.appendAPI(.create)
+                                cls.appendAPI(.update)
+                                cls.appendAPI(.delete)
+                                cls.appendAPI(.getById)
+                                cls.appendAPI(.list)
                             default : break
                         }
                     }
                     
                 }
             default:
-                throw Model_ParsingError.invalidAnnotation(pctx.line)
+                throw Model_ParsingError.invalidAnnotation(annotation.parsedContextInfo.lineNo, annotation.parsedContextInfo.line)
         }
     }
 }
