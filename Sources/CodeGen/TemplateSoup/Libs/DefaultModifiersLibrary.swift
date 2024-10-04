@@ -17,6 +17,9 @@ public struct DefaultModifiersLibrary {
             lowercaseFirst,
             uppercaseFirst,
             trim,
+            
+            replacewith,
+            
             urlEncode,
             urlDecode,
             nl2br,
@@ -85,6 +88,16 @@ public struct DefaultModifiersLibrary {
         return CreateModifier.withoutParams("trim") { (value: String, lineNo: Int) -> String? in value.trimmingCharacters(in: .whitespacesAndNewlines) }
     }
 
+    public static var replacewith: Modifier {
+        return CreateModifier.withParams("replace") { (value: String, arguments: [Any], lineNo: Int) throws -> String? in
+            if arguments.count != 2 { throw TemplateSoup_ParsingError.modifierInvalidArguments("replace") }
+            
+            guard let replaceFrom = arguments.first as? String,
+                  let replaceWith = arguments[1] as? String else { return nil }
+            return value.replacingOccurrences(of: replaceFrom, with: replaceWith)
+        }
+    }
+    
     public static var urlEncode: Modifier {
         return CreateModifier.withoutParams("urlEncode") { (value: String, lineNo: Int) -> String? in value.addingPercentEncoding(withAllowedCharacters: .alphanumerics) }
     }

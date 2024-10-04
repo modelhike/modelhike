@@ -13,7 +13,8 @@ public struct GenerationLib {
             kebabcase,
             camelcaseToKebabcase,
             snakecase,
-            identifiercase,
+            identifierCase,
+            packageCase,
             plural
         ]
     }
@@ -30,8 +31,12 @@ public struct GenerationLib {
         return CreateModifier.withoutParams("snakecase") { (value: String, lineNo: Int) -> String? in value.camelCaseToSnakeCase() }
     }
     
-    public static var identifiercase: Modifier {
-        return CreateModifier.withoutParams("identifiercase") { (value: String, lineNo: Int) -> String? in value.normalizeForVariableName() }
+    public static var identifierCase: Modifier {
+        return CreateModifier.withoutParams("identifier-case") { (value: String, lineNo: Int) -> String? in value.normalizeForVariableName() }
+    }
+    
+    public static var packageCase: Modifier {
+        return CreateModifier.withoutParams("package-case") { (value: String, lineNo: Int) -> String? in value.normalizeForPackageName() }
     }
     
     public static var plural: Modifier {

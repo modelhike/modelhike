@@ -158,7 +158,8 @@ public extension String {
         let _functionNamePattern = "[^A-Za-z_0-9]+"
 
         var code  = self
-        code = code.replacingOccurrences(of: "-", with: "")
+        //code = code.replacingOccurrences(of: "-", with: "")
+        code = code.replacingOccurrences(of: " ", with: "")
         code = code.replacingOccurrences(of: _functionNamePattern, with: "_", options: [.regularExpression])
 
         if  let first = code.first, first.isNumber {
@@ -170,6 +171,27 @@ public extension String {
 //            let dropped = code.dropFirst()
 //            code = first.uppercased() + String(dropped)
 //        }
+        
+        return code
+    }
+    
+    func normalizeForPackageName() -> String {
+        let _functionNamePattern = "[^A-Za-z_.0-9]+"
+        
+        var code  = self
+        //code = code.replacingOccurrences(of: "-", with: "")
+        code = code.replacingOccurrences(of: " ", with: ".")
+        code = code.replacingOccurrences(of: _functionNamePattern, with: "_", options: [.regularExpression])
+        
+        if  let first = code.first, first.isNumber {
+            code = "value" + code
+        }
+        
+        //        //make all lower case to upper case names, so as not to clash with js keywords which are all lowercase
+        //        if  let first = code.first, first.isLowercase {
+        //            let dropped = code.dropFirst()
+        //            code = first.uppercased() + String(dropped)
+        //        }
         
         return code
     }
