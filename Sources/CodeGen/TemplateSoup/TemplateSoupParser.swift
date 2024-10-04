@@ -138,8 +138,8 @@ public class TemplateSoupParser : CustomDebugStringConvertible {
         }
     }
     
-    public func parse(string: String) throws -> TemplateStmtContainerList? {
-        self.lineParser = LineParser(string: string, with: context)
+    public func parse(string: String, identifier: String = "") throws -> TemplateStmtContainerList? {
+        self.lineParser = LineParser(string: string, identifier: identifier, with: context)
         return try populateContainers()
     }
     
@@ -164,17 +164,11 @@ public class TemplateSoupParser : CustomDebugStringConvertible {
     public var debugDescription: String {
         return containers.debugDescription
     }
-        
-    public init(context: Context) {
-        self.context = context
-        self.currentContainer = GenericStmtsContainer()
-        self.lineParser = LineParser(context: context)
-    }
     
-    public init(lineparser: LineParser, context: Context) {
+    public init(lineParser: LineParser, context: Context) {
         self.context = context
         self.currentContainer = GenericStmtsContainer()
-        self.lineParser = lineparser
+        self.lineParser = lineParser
     }
 }
 

@@ -13,6 +13,7 @@ public class LineParser {
     private var file: LocalFile?
     private let ctx: Context
     private let autoIncrementLineNoForEveryLoop: Bool
+    public private(set) var identifier: String
     
     public var curLineNoForDisplay: Int { _curLineNo + 1 }
     
@@ -197,39 +198,46 @@ public class LineParser {
         }
     }
     
-    public init(context: Context) {
+    internal init(with context: Context) {
         self.ctx = context
+        self.identifier = ""
+        
         self._curLineNo = 0
         self.autoIncrementLineNoForEveryLoop = true
     }
     
-    public init(string: String, with context: Context) {
+    public init(string: String, identifier: String, with context: Context) {
         self.ctx = context
+        self.identifier = identifier
+        
         self._curLineNo = 0
         self.lines = string.components(separatedBy: .newlines)
         self.autoIncrementLineNoForEveryLoop = true
     }
     
-    public init(lines: [String], with context: Context, autoIncrementLineNoForEveryLoop : Bool = true) {
+    public init(lines: [String], identifier: String, with context: Context, autoIncrementLineNoForEveryLoop : Bool = true) {
         self.ctx = context
+        self.identifier = identifier
+        
         self._curLineNo = 0
         self.lines = lines
         self.autoIncrementLineNoForEveryLoop = autoIncrementLineNoForEveryLoop
     }
     
-    public convenience init?(fileName: String, with context: Context) {
-        self.init(file: LocalFile(path: fileName), with: context)
-    }
-    
     public convenience init?(file: LocalFile, with context: Context) {
         do {
-            self.init(context: context)
-
+            self.init(with: context)
+            self.identifier = file.name
+            
             self.file = file
             self.lines = try file.readTextLines(ignoreEmptyLines: true)
         } catch {
             return nil
         }
+    }
+    
+    public convenience init?(fileName: String, with context: Context) {
+        self.init(file: LocalFile(path: fileName), with: context)
     }
 }
 

@@ -43,7 +43,7 @@ public class InlineModelLoader : ModelRepository {
         for item in items {
             if let modelConfig = item as? InlineConfig {
                 try ConfigFileParser()
-                    .parse(string: modelConfig.string, with: ctx)
+                    .parse(string: modelConfig.string, identifier: "config", with: ctx)
                 
             }
         }
