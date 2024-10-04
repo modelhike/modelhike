@@ -25,14 +25,14 @@ public struct JavaLib {
             let prop = wrapped.item
             
             switch prop.type {
-                case .int : return "int"
-                case .float : return "float"
-                case .double : return "double"
-                case .bool: return "boolean"
+                case .int : return "Integer"
+                case .float : return "Float"
+                case .double : return "Double"
+                case .bool: return "Boolean"
                 case .string, .id: return "String"
                 case .any: return "Object"
                 case .date, .datetime: return "Date"
-                case .buffer: return "byte[]"
+                case .buffer: return "Byte[]"
                 case .reference(_):
                     return "Reference"
                 case .multiReference(_):
