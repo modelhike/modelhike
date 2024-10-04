@@ -15,7 +15,7 @@ public enum Model_ParsingError: Error {
     case invalidContainerLine(String)
     case invalidModuleLine(String)
     case invalidSubModuleLine(String)
-    case invalidAnnotation(String)
+    case invalidAnnotation(Int, String)
     case invalidAttachedSection(String)
     case moduleNameEmpty
 
@@ -25,7 +25,8 @@ public enum Model_ParsingError: Error {
             case .invalidPropertyLine(let prop) : return "invalid property: \(prop)"
             case .invalidDerivedPropertyLine(let prop) : return "invalid derived property: \(prop)"
             case .invalidMapping(let mapping) : return "invalid mapping: \(mapping)"
-            case .invalidAnnotation(let annotation) : return "invalid annotation: \(annotation)"
+            case .invalidAnnotation(let lineNo, let annotation) : 
+                return "[line no : \(lineNo)] invalid annotation: \(annotation)"
             
             case .invalidContainerLine(let line) : return "invalid container: \(line)"
             case .invalidContainerMemberLine(let line) : return "invalid container member: \(line)"

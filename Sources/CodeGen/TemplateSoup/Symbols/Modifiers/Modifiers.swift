@@ -47,7 +47,8 @@ public enum Modifiers  {
 
                 if let modifierSymbol = context.symbols.template.modifiers[fnName] as? ModifierWithUnNamedArgsProtocol {
                     
-                    let args = argsString.split(separator: ",").map { String($0)}
+                    let args = argsString.split(separator: ",").compactMap { 
+                        $0.trim().isNotEmpty ? String($0) : nil }
                     
                     let instance = modifierSymbol.instance()
                     if var instanceWithUnNamedArgs = instance as? ModifierInstanceWithUnNamedArgsProtocol {

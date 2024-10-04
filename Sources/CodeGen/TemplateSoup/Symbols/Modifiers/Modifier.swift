@@ -8,13 +8,13 @@ import Foundation
 
 public struct ModifierWithoutArgs<I, T> : ModifierWithoutArgsProtocol {
     public let name : String
-    private let handler: (I, Int) -> T?
+    private let handler: (I, Int) throws -> T?
     
     public func instance() -> ModifierInstance {
         ModifierInstanceWithoutArgs(name: name, handler: handler)
     }
     
-    public init(name: String, handler: @escaping (I, Int) -> T?) {
+    public init(name: String, handler: @escaping (I, Int) throws -> T?) {
         self.name = name
         self.handler = handler
     }
@@ -22,13 +22,13 @@ public struct ModifierWithoutArgs<I, T> : ModifierWithoutArgsProtocol {
 
 public struct ModifierWithUnNamedArgs<I, T> : ModifierWithUnNamedArgsProtocol {
     public let name : String
-    private let handler: (I, [Any], Int) -> T?
+    private let handler: (I, [Any], Int) throws -> T?
     
     public func instance() -> ModifierInstance {
         ModifierInstanceWithUnNamedArgs(name: name, handler: handler)
     }
     
-    public init(name: String, handler: @escaping (I, [Any], Int) -> T?) {
+    public init(name: String, handler: @escaping (I, [Any], Int) throws -> T?) {
         self.name = name
         self.handler = handler
     }

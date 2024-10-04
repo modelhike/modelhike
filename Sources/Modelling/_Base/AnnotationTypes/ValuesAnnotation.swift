@@ -9,6 +9,8 @@ import Foundation
 public struct ValuesAnnotation: Annotation {
     
     public let name: String
+    public let parsedContextInfo: ParsedContextInfo
+
     public private(set) var values: [String] = []
     
     public func hash(into hasher: inout Hasher) {
@@ -19,12 +21,13 @@ public struct ValuesAnnotation: Annotation {
         return lhs.name == rhs.name
     }
     
-    public init(_ name: String, line: Substring) throws {
-        self.name = name
-        
+    public init(_ name: String, line: Substring, with pctx: ParsingContext) throws {
+        self.name = name.trim()
+        self.parsedContextInfo = ParsedContextInfo(with: pctx)
+
         let components = line.split(separator: ",", omittingEmptySubsequences: true)
         for component in components {
-            values.append(String(component))
+            values.append(String(component.trim()))
         }
     }
 }

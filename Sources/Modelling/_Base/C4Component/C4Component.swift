@@ -25,15 +25,18 @@ public class C4Component : ArtifactContainer {
      }
     
     public func append(_ item: CodeObject) {
+        item.annotations.append(contentsOf: self.annotations)
         items.append(item)
         types.append(item)
     }
     
     public func append(_ item: UIObject) {
+        item.annotations.append(contentsOf: self.annotations)
         items.append(item)
     }
     
     public func append(submodule item: C4Component) {
+        item.annotations.append(contentsOf: self.annotations)
         items.append(item)
     }
     

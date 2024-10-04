@@ -12,6 +12,7 @@ public protocol HasAnnotations {
 
 public protocol Annotation : Hashable {
     var name: String {get}
+    var parsedContextInfo: ParsedContextInfo {get}
 }
 
 public class Annotations : ExpressibleByArrayLiteral, ExpressibleByDictionaryLiteral {
@@ -46,6 +47,13 @@ public class Annotations : ExpressibleByArrayLiteral, ExpressibleByDictionaryLit
         let keyToFind = item.name.lowercased()
         items[keyToFind] = item
     }
+    
+    public func append(contentsOf annotations: Annotations) {
+        for (key, value) in annotations.items {
+            self[key] = value
+        }
+    }
+
     
     public var annotationsList : [any Annotation] {
         var arr:[any Annotation] = []

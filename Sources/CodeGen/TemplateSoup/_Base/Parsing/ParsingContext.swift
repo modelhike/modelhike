@@ -34,13 +34,13 @@ public class ParsingContext {
     
     public func parseAnnotation(with item: HasAnnotations) throws -> (any Annotation)? {
         if AnnotationParser.canParse(firstWord: self.firstWord) {
-            if let annotation = try AnnotationParser.parse(self.line, firstWord: self.firstWord) {
+            if let annotation = try AnnotationParser.parse(with: self) {
                 item.annotations[annotation.name] = annotation
-                try AnnotationProcessor.process(annotation, for: item, with: self)
+                try AnnotationProcessor.process(annotation, for: item)
                 self.parser.skipLine()
                 return annotation
             } else {
-                throw Model_ParsingError.invalidAnnotation(self.line)
+                throw Model_ParsingError.invalidAnnotation(self.parser.curLineNoForDisplay, self.line)
             }
         }
         
@@ -61,5 +61,23 @@ public class ParsingContext {
         guard let firstWord = line.firstWord() else { return nil }
         self.firstWord = firstWord
         self.parser = parser
+    }
+    
+    public init(parser: LineParser, line: String, firstWord: String) {
+        self.line = line
+        self.firstWord = firstWord
+        self.parser = parser
+    }
+}
+
+public class ParsedContextInfo {
+    public var line: String
+    public var lineNo: Int
+    public var identifier: String
+    
+    public init(with pctx: ParsingContext) {
+        self.line = pctx.line
+        self.lineNo = pctx.parser.curLineNoForDisplay
+        self.identifier = pctx.parser.identifier
     }
 }

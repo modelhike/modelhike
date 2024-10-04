@@ -9,7 +9,7 @@ import Foundation
 public struct ModifierInstanceWithoutArgs<I, T> : ModifierInstanceWithoutArgsProtocol {
     public let name : String
     private let callerType: Any.Type
-    private let handler: (I, Int) -> T?
+    private let handler: (I, Int) throws  -> T?
     
     public func applyTo(value : Any, lineNo: Int, with ctx: Context) throws -> Any {
         
@@ -18,13 +18,13 @@ public struct ModifierInstanceWithoutArgs<I, T> : ModifierInstanceWithoutArgsPro
                 throw TemplateSoup_ParsingError.modifierCalledOnwrongType(self.name, String(describing: type(of: value)))
             }
             
-            return handler(typedValue, lineNo) as Any
+            return try handler(typedValue, lineNo) as Any
         } else {
             throw TemplateSoup_ParsingError.modifierCalledOnwrongType(self.name, String(describing: type(of: value)))
         }
     }
     
-    public init(name: String, handler: @escaping (I, Int) -> T?) {
+    public init(name: String, handler: @escaping (I, Int) throws -> T?) {
         self.name = name
         self.callerType = I.self
         self.handler = handler
@@ -34,7 +34,7 @@ public struct ModifierInstanceWithoutArgs<I, T> : ModifierInstanceWithoutArgsPro
 public struct ModifierInstanceWithUnNamedArgs<I, T> : ModifierInstanceWithUnNamedArgsProtocol {
     public var name : String
     public let callerType: Any.Type
-    private let handler: (I, [Any], Int) -> T?
+    private let handler: (I, [Any], Int) throws -> T?
     private var arguments: [String] = []
     
     public mutating func setArgsGiven(arguments: [String]) {
@@ -54,17 +54,18 @@ public struct ModifierInstanceWithUnNamedArgs<I, T> : ModifierInstanceWithUnName
                 if let argValue = try ctx.evaluate(expression: argument, lineNo: lineNo) {
                     argumentValues.append(argValue)
                 } else {
-                    argumentValues.append(Optional<Any>.none as Any)
+                    //argumentValues.append(Optional<Any>.none as Any)
+                    throw TemplateSoup_ParsingError.modifierInvalidArguments(self.name)
                 }
             }
             
-            return handler(typedValue, argumentValues, lineNo) as Any
+            return try handler(typedValue, argumentValues, lineNo) as Any
         } else {
             throw TemplateSoup_ParsingError.modifierCalledOnwrongType(self.name, String(describing: type(of: value)))
         }
     }
     
-    public init(name: String, handler: @escaping (I, [Any], Int) -> T?) {
+    public init(name: String, handler: @escaping (I, [Any], Int) throws -> T?) {
         self.name = name
         self.callerType = I.self
         self.handler = handler

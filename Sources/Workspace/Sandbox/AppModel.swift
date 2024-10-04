@@ -36,6 +36,10 @@ open class AppModel {
                 if let dto = type as? DtoObject {
                     try dto.populateDerivedProperties()
                 }
+                
+                for annotation in type.annotations.annotationsList {
+                    try AnnotationProcessor.process(annotation, for: type)
+                }
             }
         }
     }

@@ -9,6 +9,7 @@ import Foundation
 public class ModelFileParser {
     var modelSpace = ModelSpace()
     var component = C4Component()
+    var subComponent : C4Component?
     var lineParser : LineParser
     let ctx: Context
     
@@ -23,13 +24,15 @@ public class ModelFileParser {
     }
     
     public func parse(lines contents: [String], identifier: String, with ctx: Context) throws -> ModelSpace {
-        let lineParser = LineParser(lines: contents, with: ctx, autoIncrementLineNoForEveryLoop: false)
+        let lineParser = LineParser(lines: contents, identifier: identifier, with: ctx, autoIncrementLineNoForEveryLoop: false)
         self.lineParser = lineParser
 
         do {
             
             try lineParser.parse() {firstWord, secondWord, line, ctx in
-                if lineParser.isCurrentLineEmpty() { lineParser.skipLine(); return }
+                if lineParser.isCurrentLineEmptyOrCommented() { lineParser.skipLine(); return }
+
+                guard let pctx = lineParser.currentParsingContext() else { lineParser.skipLine(); return }
 
                 if ContainerParser.canParse(parser: lineParser) {
                     try parseContainer(firstWord: firstWord, line: line, parser: lineParser)
@@ -68,13 +71,27 @@ public class ModelFileParser {
                     }
                 }
                 
+                if let subComponent = self.subComponent { //sub module active
+                    if try pctx.tryParseAnnotations(with: subComponent) {
+                        return
+                    }
+                } else {
+                    if try pctx.tryParseAnnotations(with: self.component) {
+                        return
+                    }
+                }
+                                
                 lineParser.skipLine();
             }
             
             return modelSpace
         } catch let err {
             if let parseErr = err as? Model_ParsingError {
-                throw ParsingError.invalidLine(self.lineParser.curLineNoForDisplay, parseErr.info, identifier, parseErr)
+                if case .invalidAnnotation(_ , _) = parseErr {
+                    throw ParsingError.invalidLineWithInfo_HavingLineno(identifier, parseErr.info, parseErr)
+                } else {
+                    throw ParsingError.invalidLine(self.lineParser.curLineNoForDisplay, identifier, parseErr.info, parseErr)
+                }
             } else {
                 throw err
             }
@@ -84,6 +101,7 @@ public class ModelFileParser {
     func parseModule(firstWord: String, line: String, parser: LineParser) throws {
         if let module = try ModuleParser.parse(parser: lineParser, with: ctx) {
             self.component = module
+            self.subComponent = nil
             self.modelSpace.append(module: module)
         } else {
             throw Model_ParsingError.invalidModuleLine(line)
@@ -92,6 +110,7 @@ public class ModelFileParser {
     
     func parseSubModule(firstWord: String, line: String, parser: LineParser) throws {
         if let submodule = try SubModuleParser.parse(parser: lineParser, with: ctx) {
+            self.subComponent = submodule
             self.component.append(submodule: submodule)
         } else {
             throw Model_ParsingError.invalidSubModuleLine(line)
@@ -107,7 +126,7 @@ public class ModelFileParser {
     }
     
     public init(with context: Context) {
-        lineParser = LineParser(context: context)
+        lineParser = LineParser(with: context)
         self.ctx = context
     }
 }

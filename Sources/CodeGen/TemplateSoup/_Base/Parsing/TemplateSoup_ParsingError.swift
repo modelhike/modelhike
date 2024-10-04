@@ -14,6 +14,7 @@ public enum TemplateSoup_ParsingError: Error, Equatable {
     case objectNotFound(String)
     case modifierNotFound(String)
     case modifierInvalidSyntax(String)
+    case modifierInvalidArguments(String)
     case modifierCalledOnwrongType(String, String)
     case invalidExpression(Int, String)
     case infixOperatorNotFound(String)
@@ -39,6 +40,8 @@ public enum TemplateSoup_ParsingError: Error, Equatable {
                 return suffix + "modifier: \(modifier) not found"
             case .modifierInvalidSyntax(let modifier) :
                 return suffix + "modifier - invalid syntax: \(modifier)"
+            case .modifierInvalidArguments(let modifier) :
+                return suffix + "Invalid modifier arguments : \(modifier)"
             case .modifierCalledOnwrongType(let modifier, let typeName) :
                 return suffix + "modifier: '\(modifier)' called on wrong type:\(typeName)"
 
