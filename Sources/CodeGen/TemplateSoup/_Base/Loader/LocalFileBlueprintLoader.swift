@@ -81,10 +81,21 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
                 let filename = try ContentLine.eval(line: actualFilename, with: templateSoup.context) ?? actualFilename
                 
                 let contents = try file.readTextContents()
-                let renderedString = try templateSoup.renderTemplate(string: contents, identifier: actualFilename) ?? ""
                 
-                let outFile = LocalFile(path: outputFolder.path / filename)
-                try outFile.write(renderedString)
+                let renderClosure = {
+                    if let renderedString = try templateSoup.renderTemplate(string: contents, identifier: actualFilename) {
+                        
+                        let outFile = LocalFile(path: outputFolder.path / filename)
+                        try outFile.write(renderedString)
+                    }
+                }
+                
+                if let pctx = templateSoup.frontMatter(hasDirective: ParserDirectives.includeFor, in: contents, identifier: actualFilename) {
+                    try templateSoup.forEach(forInExpression: pctx.line, parser: pctx.parser, renderClosure: renderClosure)
+                } else {
+                    try renderClosure()
+                }
+                
             } else { //not a template file
                 try file.copy(to: outputFolder)
             }

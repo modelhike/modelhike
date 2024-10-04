@@ -141,6 +141,12 @@ public struct ContextDebugLog {
         }
     }
     
+    public func excludingFile(_ filepath: String) {
+        if flags.excludedFiles {
+            print("⚠️ Excluding \(filepath) ...")
+        }
+    }
+    
     public func generatingFile(_ filepath: String) {
         if flags.fileGeneration {
             print("Generating \(filepath) ...")
@@ -190,6 +196,8 @@ public struct ContextDebugFlags {
     public var lineByLineParsing = false
     public var blockByBlockParsing = false
     public var controlFlow = false
+
+    public var excludedFiles = false
 
     public var changesInWorkingDirectory = false
     public var fileGeneration = false

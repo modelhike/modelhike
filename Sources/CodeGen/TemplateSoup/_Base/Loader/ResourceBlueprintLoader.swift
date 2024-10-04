@@ -118,10 +118,20 @@ open class ResourceBlueprintLoader : BlueprintRepository {
                         //render the filename if it has an expression within '{{' and '}}'
                         let filename = try ContentLine.eval(line: resourceName, with: templateSoup.context) ?? resourceName
                         
-                        let renderedString = try templateSoup.renderTemplate(string: contents, identifier: resourceName) ?? ""
+                        let renderClosure = {
+                            if let renderedString = try templateSoup.renderTemplate(string: contents, identifier: resourceName){
+                                
+                                let outFile = LocalFile(path: outputPath / filename)
+                                try outFile.write(renderedString)
+                            }
+                        }
                         
-                        let outFile = LocalFile(path: outputPath / filename)
-                        try outFile.write(renderedString)
+                        if let pctx = templateSoup.frontMatter(hasDirective: ParserDirectives.includeFor, in: contents, identifier: resourceName) {
+                            try templateSoup.forEach(forInExpression: pctx.line, parser: pctx.parser, renderClosure: renderClosure)
+                        } else {
+                            try renderClosure()
+                        }
+                        
                     } else { //not a template file
 
                         let filename = resourceName

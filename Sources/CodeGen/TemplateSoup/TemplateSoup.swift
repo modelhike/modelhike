@@ -30,20 +30,11 @@ public class TemplateSoup : TemplateRenderer {
             
             let fileTemplate = try self.loadTemplate(fileName: templateFile)
             
-            let content = fileTemplate.toString()
-            let lineParser = LineParser(string: content, with: context)
-            
-            let curLine = lineParser.currentLine()
-            
-            if curLine.hasOnly(TemplateConstants.frontMatterIndicator) {
-                try FrontMatter (lineParser: lineParser, with: context)
-            }
-            
             context.pushSnapshot()
             context.append(variables: data)
             
             let templateEval = TemplateEvaluator()
-            let rendering = try templateEval.execute(identifier: templateFile, lineparser: lineParser, with: context)
+            let rendering = try templateEval.execute(template: fileTemplate, with: context)
             
             context.popSnapshot()
             
@@ -64,18 +55,66 @@ public class TemplateSoup : TemplateRenderer {
     }
     
     public func renderTemplate(string templateString: String, identifier: String = "", data: StringDictionary = [:]) throws -> String? {
-        context.pushSnapshot()
-        context.append(variables: data)
         
         let template = StringTemplate(contents: templateString, name: identifier)
 
+        context.pushSnapshot()
+        context.append(variables: data)
+        
         let templateEval = TemplateEvaluator()
-        let rendering = try templateEval.execute(template: template, context: context)
+        let rendering = try templateEval.execute(template: template, with: context)
         
         context.popSnapshot()
         
         //print(rendering)
         return rendering
+    }
+    
+    public func forEach(forInExpression expression: String, parser: LineParser, renderClosure: () throws -> Void ) throws {
+        let line = "\(ForStmt.START_KEYWORD) \(expression)"
+        guard let match = line.wholeMatch(of: ForStmt.stmtRegex ) else {
+            throw ParsingError.invalidLineWithoutErr(parser.curLineNoForDisplay, parser.identifier, expression)
+        }
+        
+        let (_, forVar, inArrayVar) = match.output
+        let loopVariableName = forVar
+        
+        guard let loopItems = context.valueOf(variableOrObjProp: inArrayVar) as? [Any] else {
+            throw ParsingError.invalidLineWithoutErr(parser.curLineNoForDisplay, parser.identifier, expression)
+        }
+        
+        context.pushSnapshot()
+        
+        for (index, loopItem) in loopItems.enumerated() {
+            context.variables[loopVariableName] = loopItem
+            
+            context.variables[ForStmt.FIRST_IN_LOOP] = index == loopItems.startIndex
+            context.variables[ForStmt.LAST_IN_LOOP] = index == loopItems.index(before: loopItems.endIndex)
+            
+            try renderClosure()
+        }
+        
+        context.popSnapshot()
+    }
+    
+    public func frontMatter(hasDirective directive: String, in contents: String, identifier: String) -> ParsingContext? {
+        do {
+            let lineParser = LineParser(string: contents, identifier: identifier, with: context)
+            let curLine = lineParser.currentLine()
+            
+            if curLine.hasOnly(TemplateConstants.frontMatterIndicator) {
+                let frontMatter = try FrontMatter (lineParser: lineParser, with: context)
+                let directiveString = "/\(directive)"
+                if let rhs = try frontMatter.rhs(for: directiveString) {
+                    return ParsingContext(parser: lineParser, line: rhs, firstWord: directiveString)
+                }
+                return nil
+            }
+            
+            return nil
+        } catch {
+            return nil
+        }
     }
     
     public init(loader: BlueprintRepository, context: Context) {

@@ -15,16 +15,17 @@ open class RenderedFile : OutputFile {
     
     public func persist() throws {
         let file = LocalFile(path: outputPath / filename)
-        
-        var contents = ""
-        
+                
         if let data = data {
-            contents = try renderer.renderTemplate(fileName: template, data: data) ?? ""
+            if let contents = try renderer.renderTemplate(fileName: template, data: data) {
+                try file.write(contents)
+            }
         } else {
-            contents = try renderer.renderTemplate(fileName: template, data: [:]) ?? ""
+            if let contents = try renderer.renderTemplate(fileName: template, data: [:]) {
+                try file.write(contents)
+            }
         }
         
-        try file.write(contents)
     }
     
     public init(filename: String, filePath: LocalPath, template: String, data: [String: Any]? = nil, renderer: TemplateRenderer) {
