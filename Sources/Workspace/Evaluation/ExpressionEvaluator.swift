@@ -31,6 +31,10 @@ public struct ExpressionEvaluator {
             }
         }
         
+        if let bool = Bool(value) {
+            return bool
+        }
+        
         return nil
     }
     

@@ -71,7 +71,7 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
     
     public init(context: Context) {
         self.context = context
-        self.lineParser  = LineParser(context: context)
+        self.lineParser  = LineParser(with: context)
         
         self.templateSoup  = TemplateSoup(context: context)
 

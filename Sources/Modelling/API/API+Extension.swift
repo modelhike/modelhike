@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class API : Artifact {
+public class API : Artifact, CustomDebugStringConvertible {
     public var attribs = Attributes()
     public var tags = Tags()
     public var annotations = Annotations()
@@ -33,6 +33,15 @@ public class API : Artifact {
         }
     }
     
+    public var debugDescription: String {
+        var str =  """
+                    \(self.name) :
+                    """
+        str += .newLine
+        
+        return str
+    }
+    
     public init(entity: CodeObject, type: APIType, version: Int = 1) {
         self.entity = entity
         self.type = type
@@ -42,26 +51,61 @@ public class API : Artifact {
         switch type {
         case .getById:
             self.path = ":id"
+            self.name = "get\(entity.name)ById"
         case .delete:
             self.path = ":id"
+            self.name = "delete\(entity.name)"
         case .list:
             self.path = ""
+            let plural = entity.name.pluralized()
+            self.name = "list\(plural)"
         case .associate: //will be create for the association
             self.path = ""
+            self.name = "associate\(entity.name)"
         case .deassosiate: //will be delete for the association
             self.path = ""
+            self.name = "deassosiate\(entity.name)"
         case .activate:
             self.path = "activate"
+            self.name = "activate\(entity.name)"
         case .deactivate:
             self.path = "deactivate"
-        default:
+            self.name = "deactivate\(entity.name)"
+        case .create:
             self.path = ""
+            self.name = "add\(entity.name)"
+        case .update:
+            self.path = ""
+            self.name = "update\(entity.name)"
+        case .getByCustom:
+            self.path = ""
+            self.name = "get\(entity.name)Custom"
+        case .getUsingCustomLogic:
+            self.path = ""
+            self.name = "get\(entity.name)ByCustomLogic"
+        case .listByCustom:
+            self.path = ""
+            let plural = entity.name.pluralized()
+            self.name = "list\(plural)Custom"
+        case .pushData:
+            self.path = ""
+            let plural = entity.name.pluralized()
+            self.name = "\(plural)Subscription"
+        case .pushDataList:
+            self.path = ""
+            let plural = entity.name.pluralized()
+            self.name = "\(plural)Subscription"
         }
+        
+        self.givename = self.name
     }
 }
 
 public enum APIType {
-    case create, update, delete, getById, list,
+    case create, update, delete, 
+         getById, getByCustom, getUsingCustomLogic,
+         list, listByCustom,
+         pushData, pushDataList,
          associate, deassosiate, activate, deactivate
 }
 

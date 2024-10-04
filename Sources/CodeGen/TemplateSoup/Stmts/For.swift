@@ -9,11 +9,13 @@ import RegexBuilder
 
 public class ForStmt: BlockTemplateStmt, CustomDebugStringConvertible {
     static let START_KEYWORD = "for"
+    static let FIRST_IN_LOOP = "_firstInLoop"
+    static let LAST_IN_LOOP = "_lastInLoop"
 
     public private(set) var ForVar: String = ""
     public private(set) var InArrayVar: String = ""
     
-    let stmtRegex = Regex {
+    static let stmtRegex = Regex {
         START_KEYWORD
         OneOrMore(.whitespace)
         Capture {
@@ -33,7 +35,7 @@ public class ForStmt: BlockTemplateStmt, CustomDebugStringConvertible {
     }
     
     override func matchLine(line: String, level: Int, with ctx: Context) throws -> Bool {
-        guard let match = line.wholeMatch(of: stmtRegex ) else { return false }
+        guard let match = line.wholeMatch(of: Self.stmtRegex ) else { return false }
 
         let (_, forVar, inVar) = match.output
         self.ForVar = forVar
@@ -57,8 +59,8 @@ public class ForStmt: BlockTemplateStmt, CustomDebugStringConvertible {
         for (index, loopItem) in loopItems.enumerated() {
             ctx.variables[loopVariableName] = loopItem
 
-            ctx.variables["_firstInLoop"] = index == loopItems.startIndex
-            ctx.variables["_lastInLoop"] = index == loopItems.index(before: loopItems.endIndex)
+            ctx.variables[Self.FIRST_IN_LOOP] = index == loopItems.startIndex
+            ctx.variables[Self.LAST_IN_LOOP] = index == loopItems.index(before: loopItems.endIndex)
             
             if let body = try children.execute(with: ctx) {
                 rendering += body
