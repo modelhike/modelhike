@@ -39,14 +39,6 @@ public extension ModelRepository {
                     e.dataType = .apiInput
                 } else if cls.hasProp("_id") || cls.hasProp("id") {
                     e.dataType = .entity
-                    
-                    if e.hasNoAPIs() {
-                        e.appendAPI(.create)
-                        e.appendAPI(.update)
-                        e.appendAPI(.delete)
-                        e.appendAPI(.getById)
-                        e.appendAPI(.list)
-                    }
                 } else {
                     e.dataType = .embeddedType
                 }
@@ -58,10 +50,6 @@ public extension ModelRepository {
                     e.dataType = .apiInput
                 } else {
                     e.dataType = .dto
-                    
-                    if e.hasNoAPIs() {
-                        cls.appendAPI(.list)
-                    }
                 }
             }
         }
