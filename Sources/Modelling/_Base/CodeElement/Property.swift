@@ -6,12 +6,12 @@
 
 import Foundation
 
-public struct Property : CodeMember {
+public class Property : CodeMember {
     public var attribs = Attributes()
     public var tags = Tags()
     
     public var name: String
-    public var givename : String
+    public var givenname : String
     public var type: PropertyKind = .unKnown
     public var isUnique: Bool = false
     public var isObjectID: Bool = false
@@ -33,7 +33,7 @@ public struct Property : CodeMember {
         
         let givenName = propName.trim()
 
-        var prop = Property(givenName)
+        let prop = Property(givenName)
         
         //check if has attributes
         if let attributeString = attributeString {
@@ -65,8 +65,8 @@ public struct Property : CodeMember {
         
         switch firstWord {
             case ModelConstants.Member_Mandatory : prop.required = .yes
-            case ModelConstants.Member_Optional : prop.required = .no
-            default :
+            case ModelConstants.Member_Optional, ModelConstants.Member_Optional2 : prop.required = .no
+           default :
             if firstWord.starts(with: ModelConstants.Member_Conditional) {
                 prop.required = .conditional
             } else {
@@ -79,11 +79,10 @@ public struct Property : CodeMember {
         return prop
     }
     
-    
     public static func canParse(firstWord: String) -> Bool {
         switch firstWord {
             case ModelConstants.Member_Mandatory : return true
-            case ModelConstants.Member_Optional : return true
+            case ModelConstants.Member_Optional, ModelConstants.Member_Optional2 : return true
             default :
                 if firstWord.starts(with: ModelConstants.Member_Conditional) {
                     return true
@@ -114,7 +113,7 @@ public struct Property : CodeMember {
         }
     }
     
-    public func isCustomType() ->  Bool {
+    public var isCustomType :  Bool {
         switch self.type {
             case .customType(_):
                 return true
@@ -170,29 +169,29 @@ public struct Property : CodeMember {
     }
     
     public init(_ givenName: String) {
-        self.givename = givenName
-        self.name = givenName.normalizeForVariableName()
+        self.givenname = givenName.trim()
+        self.name = self.givenname.normalizeForVariableName()
     }
     
     public init(_ givenName: String, type: PropertyKind, isUnique: Bool = false, required: RequiredKind = .no) {
-        self.givename = givenName
-        self.name = givenName.normalizeForVariableName()
+        self.givenname = givenName.trim()
+        self.name = self.givenname.normalizeForVariableName()
         self.type = type
         self.isUnique = isUnique
         self.required = required
     }
     
     public init(_ givenName: String, type: PropertyKind, isObjectID: Bool, required: RequiredKind = .no) {
-        self.givename = givenName
-        self.name = givenName.normalizeForVariableName()
+        self.givenname = givenName.trim()
+        self.name = self.givenname.normalizeForVariableName()
         self.type = type
         self.isObjectID = isObjectID
         self.required = required
     }
     
     public init(_ givenName: String, type: PropertyKind, isArray: Bool, arrayMultiplicity: MultiplicityKind, required: RequiredKind = .no) {
-        self.givename = givenName
-        self.name = givenName.normalizeForVariableName()
+        self.givenname = givenName.trim()
+        self.name = self.givenname.normalizeForVariableName()
         self.type = type
         self.required = required
         self.isArray = isArray

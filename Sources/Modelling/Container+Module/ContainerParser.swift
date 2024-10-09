@@ -34,7 +34,7 @@ public enum ContainerParser {
         guard let match = line.wholeMatch(of: ModelRegEx.containerName_Capturing)                                                                                  else { return nil }
         
         let (_, containerName, attributeString, tagString) = match.output
-        let item = C4Container(name: containerName.trim())
+        let item = C4Container(name: containerName)
         
         //check if has attributes
         if let attributeString = attributeString {
@@ -65,6 +65,15 @@ public enum ContainerParser {
             
             if try pctx.tryParseAnnotations(with: item) {
                 continue
+            }
+            
+            if MethodObject.canParse(firstWord: pctx.firstWord) {
+                if let method = try MethodObject.parse(with: pctx) {
+                    item.append(method)
+                    continue
+                } else {
+                    throw Model_ParsingError.invalidMethodLine(pctx.line)
+                }
             }
             
             //nothing can be recognised by this

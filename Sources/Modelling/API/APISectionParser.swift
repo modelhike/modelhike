@@ -5,10 +5,11 @@
 //
 
 import Foundation
+import RegexBuilder
 
 public enum APISectionParser {
-    public static func parse(for obj: ArtifactContainer, lineParser parser: LineParser) throws ->  [Artifact] {
-        var items : [Artifact] = []
+    public static func parse(for obj: CodeObject, lineParser parser: LineParser) throws ->  [Artifact] {
+        var apis : [Artifact] = []
         
         while parser.linesRemaining {
             if parser.isCurrentLineEmptyOrCommented() { parser.skipLine(); continue }
@@ -26,9 +27,94 @@ public enum APISectionParser {
                 continue
             }
             
+            if pctx.firstWord == ModelConstants.AttachedSubSection {
+                let line = pctx.line.dropFirstWord().lowercased()
+                
+                if let match = line.wholeMatch(of: Self.customListApi_WithCondition_Regex ) {
+                    let (_, prop1, op, prop2) = match.output
+                    
+                    let api = ListAPIByCustom(entity: obj)
+                    
+                    if op.trim().lowercased() == "and" {
+                        api.andCondition = true
+                    }
+                    
+                    if let property1 = obj.getProp(prop1.trim(), isCaseSensitive: false) {
+                        api.properties.append(property1)
+                    } else {
+                        throw Model_ParsingError.invalidPropertyUsedInApi(prop1, line)
+                    }
+                    
+                    if let property2 = obj.getProp(prop2.trim(), isCaseSensitive: false) {
+                        api.properties.append(property2)
+                    } else {
+                        throw Model_ParsingError.invalidPropertyUsedInApi(prop2, line)
+                    }
+                    
+                    apis.append(api)
+                    
+                } else if let match = line.wholeMatch(of: Self.customListApi_SingleProperty_Regex ) {
+                    let (_, prop1) = match.output
+                    
+                    let api = ListAPIByCustom(entity: obj)
+                    
+                    if let property1 = obj.getProp(prop1.trim(), isCaseSensitive: false) {
+                        api.properties.append(property1)
+                    } else {
+                        throw Model_ParsingError.invalidPropertyUsedInApi(prop1, line)
+                    }
+                    
+                    apis.append(api)
+                } else if let method = try MethodObject.parse(with: pctx, skipLine: false) {
+                    //custom logic api is defined using method syntax
+                    let api = CustomLogicAPI(method: method, entity: obj)
+                    apis.append(api)
+                } else {
+                    throw Model_ParsingError.invalidApiLine(line)
+                }
+                
+            }
+            
             parser.skipLine();
         }
         
-        return items
+        return apis
+    }
+    
+    static let customListApi_SingleProperty_Regex = Regex {
+        "list by"
+        
+        CommonRegEx.whitespace
+        Capture {
+            CommonRegEx.nameWithWhitespace
+        } transform: { String($0) }
+        
+        CommonRegEx.comments
+    }
+    
+    static let customListApi_WithCondition_Regex = Regex {
+        "list by"
+        
+        CommonRegEx.whitespace
+        Capture {
+            CommonRegEx.nameWithWhitespace
+        } transform: { String($0) }
+        
+        CommonRegEx.whitespace
+        
+        Capture {
+            ChoiceOf {
+                "and"
+                "or"
+            }
+        } transform: { String($0) }
+        
+        CommonRegEx.whitespace
+        Capture {
+            CommonRegEx.nameWithWhitespace
+            Optionally("[]")
+        } transform: { String($0) }
+        
+        CommonRegEx.comments
     }
 }

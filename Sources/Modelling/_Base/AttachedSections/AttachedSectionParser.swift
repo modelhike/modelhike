@@ -21,7 +21,7 @@ public enum AttachedSectionParser {
     
     public static func parse(for obj: ArtifactContainerWithAttachedSections, with pctx: ParsingContext) throws -> AttachedSection? {
         let line = pctx.line.dropFirstWord()
-        guard let match = line.wholeMatch(of: ModelRegEx.moduleName_Capturing)                                                                                  else { return nil }
+        guard let match = line.wholeMatch(of: ModelRegEx.attachedSectionName_Capturing)                                                                                  else { return nil }
         
         let (_, sectionCode, attributeString, tagString) = match.output
         let item = AttachedSection(code: sectionCode.trim())
