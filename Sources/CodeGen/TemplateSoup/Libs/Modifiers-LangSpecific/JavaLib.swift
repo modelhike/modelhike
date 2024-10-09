@@ -17,14 +17,17 @@ public struct JavaLib {
     
     public static var typename: Modifier {
         return CreateModifier.withoutParams("typename") { (value: Any, lineNo: Int) -> String? in
+            var type = PropertyKind.unKnown
             
-            guard let wrapped = value as? TypeProperty_Wrap else {
-              return "----ERROR----"
+            if let wrapped = value as? TypeProperty_Wrap {
+                type = wrapped.item.type
+            } else if let kind = value as? PropertyKind {
+                type = kind
+            } else {
+                return "----ERROR----"
             }
-            
-            let prop = wrapped.item
-            
-            switch prop.type {
+                        
+            switch type {
                 case .int : return "Integer"
                 case .float : return "Float"
                 case .double : return "Double"

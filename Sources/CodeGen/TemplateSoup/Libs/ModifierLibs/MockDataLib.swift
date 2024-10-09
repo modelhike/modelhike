@@ -32,30 +32,67 @@ public struct MockDataLib {
     private static func sampleValue(sandbox: Sandbox) -> Modifier {
         return CreateModifier.withoutParams("sample-value") { (value: Any, lineNo: Int) -> String? in
             
-            guard let wrapped = value as? TypeProperty_Wrap else {
-                return nil
+            var type = PropertyKind.unKnown
+            var prefix = ""
+            var suffix = ""
+            var prop: Property?
+            
+            if let wrapped = value as? TypeProperty_Wrap {
+                type = wrapped.item.type
+                prop = wrapped.item
+            } else if let kind = value as? PropertyKind {
+                type = kind
+            } else {
+                return "----ERROR----"
             }
             
-            let prop = wrapped.item
-            
-            let prefix = prop.isArray ? " [" : ""
-            let suffix = prop.isArray ? "]" : ""
+            if let prop = prop {
+                prefix = prop.isArray ? " [" : ""
+                suffix = prop.isArray ? "]" : ""
+            }
             
             let num = Int.random(in: 0..<100)
             let mocking = MockData_Generator()
             
-            switch prop.type {
+            switch type {
                 case .int, .double, .float :
                     return prefix + " \(num)" + suffix
                 case .bool: return prefix + " true" + suffix
-                case .string: return prefix + " \"\(prop.name) \(num)\"" + suffix
+                case .string: 
+                    if let prop = prop { //used for a property
+                        return prefix + " \"\(prop.name) \(num)\"" + suffix
+                    } else {
+                        return prefix + " \"string \(num)\"" + suffix
+                    }
                 case .id: return prefix + " \"" + mocking.randomObjectId_MongoDb() + "\"" + suffix
                 case .date, .datetime: return prefix + " \"\(Date.now.ISO8601Format())\"" + suffix
-                default : 
-                    if let obj = sandbox.model.types.get(for: prop.objectTypeString()) {
-                        return SampleJson(entity: obj, typesModel: sandbox.model.types)
-                               .string(openCloseBraces: true, openCloseQuotesInNames: false)
-                    } else { return "" }
+                case .customType(let typename):
+                    if let prop = prop { //used for a property
+                        if let obj = sandbox.model.types.get(for: prop.objectTypeString()) {
+                            return SampleJson(entity: obj, typesModel: sandbox.model.types)
+                                .string(openCloseBraces: true, openCloseQuotesInNames: false)
+                        } else { return "" }
+                    } else {
+                        if let obj = sandbox.model.types.get(for: typename) {
+                            return SampleJson(entity: obj, typesModel: sandbox.model.types)
+                                .string(openCloseBraces: true, openCloseQuotesInNames: false)
+                        } else { return "" }
+                    }
+                case .buffer:
+                    return "[]"
+                case .any:
+                    return ""
+                case .unKnown:
+                    return "----ERROR-------"
+                default:
+                    if let prop = prop { //used for a property
+                        if let obj = sandbox.model.types.get(for: prop.objectTypeString()) {
+                            return SampleJson(entity: obj, typesModel: sandbox.model.types)
+                                .string(openCloseBraces: true, openCloseQuotesInNames: false)
+                        } else { return "" }
+                    } else {
+                        return ""
+                    }
             }
         }
     }

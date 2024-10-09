@@ -18,13 +18,17 @@ public struct TypescriptLib {
     public static var typename: Modifier {
         return CreateModifier.withoutParams("typename") { (value: Any, lineNo: Int) -> String? in
             
-            guard let wrapped = value as? TypeProperty_Wrap else {
-              return "----ERROR----"
+            var type = PropertyKind.unKnown
+            
+            if let wrapped = value as? TypeProperty_Wrap {
+                type = wrapped.item.type
+            } else if let kind = value as? PropertyKind {
+                type = kind
+            } else {
+                return "----ERROR----"
             }
             
-            let prop = wrapped.item
-            
-            switch prop.type {
+            switch type {
                 case .int, .double, .float : return "number"
                 case .bool: return "boolean"
                 case .string, .id: return "string"

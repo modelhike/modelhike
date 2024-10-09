@@ -17,13 +17,17 @@ public struct GraphQLLib {
     public static var typename: Modifier {
         return CreateModifier.withoutParams("graphql-typename") { (value: Any, lineNo: Int) -> String? in
             
-            guard let wrapped = value as? TypeProperty_Wrap else {
+            var type = PropertyKind.unKnown
+            
+            if let wrapped = value as? TypeProperty_Wrap {
+                type = wrapped.item.type
+            } else if let kind = value as? PropertyKind {
+                type = kind
+            } else {
                 return "----ERROR----"
             }
             
-            let prop = wrapped.item
-            
-            switch prop.type {
+            switch type {
                 case .int : return "Int"
                 case .float, .double : return "Float"
                 case .bool: return "Boolean"
