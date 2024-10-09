@@ -22,6 +22,7 @@ open class Workspace {
         set { sandbox.onLoadTemplate = newValue }
     }
     
+    //MARK: Model loading
     public func loadModels(from repo: ModelRepository) throws {
         do {
             try repo.loadModel(to: model)

@@ -16,14 +16,15 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
     public var outputPath: LocalPath { context.paths.output.path }
 
     public let context: Context
-    
+    var lineParser : LineParser
+
+    //MARK: event handlers
     public var onLoadTemplate : LoadTemplateHandler {
         get { templateSoup.onLoadTemplate }
         set { templateSoup.onLoadTemplate = newValue }
     }
     
-    var lineParser : LineParser
-    
+    //MARK: Generation code
     public func generateFilesFor(container: String, usingBlueprintsFrom blueprintLoader: BlueprintRepository) throws -> String? {
         
         if !blueprintLoader.blueprintExists() {
@@ -88,13 +89,21 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
         try generation_dir.ensureExists()
     }
     
-    public func generateFile(_ filename: String, template: String) throws -> RenderedFile {
+    public func generateFile(_ filename: String, template: String) throws -> RenderedFile? {
+        if try !context.events.canRender(filename: filename) { //if handler returns false, dont render file
+            return nil
+        }
+        
         let file = RenderedFile(filename: filename, filePath: generation_dir, template: template, renderer: self.templateSoup)
         try file.persist()
         return file
     }
     
-    public func generateFileWithData(_ filename: String, template: String, data: [String: Any]) throws -> RenderedFile {
+    public func generateFileWithData(_ filename: String, template: String, data: [String: Any]) throws -> RenderedFile? {
+        if try !context.events.canRender(filename: filename) { //if handler returns false, dont render file
+            return nil
+        }
+        
         let file = RenderedFile(filename: filename, filePath: generation_dir, template: template, data: data, renderer: self.templateSoup)
         try file.persist()
         return file
@@ -125,18 +134,28 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
     }
     
     public func renderFolder(_ foldername: String, to newPath: String) throws -> RenderedFolder {
+        //While rendering folder, onBeforeRenderFile is handled within the folder-rendering function
+        //This is possibleas onBeforeRenderFile is part of templateSoup
         let folder = RenderedFolder(foldername: foldername, templateSoup: templateSoup, to: newPath, path: generation_dir)
         try folder.renderFiles()
         return folder
     }
     
-    public func fillPlaceholdersAndCopyFile(_ filename: String) throws -> PlaceHolderFile {
+    public func fillPlaceholdersAndCopyFile(_ filename: String) throws -> PlaceHolderFile? {
+        if try !context.events.canRender(filename: filename) { //if handler returns false, dont render file
+            return nil
+        }
+        
         let file = PlaceHolderFile(filename: filename, repo: templateSoup.repo, to: filename, path: generation_dir, renderer: self.templateSoup)
         try file.persist()
         return file
     }
 
-    public func fillPlaceholdersAndCopyFile(_ filename: String, to newFilename: String) throws -> PlaceHolderFile {
+    public func fillPlaceholdersAndCopyFile(_ filename: String, to newFilename: String) throws -> PlaceHolderFile? {
+        if try !context.events.canRender(filename: filename) { //if handler returns false, dont render file
+            return nil
+        }
+        
         let file = PlaceHolderFile(filename: filename, repo: templateSoup.repo, to: newFilename, path: generation_dir, renderer: self.templateSoup)
         try file.persist()
         return file

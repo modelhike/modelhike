@@ -38,12 +38,28 @@ struct Development {
 
         let modelRepo = LocalFileModelLoader(path: ws.basePath, with: ws.context)
         //let modelRepo = inlineModel(ws)
-        
-        try ws.loadModels(from: modelRepo)
-        
+                
         let templatesPath = ws.basePath / "_gen.templates"
         let templatesRepo = LocalFileBlueprintLoader(blueprint: blueprint, path: templatesPath, with: ws.context)
-
+        
+//        ws.context.events.onBeforeRenderFile = { filename, context in
+//            if filename.lowercased() == "MonitoredLiveAirport".lowercased() {
+//                print("rendering \(filename)")
+//            }
+//            
+//            return true
+//        }
+        
+//        ws.context.events.onStartParseObject = { objname, parser, context in
+//            print(objname)
+//            if objname.lowercased() == "airport".lowercased() {
+//                context.debugLog.flags.lineByLineParsing = true
+//            } else {
+//                context.debugLog.flags.lineByLineParsing = false
+//            }
+//        }
+        
+        try ws.loadModels(from: modelRepo)
         ws.generateCodebase(container: "APIs", usingBlueprintsFrom: templatesRepo)
     }
     
@@ -124,8 +140,8 @@ struct Development {
 struct TestData : DynamicMemberLookup, HasAttributes {
     public var attribs = Attributes()
     
-    subscript(member: String) -> Any {
-        return self.attribs["name"] as Any
+    public func dynamicLookup(property propname: String, lineNo: Int) throws -> Any {
+        return self.attribs[propname] as Any
     }
     
     public init(name: String, age: Int) {
