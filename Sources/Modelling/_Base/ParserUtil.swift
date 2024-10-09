@@ -26,8 +26,13 @@ public class ParserUtil {
         let tagMatches = tagString.matches(of: ModelRegEx.tags_Capturing)
         
         let _ = tagMatches.map( { match in
-            let (_, tag) = match.output
-            artifact.tags.append(String(tag))
+            let (_, tag, arg) = match.output
+            
+            if let arg = arg {
+                artifact.tags.append(tag, arg: arg)
+            } else {
+                artifact.tags.append(tag)
+            }
         })
     }
     
@@ -39,6 +44,17 @@ public class ParserUtil {
                 return nil //remove from attributes, as it is added to mixins
             }
             return attrib
+        }
+        
+        try item.tags.processEach { tag in
+            if tag == TagConstants.savedFrom, let arg = tag.arg {
+                if let entity = ctx.model.types.get(for: arg) {
+                    item.mixins.append(entity)
+                }
+                return tag
+            } else {
+                return tag
+            }
         }
     }
 }
