@@ -9,6 +9,7 @@ import Foundation
 public typealias StringDictionary = [String: Any]
 
 public class Context {
+    public var events: CodeGenerationEvents!
     public var debugLog = ContextDebugLog()
     
     private var objManager: ObjectAttributeManager!
@@ -88,17 +89,17 @@ public class Context {
     }
     
     //manage obj attributes in the context variables
-    public func valueOf(objName: String, propName attributeName: String) -> Optional<Any> {
-        return self.objManager.getObjAttributeValue(objName: objName, attributeName: attributeName)
+    public func valueOf(objName: String, propName attributeName: String, lineNo: Int) throws -> Optional<Any> {
+        return try self.objManager.getObjAttributeValue(objName: objName, attributeName: attributeName, lineNo: lineNo)
     }
     
-    public func valueOf(variableOrObjProp name: String) -> Optional<Any> {
+    public func valueOf(variableOrObjProp name: String, lineNo: Int) throws -> Optional<Any> {
         let split = name.split(separator: ".")
         if split.count > 1 { //object attribute
             let variableName = "\(split[0])"
             let attributeName = "\(split[1])"
 
-            return self.objManager!.getObjAttributeValue(objName: variableName, attributeName: attributeName)
+            return try self.objManager!.getObjAttributeValue(objName: variableName, attributeName: attributeName, lineNo: lineNo)
             
         } else { // object only
             let variableName = "\(split[0])"
@@ -128,6 +129,7 @@ public class Context {
 
         defer {
             self.objManager = ObjectAttributeManager(context: self)
+            self.events = CodeGenerationEvents(with: self)
         }
     }
     

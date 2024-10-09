@@ -9,7 +9,7 @@ import Foundation
 public struct ObjectAttributeManager {
     let ctx: Context
     
-    public func getObjAttributeValue(objName: String, attributeName: String) -> Optional<Any> {
+    public func getObjAttributeValue(objName: String, attributeName: String, lineNo: Int) throws -> Optional<Any> {
         
         if let obj = ctx.variables[objName] as? HasAttributes {
             if obj.attribs.has(attributeName) {
@@ -18,7 +18,7 @@ public struct ObjectAttributeManager {
         }
         
         if let dynamicLookup = ctx.variables[objName] as? DynamicMemberLookup {
-            return dynamicLookup[attributeName]
+            return try dynamicLookup.dynamicLookup(property: attributeName, lineNo: lineNo)
         }
         
         return nil

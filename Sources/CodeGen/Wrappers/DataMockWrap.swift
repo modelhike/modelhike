@@ -9,11 +9,12 @@ import Foundation
 public class Mocking_Wrap : DynamicMemberLookup {
     public private(set) var item: MockData_Generator
     
-    public subscript(member: String) -> Any {
-        
-        let value: Any = switch member {
+    public func dynamicLookup(property propname: String, lineNo: Int) throws -> Any {
+
+        let value: Any = switch propname {
             case "object-id": item.randomObjectId_MongoDb()
-            default: ""
+            default:
+                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(lineNo, propname)
         }
 
         return value

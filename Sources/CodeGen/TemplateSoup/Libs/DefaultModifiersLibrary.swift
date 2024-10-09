@@ -79,8 +79,8 @@ public struct DefaultModifiersLibrary {
 
     public static var uppercaseFirst: Modifier {
         return CreateModifier.withoutParams("upperFirst") { (value: String, lineNo: Int) -> String? in
-            guard let first = value.first else { return nil }
-            return String(first).uppercased() + value[value.index(value.startIndex, offsetBy: 1)...]
+            guard let _ = value.first else { return nil }
+            return value.uppercasedFirst()
         }
     }
 
@@ -90,7 +90,7 @@ public struct DefaultModifiersLibrary {
 
     public static var replacewith: Modifier {
         return CreateModifier.withParams("replace") { (value: String, arguments: [Any], lineNo: Int) throws -> String? in
-            if arguments.count != 2 { throw TemplateSoup_ParsingError.modifierInvalidArguments("replace") }
+            if arguments.count != 2 { throw TemplateSoup_ParsingError.modifierInvalidArguments(lineNo, "replace") }
             
             guard let replaceFrom = arguments.first as? String,
                   let replaceWith = arguments[1] as? String else { return nil }

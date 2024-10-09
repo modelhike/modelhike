@@ -165,6 +165,18 @@ public struct ContextDebugLog {
         }
     }
     
+    public func copyingFileInFolder(_ filepath: String, folder: LocalFolder) {
+        if flags.fileGeneration {
+            print("[ \(folder.pathString) ] Copying \(filepath) ...")
+        }
+    }
+    
+    public func copyingFileInFolder(_ filepath: String, to newFilePath: String, folder: LocalFolder) {
+        if flags.fileGeneration {
+            print("[ \(folder.pathString) ] Copying \(filepath) to \(newFilePath)...")
+        }
+    }
+    
     public func copyingFolder(_ path: String) {
         if flags.fileGeneration {
             print("Copying folder \(path) ...")
@@ -186,6 +198,30 @@ public struct ContextDebugLog {
     public func generatingFile(_ filepath: String, with template: String) {
         if flags.fileGeneration {
             print("Generating \(filepath) [template \(template)] ...")
+        }
+    }
+    
+    public func fileNotGenerated(_ filepath: String, with template: String) {
+        if flags.fileGeneration {
+            print("⚠️ File \(filepath) [template \(template)] not Generated!!!...")
+        }
+    }
+    
+    public func generatingFileInFolder(_ filepath: String, with template: String, folder: LocalFolder) {
+        if flags.fileGeneration {
+            print("[ \(folder.pathString) ] Generating \(filepath) [template \(template)] ...")
+        }
+    }
+    
+    public func fileNotGeneratedInFolder(_ filepath: String, with template: String, folder: LocalFolder) {
+        if flags.fileGeneration {
+            print("⚠️ [ \(folder.pathString) ]  File \(filepath) [template \(template)] not Generated!!!...")
+        }
+    }
+    
+    public func fileNotGenerated(_ filepath: String) {
+        if flags.fileGeneration {
+            print("⚠️ File \(filepath) not Generated!!!...")
         }
     }
 }

@@ -123,8 +123,9 @@ public class TemplateSoupParser : CustomDebugStringConvertible {
             let (_, templateFnName, paramsString) = match.output
             let params = paramsString.getArray_UsingUnNamedArgsPattern()
 
-            let fnContainer  = TemplateFunctionContainer(name: templateFnName, params: params, lineNo: templateParser.lineParser.curLineNoForDisplay)
-            templateParser.context.templateFunctions[templateFnName] = fnContainer
+            let fnName = templateFnName.trim()
+            let fnContainer  = TemplateFunctionContainer(name: fnName, params: params, lineNo: templateParser.lineParser.curLineNoForDisplay)
+            templateParser.context.templateFunctions[fnName] = fnContainer
             
             //templateParser.lineParser.skipLine()
             let topLevel = 0

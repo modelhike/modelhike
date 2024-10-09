@@ -14,14 +14,18 @@ public class UIObject_Wrap : ObjectWrapper {
         set { item.attribs = newValue }
     }
     
-    public subscript(member: String) -> Any {
+    public func dynamicLookup(property propname: String, lineNo: Int) throws -> Any {
         
-        let value: Any = switch member {
+        let value: Any = switch propname {
         case "name": item.name
         case "given-name": item.givename
         default:
-            //nothing found; so check in module attributes}
-            item.attribs[member] as Any
+            //nothing found; so check in module attributes
+            if item.attribs.has(propname) {
+                item.attribs[propname] as Any
+            } else {
+                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(lineNo, propname)
+            }
         }
         
         return value

@@ -41,7 +41,7 @@ public class FunctionCallStmt: LineTemplateStmt, CustomDebugStringConvertible {
             let body = try templateFn.execute(args: args, with: ctx)
             return body
         } else {
-            throw TemplateSoup_ParsingError.templateFunctionNotFound(FnName)
+            throw TemplateSoup_ParsingError.templateFunctionNotFound(lineNo, FnName)
         }
     }
     

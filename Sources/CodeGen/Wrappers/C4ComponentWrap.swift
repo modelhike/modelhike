@@ -42,23 +42,26 @@ public class C4Component_Wrap : ObjectWrapper {
     
     public lazy var pushDataApis : [API_Wrap] = { self.apis.compactMap({
         if ($0.item.type == .pushData ||
-            $0.item.type == .pushDataList ) { return $0 } else {return nil}    }) }()
+            $0.item.type == .pushDataList 
+        ) { return $0 } else {return nil}    }) }()
     
     public lazy var mutationApis : [API_Wrap] = { self.apis.compactMap({
         if ($0.item.type == .create ||
             $0.item.type == .update ||
-            $0.item.type == .delete ) { return $0 } else {return nil}
+            $0.item.type == .delete ||
+            $0.item.type == .mutationUsingCustomLogic
+            ) { return $0 } else {return nil}
     }) }()
     
     public lazy var queryApis : [API_Wrap] = { self.apis.compactMap({
         if ($0.item.type == .getById ||
             $0.item.type == .getByCustom ||
-            $0.item.type == .getUsingCustomLogic ||
             $0.item.type == .list ||
-            $0.item.type == .listByCustom ) { return $0 } else {return nil}    }) }()
+            $0.item.type == .listByCustom 
+        ) { return $0 } else {return nil}    }) }()
     
-    public subscript(member: String) -> Any {
-        let value: Any = switch member {
+    public func dynamicLookup(property propname: String, lineNo: Int) throws -> Any {
+        let value: Any = switch propname {
             case "name": item.name
             case "types" : types
             case "embedded-types" : embeddedTypes
@@ -74,9 +77,14 @@ public class C4Component_Wrap : ObjectWrapper {
             case "has-query-apis" : queryApis.count != 0
             case "mutation-apis" : mutationApis
             case "has-mutation-apis" : mutationApis.count != 0
-            default:
-            //nothing found; so check in module attributes}
-            item.attribs[member] as Any
+            case "has-any-apis" : apis.count != 0
+           default:
+            //nothing found; so check in module attributes
+            if item.attribs.has(propname) {
+                item.attribs[propname] as Any
+            } else {
+                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(lineNo, propname)
+            }
         }
         
         return value

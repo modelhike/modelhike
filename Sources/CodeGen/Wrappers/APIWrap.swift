@@ -14,32 +14,74 @@ public class API_Wrap : ObjectWrapper {
         set { item.attribs = newValue }
     }
     
-    private func params() -> [APIParam_Wrap] {
+    public lazy var queryParams:  [APIParam_Wrap] = {
         item.queryParams.compactMap({ APIParam_Wrap($0) })
-    }
+    }()
     
-    public subscript(member: String) -> Any {
+    public lazy var customProperties : [TypeProperty_Wrap] = {
+        if let custom = item as? APIWithCustomProperties {
+            custom.properties.compactMap({ TypeProperty_Wrap($0) })
+        } else {
+            []
+        }
+    }()
+    
+    public lazy var customProperties_and_condition : Bool = {
+        if let custom = item as? APIWithCustomProperties {
+            custom.andCondition
+        } else {
+            false
+        }
+    }()
+    
+    public lazy var customParameters : [APICustomParameter_Wrap] = {
+        if let custom = item as? CustomLogicAPI {
+            custom.parameters.compactMap({ APICustomParameter_Wrap($0) })
+        } else {
+            []
+        }
+    }()
+    
+    public lazy var returnType : Any = {
+        if let custom = item as? CustomLogicAPI {
+            custom.returnType as Any
+        } else {
+            item.entity.name
+        }
+    }()
+    
+    public func dynamicLookup(property propname: String, lineNo: Int) throws -> Any {
         
-        let value: Any = switch member {
+        let value: Any = switch propname {
             case "entity": CodeObject_Wrap(item.entity)
-            case "return-type" : item.entity.name
+            case "return-type" : deepUnwrap(returnType) ?? ""
             case "input-type" : item.entity.name
             case "has-path" : item.path.isNotEmpty
             case "path" : item.path
             case "name" : item.name
             case "base-url" : item.baseUrl
             case "version" : item.version
-            case "query-params" : params()
+            case "query-params" : queryParams
             case "is-create" : item.type == .create
             case "is-update" : item.type == .update
             case "is-delete" : item.type == .delete
             case "is-get-by-id" : item.type == .getById
+            case "is-get-by-custom" : item.type == .getByCustom
             case "is-list" :  item.type == .list
+            case "is-list-by-custom" :  item.type == .listByCustom
             case "is-push-data" :  item.type == .pushData
             case "is-push-datalist" :  item.type == .pushDataList
+            case "is-custom-logic" : item.type == .mutationUsingCustomLogic
+            case "properties-involved": customProperties
+            case "is-and-condition-for-properties-involved": customProperties_and_condition
+            case "custom-params" : customParameters
             default:
-            //nothing found; so check in module attributes}
-            item.attribs[member] as Any
+            //nothing found; so check in module attributes
+            if item.attribs.has(propname) {
+                item.attribs[propname] as Any
+            } else {
+                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(lineNo, propname)
+            }
         }
         
         return value
@@ -55,22 +97,43 @@ public class API_Wrap : ObjectWrapper {
 public class APIParam_Wrap : DynamicMemberLookup {
     public private(set) var item: APIQueryParamWrapper
     
-    public subscript(member: String) -> Any {
+    public func dynamicLookup(property propname: String, lineNo: Int) throws -> Any {
 
-        let value: Any = switch member {
+        let value: Any = switch propname {
             //case "query-param-obj" : item.queryParam
             case "prop-mapping-first" : item.propMaping.first
             case "param-name" : item.queryParam.name
             case "has-second-param-name" : item.queryParam.hasSecondParamName
             case "second-param-name" : item.queryParam.SecondName
             case "has-multiple-params" : item.queryParam.canHaveMultipleValues
-            default: ""
+            default:
+                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(lineNo, propname)
         }
 
         return value
     }
     
     public init(_ item: APIQueryParamWrapper) {
+        self.item = item
+    }
+}
+
+public class APICustomParameter_Wrap : DynamicMemberLookup {
+    public private(set) var item: MethodParameter
+    
+    public func dynamicLookup(property propname: String, lineNo: Int) throws -> Any {
+        
+        let value: Any = switch propname {
+        case "name" : item.name
+        case "type" : item.type
+        default:
+            throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(lineNo, propname)
+        }
+        
+        return value
+    }
+    
+    public init(_ item: MethodParameter) {
         self.item = item
     }
 }

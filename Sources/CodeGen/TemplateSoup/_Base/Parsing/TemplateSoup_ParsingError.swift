@@ -12,15 +12,16 @@ public enum TemplateSoup_ParsingError: Error, Equatable {
     case invalidMultiBlockStmt(Int, String)
     case invalidTemplateFunctionStmt(String)
     case objectNotFound(String)
+    case invalidPropertyNameUsedInCall(Int, String)
     case modifierNotFound(String)
     case modifierInvalidSyntax(String)
-    case modifierInvalidArguments(String)
+    case modifierInvalidArguments(Int, String)
     case modifierCalledOnwrongType(String, String)
     case invalidExpression(Int, String)
     case infixOperatorNotFound(String)
     case infixOperatorCalledOnwrongLhsType(String, String)
     case infixOperatorCalledOnwrongRhsType(String, String)
-    case templateFunctionNotFound(String)
+    case templateFunctionNotFound(Int, String)
 
     public var info: String {
         let suffix = ""
@@ -40,7 +41,7 @@ public enum TemplateSoup_ParsingError: Error, Equatable {
                 return suffix + "modifier: \(modifier) not found"
             case .modifierInvalidSyntax(let modifier) :
                 return suffix + "modifier - invalid syntax: \(modifier)"
-            case .modifierInvalidArguments(let modifier) :
+            case .modifierInvalidArguments(_, let modifier) :
                 return suffix + "Invalid modifier arguments : \(modifier)"
             case .modifierCalledOnwrongType(let modifier, let typeName) :
                 return suffix + "modifier: '\(modifier)' called on wrong type:\(typeName)"
@@ -55,7 +56,9 @@ public enum TemplateSoup_ParsingError: Error, Equatable {
             case .invalidExpression(_, let expn) :
                 return suffix + "expression - invalid syntax: \(expn)"
             
-            case .templateFunctionNotFound(let fnName) : 
+            case .invalidPropertyNameUsedInCall(_, let propName) :
+                return suffix + "Invalid prop : \(propName)"
+            case .templateFunctionNotFound(_, let fnName) :
                 return suffix + "fn: \(fnName) not found"
             
         }

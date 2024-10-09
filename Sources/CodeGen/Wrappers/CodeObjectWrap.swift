@@ -17,19 +17,23 @@ public class CodeObject_Wrap : ObjectWrapper {
     public lazy var properties : [TypeProperty_Wrap] = { item.properties.compactMap({ TypeProperty_Wrap($0) })
     }()
     
+    public lazy var apis : [API_Wrap] = {
+        self.item.getAPIs().compactMap({ return API_Wrap($0)})
+    }()
+    
     public lazy var pushDataApis : [API_Wrap] = {
         self.item.getAPIs().compactMap({
             if ($0.type == .pushData ||
                 $0.type == .pushDataList ) { return API_Wrap($0) } else {return nil}    })
     }()
     
-    public subscript(member: String) -> Any {
-        if member.hasPrefix("has-prop-") {
-            let propName = member.removingPrefix("has-prop-")
+    public func dynamicLookup(property propname: String, lineNo: Int) throws -> Any {
+        if propname.hasPrefix("has-prop-") {
+            let propName = propname.removingPrefix("has-prop-")
             return item.hasProp(propName)
         }
         
-        let value: Any = switch member {
+        let value: Any = switch propname {
             case "name": item.name
             case "given-name": item.givename
             case "properties" : properties
@@ -39,10 +43,14 @@ public class CodeObject_Wrap : ObjectWrapper {
             case "cache" : item.dataType == .cache
             case "workflow" : item.dataType == .workflow
             case "has-push-apis" : pushDataApis.count != 0
-            
+            case "has-any-apis" : apis.count != 0
             default:
-            //nothing found; so check in module attributes}
-            item.attribs[member] as Any
+            //nothing found; so check in module attributes
+            if item.attribs.has(propname) {
+                item.attribs[propname] as Any
+            } else {
+                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(lineNo, propname)
+            }
         }
         
         return value
@@ -63,18 +71,18 @@ public class TypeProperty_Wrap : ObjectWrapper {
         set { item.attribs = newValue }
     }
     
-    public subscript(member: String) -> Any {
-        if member.hasPrefix("has-attrib-") {
-            let attributeName = member.removingPrefix("has-attrib-")
+    public func dynamicLookup(property propname: String, lineNo: Int) throws -> Any {
+        if propname.hasPrefix("has-attrib-") {
+            let attributeName = propname.removingPrefix("has-attrib-")
             return item.hasAttrib(attributeName)
         }
         
-        if member.hasPrefix("attrib-") {
-            let attributeName = member.removingPrefix("attrib-")
+        if propname.hasPrefix("attrib-") {
+            let attributeName = propname.removingPrefix("attrib-")
             return item.attribs[attributeName] as Any
         }
         
-        let value: Any = switch member {
+        let value: Any = switch propname {
             case "name": 
             //if item.type == .id {
             //    "_id"
@@ -93,7 +101,7 @@ public class TypeProperty_Wrap : ObjectWrapper {
             case "is-reference" :  item.isReference()
             case "is-extended-reference" : item.isExtendedReference()
             case "is-coded-value" : item.isCodedValue()
-            case "is-custom-type" : item.isCustomType()
+            case "is-custom-type" : item.isCustomType
             case "custom-type" :
                 if case let .customType(typeName) = item.type {
                     typeName
@@ -101,8 +109,12 @@ public class TypeProperty_Wrap : ObjectWrapper {
             case "obj-type" : item.objectTypeString()
             case "is-required": item.required == .yes
             default: 
-            //nothing found; so check in module attributes}
-            item.attribs[member] as Any
+            //nothing found; so check in module attributes
+            if item.attribs.has(propname) {
+                item.attribs[propname] as Any
+            } else {
+                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(lineNo, propname)
+            }
         }
         
         return value

@@ -31,7 +31,10 @@ public enum AnnotationProcessor {
                                 cls.appendAPI(.delete)
                                 cls.appendAPI(.getById)
                                 cls.appendAPI(.list)
-                            default : break
+                            case "none":
+                                break //nothing to add
+                            default :
+                                throw Model_ParsingError.invalidAnnotation(annotation.parsedContextInfo.lineNo, annotation.parsedContextInfo.line)
                         }
                     }
                     

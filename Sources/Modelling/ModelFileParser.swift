@@ -54,6 +54,8 @@ public class ModelFileParser {
                     if let item = try DomainObjectParser.parse(parser: lineParser, with: ctx) {
                         self.component.append(item)
                         return
+                    } else {
+                        throw Model_ParsingError.invalidDomainObjectLine(line)
                     }
                 }
                 
@@ -61,6 +63,8 @@ public class ModelFileParser {
                     if let item = try DtoObjectParser.parse(parser: lineParser, with: ctx) {
                         self.component.append(item)
                         return
+                    } else {
+                        throw Model_ParsingError.invalidDtoObjectLine(line)
                     }
                 }
                 
@@ -68,6 +72,8 @@ public class ModelFileParser {
                     if let item = try UIViewParser.parse(parser: lineParser, with: ctx) {
                         self.component.append(item)
                         return
+                    } else {
+                        throw Model_ParsingError.invalidUIViewLine(line)
                     }
                 }
                 

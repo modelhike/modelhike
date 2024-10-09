@@ -11,7 +11,7 @@ public class LineParser {
     private var _curLineNo: Int = 0
     private var _breakParsing: Bool = false
     private var file: LocalFile?
-    private let ctx: Context
+    internal let ctx: Context
     private let autoIncrementLineNoForEveryLoop: Bool
     public private(set) var identifier: String
     
@@ -155,6 +155,10 @@ public class LineParser {
     }
         
     public func currentParsingContext() -> ParsingContext? {
+        if ctx.debugLog.flags.lineByLineParsing {
+            ctx.debugLog.line(currentLine(), lineNo: curLineNoForDisplay)
+        }
+        
         return ParsingContext(parser: self)
     }
         

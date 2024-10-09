@@ -44,6 +44,14 @@ public struct TemplateEvaluator: TemplateSoupEvaluator {
                 //as the multiblock is proccessed separately, getting current line will not work for that; so lineNo is passed along
                 if case let .invalidMultiBlockStmt(lineNo, _) = parseErr {
                     throw ParsingError.invalidLine(lineNo, identifier, parseErr.info, parseErr)
+                } else if case let .modifierInvalidArguments(lineNo, _) = parseErr {
+                    throw ParsingError.invalidLine(lineNo, identifier, parseErr.info, parseErr)
+                } else if case let .invalidExpression(lineNo, _) = parseErr {
+                        throw ParsingError.invalidLine(lineNo, identifier, parseErr.info, parseErr)
+                } else if case let .invalidPropertyNameUsedInCall(lineNo, _) = parseErr {
+                        throw ParsingError.invalidLine(lineNo, identifier, parseErr.info, parseErr)
+                } else if case let .templateFunctionNotFound(lineNo, _) = parseErr {
+                    throw ParsingError.invalidLine(lineNo, identifier, parseErr.info, parseErr)
                 } else {
                     throw ParsingError.invalidLine(parser.lineParser.curLineNoForDisplay, identifier, parseErr.info, parseErr)
                 }

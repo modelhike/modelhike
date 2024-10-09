@@ -55,7 +55,7 @@ public struct ModifierInstanceWithUnNamedArgs<I, T> : ModifierInstanceWithUnName
                     argumentValues.append(argValue)
                 } else {
                     //argumentValues.append(Optional<Any>.none as Any)
-                    throw TemplateSoup_ParsingError.modifierInvalidArguments(self.name)
+                    throw TemplateSoup_ParsingError.modifierInvalidArguments(lineNo, self.name)
                 }
             }
             

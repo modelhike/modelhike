@@ -46,7 +46,7 @@ public class PrintExpressionContent: ContentLineItem {
                 return String(describing: modifiedBody)
             }
         } else {
-            return nil
+            throw TemplateSoup_ParsingError.invalidExpression(lineNo, expression)
         }
     }
     
