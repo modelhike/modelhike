@@ -18,6 +18,22 @@ public enum CommonRegEx {
         OneOrMore(.any, .reluctant)
     }
     
+    public static let nameWithWhitespace: Regex<Regex<Substring>.RegexOutput> = Regex {
+        CharacterClass(
+            .anyOf("_"),
+            ("A"..."Z"),
+            ("a"..."z")
+        )
+        ZeroOrMore {
+            CharacterClass(
+                .anyOf("_- "),
+                ("A"..."Z"),
+                ("a"..."z"),
+                ("0"..."9")
+            )
+        }
+    }
+    
     public static let variable: Regex<Regex<Substring>.RegexOutput> = Regex {
         CharacterClass(
             .anyOf("_"),
@@ -127,7 +143,7 @@ public enum CommonRegEx {
         "\""
     }
     
-    public static let functionName = variable
+    public static let functionName = nameWithWhitespace
 
     public static let functionName_Caaturing = Regex {
         Capture {
