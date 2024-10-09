@@ -95,19 +95,24 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
             if let body = try children.execute(with: ctx) {
                 rendering += body
             }
-        } else if elseIfBlocks.count > 0 { // has Else-If blocks
+        } else {
+            var conditionEvalIsTrue = false
+            
             for elseIfBlock in elseIfBlocks {
                 if try ctx.evaluateCondition(expression: elseIfBlock.condition, lineNo: elseIfBlock.lineNo) {
                     ctx.debugLog.elseIfConditionSatisfied(elseIfBlock.condition, lineNo: elseIfBlock.lineNo)
                     
+                    conditionEvalIsTrue = true
+
                     if let body = try elseIfBlock.execute(with: ctx) {
                         rendering += body
                     }
                     break
                 }
             }
-        } else {
-            if let elseBlock = self.elseBlock {
+
+            //if no condition is evaluating to true
+            if let elseBlock = self.elseBlock, !conditionEvalIsTrue {
                 ctx.debugLog.elseBlockExecuting(elseBlock.line, lineNo: elseBlock.lineNo)
                 
                 if let body = try elseBlock.execute(with: ctx) {
