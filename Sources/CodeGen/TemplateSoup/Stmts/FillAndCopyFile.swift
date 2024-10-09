@@ -58,17 +58,23 @@ public class FillAndCopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible
         
         if ToFile.isEmpty {
             let fileName = fromFile
-
-            ctx.debugLog.copyingFile(fileName)
-            let file = try ctx.fileGenerator.fillPlaceholdersAndCopyFile(fileName)
-            ctx.addGenerated(filePath: file.outputPath.string + fileName)
+            
+            ctx.debugLog.generatingFile(fileName)
+            if let file = try ctx.fileGenerator.fillPlaceholdersAndCopyFile(fileName) {
+                ctx.addGenerated(filePath: file.outputPath.string + fileName)
+            } else {
+                ctx.debugLog.fileNotGenerated(fileName)
+            }
         } else {
             guard let toFile = try? ctx.evaluate(value: ToFile, lineNo: lineNo) as? String
                                                                         else { return nil }
             
-            ctx.debugLog.copyingFile(fromFile, to: toFile)
-            let file = try ctx.fileGenerator.fillPlaceholdersAndCopyFile(fromFile, to: toFile)
-            ctx.addGenerated(filePath: file.outputPath.string + toFile)
+            ctx.debugLog.generatingFile(toFile)
+            if let file = try ctx.fileGenerator.fillPlaceholdersAndCopyFile(fromFile, to: toFile) {
+                ctx.addGenerated(filePath: file.outputPath.string + toFile)
+            } else {
+                ctx.debugLog.fileNotGenerated(toFile)
+            }
         }
         
         return nil

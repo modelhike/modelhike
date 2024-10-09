@@ -9,6 +9,7 @@ import Foundation
 public enum ParserDirectives: Error {
     static var includeIf = "include-if"
     static var includeFor = "include-for"
+    static var outputFilename = "file-name"
 
     case excludeFile(String)
     

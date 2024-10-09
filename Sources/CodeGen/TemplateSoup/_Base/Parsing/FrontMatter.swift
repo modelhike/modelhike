@@ -10,14 +10,27 @@ public struct FrontMatter {
     private let lines: [String]
     private let parser: LineParser
     private let ctx: Context
-    @discardableResult
-    public init(lineParser: LineParser, with context: Context) throws {
-        parser = lineParser
-        ctx = context
+    
+    public func hasDirective(_ directive: String) -> ParsingContext? {
+        do {
+            let directiveString = "/\(directive)"
+            if let rhs = try self.rhs(for: directiveString) {
+                return ParsingContext(parser: parser, line: rhs, firstWord: directiveString)
+            }
+            
+            return nil
+        } catch {
+            return nil
+        }
         
-        lineParser.skipLine()
-        self.lines = lineParser.parseLinesTill(lineHasOnly: TemplateConstants.frontMatterIndicator)
-        lineParser.skipLine()
+    }
+    
+    public func evalDirective(_ directive: String) throws -> Any? {
+        let directiveString = "/\(directive)"
+        if let rhs = try self.rhs(for: directiveString) {
+            return try ContentLine.eval(line: rhs, with: ctx)
+        }
+        return nil
     }
     
     public func processVariables() throws {
@@ -53,6 +66,9 @@ public struct FrontMatter {
             case ParserDirectives.includeFor:
                 //handled elsewhere
                 break
+            case ParserDirectives.outputFilename:
+                //handled elsewhere
+                break
             default:
                 throw ParsingError.unrecognisedParsingDirective(parser.curLineNoForDisplay, parser.identifier, String(directiveName))
         }
@@ -78,5 +94,15 @@ public struct FrontMatter {
         }
         
         return nil
+    }
+    
+    @discardableResult
+    public init(lineParser: LineParser, with context: Context) throws {
+        parser = lineParser
+        ctx = context
+        
+        lineParser.skipLine()
+        self.lines = lineParser.parseLinesTill(lineHasOnly: TemplateConstants.frontMatterIndicator)
+        lineParser.skipLine()
     }
 }

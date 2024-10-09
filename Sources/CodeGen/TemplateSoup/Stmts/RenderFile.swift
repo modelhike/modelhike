@@ -70,8 +70,11 @@ public class RenderTemplateFileStmt: LineTemplateStmt, CustomDebugStringConverti
         filename = try ContentLine.eval(line: filename, with: ctx) ?? filename
 
         ctx.debugLog.generatingFile(filename, with: fromTemplate)
-        let file = try ctx.fileGenerator.generateFile(filename, template: fromTemplate)
-        ctx.addGenerated(filePath: file.outputPath.string + filename)
+        if let file = try ctx.fileGenerator.generateFile(filename, template: fromTemplate) {
+            ctx.addGenerated(filePath: file.outputPath.string + filename)
+        } else {
+            ctx.debugLog.fileNotGenerated(filename, with: fromTemplate)
+        }
         
         return nil
     }

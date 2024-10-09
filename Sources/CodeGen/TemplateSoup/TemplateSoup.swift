@@ -12,7 +12,7 @@ public class TemplateSoup : TemplateRenderer {
     let context: Context
     var repo: BlueprintRepository
     
-    var onLoadTemplate : LoadTemplateHandler = { (templateName, loader, ctx) throws -> Template in
+    public var onLoadTemplate : LoadTemplateHandler = { (templateName, loader, ctx) throws -> Template in
         do {
             return try loader.loadTemplate(fileName: templateName)
         } catch {
@@ -79,7 +79,7 @@ public class TemplateSoup : TemplateRenderer {
         let (_, forVar, inArrayVar) = match.output
         let loopVariableName = forVar
         
-        guard let loopItems = context.valueOf(variableOrObjProp: inArrayVar) as? [Any] else {
+        guard let loopItems = try context.valueOf(variableOrObjProp: inArrayVar, lineNo: parser.curLineNoForDisplay) as? [Any] else {
             throw ParsingError.invalidLineWithoutErr(parser.curLineNoForDisplay, parser.identifier, expression)
         }
         
@@ -97,26 +97,18 @@ public class TemplateSoup : TemplateRenderer {
         context.popSnapshot()
     }
     
-    public func frontMatter(hasDirective directive: String, in contents: String, identifier: String) -> ParsingContext? {
-        do {
-            let lineParser = LineParser(string: contents, identifier: identifier, with: context)
-            let curLine = lineParser.currentLine()
-            
-            if curLine.hasOnly(TemplateConstants.frontMatterIndicator) {
-                let frontMatter = try FrontMatter (lineParser: lineParser, with: context)
-                let directiveString = "/\(directive)"
-                if let rhs = try frontMatter.rhs(for: directiveString) {
-                    return ParsingContext(parser: lineParser, line: rhs, firstWord: directiveString)
-                }
-                return nil
-            }
-            
-            return nil
-        } catch {
-            return nil
+    public func frontMatter(in contents: String, identifier: String) throws -> FrontMatter? {
+        let lineParser = LineParser(string: contents, identifier: identifier, with: context)
+        let curLine = lineParser.currentLine()
+        
+        if curLine.hasOnly(TemplateConstants.frontMatterIndicator) {
+            let frontMatter = try FrontMatter (lineParser: lineParser, with: context)
+            return frontMatter
         }
+        
+        return nil
     }
-    
+        
     public init(loader: BlueprintRepository, context: Context) {
         self.repo = loader
         self.context = context

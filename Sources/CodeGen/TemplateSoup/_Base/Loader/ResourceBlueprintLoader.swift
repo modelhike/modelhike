@@ -8,6 +8,7 @@ import Foundation
 
 open class ResourceBlueprintLoader : BlueprintRepository {
     private var templateCache : [String: Template] = [:]
+    public let context: Context
 
     public let blueprintName: String
     let bundle: Bundle
@@ -96,12 +97,11 @@ open class ResourceBlueprintLoader : BlueprintRepository {
         let folder = resourceRoot + foldername
         guard let resourceURL = bundle.resourceURL?.appendingPathComponent(folder) else { return }
         
-        try renderResourceFiles(from: resourceURL, to: outputFolder.path, using: templateSoup)
+        try renderResourceFiles(from: resourceURL, to: outputFolder, using: templateSoup)
     }
     
-    fileprivate func renderResourceFiles(from resUrl: URL, to outputPath: LocalPath, using templateSoup: TemplateSoup) throws {
+    fileprivate func renderResourceFiles(from resUrl: URL, to outputFolder: LocalFolder, using templateSoup: TemplateSoup) throws {
         let fm = FileManager.default
-        try outputPath.ensureExists()
 
         do {
             let resourcePaths = try fm.contentsOfDirectory(at: resUrl, includingPropertiesForKeys: nil)
@@ -109,8 +109,6 @@ open class ResourceBlueprintLoader : BlueprintRepository {
                 var resourceName = resourcePath.lastPathComponent
                 
                 if !resourcePath.hasDirectoryPath { //resource file
-                    let contents = try String(contentsOf: resourcePath)
-
                     if resourceName.fileExtension() == TemplateConstants.TemplateExtension { //if tempalte file
                         
                         resourceName = resourceName.withoutFileExtension()
@@ -118,31 +116,60 @@ open class ResourceBlueprintLoader : BlueprintRepository {
                         //render the filename if it has an expression within '{{' and '}}'
                         let filename = try ContentLine.eval(line: resourceName, with: templateSoup.context) ?? resourceName
                         
-                        let renderClosure = {
+                        //if handler returns false, dont render file
+                        if try !context.events.canRender(filename: filename) {
+                            continue
+                        }
+                        
+                        let contents = try String(contentsOf: resourcePath)
+
+                        let renderClosure = { outputname in
                             if let renderedString = try templateSoup.renderTemplate(string: contents, identifier: resourceName){
                                 
-                                let outFile = LocalFile(path: outputPath / filename)
+                                //create the folder only if any file is rendered
+                                try outputFolder.ensureExists()
+                                
+                                templateSoup.context.debugLog.generatingFileInFolder(filename, with: resourceName, folder: outputFolder)
+
+                                let ouputFilename: String = outputname.isNotEmpty ? outputname : filename
+                                let outFile = LocalFile(path: outputFolder.path / ouputFilename)
                                 try outFile.write(renderedString)
                             }
                         }
                         
-                        if let pctx = templateSoup.frontMatter(hasDirective: ParserDirectives.includeFor, in: contents, identifier: resourceName) {
-                            try templateSoup.forEach(forInExpression: pctx.line, parser: pctx.parser, renderClosure: renderClosure)
+                        let parsingIdentifier = resourceName
+                        if let frontMatter = try templateSoup.frontMatter(in: contents, identifier: parsingIdentifier),
+                           let pctx = frontMatter.hasDirective(ParserDirectives.includeFor) {
+                            try templateSoup.forEach(forInExpression: pctx.line, parser: pctx.parser) {
+                                if let _ = frontMatter.hasDirective(ParserDirectives.outputFilename) {
+                                    if let outputFilename = try frontMatter.evalDirective( ParserDirectives.outputFilename) as? String {
+                                        try renderClosure(outputFilename)
+                                    }
+                                } else {
+                                    try renderClosure("")
+                                }
+                            }
                         } else {
-                            try renderClosure()
+                            try renderClosure("")
                         }
                         
                     } else { //not a template file
-
+                        //create the folder only if any file is copied
+                        try outputFolder.ensureExists()
+                        
+                        let contents = try String(contentsOf: resourcePath)
                         let filename = resourceName
-                        let outFile = LocalFile(path: outputPath / filename)
+
+                        templateSoup.context.debugLog.copyingFileInFolder(filename, folder: outputFolder)
+
+                        let outFile = LocalFile(path: outputFolder.path / filename)
                         try outFile.write(contents)
                     }
                 } else { //resource folder
                     let subfoldername = try ContentLine.eval(line: resourceName, with: templateSoup.context) ?? resourceName
                     
                     let newResUrl = resUrl.appendingPathComponent(subfoldername)
-                    try renderResourceFiles(from: newResUrl, to: outputPath / resourceName, using: templateSoup)
+                    try renderResourceFiles(from: newResUrl, to: outputFolder / resourceName, using: templateSoup)
                 }
             }
         } catch {
@@ -170,6 +197,7 @@ open class ResourceBlueprintLoader : BlueprintRepository {
         self.bundle = bundle
         self.blueprintName = blueprint
         self.resourceRoot = "/Resources/\(blueprint)/"
+        self.context = ctx
     }
 
 }
