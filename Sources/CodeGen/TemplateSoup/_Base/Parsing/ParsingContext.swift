@@ -10,10 +10,13 @@ public class ParsingContext {
     public internal(set) var line: String
     public internal(set) var firstWord: String
     public internal(set) var parser: LineParser
-
-    public func parseAttachedItems(for obj: ArtifactContainer, with item: AttachedSection) throws -> [Artifact] {
-        if item.name.lowercased() == "apis" {
-            return try APISectionParser.parse(for: obj, lineParser: self.parser)
+    let context: Context
+    
+    public func parseAttachedItems(for obj: ArtifactContainer, with section: AttachedSection) throws -> [Artifact] {
+        if let cls = obj as? CodeObject {
+            if section.name.lowercased() == "apis" {
+                return try APISectionParser.parse(for: cls, lineParser: self.parser)
+            }
         }
         
         return []
@@ -61,12 +64,14 @@ public class ParsingContext {
         guard let firstWord = line.firstWord() else { return nil }
         self.firstWord = firstWord
         self.parser = parser
+        self.context = parser.ctx
     }
     
     public init(parser: LineParser, line: String, firstWord: String) {
         self.line = line
         self.firstWord = firstWord
         self.parser = parser
+        self.context = parser.ctx
     }
 }
 
