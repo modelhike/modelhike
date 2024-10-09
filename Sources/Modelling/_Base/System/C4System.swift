@@ -43,24 +43,25 @@ public class C4System : ArtifactContainer {
     }
     
     public init(name: String, items: C4Container...) {
-        self.name = name
-        self.givename = name
+        self.givename = name.trim()
+        self.name = self.givename.normalizeForVariableName()
         self.containers.append(contentsOf: items)
     }
     
     public init(name: String, items: [C4Container]) {
-        self.name = name
-        self.givename = name
+        self.givename = name.trim()
+        self.name = self.givename.normalizeForVariableName()
         self.containers.append(contentsOf: items)
     }
     
     public init(name: String, items: C4ContainerList) {
-        self.name = name
-        self.givename = name
+        self.givename = name.trim()
+        self.name = self.givename.normalizeForVariableName()
         self.containers = items
     }
     
     internal init(){
         self.name = ""
+        self.givename = ""
     }
 }

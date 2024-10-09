@@ -58,30 +58,32 @@ public class C4Component : ArtifactContainer {
     }
     
     public init(name: String = "", @ArtifactContainerBuilder _ builder: () -> [ArtifactContainer]) {
-        self.name = name
-        self.givename = name
+        self.name = name.trim()
+        self.givename = self.name
         self.items = builder()
     }
     
     public init(name: String = "", _ items: ArtifactContainer...) {
-        self.name = name
-        self.givename = name
+        self.name = name.trim()
+        self.givename = self.name
         self.items = items
     }
     
     public init(name: String = "", _ items: [ArtifactContainer]) {
-        self.name = name
-        self.givename = name
+        self.name = name.trim()
+        self.givename = self.name
         self.items = items
     }
     
     public init(name: String) {
-        self.name = name
+        self.name = name.trim()
+        self.givename = self.name
         self.items = []
     }
     
     public init(name: Substring) {
-        self.name = String(name)
+        self.name = String(name).trim()
+        self.givename = self.name
         self.items = []
     }
     

@@ -11,7 +11,7 @@ public class DerivedProperty : CodeMember {
     public var tags = Tags()
     
     public var name: String
-    public var givename : String
+    public var givenname : String
     public var type: DerivedPropertyKind = .derived
     public var prop: Property?
     public var obj: DomainObject?
@@ -65,8 +65,8 @@ public class DerivedProperty : CodeMember {
     }
     
     public init(name: String) {
-        self.givename = name
-        self.name = name.normalizeForVariableName()
+        self.givenname = name.trim()
+        self.name = self.givenname.normalizeForVariableName()
     }
     
 }

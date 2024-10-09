@@ -35,7 +35,7 @@ public enum ModuleParser {
         guard let match = line.wholeMatch(of: ModelRegEx.moduleName_Capturing)                                                                                  else { return nil }
         
         let (_, moduleName, attributeString, tagString) = match.output
-        let item = C4Component(name: moduleName.trim())
+        let item = C4Component(name: moduleName)
         
         //check if has attributes
         if let attributeString = attributeString {

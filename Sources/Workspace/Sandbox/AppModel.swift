@@ -40,6 +40,18 @@ open class AppModel {
                 for annotation in type.annotations.annotationsList {
                     try AnnotationProcessor.process(annotation, for: type)
                 }
+                
+                //This should be done last, as the propeties for Dtos are populated only in the above steps
+                for prop in type.properties {
+                    if prop.isCustomType {
+                        if let obj = ctx.model.types.get(for: prop.objectTypeString()) {
+                            //change the typename according to the retrieved object;
+                            //this would correctly fix the type name, even if the given name
+                            //has a diff character casing or had spaces
+                            prop.type = .customType(obj.name)
+                        }
+                    }
+                }
             }
         }
     }

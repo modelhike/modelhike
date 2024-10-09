@@ -7,7 +7,8 @@
 import Foundation
 
 public protocol CodeMember : HasAttributes, HasTags, CustomDebugStringConvertible {
-    
+    var name: String {get}
+    var givenname : String {get}
 }
 
 public extension CodeMember {
