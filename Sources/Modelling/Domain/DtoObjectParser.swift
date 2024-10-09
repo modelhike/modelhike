@@ -26,6 +26,9 @@ public enum DtoObjectParser {
         guard let match = line.wholeMatch(of: ModelRegEx.className_Capturing)                                                                                  else { return nil }
         
         let (_, className, attributeString, tagString) = match.output
+        
+        try ctx.events.onParse(objectName: className, parser: parser)
+
         let item = DtoObject(name: className.trim())
 
         //check if has attributes
@@ -52,6 +55,15 @@ public enum DtoObjectParser {
                     continue
                 } else {
                     throw Model_ParsingError.invalidDerivedPropertyLine(pctx.line)
+                }
+            }
+            
+            if MethodObject.canParse(firstWord: pctx.firstWord) {
+                if let method = try MethodObject.parse(with: pctx) {
+                    item.append(method)
+                    continue
+                } else {
+                    throw Model_ParsingError.invalidMethodLine(pctx.line)
                 }
             }
             

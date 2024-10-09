@@ -10,7 +10,7 @@ public protocol CodeObject : ArtifactContainerWithAttachedSections, CustomDebugS
     var dataType: ArtifactKind {get set}
     var properties : [Property] {get}
         
-    var methods : [Method] {get}
+    var methods : [MethodObject] {get}
     func hasMethod(_ name: String) -> Bool
 
     func hasProp(_ name: String, isCaseSensitive: Bool) -> Bool
@@ -32,28 +32,30 @@ public extension CodeObject {
     
     func hasProp(_ name: String, isCaseSensitive: Bool = false) -> Bool {
         if isCaseSensitive {
-            return properties.contains(where: { $0.name == name})
+            return properties.contains(where: { $0.name == name || $0.givenname == name})
         } else {
-            return properties.contains(where: { $0.name.lowercased() == name.lowercased()})
+            return properties.contains(where: { $0.name.lowercased() == name.lowercased() ||
+                                                $0.givenname.lowercased() == name.lowercased()})
         }
     }
     
     func hasMethod(_ name: String) -> Bool {
-        return methods.contains(where: { $0.name == name})
+        return methods.contains(where: { $0.name == name || $0.givenname == name })
     }
     
     func getProp(_ name: String, isCaseSensitive: Bool = false) -> Property? {
         if isCaseSensitive {
-            return properties.first(where: { $0.name == name})
+            return properties.first(where: { $0.name == name || $0.givenname == name})
         } else {
-            return properties.first(where: { $0.name.lowercased() == name.lowercased()})
+            return properties.first(where: { $0.name.lowercased() == name.lowercased() ||
+                                            $0.givenname.lowercased() == name.lowercased()})
         }
     }
     
     func getLastPropInRecursive(_ name: String, appModel: ParsedTypesCache) -> Property? {
         if let index = name.firstIndex(of: ".") {
             let propName = String(name.prefix(upTo: index))
-            guard let prop = properties.first(where: { $0.name == propName}) else { return nil }
+            guard let prop = getProp(propName) else { return nil }
             if !prop.isObject() { return prop }
             //dump(appmodel)
             guard let entity = appModel.get(for: prop.objectTypeString()) else { return nil }
@@ -69,7 +71,7 @@ public extension CodeObject {
     func getArrayPropInRecursive(_ name: String, appModel: ParsedTypesCache) -> Property? {
         if let index = name.firstIndex(of: ".") {
             let propName = String(name.prefix(upTo: index))
-            guard let prop = properties.first(where: { $0.name == propName}) else { return nil }
+            guard let prop = getProp(propName) else { return nil }
             if !prop.isObject() { return nil }
             
             if prop.isArray {

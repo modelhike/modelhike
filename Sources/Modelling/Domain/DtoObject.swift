@@ -26,8 +26,8 @@ public class DtoObject : CodeObject {
         if let dprop = $0 as? DerivedProperty { return dprop.prop } else {return nil}
     }) }()
     
-    public lazy var methods : [Method] = { members.compactMap({
-        if let method = $0 as? Method { return method } else {return nil}
+    public lazy var methods : [MethodObject] = { members.compactMap({
+        if let method = $0 as? MethodObject { return method } else {return nil}
     }) }()
     
     public var dataType: ArtifactKind = .unKnown
@@ -49,7 +49,7 @@ public class DtoObject : CodeObject {
             }
             
             if derivedProperty.prop == nil { //no matching name found
-                let msg = "\(derivedProperty.givename) in \(self.givename)"
+                let msg = "\(derivedProperty.givenname) in \(self.givename)"
                 throw Model_ParsingError.invalidDerivedPropertyLine(msg)
             }
             

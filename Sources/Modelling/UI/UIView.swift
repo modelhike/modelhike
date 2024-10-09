@@ -18,8 +18,8 @@ public class UIView : UIObject {
     public var tags = Tags()
     public var annotations = Annotations()
     
-    public lazy var methods : [Method] = { members.compactMap({
-        if let method = $0 as? Method { return method } else {return nil}
+    public lazy var methods : [MethodObject] = { members.compactMap({
+        if let method = $0 as? MethodObject { return method } else {return nil}
     }) }()
     
     public var dataType: ArtifactKind = .ui
@@ -51,7 +51,7 @@ public protocol UIObject : ArtifactContainerWithAttachedSections, CustomDebugStr
     var name: String {get}
     var dataType: ArtifactKind {get set}
     
-    var methods : [Method] {get}
+    var methods : [MethodObject] {get}
     func hasMethod(_ name: String) -> Bool
     
     func isSameAs(_ obj: UIObject) -> Bool

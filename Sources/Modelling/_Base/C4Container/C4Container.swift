@@ -19,7 +19,8 @@ public class C4Container : ArtifactContainer {
 
     public internal(set) var components = C4ComponentList()
     public internal(set) var unresolvedMembers: [ContainerModuleMember] = []
-
+    public internal(set) var methods: [MethodObject] = []
+    
     public func toDictionary(using appModel: AppModel) -> [String: Any] {
         let dict: [String: Any] = [
             "model": appModel.types,
@@ -48,6 +49,10 @@ public class C4Container : ArtifactContainer {
     
     public func remove(unResolved item: ContainerModuleMember) {
         unresolvedMembers.removeAll(where: { $0.name == item.name })
+    }
+    
+    public func append(_ item: MethodObject) {
+        methods.append(item)
     }
     
     public func append(_ item: C4Component) {
@@ -80,29 +85,29 @@ public class C4Container : ArtifactContainer {
     }
     
     public init(name: String, type: ContainerKind = .unKnown, items: C4Component...) {
-        self.name = name
-        self.givename = name
+        self.givename = name.trim()
+        self.name = self.givename.normalizeForVariableName()
         self.containerType = type
         self.components.append(contentsOf: items)
     }
     
     public init(name: String, type: ContainerKind = .unKnown, items: [C4Component]) {
-        self.name = name
-        self.givename = name
+        self.givename = name.trim()
+        self.name = self.givename.normalizeForVariableName()
         self.containerType = type
         self.components.append(contentsOf: items)
     }
     
     public init(name: String, type: ContainerKind = .unKnown, items: C4ComponentList) {
-        self.name = name
-        self.givename = name
+        self.givename = name.trim()
+        self.name = self.givename.normalizeForVariableName()
         self.containerType = type
         self.components = items
     }
     
     public init(name: String, type: ContainerKind = .unKnown) {
-        self.name = name.normalizeForVariableName()
-        self.givename = name
+        self.givename = name.trim()
+        self.name = self.givename.normalizeForVariableName()
         self.containerType = type
     }
     

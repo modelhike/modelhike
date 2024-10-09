@@ -22,8 +22,8 @@ public class DomainObject : CodeObject {
         if let prop = $0 as? Property { return prop } else {return nil}
     }) }()
     
-    public lazy var methods : [Method] = { members.compactMap({
-        if let method = $0 as? Method { return method } else {return nil}
+    public lazy var methods : [MethodObject] = { members.compactMap({
+        if let method = $0 as? MethodObject { return method } else {return nil}
     }) }()
     
     public var dataType: ArtifactKind = .unKnown
