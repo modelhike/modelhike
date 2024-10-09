@@ -231,6 +231,10 @@ public extension String {
         }
     }
     
+    func uppercasedFirst() -> String {
+        guard let first = self.first else { return self }
+        return String(first).uppercased() + self[self.index(self.startIndex, offsetBy: 1)...]
+    }
     func withoutFileExtension() -> String {
         let url = URL(string: self)
         let filename = url?.deletingPathExtension().lastPathComponent
@@ -244,10 +248,12 @@ public extension String {
     }
     
     //removes all spaces in the string
+    //for selective spaces, replace 🔥 symbol with a single space
     func spaceless() -> String {
-        return self.components(separatedBy: .whitespacesAndNewlines)
+        let withoutSpace = self.components(separatedBy: .whitespacesAndNewlines)
             .filter { !$0.isEmpty }
             .joined()
+        return withoutSpace.replacingOccurrences(of: "🔥", with: " ")
     }
     
     static var newLine = "\n"

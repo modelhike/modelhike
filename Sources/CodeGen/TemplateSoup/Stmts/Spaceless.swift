@@ -27,6 +27,8 @@ public class SpacelessStmt: BlockTemplateStmt, CustomDebugStringConvertible {
     public override func execute(with ctx: Context) throws -> String? {
         guard let body = try children.execute(with: ctx) else { return nil }
         
+        //removes all spaces in the string
+        //for selective spaces, replace 🔥 symbol with a single space
         return body.spaceless()
     }
     
