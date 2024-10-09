@@ -8,6 +8,7 @@ import Foundation
 
 public enum ModelConstants {
     public static let Member_Optional = "-"
+    public static let Member_Optional2 = "_" //underscore; sometimes mistakenly user gives this
     public static let Member_Mandatory = "*"
     public static let Member_Conditional = "*?"
     
@@ -19,6 +20,7 @@ public enum ModelConstants {
     public static let External_Import_File = "+"
     
     public static let AttachedSection = "#"
+    public static let AttachedSubSection = "##"
 
     public static let Annotation_Start = "@"
     public static let Annotation_Split = "::"
