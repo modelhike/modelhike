@@ -12,7 +12,7 @@ public class API : Artifact, CustomDebugStringConvertible {
     public var annotations = Annotations()
 
     public var name: String = ""
-    public var givename: String = ""
+    public var givenname: String = ""
     public let dataType: ArtifactKind = .api
 
     public let entity : CodeObject
@@ -77,16 +77,22 @@ public class API : Artifact, CustomDebugStringConvertible {
         case .update:
             self.path = ""
             self.name = "update\(entity.name)"
-        case .getByCustom:
+        case .getByCustomProperties:
             self.path = ""
-            self.name = "get\(entity.name)Custom"
-        case .getUsingCustomLogic:
-            self.path = ""
-            self.name = "get\(entity.name)ByCustomLogic"
-        case .listByCustom:
+            self.name = "get\(entity.name)ByCustomProps"
+        case .listByCustomProperties:
             self.path = ""
             let plural = entity.name.pluralized()
-            self.name = "list\(plural)Custom"
+            self.name = "list\(plural)ByCustomProps"
+        case .getByUsingCustomLogic:
+            self.path = ""
+            self.name = "get\(entity.name)ByCustomLogic"
+        case .listByUsingCustomLogic:
+            self.path = ""
+            self.name = "list\(entity.name)ByCustomLogic"
+        case .mutationUsingCustomLogic:
+            self.path = ""
+            self.name = "mutation\(entity.name)ByCustomLogic"
         case .pushData:
             self.path = ""
             let plural = entity.name.pluralized()
@@ -97,14 +103,15 @@ public class API : Artifact, CustomDebugStringConvertible {
             self.name = "\(plural)Subscription"
         }
         
-        self.givename = self.name
+        self.givenname = self.name
     }
 }
 
 public enum APIType {
     case create, update, delete, 
-         getById, getByCustom, getUsingCustomLogic,
-         list, listByCustom,
+         getById, getByCustomProperties, 
+         mutationUsingCustomLogic, getByUsingCustomLogic, listByUsingCustomLogic,
+         list, listByCustomProperties,
          pushData, pushDataList,
          associate, deassosiate, activate, deactivate
 }

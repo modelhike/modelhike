@@ -33,7 +33,7 @@ public enum APISectionParser {
                 if let match = line.wholeMatch(of: Self.customListApi_WithCondition_Regex ) {
                     let (_, prop1, op, prop2) = match.output
                     
-                    let api = ListAPIByCustom(entity: obj)
+                    let api = ListAPIByCustomProperties(entity: obj)
                     
                     if op.trim().lowercased() == "and" {
                         api.andCondition = true
@@ -56,7 +56,7 @@ public enum APISectionParser {
                 } else if let match = line.wholeMatch(of: Self.customListApi_SingleProperty_Regex ) {
                     let (_, prop1) = match.output
                     
-                    let api = ListAPIByCustom(entity: obj)
+                    let api = ListAPIByCustomProperties(entity: obj)
                     
                     if let property1 = obj.getProp(prop1.trim(), isCaseSensitive: false) {
                         api.properties.append(property1)

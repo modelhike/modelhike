@@ -1,5 +1,5 @@
 //
-// API`.swift
+// CustomAPIs.swift
 // DiagSoup
 // https://www.github.com/diagsoup/diagsoup
 //
@@ -10,34 +10,45 @@ public class CustomLogicAPI : API {
     public let method: MethodObject
     
     public var parameters: [MethodParameter] { method.parameters }
-    public var returnType : PropertyKind? { method.returnType }
+    public var returnType : TypeInfo { method.returnType }
 
     public init(method: MethodObject, entity: CodeObject, version: Int = 1) {
         self.method = method
-        super.init(entity: entity, type: .mutationUsingCustomLogic, version: version)
         
+        var type: APIType = .mutationUsingCustomLogic
+        
+        //If the return type is an object, assume it is either get-by or list api
+        if method.returnType.isObject() {
+            if method.returnType.isArray {
+                type = .listByUsingCustomLogic
+            } else {
+                type = .getByUsingCustomLogic
+            }
+        }
+        
+        super.init(entity: entity, type: type, version: version)
         self.name = method.name.uppercasedFirst()
     }
 }
 
-public class ListAPIByCustom : API, APIWithCustomProperties {
+public class ListAPIByCustomProperties : API, APIWithCustomProperties {
     public var andCondition : Bool = false
     public var properties: [Property] = [] {
         didSet { updateName() }
     }
     
     public init(entity: CodeObject, version: Int = 1) {
-        super.init(entity: entity, type: .listByCustom, version: version)
+        super.init(entity: entity, type: .listByCustomProperties, version: version)
     }
 }
 
-public class GetAPIByCustom : API, APIWithCustomProperties {
+public class GetAPIByCustomProperties : API, APIWithCustomProperties {
     public var andCondition : Bool = false
     public var properties: [Property] = [] {
         didSet { updateName() }
     }
     public init(entity: CodeObject, version: Int = 1) {
-        super.init(entity: entity, type: .getByCustom, version: version)
+        super.init(entity: entity, type: .getByCustomProperties, version: version)
     }
 }
 
