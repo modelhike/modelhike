@@ -12,7 +12,7 @@ public struct ContainerModuleMember : Artifact {
     public var annotations = Annotations()
 
     public var name: String = ""
-    public var givename: String = ""
+    public var givenname: String = ""
     public let dataType: ArtifactKind = .container
 
     public var comment: String?
@@ -65,12 +65,12 @@ public struct ContainerModuleMember : Artifact {
     
     public init(_ name: String) {
         self.name = name.normalizeForVariableName()
-        self.givename = name
+        self.givenname = name
     }
     
     public init() {
         self.name = "unKnown"
-        self.givename = name
+        self.givenname = name
     }
     
 }

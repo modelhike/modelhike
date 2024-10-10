@@ -7,7 +7,7 @@
 import Foundation
 
 public protocol Artifact : HasAttributes, HasAnnotations, HasTags {
-    var givename: String {get}
+    var givenname: String {get}
     var name: String {get}
     var dataType: ArtifactKind {get}
 }

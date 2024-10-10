@@ -12,7 +12,7 @@ public class C4ComponentList : ArtifactContainer, IteratorProtocol, Sequence {
     public var annotations = Annotations()
     
     public var name: String = ""
-    public var givename: String = ""
+    public var givenname: String = ""
     public let dataType: ArtifactKind = .container
 
     public internal(set) var components : [C4Component] = []
@@ -81,7 +81,7 @@ public class C4ComponentList : ArtifactContainer, IteratorProtocol, Sequence {
         str += .newLine
 
         for item in components {
-            str += item.givename + .newLine
+            str += item.givenname + .newLine
             
         }
         
@@ -90,13 +90,13 @@ public class C4ComponentList : ArtifactContainer, IteratorProtocol, Sequence {
     
     public init(name: String = "", _ items: C4Component...) {
         self.name = name
-        self.givename = name
+        self.givenname = name
         self.components = items
     }
     
     public init(name: String = "", _ items: [C4Component]) {
         self.name = name
-        self.givename = name
+        self.givenname = name
         self.components = items
     }
     

@@ -12,7 +12,7 @@ public class C4Component : ArtifactContainer {
     public var annotations = Annotations()
 
     public var name: String = ""
-    public var givename: String = ""
+    public var givenname: String = ""
     public let dataType: ArtifactKind = .container
 
     public internal(set) var items : [Artifact] = []
@@ -50,7 +50,7 @@ public class C4Component : ArtifactContainer {
         str += .newLine
 
         for item in items {
-            str += item.givename + .newLine
+            str += item.givenname + .newLine
             
         }
         
@@ -59,31 +59,31 @@ public class C4Component : ArtifactContainer {
     
     public init(name: String = "", @ArtifactContainerBuilder _ builder: () -> [ArtifactContainer]) {
         self.name = name.trim()
-        self.givename = self.name
+        self.givenname = self.name
         self.items = builder()
     }
     
     public init(name: String = "", _ items: ArtifactContainer...) {
         self.name = name.trim()
-        self.givename = self.name
+        self.givenname = self.name
         self.items = items
     }
     
     public init(name: String = "", _ items: [ArtifactContainer]) {
         self.name = name.trim()
-        self.givename = self.name
+        self.givenname = self.name
         self.items = items
     }
     
     public init(name: String) {
         self.name = name.trim()
-        self.givename = self.name
+        self.givenname = self.name
         self.items = []
     }
     
     public init(name: Substring) {
         self.name = String(name).trim()
-        self.givename = self.name
+        self.givenname = self.name
         self.items = []
     }
     

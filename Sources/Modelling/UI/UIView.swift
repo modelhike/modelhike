@@ -7,7 +7,7 @@
 import Foundation
 
 public class UIView : UIObject {
-    public var givename: String
+    public var givenname: String
     public var name: String
     public var members : [CodeMember] = []
     public var attachedSections = AttachedSections()
@@ -35,19 +35,19 @@ public class UIView : UIObject {
     }
     
     public init(name: String, @CodeMemberBuilder _ builder: () -> [CodeMember]) {
-        self.givename = name
+        self.givenname = name
         self.name = name.normalizeForVariableName()
         self.members = builder()
     }
     
     public init(name: String) {
-        self.givename = name
+        self.givenname = name
         self.name = name.normalizeForVariableName()
     }
 }
 
 public protocol UIObject : ArtifactContainerWithAttachedSections, CustomDebugStringConvertible {
-    var givename: String {get}
+    var givenname: String {get}
     var name: String {get}
     var dataType: ArtifactKind {get set}
     
@@ -64,7 +64,7 @@ public extension UIObject {
     }
     
     func isSameAs(_ obj: UIObject) ->  Bool {
-        return self.givename == obj.givename
+        return self.givenname == obj.givenname
     }
     
     @discardableResult

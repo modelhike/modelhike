@@ -12,7 +12,7 @@ public class C4Container : ArtifactContainer {
     public var annotations = Annotations()
 
     public var name: String = ""
-    public var givename: String = ""
+    public var givenname: String = ""
     public let dataType: ArtifactKind = .container
 
     public var containerType: ContainerKind
@@ -77,7 +77,7 @@ public class C4Container : ArtifactContainer {
         str += .newLine
 
         for item in components {
-            str += item.givename + .newLine
+            str += item.givenname + .newLine
             
         }
         
@@ -85,35 +85,35 @@ public class C4Container : ArtifactContainer {
     }
     
     public init(name: String, type: ContainerKind = .unKnown, items: C4Component...) {
-        self.givename = name.trim()
-        self.name = self.givename.normalizeForVariableName()
+        self.givenname = name.trim()
+        self.name = self.givenname.normalizeForVariableName()
         self.containerType = type
         self.components.append(contentsOf: items)
     }
     
     public init(name: String, type: ContainerKind = .unKnown, items: [C4Component]) {
-        self.givename = name.trim()
-        self.name = self.givename.normalizeForVariableName()
+        self.givenname = name.trim()
+        self.name = self.givenname.normalizeForVariableName()
         self.containerType = type
         self.components.append(contentsOf: items)
     }
     
     public init(name: String, type: ContainerKind = .unKnown, items: C4ComponentList) {
-        self.givename = name.trim()
-        self.name = self.givename.normalizeForVariableName()
+        self.givenname = name.trim()
+        self.name = self.givenname.normalizeForVariableName()
         self.containerType = type
         self.components = items
     }
     
     public init(name: String, type: ContainerKind = .unKnown) {
-        self.givename = name.trim()
-        self.name = self.givename.normalizeForVariableName()
+        self.givenname = name.trim()
+        self.name = self.givenname.normalizeForVariableName()
         self.containerType = type
     }
     
     internal init() {
         self.name = ""
-        self.givename = ""
+        self.givenname = ""
         self.containerType = .unKnown
     }
 }

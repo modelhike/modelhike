@@ -55,9 +55,9 @@ public class C4Component_Wrap : ObjectWrapper {
     
     public lazy var queryApis : [API_Wrap] = { self.apis.compactMap({
         if ($0.item.type == .getById ||
-            $0.item.type == .getByCustom ||
+            $0.item.type == .getByCustomProperties ||
             $0.item.type == .list ||
-            $0.item.type == .listByCustom 
+            $0.item.type == .listByCustomProperties 
         ) { return $0 } else {return nil}    }) }()
     
     public func dynamicLookup(property propname: String, lineNo: Int) throws -> Any {

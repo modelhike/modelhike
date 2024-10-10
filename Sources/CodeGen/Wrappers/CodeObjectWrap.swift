@@ -35,7 +35,7 @@ public class CodeObject_Wrap : ObjectWrapper {
         
         let value: Any = switch propname {
             case "name": item.name
-            case "given-name": item.givename
+            case "given-name": item.givenname
             case "properties" : properties
             case "entity" : item.dataType == .entity
             case "dto" : item.dataType == .dto
@@ -89,8 +89,8 @@ public class TypeProperty_Wrap : ObjectWrapper {
             //} else {
                 item.name
             //}
-            case "is-array" : item.isArray
-            case "is-object" : item.isObject()
+            case "is-array" : item.type.isArray
+            case "is-object" : item.type.isObject()
             case "is-number" : item.type == .int || item.type == .double
             case "is-bool", "is-boolean", "is-yesno" : item.type == .bool
             case "is-string" : item.type == .string
@@ -98,15 +98,15 @@ public class TypeProperty_Wrap : ObjectWrapper {
             case "is-any" : item.type == .any
             case "is-date" : item.type == .date || item.type == .datetime
             case "is-buffer" : item.type == .buffer
-            case "is-reference" :  item.isReference()
-            case "is-extended-reference" : item.isExtendedReference()
-            case "is-coded-value" : item.isCodedValue()
-            case "is-custom-type" : item.isCustomType
+            case "is-reference" :  item.type.isReference()
+            case "is-extended-reference" : item.type.isExtendedReference()
+            case "is-coded-value" : item.type.isCodedValue()
+            case "is-custom-type" : item.type.isCustomType
             case "custom-type" :
-                if case let .customType(typeName) = item.type {
+            if case let .customType(typeName) = item.type.kind {
                     typeName
                 } else { "" }
-            case "obj-type" : item.objectTypeString()
+            case "obj-type" : item.type.objectString()
             case "is-required": item.required == .yes
             default: 
             //nothing found; so check in module attributes

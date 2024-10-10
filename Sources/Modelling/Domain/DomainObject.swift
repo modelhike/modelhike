@@ -7,7 +7,7 @@
 import Foundation
 
 public class DomainObject : CodeObject {
-    public var givename: String
+    public var givenname: String
     public var name: String
     public var members : [CodeMember] = []
     public var attachedSections = AttachedSections()
@@ -50,13 +50,13 @@ public class DomainObject : CodeObject {
     }
     
     public init(name: String, @CodeMemberBuilder _ builder: () -> [CodeMember]) {
-        self.givename = name.trim()
+        self.givenname = name.trim()
         self.name = name.normalizeForVariableName()
         self.members = builder()
     }
     
     public init(name: String) {
-        self.givename = name.trim()
+        self.givenname = name.trim()
         self.name = name.normalizeForVariableName()
     }
     

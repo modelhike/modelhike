@@ -18,7 +18,7 @@ public class UIObject_Wrap : ObjectWrapper {
         
         let value: Any = switch propname {
         case "name": item.name
-        case "given-name": item.givename
+        case "given-name": item.givenname
         default:
             //nothing found; so check in module attributes
             if item.attribs.has(propname) {

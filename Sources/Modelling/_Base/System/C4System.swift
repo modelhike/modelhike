@@ -12,7 +12,7 @@ public class C4System : ArtifactContainer {
     public var annotations = Annotations()
 
     public var name: String = ""
-    public var givename: String = ""
+    public var givenname: String = ""
     public let dataType: ArtifactKind = .container
 
     public internal(set) var containers = C4ContainerList()
@@ -35,7 +35,7 @@ public class C4System : ArtifactContainer {
         str += .newLine
         
         for item in containers {
-            str += item.givename + .newLine
+            str += item.givenname + .newLine
             
         }
         
@@ -43,25 +43,25 @@ public class C4System : ArtifactContainer {
     }
     
     public init(name: String, items: C4Container...) {
-        self.givename = name.trim()
-        self.name = self.givename.normalizeForVariableName()
+        self.givenname = name.trim()
+        self.name = self.givenname.normalizeForVariableName()
         self.containers.append(contentsOf: items)
     }
     
     public init(name: String, items: [C4Container]) {
-        self.givename = name.trim()
-        self.name = self.givename.normalizeForVariableName()
+        self.givenname = name.trim()
+        self.name = self.givenname.normalizeForVariableName()
         self.containers.append(contentsOf: items)
     }
     
     public init(name: String, items: C4ContainerList) {
-        self.givename = name.trim()
-        self.name = self.givename.normalizeForVariableName()
+        self.givenname = name.trim()
+        self.name = self.givenname.normalizeForVariableName()
         self.containers = items
     }
     
     internal init(){
         self.name = ""
-        self.givename = ""
+        self.givenname = ""
     }
 }

@@ -20,7 +20,7 @@ public class ParsedTypesCache : CustomDebugStringConvertible {
     }
         
     public func get(for name: String) -> CodeObject? {
-        return items.first(where: { $0.givename.lowercased() == name.lowercased()
+        return items.first(where: { $0.givenname.lowercased() == name.lowercased()
             || $0.name.lowercased() == name.lowercased() })
     }
      
@@ -39,7 +39,7 @@ public class ParsedTypesCache : CustomDebugStringConvertible {
         str += .newLine
         
         for item in items {
-            str += item.givename + .newLine
+            str += item.givenname + .newLine
             
         }
         

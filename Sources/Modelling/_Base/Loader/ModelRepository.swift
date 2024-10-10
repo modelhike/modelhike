@@ -33,9 +33,9 @@ public extension ModelRepository {
         model.containers.forEachType {  e, component in
             
             if let cls = e as? DomainObject {
-                if cls.givename.hasSuffix("Cache"){
+                if cls.givenname.hasSuffix("Cache"){
                     e.dataType = .cache
-                } else if cls.givename.hasSuffix("Input"){
+                } else if cls.givenname.hasSuffix("Input"){
                     e.dataType = .apiInput
                 } else if cls.hasProp("_id") || cls.hasProp("id") {
                     e.dataType = .entity
@@ -46,7 +46,7 @@ public extension ModelRepository {
             }
             
             if let cls = e as? DtoObject {
-                if cls.givename.hasSuffix("Input"){
+                if cls.givenname.hasSuffix("Input"){
                     e.dataType = .apiInput
                 } else {
                     e.dataType = .dto

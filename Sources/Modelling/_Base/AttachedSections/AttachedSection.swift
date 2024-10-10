@@ -12,7 +12,7 @@ public class AttachedSection : ArtifactContainer {
     public var annotations = Annotations()
 
     public var name: String = ""
-    public var givename: String = ""
+    public var givenname: String = ""
     public let dataType: ArtifactKind = .attachedSection
 
     public internal(set) var items : [Artifact]
@@ -23,7 +23,7 @@ public class AttachedSection : ArtifactContainer {
     
     public init(code: String) {
         self.name = code
-        self.givename = code
+        self.givenname = code
         self.items = []
     }
 }

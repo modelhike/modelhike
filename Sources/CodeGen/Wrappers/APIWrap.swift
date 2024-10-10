@@ -59,6 +59,7 @@ public class API_Wrap : ObjectWrapper {
             case "has-path" : item.path.isNotEmpty
             case "path" : item.path
             case "name" : item.name
+            case "givenname" : item.givenname
             case "base-url" : item.baseUrl
             case "version" : item.version
             case "query-params" : queryParams
@@ -66,12 +67,14 @@ public class API_Wrap : ObjectWrapper {
             case "is-update" : item.type == .update
             case "is-delete" : item.type == .delete
             case "is-get-by-id" : item.type == .getById
-            case "is-get-by-custom" : item.type == .getByCustom
+            case "is-get-by-custom-props" : item.type == .getByCustomProperties
             case "is-list" :  item.type == .list
-            case "is-list-by-custom" :  item.type == .listByCustom
+            case "is-list-by-custom-props" :  item.type == .listByCustomProperties
             case "is-push-data" :  item.type == .pushData
             case "is-push-datalist" :  item.type == .pushDataList
-            case "is-custom-logic" : item.type == .mutationUsingCustomLogic
+            case "is-get-by-custom-logic" : item.type == .getByUsingCustomLogic
+            case "is-list-by-custom-logic" : item.type == .listByUsingCustomLogic
+            case "is-mutation-by-custom-logic" : item.type == .mutationUsingCustomLogic
             case "properties-involved": customProperties
             case "is-and-condition-for-properties-involved": customProperties_and_condition
             case "custom-params" : customParameters
@@ -126,6 +129,7 @@ public class APICustomParameter_Wrap : DynamicMemberLookup {
         let value: Any = switch propname {
         case "name" : item.name
         case "type" : item.type
+        case "is-array" : item.type.isArray
         default:
             throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(lineNo, propname)
         }
