@@ -145,7 +145,7 @@ public enum CommonRegEx {
     
     public static let functionName = nameWithWhitespace
 
-    public static let functionName_Caaturing = Regex {
+    public static let functionName_Capturing = Regex {
         Capture {
             functionName
         } transform: { String($0) }
@@ -172,6 +172,28 @@ public enum CommonRegEx {
     }
     
     //public static let validExpression = validValue
+    
+    static let namedParameter_Capturing = Regex {
+        Capture {
+            variable
+        } transform: { String($0) }
+        
+        whitespace
+        ":"
+        whitespace
+        Capture {
+            ModelRegEx.property_Type
+            Optionally("[]")
+        } transform: { String($0) }
+    }
+    
+    public static let namedParameters_Capturing = Regex {
+        whitespace
+        namedParameter_Capturing
+        whitespace
+        Optionally(",")
+        whitespace
+    }
     
     static let namedArgument_Capturing = Regex {
         Capture {
