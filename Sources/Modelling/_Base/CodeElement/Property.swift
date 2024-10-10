@@ -12,12 +12,11 @@ public class Property : CodeMember {
     
     public var name: String
     public var givenname : String
-    public var type: PropertyKind = .unKnown
+    public var type: TypeInfo
     public var isUnique: Bool = false
     public var isObjectID: Bool = false
     public var isSearchable: Bool = false
     public var required: RequiredKind = .no
-    public var isArray: Bool = false
     public var arrayMultiplicity: MultiplicityKind = .noBounds
     public var comment: String?
     
@@ -40,11 +39,11 @@ public class Property : CodeMember {
             ParserUtil.populateAttributes(for: prop, from: attributeString)
         }
         
-        prop.type = PropertyKind.parse(typeName)
+        prop.type.kind = PropertyKind.parse(typeName)
         
         //check if has multiplicity
         if let multiplicity = typeMultiplicity {
-            prop.isArray = true
+            prop.type.isArray = true
 
             if multiplicity.trim() == "*" {
                 prop.arrayMultiplicity = .noBounds
@@ -100,83 +99,16 @@ public class Property : CodeMember {
         return hasAttrib(name.rawValue)
     }
     
-    public func isObject() ->  Bool {
-        switch self.type {
-            case .reference(_), .multiReference(_), .extendedReference(_), .multiExtendedReference(_):
-                return true
-            case .codedValue(_):
-                return true
-            case .customType(_):
-                return true
-            default:
-                return false
-        }
-    }
-    
-    public var isCustomType :  Bool {
-        switch self.type {
-            case .customType(_):
-                return true
-            default:
-                return false
-        }
-    }
-    
-    public func isCodedValue() ->  Bool {
-        switch self.type {
-            case .codedValue(_):
-                return true
-            default:
-                return false
-        }
-    }
-    
-    public func isReference() ->  Bool {
-        switch self.type {
-            case .reference(_), .multiReference(_):
-                return true
-            default:
-                return false
-        }
-    }
-    
-    public func isExtendedReference() ->  Bool {
-        switch self.type {
-            case .extendedReference(_), .multiExtendedReference(_):
-                return true
-            default:
-                return false
-        }
-    }
-    
-    func objectTypeString() -> String {
-        switch self.type {
-            case .reference(_):
-                return "Reference"
-            case .multiReference(_):
-                return "Reference"
-            case .extendedReference(_):
-                return "ExtendedReference"
-            case .multiExtendedReference(_):
-                return "ExtendedReference"
-            case .codedValue(_):
-                return "CodedValue"
-            case let .customType(typeName):
-                return typeName
-            default:
-                return ""
-        }
-    }
-    
     public init(_ givenName: String) {
         self.givenname = givenName.trim()
+        self.type = TypeInfo()
         self.name = self.givenname.normalizeForVariableName()
     }
     
     public init(_ givenName: String, type: PropertyKind, isUnique: Bool = false, required: RequiredKind = .no) {
         self.givenname = givenName.trim()
         self.name = self.givenname.normalizeForVariableName()
-        self.type = type
+        self.type = TypeInfo(type)
         self.isUnique = isUnique
         self.required = required
     }
@@ -184,7 +116,7 @@ public class Property : CodeMember {
     public init(_ givenName: String, type: PropertyKind, isObjectID: Bool, required: RequiredKind = .no) {
         self.givenname = givenName.trim()
         self.name = self.givenname.normalizeForVariableName()
-        self.type = type
+        self.type = TypeInfo(type)
         self.isObjectID = isObjectID
         self.required = required
     }
@@ -192,9 +124,10 @@ public class Property : CodeMember {
     public init(_ givenName: String, type: PropertyKind, isArray: Bool, arrayMultiplicity: MultiplicityKind, required: RequiredKind = .no) {
         self.givenname = givenName.trim()
         self.name = self.givenname.normalizeForVariableName()
-        self.type = type
+        
+        let typeInfo = TypeInfo(type, isArray: isArray)
+        self.type = typeInfo
         self.required = required
-        self.isArray = isArray
         self.arrayMultiplicity = arrayMultiplicity
     }
 }

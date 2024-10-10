@@ -12,7 +12,7 @@ public class MethodObject : CodeMember {
 
     public var name: String
     public var givenname: String
-    public var returnType : PropertyKind?
+    public var returnType : TypeInfo
     public var parameters: [MethodParameter] = []
     
     public var body : StringTemplate
@@ -33,16 +33,16 @@ public class MethodObject : CodeMember {
         
         let method = MethodObject(givenName)
         
-        let matches = arguments.matches(of: CommonRegEx.namedArguments_Capturing)
+        let matches = arguments.matches(of: CommonRegEx.namedParameters_Capturing)
         
         matches.forEach( { match in
             let (_, name, typeName) = match.output
-            let type = PropertyKind.parse(typeName)
+            let type = TypeInfo.parse(typeName)
             method.parameters.append( MethodParameter(name: name, type: type) )
         })
         
         if let returnType = returnType {
-            method.returnType = PropertyKind.parse(returnType)
+            method.returnType = TypeInfo.parse(returnType)
         }
         
         //check if has tags
@@ -67,23 +67,23 @@ public class MethodObject : CodeMember {
     public init(_ name: String, returnType: PropertyKind? = nil) {
         self.givenname = name.trim()
         self.name = self.givenname.normalizeForVariableName()
-        self.returnType = returnType
+        self.returnType = TypeInfo(returnType)
         self.body = StringTemplate("")
     }
     
     public init(_ name: String, returnType: PropertyKind? = nil, @StringConvertibleBuilder _ body: () -> [StringConvertible]) {
         self.givenname = name.trim()
         self.name = self.givenname.normalizeForVariableName()
-        self.returnType = returnType
+        self.returnType = TypeInfo(returnType)
         self.body = StringTemplate(body)
     }
 }
 
 public struct MethodParameter {
     let name: String
-    let type: PropertyKind
+    let type: TypeInfo
     
-    public init(name: String, type: PropertyKind) {
+    public init(name: String, type: TypeInfo) {
         self.name = name
         self.type = type
     }

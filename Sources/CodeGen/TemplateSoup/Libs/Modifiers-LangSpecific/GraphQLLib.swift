@@ -12,7 +12,7 @@ public struct GraphQLLib {
             typename
         ]
     }
-    
+
     
     public static var typename: Modifier {
         return CreateModifier.withoutParams("graphql-typename") { (value: Any, lineNo: Int) -> String? in
@@ -20,7 +20,9 @@ public struct GraphQLLib {
             var type = PropertyKind.unKnown
             
             if let wrapped = value as? TypeProperty_Wrap {
-                type = wrapped.item.type
+                type = wrapped.item.type.kind
+            } else if let info = value as? TypeInfo {
+                type = info.kind
             } else if let kind = value as? PropertyKind {
                 type = kind
             } else {

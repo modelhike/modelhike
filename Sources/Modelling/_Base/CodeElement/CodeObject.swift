@@ -56,9 +56,9 @@ public extension CodeObject {
         if let index = name.firstIndex(of: ".") {
             let propName = String(name.prefix(upTo: index))
             guard let prop = getProp(propName) else { return nil }
-            if !prop.isObject() { return prop }
+            if !prop.type.isObject() { return prop }
             //dump(appmodel)
-            guard let entity = appModel.get(for: prop.objectTypeString()) else { return nil }
+            guard let entity = appModel.get(for: prop.type.objectString()) else { return nil }
             let remainingName =  String(name.suffix(from: name.index(after: index)))
             return entity.getLastPropInRecursive(remainingName, appModel: appModel)
             
@@ -72,19 +72,19 @@ public extension CodeObject {
         if let index = name.firstIndex(of: ".") {
             let propName = String(name.prefix(upTo: index))
             guard let prop = getProp(propName) else { return nil }
-            if !prop.isObject() { return nil }
+            if !prop.type.isObject() { return nil }
             
-            if prop.isArray {
+            if prop.type.isArray {
                 return prop
             }
             
-            guard let entity = appModel.get(for: prop.objectTypeString()) else { return nil }
+            guard let entity = appModel.get(for: prop.type.objectString()) else { return nil }
             let remainingName =  String(name.suffix(from: name.index(after: index)))
             return entity.getArrayPropInRecursive(remainingName, appModel: appModel)
             
         } else { // not recursive
             if let prop = getProp(name) {
-                if prop.isArray {
+                if prop.type.isArray {
                     return prop
                 }
             }
@@ -94,7 +94,7 @@ public extension CodeObject {
     }
     
     func isSameAs(_ CodeObject: CodeObject) ->  Bool {
-        return self.givename == CodeObject.givename
+        return self.givenname == CodeObject.givenname
     }
     
     @discardableResult

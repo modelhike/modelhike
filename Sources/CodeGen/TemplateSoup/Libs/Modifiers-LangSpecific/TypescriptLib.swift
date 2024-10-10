@@ -14,14 +14,16 @@ public struct TypescriptLib {
         ]
     }
     
-    
+
     public static var typename: Modifier {
         return CreateModifier.withoutParams("typename") { (value: Any, lineNo: Int) -> String? in
             
             var type = PropertyKind.unKnown
             
             if let wrapped = value as? TypeProperty_Wrap {
-                type = wrapped.item.type
+                type = wrapped.item.type.kind
+            } else if let info = value as? TypeInfo {
+                type = info.kind
             } else if let kind = value as? PropertyKind {
                 type = kind
             } else {
@@ -56,13 +58,19 @@ public struct TypescriptLib {
     public static var defaultValue: Modifier {
         return CreateModifier.withoutParams("default-value") { (value: Any, lineNo: Int) -> String? in
             
-            guard let wrapped = value as? TypeProperty_Wrap else {
-              return "----ERROR----"
+            var type = PropertyKind.unKnown
+            
+            if let wrapped = value as? TypeProperty_Wrap {
+                type = wrapped.item.type.kind
+            } else if let info = value as? TypeInfo {
+                type = info.kind
+            } else if let kind = value as? PropertyKind {
+                type = kind
+            } else {
+                return "----ERROR----"
             }
             
-            let prop = wrapped.item
-            
-            switch prop.type {
+            switch type {
                 case .int, .double, .float : return "0"
                 case .bool: return "false"
                 case .id: return "\"\""

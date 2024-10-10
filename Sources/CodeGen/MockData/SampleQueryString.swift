@@ -55,7 +55,7 @@ public struct SampleQueryString {
         
         let mocking = MockData_Generator()
         
-        switch prop.type {
+        switch prop.type.kind {
             case .int, .double, .float :
                 return  "\(num)" + suffix
             case .bool: return "true" + suffix

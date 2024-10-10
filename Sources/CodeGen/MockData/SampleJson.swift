@@ -19,7 +19,7 @@ public struct SampleJson {
         var reqdProperties:[Property] = []
         
         for prop in object.properties {
-            if prop.required == .yes && prop.type != .id {
+            if prop.required == .yes && prop.type.kind != .id {
                 reqdProperties.append(prop)
             }
         }
@@ -65,8 +65,8 @@ public struct SampleJson {
     }
     
     static func toPropString(_ prop: Property, typesModel: ParsedTypesCache, includeComma: Bool, openCloseQuotesInNames: Bool) -> String {
-        let prefix = prop.isArray ? " [" : ""
-        var suffix = prop.isArray ? "]" : ""
+        let prefix = prop.type.isArray ? " [" : ""
+        var suffix = prop.type.isArray ? "]" : ""
         if includeComma {
             suffix = suffix + ","
         }
@@ -74,7 +74,7 @@ public struct SampleJson {
         let num = Int.random(in: 0..<100)
         let mocking = MockData_Generator()
         
-        switch prop.type {
+        switch prop.type.kind {
             case .int, .double, .float :
                 return prefix + " \(num)" + suffix
             case .bool: return prefix + " true" + suffix
@@ -113,7 +113,7 @@ public struct SampleJson {
                 + suffix
             case let .customType(typeName):
             guard let entity = typesModel.get(for: typeName) else { return Self.UNKNOWN }
-                if prop.isArray {
+                if prop.type.isArray {
                     return prefix + Self.toObjectString(entity, typesModel: typesModel, openCloseBraces: true, openCloseQuotesInNames: openCloseQuotesInNames) + suffix
                 } else {
                     return prefix + Self.toObjectString(entity, typesModel: typesModel, openCloseBraces: true, openCloseQuotesInNames: openCloseQuotesInNames)  + suffix

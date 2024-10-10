@@ -38,7 +38,7 @@ public struct MockDataLib {
             var prop: Property?
             
             if let wrapped = value as? TypeProperty_Wrap {
-                type = wrapped.item.type
+                type = wrapped.item.type.kind
                 prop = wrapped.item
             } else if let kind = value as? PropertyKind {
                 type = kind
@@ -47,8 +47,8 @@ public struct MockDataLib {
             }
             
             if let prop = prop {
-                prefix = prop.isArray ? " [" : ""
-                suffix = prop.isArray ? "]" : ""
+                prefix = prop.type.isArray ? " [" : ""
+                suffix = prop.type.isArray ? "]" : ""
             }
             
             let num = Int.random(in: 0..<100)
@@ -68,7 +68,7 @@ public struct MockDataLib {
                 case .date, .datetime: return prefix + " \"\(Date.now.ISO8601Format())\"" + suffix
                 case .customType(let typename):
                     if let prop = prop { //used for a property
-                        if let obj = sandbox.model.types.get(for: prop.objectTypeString()) {
+                        if let obj = sandbox.model.types.get(for: prop.type.objectString()) {
                             return SampleJson(entity: obj, typesModel: sandbox.model.types)
                                 .string(openCloseBraces: true, openCloseQuotesInNames: false)
                         } else { return "" }
@@ -86,7 +86,7 @@ public struct MockDataLib {
                     return "----ERROR-------"
                 default:
                     if let prop = prop { //used for a property
-                        if let obj = sandbox.model.types.get(for: prop.objectTypeString()) {
+                        if let obj = sandbox.model.types.get(for: prop.type.objectString()) {
                             return SampleJson(entity: obj, typesModel: sandbox.model.types)
                                 .string(openCloseBraces: true, openCloseQuotesInNames: false)
                         } else { return "" }
