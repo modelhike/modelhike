@@ -10,15 +10,15 @@ import RegexBuilder
 public enum CommonRegEx {
     public static let whitespace: ZeroOrMore<Substring> = ZeroOrMore(.whitespace)
 
-    public static let nonWhitespace = Regex {
+    public static let nonWhitespace: Regex<Substring> = Regex {
         OneOrMore(.whitespace.inverted, .eager)
     }
 
-    public static let anything = Regex {
+    public static let anything: Regex<Substring> = Regex {
         OneOrMore(.any, .reluctant)
     }
     
-    public static let nameWithWhitespace: Regex<Regex<Substring>.RegexOutput> = Regex {
+    public static let nameWithWhitespace: Regex<Substring> = Regex {
         CharacterClass(
             .anyOf("_"),
             ("A"..."Z"),
@@ -34,7 +34,7 @@ public enum CommonRegEx {
         }
     }
     
-    public static let variable: Regex<Regex<Substring>.RegexOutput> = Regex {
+    public static let variable: Regex<Substring> = Regex {
         CharacterClass(
             .anyOf("_"),
             ("A"..."Z"),
@@ -50,56 +50,56 @@ public enum CommonRegEx {
         }
     }
 
-    public static let objectPropertyPattern = Regex {
+    public static let objectPropertyPattern: Regex<Substring> = Regex {
         variable
         "."
         variable
     }
     
-    public static let variableOrObjectProperty = Regex {
+    public static let variableOrObjectProperty: Regex<Substring> = Regex {
         ChoiceOf {
             objectPropertyPattern
             variable
         }
     }
     
-    public static let integerPattern = Regex {
+    public static let integerPattern: Regex<Substring> = Regex {
         OneOrMore(.digit)
     }
 
-    public static let doublePattern = Regex {
+    public static let doublePattern: Regex<Substring> = Regex {
         OneOrMore(.digit)
         "."
         OneOrMore(.digit)
     }
 
-    public static let doubleLiteralPattern_Capturing = Regex {
+    public static let doubleLiteralPattern_Capturing: Regex<(Substring, Optional<Double>)> = Regex {
         Capture {
             doublePattern
         } transform: { Double($0) }
     }
     
-    public static let integerLiteralPattern_Capturing = Regex {
+    public static let integerLiteralPattern_Capturing: Regex<(Substring, Optional<Int>)> = Regex {
         Capture {
             integerPattern
         } transform: { Int($0) }
     }
     
-    public static let numberLiteralPattern_Capturing = Regex {
+    public static let numberLiteralPattern_Capturing: Regex<(Substring, Optional<Optional<Double>>, Optional<Optional<Int>>)> = Regex {
         ChoiceOf {
             doubleLiteralPattern_Capturing
             integerLiteralPattern_Capturing
         }
     }
     
-    public static let stringLiteralPattern = Regex {
+    public static let stringLiteralPattern: Regex<Substring> = Regex {
         ChoiceOf {
             singleQuotedSringLiteral
             doubleQuotedSringLiteral
         }
     }
 
-    static let singleQuotedSringLiteral = Regex {
+    static let singleQuotedSringLiteral: Regex<Substring> = Regex {
         "'"
         ZeroOrMore {
             CharacterClass.anyOf("'").inverted
@@ -107,7 +107,7 @@ public enum CommonRegEx {
         "'"
     }
 
-    static let doubleQuotedSringLiteral = Regex {
+    static let doubleQuotedSringLiteral: Regex<Substring> = Regex {
         "\""
         ZeroOrMore {
             CharacterClass.anyOf("\"").inverted
@@ -115,14 +115,14 @@ public enum CommonRegEx {
         "\""
     }
 
-    public static let stringLiteralPattern_Capturing = Regex {
+    public static let stringLiteralPattern_Capturing: Regex<(Substring, Optional<String>, Optional<String>)> = Regex {
         ChoiceOf {
             singleQuotedSringLiteral_Capturing
             doubleQuotedSringLiteral_Capturing
         }
     }
 
-    static let singleQuotedSringLiteral_Capturing = Regex {
+    static let singleQuotedSringLiteral_Capturing: Regex<(Substring, String)> = Regex {
         "'"
         Capture {
             ZeroOrMore {
@@ -132,7 +132,7 @@ public enum CommonRegEx {
         "'"
     }
 
-    static let doubleQuotedSringLiteral_Capturing = Regex {
+    static let doubleQuotedSringLiteral_Capturing: Regex<(Substring, String)> = Regex {
         "\""
         Capture {
             ZeroOrMore {
@@ -143,15 +143,15 @@ public enum CommonRegEx {
         "\""
     }
     
-    public static let functionName = nameWithWhitespace
+    public static let functionName: Regex<Substring> = nameWithWhitespace
 
-    public static let functionName_Capturing = Regex {
+    public static let functionName_Capturing: Regex<(Substring, String)> = Regex {
         Capture {
             functionName
         } transform: { String($0) }
     }
 
-    public static let validValue = Regex {
+    public static let validValue: Regex<Substring> = Regex {
         ChoiceOf {
             doublePattern
             integerPattern
@@ -162,7 +162,7 @@ public enum CommonRegEx {
         }
     }
     
-    public static let validStringValue = Regex {
+    public static let validStringValue: Regex<Substring> = Regex {
         ChoiceOf {
             stringLiteralPattern
             
@@ -173,7 +173,7 @@ public enum CommonRegEx {
     
     //public static let validExpression = validValue
     
-    static let namedParameter_Capturing = Regex {
+    static let namedParameter_Capturing: Regex<(Substring, String, String)> = Regex {
         Capture {
             variable
         } transform: { String($0) }
@@ -187,7 +187,7 @@ public enum CommonRegEx {
         } transform: { String($0) }
     }
     
-    public static let namedParameters_Capturing = Regex {
+    public static let namedParameters_Capturing: Regex<(Substring, String, String)> = Regex {
         whitespace
         namedParameter_Capturing
         whitespace
@@ -195,7 +195,7 @@ public enum CommonRegEx {
         whitespace
     }
     
-    static let namedArgument_Capturing = Regex {
+    static let namedArgument_Capturing: Regex<(Substring, String, String)> = Regex {
         Capture {
             variable
         } transform: { String($0) }
@@ -208,7 +208,7 @@ public enum CommonRegEx {
         } transform: { String($0) }
     }
     
-    public static let namedArguments_Capturing = Regex {
+    public static let namedArguments_Capturing: Regex<(Substring, String, String)> = Regex {
         whitespace
         namedArgument_Capturing
         whitespace
@@ -216,13 +216,13 @@ public enum CommonRegEx {
         whitespace
     }
     
-    static let unNamedArgument_Capturing = Regex {
+    static let unNamedArgument_Capturing: Regex<(Substring, String)> = Regex {
         Capture {
             validValue
         } transform: { String($0) }
     }
     
-    public static let unNamedArguments_Capturing = Regex {
+    public static let unNamedArguments_Capturing: Regex<(Substring, String)> = Regex {
         whitespace
         unNamedArgument_Capturing
         whitespace
@@ -230,7 +230,7 @@ public enum CommonRegEx {
         whitespace
     }
     
-    static let namedArgument = Regex {
+    static let namedArgument: Regex<Substring> = Regex {
         variable
         whitespace
         ":"
@@ -238,7 +238,7 @@ public enum CommonRegEx {
         validValue
     }
     
-    public static let namedArguments: Regex<Regex<OneOrMore<Substring>.RegexOutput>.RegexOutput> = Regex {
+    public static let namedArguments: Regex<Substring> = Regex {
         ZeroOrMore {
             whitespace
             namedArgument
@@ -248,11 +248,11 @@ public enum CommonRegEx {
         }
     }
     
-    static let unNamedArgument = Regex {
+    static let unNamedArgument: Regex<Substring> = Regex {
         validValue
     }
     
-    public static let unNamedArguments: Regex<Regex<OneOrMore<Substring>.RegexOutput>.RegexOutput> = Regex {
+    public static let unNamedArguments: Regex<Substring> = Regex {
         ZeroOrMore {
             whitespace
             unNamedArgument
@@ -262,7 +262,7 @@ public enum CommonRegEx {
         }
     }
     
-    public static let functionInvocation_Capturing = Regex {
+    public static let functionInvocation_Capturing: Regex<(Substring, String, String)> = Regex {
         Capture {
             functionName
         } transform: { String($0) }
@@ -276,7 +276,7 @@ public enum CommonRegEx {
         ")"
     }
     
-    public static let functionInvocation_unNamedArgs_Capturing: Regex<Regex<(Substring, String, String)>.RegexOutput> = Regex {
+    public static let functionInvocation_unNamedArgs_Capturing: Regex<(Substring, String, String)> = Regex {
         Capture {
             functionName
         } transform: { String($0) }
@@ -293,7 +293,7 @@ public enum CommonRegEx {
         comments
     }
     
-    public static let functionInvocation_namedArgs_Capturing = Regex {
+    public static let functionInvocation_namedArgs_Capturing: Regex<(Substring, String, String)> = Regex {
         Capture {
             functionName
         } transform: { String($0) }
@@ -307,7 +307,7 @@ public enum CommonRegEx {
         ")"
     }
     
-    public static let functionDeclaration_unNamedArgs_Capturing: Regex<Regex<(Substring, String, String)>.RegexOutput> = functionInvocation_unNamedArgs_Capturing
+    public static let functionDeclaration_unNamedArgs_Capturing: Regex<(Substring, String, String)> = functionInvocation_unNamedArgs_Capturing
     
     public static let comments = Regex {
         whitespace
@@ -317,7 +317,7 @@ public enum CommonRegEx {
         }
     }
     
-    public static let modifiersForExpression_Capturing: Regex<Regex<(Substring, String?)>.RegexOutput> = Regex {
+    public static let modifiersForExpression_Capturing: Regex<(Substring, Optional<String>)> = Regex {
         whitespace
         Optionally {
             TemplateConstants.modifierSplitInExpression
@@ -326,7 +326,7 @@ public enum CommonRegEx {
         }
     }
     
-    public static let anythingTillComments_Capturing: Regex<Regex<Capture<(Substring, String)>.RegexOutput>.RegexOutput> = Regex {
+    public static let anythingTillComments_Capturing: Regex<(Substring, String)> = Regex {
         Capture {
             OneOrMore {
                 NegativeLookahead {

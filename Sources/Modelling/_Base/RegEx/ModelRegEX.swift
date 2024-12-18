@@ -11,19 +11,19 @@ public enum ModelRegEx {
     
     public static let whitespace: ZeroOrMore<Substring> = CommonRegEx.whitespace
     
-    public static let variable: Regex<Regex<Substring>.RegexOutput> = CommonRegEx.variable
-    public static let nameWithWhitespace: Regex<Regex<Substring>.RegexOutput> = CommonRegEx.nameWithWhitespace
+    public static let variable: Regex<Substring> = CommonRegEx.variable
+    public static let nameWithWhitespace: Regex<Substring> = CommonRegEx.nameWithWhitespace
 
-    public static let variableValue = Regex {
+    public static let variableValue: Regex<Substring> = Regex {
         ChoiceOf {
             CommonRegEx.objectPropertyPattern
             CommonRegEx.variable
         }
     }
 
-    public static let integer = CommonRegEx.integerPattern
+    public static let integer: Regex<Substring> = CommonRegEx.integerPattern
 
-    public static let tags: Regex<Regex<OneOrMore<Substring>.RegexOutput>.RegexOutput> = Regex {
+    public static let tags: Regex<Substring> = Regex {
         OneOrMore {
             "#"
             variable
@@ -39,7 +39,7 @@ public enum ModelRegEx {
         }
     }
     
-    public static let tags_Capturing = Regex {
+    public static let tags_Capturing: Regex<(Substring, String, Optional<String>)> = Regex {
         OneOrMore {
             "#"
             Capture {
@@ -61,7 +61,7 @@ public enum ModelRegEx {
         }
     }
     
-    public static let property_Type: Regex<Regex<Substring>.RegexOutput> = Regex {
+    public static let property_Type: Regex<Substring> = Regex {
         CharacterClass(
             ("A"..."Z"),
             ("a"..."z")
@@ -76,21 +76,19 @@ public enum ModelRegEx {
         }
     }
     
-    public static let property_ValidValueSet: Regex<Regex<Optionally<(Substring, String?)>.RegexOutput>.RegexOutput> = Regex {
-        Optionally {
-            "{"
-            Capture {
-                ZeroOrMore {
-                    variable
-                    Optionally(",")
-                }
-            } transform: { String($0) }
-            "}"
-        }
+    public static let property_ValidValueSet: Regex<(Substring, String)> = Regex {
+        "{"
+        Capture {
+            ZeroOrMore {
+                variable
+                Optionally(",")
+            }
+        } transform: { String($0) }
+        "}"
     }
 
 
-    public static let property_Type_Multiplicity: Regex<Regex<(Substring, String)>.RegexOutput> = Regex {
+    public static let property_Type_Multiplicity: Regex<(Substring, String)> = Regex {
         "["
         Capture {
             Optionally {
@@ -102,7 +100,7 @@ public enum ModelRegEx {
         "]"
     }
     
-    static let attribute: Regex<Regex<Substring>.RegexOutput> = Regex {
+    static let attribute: Regex<Substring> = Regex {
         variable
         ZeroOrMore(.whitespace)
         
@@ -113,7 +111,7 @@ public enum ModelRegEx {
         }
     }
     
-    static let attributes: Regex<Regex<(Substring, String)>.RegexOutput> = Regex {
+    static let attributes: Regex<(Substring, String)> = Regex {
         whitespace
         "("
         Capture {
@@ -129,7 +127,7 @@ public enum ModelRegEx {
         whitespace
     }
     
-    static let atribute_Capturing = Regex {
+    static let atribute_Capturing: Regex<(Substring, String, Optional<String>)> = Regex {
         Capture {
             nameWithWhitespace
         } transform: { String($0) }
@@ -145,7 +143,7 @@ public enum ModelRegEx {
         }
     }
     
-    static let attributes_Capturing: Regex<(Substring, String, String?)> = Regex {
+    static let attributes_Capturing: Regex<(Substring, String, Optional<String>)> = Regex {
         whitespace
         atribute_Capturing
         whitespace
@@ -153,7 +151,7 @@ public enum ModelRegEx {
         whitespace
     }
     
-    public static let property_Capturing: Regex<(Substring, String, String, String?, String?, String??, String?)> = Regex {
+    public static let property_Capturing: Regex<(Substring, String, String, Optional<String>, Optional<String>, Optional<String>, Optional<String>)> = Regex {
         Capture {
             nameWithWhitespace
         } transform: { String($0) }
@@ -188,7 +186,7 @@ public enum ModelRegEx {
         CommonRegEx.comments
     }
     
-    public static let derivedProperty_Capturing: Regex<(Substring, String, String?, String?)> = Regex {
+    public static let derivedProperty_Capturing: Regex<(Substring, String, Optional<String>, Optional<String>)> = Regex {
         Capture {
             nameWithWhitespace
         } transform: { String($0) }
@@ -206,7 +204,7 @@ public enum ModelRegEx {
         CommonRegEx.comments
     }
     
-    public static let method_Capturing: Regex<(Substring, String, String, String?, String?)> = Regex {
+    public static let method_Capturing: Regex<(Substring, String, String, Optional<String>, Optional<String>)> = Regex {
         Capture {
             CommonRegEx.functionName
         } transform: { String($0) }
@@ -241,7 +239,7 @@ public enum ModelRegEx {
         CommonRegEx.comments
     }
     
-    static let methodArgument_Capturing = Regex {
+    static let methodArgument_Capturing: Regex<(Substring, String, String)> = Regex {
         Capture {
             variable
         } transform: { String($0) }
@@ -254,7 +252,7 @@ public enum ModelRegEx {
         } transform: { String($0) }
     }
     
-    public static let methodArguments_Capturing = Regex {
+    public static let methodArguments_Capturing: Regex<(Substring, String, String)> = Regex {
         whitespace
         methodArgument_Capturing
         whitespace
@@ -262,7 +260,7 @@ public enum ModelRegEx {
         whitespace
     }
     
-    public static let container_Member_Capturing: Regex<(Substring, String, String?, String?)> = Regex {
+    public static let container_Member_Capturing: Regex<(Substring, String, Optional<String>, Optional<String>)> = Regex {
         Capture {
             nameWithWhitespace
         } transform: { String($0) }
@@ -280,13 +278,13 @@ public enum ModelRegEx {
         CommonRegEx.comments
     }
     
-    public static let moduleName_Capturing: Regex<(Substring, String, String?, String?)> = container_Member_Capturing
+    public static let moduleName_Capturing: Regex<(Substring, String, Optional<String>, Optional<String>)> = container_Member_Capturing
     
-    public static let containerName_Capturing: Regex<(Substring, String, String?, String?)> = container_Member_Capturing
+    public static let containerName_Capturing: Regex<(Substring, String, Optional<String>, Optional<String>)> = container_Member_Capturing
     
-    public static let className_Capturing: Regex<(Substring, String, String?, String?)> = container_Member_Capturing
+    public static let className_Capturing: Regex<(Substring, String, Optional<String>, Optional<String>)> = container_Member_Capturing
     
-    public static let uiviewName_Capturing: Regex<(Substring, String, String?, String?)> = container_Member_Capturing
+    public static let uiviewName_Capturing: Regex<(Substring, String, Optional<String>, Optional<String>)> = container_Member_Capturing
     
-    public static let attachedSectionName_Capturing: Regex<(Substring, String, String?, String?)> = container_Member_Capturing
+    public static let attachedSectionName_Capturing: Regex<(Substring, String, Optional<String>, Optional<String>)> = container_Member_Capturing
 }
