@@ -46,7 +46,7 @@ public class UIView : UIObject {
     }
 }
 
-public protocol UIObject : ArtifactContainerWithAttachedSections, CustomDebugStringConvertible {
+public protocol UIObject : ArtifactHolderWithAttachedSections, CustomDebugStringConvertible {
     var givenname: String {get}
     var name: String {get}
     var dataType: ArtifactKind {get set}

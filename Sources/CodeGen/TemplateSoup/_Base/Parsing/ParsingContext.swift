@@ -12,7 +12,7 @@ public class ParsingContext {
     public internal(set) var parser: LineParser
     let context: Context
     
-    public func parseAttachedItems(for obj: ArtifactContainer, with section: AttachedSection) throws -> [Artifact] {
+    public func parseAttachedItems(for obj: ArtifactHolder, with section: AttachedSection) throws -> [Artifact] {
         if let cls = obj as? CodeObject {
             if section.name.lowercased() == "apis" {
                 return try APISectionParser.parse(for: cls, lineParser: self.parser)
@@ -22,7 +22,7 @@ public class ParsingContext {
         return []
     }
     
-    public func tryParseAttachedSections(with item: ArtifactContainerWithAttachedSections) throws -> Bool {
+    public func tryParseAttachedSections(with item: ArtifactHolderWithAttachedSections) throws -> Bool {
         if AttachedSectionParser.canParse(firstWord: self.firstWord) {
             if let section = try AttachedSectionParser.parse(for: item, with: self) {
                 item.attachedSections[section.name] = section

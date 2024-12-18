@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class C4Component : ArtifactContainer {
+public class C4Component : ArtifactHolder {
     public var attribs = Attributes()
     public var tags = Tags()
     public var annotations = Annotations()
@@ -57,19 +57,19 @@ public class C4Component : ArtifactContainer {
         return str
     }
     
-    public init(name: String = "", @ArtifactContainerBuilder _ builder: () -> [ArtifactContainer]) {
+    public init(name: String = "", @ArtifactHolderBuilder _ builder: () -> [ArtifactHolder]) {
         self.name = name.trim()
         self.givenname = self.name
         self.items = builder()
     }
     
-    public init(name: String = "", _ items: ArtifactContainer...) {
+    public init(name: String = "", _ items: ArtifactHolder...) {
         self.name = name.trim()
         self.givenname = self.name
         self.items = items
     }
     
-    public init(name: String = "", _ items: [ArtifactContainer]) {
+    public init(name: String = "", _ items: [ArtifactHolder]) {
         self.name = name.trim()
         self.givenname = self.name
         self.items = items

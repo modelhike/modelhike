@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class C4System : ArtifactContainer {
+public class C4System : ArtifactHolder {
     public var attribs = Attributes()
     public var tags = Tags()
     public var annotations = Annotations()

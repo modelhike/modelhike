@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class C4ComponentList : ArtifactContainer, IteratorProtocol, Sequence {
+public class C4ComponentList : ArtifactHolder, IteratorProtocol, Sequence {
     public var attribs = Attributes()
     public var tags = Tags()
     public var annotations = Annotations()

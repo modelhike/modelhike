@@ -12,15 +12,15 @@ public protocol Artifact : HasAttributes, HasAnnotations, HasTags {
     var dataType: ArtifactKind {get}
 }
 
-public protocol ArtifactContainer : Artifact {
+public protocol ArtifactHolder : Artifact {
 
 }
 
-public protocol ArtifactContainerWithAttachedSections : ArtifactContainer, HasAttachedSections {
+public protocol ArtifactHolderWithAttachedSections : ArtifactHolder, HasAttachedSections {
 
 }
 
-typealias ArtifactContainerBuilder = ResultBuilder<ArtifactContainer>
+typealias ArtifactHolderBuilder = ResultBuilder<ArtifactHolder>
 
 
 public enum ArtifactKind {

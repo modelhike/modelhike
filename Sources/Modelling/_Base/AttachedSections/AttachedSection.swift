@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class AttachedSection : ArtifactContainer {
+public class AttachedSection : ArtifactHolder {
     public var attribs = Attributes()
     public var tags = Tags()
     public var annotations = Annotations()
