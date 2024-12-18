@@ -6,7 +6,7 @@
 
 import Foundation
 
-public enum TemplateSoup_ParsingError: Error, Equatable {
+public enum TemplateSoup_ParsingError: ErrorWithInfo, Equatable {
     case invalidFrontMatter(String)
     case invalidStmt(String)
     case invalidMultiBlockStmt(Int, String)

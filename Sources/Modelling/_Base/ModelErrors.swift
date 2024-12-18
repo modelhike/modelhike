@@ -6,7 +6,7 @@
 
 import Foundation
 
-public enum Model_ParsingError: Error {
+public enum Model_ParsingError: ErrorWithInfo {
     case objectNotFound(String)
     case invalidMapping(String)
     case invalidPropertyLine(String)

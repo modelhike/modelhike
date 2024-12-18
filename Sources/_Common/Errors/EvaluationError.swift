@@ -6,7 +6,7 @@
 
 import Foundation
 
-public enum EvaluationError: Error {
+public enum EvaluationError: ErrorWithInfo {
     case invalidLine(Int, String, String, Error)
     case invalidLineWithInfo_HavingLineno(String, String, Error)
     case invalidInput(String)

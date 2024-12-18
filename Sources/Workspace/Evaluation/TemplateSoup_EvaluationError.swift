@@ -6,7 +6,7 @@
 
 import Foundation
 
-public enum TemplateSoup_EvaluationError: Error {
+public enum TemplateSoup_EvaluationError: ErrorWithInfo {
     case objectNotFound(Int, String)
     case unIdentifiedStmt(Int, String)
     case errorInExpression(Int, String)

@@ -26,12 +26,19 @@
 import Foundation
 
 /// Error type thrown by all of Files' throwing APIs.
-public struct FilesError<Reason>: Error {
+public struct FilesError<Reason>: ErrorWithInfo {
     /// The absolute path that the error occured at.
     public var path: String
     /// The reason that the error occured.
     public var reason: Reason
 
+    public var info: String {
+        return """
+        File encountered an error at '\(path)'.
+        Reason: \(reason)
+        """
+    }
+    
     /// Initialize an instance with a path and a reason.
     /// - parameter path: The absolute path that the error occured at.
     /// - parameter reason: The reason that the error occured.
@@ -43,15 +50,6 @@ public struct FilesError<Reason>: Error {
     public init(path: any Path, reason: Reason) {
         self.path = path.string
         self.reason = reason
-    }
-}
-
-extension FilesError: CustomStringConvertible {
-    public var description: String {
-        return """
-        File encountered an error at '\(path)'.
-        Reason: \(reason)
-        """
     }
 }
 

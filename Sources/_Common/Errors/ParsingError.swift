@@ -6,7 +6,7 @@
 
 import Foundation
 
-public enum ParsingError: Error {
+public enum ParsingError: ErrorWithInfo {
     case invalidLine(Int, String, String, Error)
     case invalidLineWithInfo_HavingLineno(String, String, Error)
     case invalidLineWithoutErr(Int, String, String)

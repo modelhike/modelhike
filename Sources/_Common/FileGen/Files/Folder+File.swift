@@ -90,16 +90,24 @@ public extension File {
     
 }
 
-public struct FileDoesNotExist : Error {
+public struct FileDoesNotExist : ErrorWithInfo {
     let filename: String
+    
+    public var info: String {
+        return "File does not exist: \(filename)"
+    }
     
     public init(filename: String) {
         self.filename = filename
     }
 }
 
-public struct FolderDoesNotExist : Error {
+public struct FolderDoesNotExist : ErrorWithInfo {
     let foldername: String
+    
+    public var info: String {
+        return "Folder does not exist: \(foldername)"
+    }
     
     public init(foldername: String) {
         self.foldername = foldername

@@ -6,7 +6,7 @@
 
 import Foundation
 
-public enum ParserDirectives: Error {
+public enum ParserDirectives: ErrorWithInfo {
     static var includeIf = "include-if"
     static var includeFor = "include-for"
     static var outputFilename = "file-name"
@@ -17,7 +17,7 @@ public enum ParserDirectives: Error {
     public var info: String {
         switch (self) {
             case .excludeFile(let msg): return msg
-            
+                
         }
     }
     

@@ -202,16 +202,24 @@ open class ResourceBlueprintLoader : BlueprintRepository {
 
 }
 
-public struct ResourceReadingError : Error {
+public struct ResourceReadingError : ErrorWithInfo {
     let resName: String
+    
+    public var info: String {
+        return "Resource \(resName) reading error."
+    }
     
     public init(resName: String) {
         self.resName = resName
     }
 }
 
-public struct ResourceDoesNotExist : Error {
+public struct ResourceDoesNotExist : ErrorWithInfo {
     let resName: String
+    
+    public var info: String {
+        return "Resource \(resName) does not exist."
+    }
     
     public init(resName: String) {
         self.resName = resName
