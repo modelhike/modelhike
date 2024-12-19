@@ -33,7 +33,7 @@ public class RenderFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
         CommonRegEx.comments
     }
     
-    override func matchLine(line: String, level: Int, with ctx: Context) throws -> Bool {
+    override func matchLine(line: String) throws -> Bool {
         guard let match = line.wholeMatch(of: stmtRegex ) else { return false }
         
         let (_, fromValue, toValue) = match.output
@@ -51,7 +51,7 @@ public class RenderFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
             throw TemplateSoup_EvaluationError.workingDirectoryNotSet(lineNo)
         }
         
-        guard let fromFolder = try? ctx.evaluate(value: FromFolder, lineNo: lineNo) as? String
+        guard let fromFolder = try? ctx.evaluate(value: FromFolder, pInfo: pInfo) as? String
                                                                     else { return nil }
         
         try ctx.fileGenerator.setRelativePath(ctx.workingDirectoryString)
@@ -62,14 +62,14 @@ public class RenderFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
             foldername = fromFolder
 
         } else {
-            guard let toFolder = try? ctx.evaluate(value: ToFolder, lineNo: lineNo) as? String
+            guard let toFolder = try? ctx.evaluate(value: ToFolder, pInfo: pInfo) as? String
                                                                         else { return nil }
             
             foldername = toFolder
         }
         
         //render the foldername if it has an expression within '{{' and '}}'
-        foldername = try ContentLine.eval(line: foldername, with: ctx) ?? foldername
+        foldername = try ContentHandler.eval(expression: foldername, with: ctx) ?? foldername
         
         ctx.debugLog.renderingFolder(fromFolder, to: foldername)
         let folder = try ctx.fileGenerator.renderFolder(fromFolder, to: foldername)
@@ -80,7 +80,7 @@ public class RenderFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
     
     public var debugDescription: String {
         let str =  """
-        RENDER FOLDER stmt (level: \(level))
+        RENDER FOLDER stmt (level: \(pInfo.level))
         - from: \(self.FromFolder)
         - to: \(self.ToFolder)
         
@@ -89,10 +89,10 @@ public class RenderFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
         return str
     }
     
-    public init() {
-        super.init(keyword: Self.START_KEYWORD)
+    public init(_ pInfo: ParsedInfo) {
+        super.init(keyword: Self.START_KEYWORD, pInfo: pInfo)
     }
     
-    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) { RenderFolderStmt()}
+    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) {pInfo in RenderFolderStmt(pInfo)}
 }
 

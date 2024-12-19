@@ -9,7 +9,7 @@ import Foundation
 public struct ObjectAttributeManager {
     let ctx: Context
     
-    public func getObjAttributeValue(objName: String, attributeName: String, lineNo: Int) throws -> Optional<Any> {
+    public func getObjAttributeValue(objName: String, attributeName: String, pInfo: ParsedInfo) throws -> Optional<Any> {
         
         if let obj = ctx.variables[objName] as? HasAttributes {
             if obj.attribs.has(attributeName) {
@@ -18,16 +18,16 @@ public struct ObjectAttributeManager {
         }
         
         if let dynamicLookup = ctx.variables[objName] as? DynamicMemberLookup {
-            return try dynamicLookup.dynamicLookup(property: attributeName, lineNo: lineNo)
+            return try dynamicLookup.dynamicLookup(property: attributeName, pInfo: pInfo)
         }
         
         return nil
     }
     
-    public func setObjAttribute(objName: String, attributeName: String, valueExpression: String, modifiers: [ModifierInstance], lineNo: Int, with ctx: Context) throws {
+    public func setObjAttribute(objName: String, attributeName: String, valueExpression: String, modifiers: [ModifierInstance], pInfo: ParsedInfo) throws {
         if let obj = ctx.variables[objName] as? HasAttributes {
-            if let body = try ctx.evaluate(expression: valueExpression, lineNo: lineNo) {
-                if let modifiedBody = try Modifiers.apply(to: body, modifiers: modifiers, lineNo: lineNo, with: ctx) {
+            if let body = try ctx.evaluate(expression: valueExpression, pInfo: pInfo) {
+                if let modifiedBody = try Modifiers.apply(to: body, modifiers: modifiers, pInfo: pInfo) {
                     obj.attribs[attributeName] = modifiedBody
                 } else {
                     obj.attribs.removeValue(forKey: attributeName)
@@ -38,10 +38,10 @@ public struct ObjectAttributeManager {
         }
     }
     
-    public func setObjAttribute(objName: String, attributeName: String, body: String?, modifiers: [ModifierInstance], lineNo: Int, with ctx: Context) throws {
+    public func setObjAttribute(objName: String, attributeName: String, body: String?, modifiers: [ModifierInstance], pInfo: ParsedInfo) throws {
         if let obj = ctx.variables[objName] as? HasAttributes {
             if let body = body {
-                if let modifiedBody = try Modifiers.apply(to: body, modifiers: modifiers, lineNo: lineNo, with: ctx) {
+                if let modifiedBody = try Modifiers.apply(to: body, modifiers: modifiers, pInfo: pInfo) {
                     obj.attribs[attributeName] = modifiedBody
                 } else {
                     obj.attribs.removeValue(forKey: attributeName)

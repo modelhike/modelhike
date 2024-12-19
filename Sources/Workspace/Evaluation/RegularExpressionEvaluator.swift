@@ -8,7 +8,10 @@ import Foundation
 import RegexBuilder
 
 public struct RegularExpressionEvaluator {
-    public mutating func evaluate(expression: String, lineNo: Int, with ctx: Context) throws -> Optional<Any> {
+    public mutating func evaluate(expression: String, pInfo: ParsedInfo) throws -> Optional<Any> {
+        let ctx = pInfo.ctx
+        let lineNo = pInfo.lineNo
+        
         var negatedResult = false
         
         var expressionToParse = expression
@@ -29,7 +32,7 @@ public struct RegularExpressionEvaluator {
         guard parsedArrList.count != 0 else { return nil }
         
         var lhsArray = parsedArrList.removeFirst()
-        var accumulated = try executeArrayItems(&lhsArray, ctx, expression, lineNo: lineNo)
+        var accumulated = try executeArrayItems(&lhsArray, expression, pInfo: pInfo)
         
         while parsedArrList.count > 0 {
             //in the parsed array list, every even item is an operator,
@@ -40,7 +43,7 @@ public struct RegularExpressionEvaluator {
             
             var rhsArray = parsedArrList.removeFirst()
             
-            guard let rhsResult = try executeArrayItems(&rhsArray, ctx, expression, lineNo: lineNo) else {
+            guard let rhsResult = try executeArrayItems(&rhsArray, expression, pInfo: pInfo) else {
                 throw TemplateSoup_EvaluationError.errorInExpression(lineNo, expression)
             }
             
@@ -53,16 +56,19 @@ public struct RegularExpressionEvaluator {
         
         guard let accumulated = accumulated else { return nil }
         
-        let result = ctx.evaluateCondition(value: accumulated, lineNo: lineNo)
+        let result = ctx.evaluateCondition(value: accumulated, pInfo: pInfo)
         return negatedResult ? !result : result
     }
     
-    fileprivate func executeArrayItems(_ arr: inout [String], _ ctx: Context, _ expression: String, lineNo: Int) throws -> Optional<Any> {
+    fileprivate func executeArrayItems(_ arr: inout [String], _ expression: String, pInfo: ParsedInfo) throws -> Optional<Any> {
         guard arr.count > 0 else { return nil }
 
+        let ctx = pInfo.ctx
+        let lineNo = pInfo.lineNo
+        
         let lhs = arr.removeFirst()
         
-        guard var result = try ctx.evaluate(value: lhs, lineNo: lineNo) else { return nil }
+        guard var result = try ctx.evaluate(value: lhs, pInfo: pInfo) else { return nil }
         
         while arr.count > 0 {
             //in the parsed array list, every even item is an operator
@@ -74,7 +80,7 @@ public struct RegularExpressionEvaluator {
             
             let rhs = arr.removeFirst()
             
-            guard let rhsResult = try ctx.evaluate(value: rhs, lineNo: lineNo) else {
+            guard let rhsResult = try ctx.evaluate(value: rhs, pInfo: pInfo) else {
                 throw TemplateSoup_EvaluationError.objectNotFound(lineNo, rhs)
             }
             

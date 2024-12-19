@@ -16,7 +16,7 @@ public struct ModelLib {
     }
     
     public static func getObjectWithName(sandbox: Sandbox) -> Modifier {
-        return CreateModifier.withoutParams("get-object") { (objectName: String, lineNo: Int) -> CodeObject_Wrap? in
+        return CreateModifier.withoutParams("get-object") { (objectName: String, pInfo: ParsedInfo) -> CodeObject_Wrap? in
             
             if let obj = sandbox.model.types.get(for: objectName) {
                 return CodeObject_Wrap(obj)
@@ -25,7 +25,7 @@ public struct ModelLib {
     }
     
     public static func getLastRecursivePropWithName(sandbox: Sandbox) -> Modifier {
-        return CreateModifier.withParams("get-last-recursive-prop") { (propName: String, arguments: [Any], lineNo: Int) -> TypeProperty_Wrap? in
+        return CreateModifier.withParams("get-last-recursive-prop") { (propName: String, arguments: [Any], pInfo: ParsedInfo) -> TypeProperty_Wrap? in
             
             guard let objectName = arguments.first as? String else { return nil }
             
@@ -41,7 +41,7 @@ public struct ModelLib {
     }
     
     public static func getAPIsforCodeObject(sandbox: Sandbox) -> Modifier {
-        return CreateModifier.withoutParams("apis") { (entity: Any, lineNo: Int) -> [API_Wrap] in
+        return CreateModifier.withoutParams("apis") { (entity: Any, pInfo: ParsedInfo) -> [API_Wrap] in
 
             if let entityName = entity as? String,
                let entity = sandbox.model.types.get(for: entityName) {

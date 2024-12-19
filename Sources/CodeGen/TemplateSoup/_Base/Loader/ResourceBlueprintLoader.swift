@@ -114,7 +114,7 @@ open class ResourceBlueprintLoader : BlueprintRepository {
                         resourceName = resourceName.withoutFileExtension()
                         
                         //render the filename if it has an expression within '{{' and '}}'
-                        let filename = try ContentLine.eval(line: resourceName, with: templateSoup.context) ?? resourceName
+                        let filename = try ContentHandler.eval(expression: resourceName, with: templateSoup.context) ?? resourceName
                         
                         //if handler returns false, dont render file
                         if try !context.events.canRender(filename: filename) {
@@ -139,10 +139,10 @@ open class ResourceBlueprintLoader : BlueprintRepository {
                         
                         let parsingIdentifier = resourceName
                         if let frontMatter = try templateSoup.frontMatter(in: contents, identifier: parsingIdentifier),
-                           let pctx = frontMatter.hasDirective(ParserDirectives.includeFor) {
-                            try templateSoup.forEach(forInExpression: pctx.line, parser: pctx.parser) {
+                           let pInfo = frontMatter.hasDirective(ParserDirectives.includeFor) {
+                            try templateSoup.forEach(forInExpression: pInfo.line, parser: pInfo.parser) {
                                 if let _ = frontMatter.hasDirective(ParserDirectives.outputFilename) {
-                                    if let outputFilename = try frontMatter.evalDirective( ParserDirectives.outputFilename) as? String {
+                                    if let outputFilename = try frontMatter.evalDirective( ParserDirectives.outputFilename, pInfo: pInfo) as? String {
                                         try renderClosure(outputFilename)
                                     }
                                 } else {
@@ -166,7 +166,7 @@ open class ResourceBlueprintLoader : BlueprintRepository {
                         try outFile.write(contents)
                     }
                 } else { //resource folder
-                    let subfoldername = try ContentLine.eval(line: resourceName, with: templateSoup.context) ?? resourceName
+                    let subfoldername = try ContentHandler.eval(expression: resourceName, with: templateSoup.context) ?? resourceName
                     
                     let newResUrl = resUrl.appendingPathComponent(subfoldername)
                     try renderResourceFiles(from: newResUrl, to: outputFolder / resourceName, using: templateSoup)

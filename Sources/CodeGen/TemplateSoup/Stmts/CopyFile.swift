@@ -33,7 +33,7 @@ public class CopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible {
         CommonRegEx.comments
     }
     
-    override func matchLine(line: String, level: Int, with ctx: Context) throws -> Bool {
+    override func matchLine(line: String) throws -> Bool {
         guard let match = line.wholeMatch(of: stmtRegex ) else { return false }
         
         let (_, fromValue, toValue) = match.output
@@ -51,7 +51,7 @@ public class CopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible {
             throw TemplateSoup_EvaluationError.workingDirectoryNotSet(lineNo)
         }
         
-        guard let fromFile = try? ctx.evaluate(value: FromFile, lineNo: lineNo) as? String
+        guard let fromFile = try? ctx.evaluate(value: FromFile, pInfo: pInfo) as? String
                                                                     else { return nil }
         
         try ctx.fileGenerator.setRelativePath(ctx.workingDirectoryString)
@@ -63,7 +63,7 @@ public class CopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible {
             let file = try ctx.fileGenerator.copyFile(fileName)
             ctx.addGenerated(filePath: file.outputPath.string + fileName)
         } else {
-            guard let toFile = try? ctx.evaluate(value: ToFile, lineNo: lineNo) as? String
+            guard let toFile = try? ctx.evaluate(value: ToFile, pInfo: pInfo) as? String
                                                                         else { return nil }
             
             ctx.debugLog.copyingFile(fromFile, to: toFile)
@@ -76,7 +76,7 @@ public class CopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible {
     
     public var debugDescription: String {
         let str =  """
-        COPY FILE stmt (level: \(level))
+        COPY FILE stmt (level: \(pInfo.level))
         - from: \(self.FromFile)
         - to: \(self.ToFile)
         
@@ -85,10 +85,10 @@ public class CopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible {
         return str
     }
     
-    public init() {
-        super.init(keyword: Self.START_KEYWORD)
+    public init(_ pInfo: ParsedInfo) {
+        super.init(keyword: Self.START_KEYWORD, pInfo: pInfo)
     }
     
-    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) { CopyFileStmt()}
+    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) {pInfo in CopyFileStmt(pInfo)}
 }
 

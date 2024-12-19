@@ -19,7 +19,7 @@ public class MethodObject : CodeMember {
     
     public var comment: String?
     
-    public static func parse(with pctx: ParsingContext, skipLine: Bool = true) throws -> MethodObject? {
+    public static func parse(with pctx: ParsedInfo, skipLine: Bool = true) throws -> MethodObject? {
         let originalLine = pctx.line
         let firstWord = pctx.firstWord
         

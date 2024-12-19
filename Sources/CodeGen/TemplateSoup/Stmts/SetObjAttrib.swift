@@ -55,12 +55,12 @@ public class SetObjectAttributeStmt: BlockOrLineTemplateStmt, CustomDebugStringC
         CommonRegEx.comments
     }
     
-    override func checkIfLineVariant(line: String, level: Int) -> Bool {
+    override func checkIfLineVariant(line: String) -> Bool {
         let match = line.wholeMatch(of: setVarLineRegex )
         return match != nil
     }
 
-    override func matchLine_BlockVariant(line: String, level: Int, with ctx: Context) throws -> Bool {
+    override func matchLine_BlockVariant(line: String) throws -> Bool {
         guard let match = line.wholeMatch(of: setVarBlockRegex )
                                                                 else { return false }
 
@@ -68,12 +68,12 @@ public class SetObjectAttributeStmt: BlockOrLineTemplateStmt, CustomDebugStringC
         self.SetObject = setObj
         self.ObjAttribute = objAttrib
         self.ValueExpression = ""
-        self.ModifiersList = try Modifiers.parse(string: modifiersList, context: ctx)
+        self.ModifiersList = try Modifiers.parse(string: modifiersList, context: pInfo.ctx)
         
         return true
     }
     
-    override func matchLine_LineVariant(line: String, level: Int, with ctx: Context) throws -> Bool {
+    override func matchLine_LineVariant(line: String) throws -> Bool {
         guard let match = line.wholeMatch(of: setVarLineRegex )
                                                                 else { return false }
 
@@ -81,7 +81,7 @@ public class SetObjectAttributeStmt: BlockOrLineTemplateStmt, CustomDebugStringC
         self.SetObject = setObj
         self.ObjAttribute = objAttrib
         self.ValueExpression = value
-        self.ModifiersList = try Modifiers.parse(string: modifiersList, context: ctx)
+        self.ModifiersList = try Modifiers.parse(string: modifiersList, context: pInfo.ctx)
 
         return true
     }
@@ -96,7 +96,7 @@ public class SetObjectAttributeStmt: BlockOrLineTemplateStmt, CustomDebugStringC
             let attributeName = self.ObjAttribute
             
             let body = try children.execute(with: ctx)?.trim() ?? ""
-            try ctx.setObjProp(objName: variableName, propName: attributeName, body: body, modifiers: ModifiersList, lineNo: lineNo)
+            try ctx.setObjProp(objName: variableName, propName: attributeName, body: body, modifiers: ModifiersList, pInfo: pInfo)
             
         } else {
             guard SetObject.isNotEmpty,
@@ -106,7 +106,7 @@ public class SetObjectAttributeStmt: BlockOrLineTemplateStmt, CustomDebugStringC
             let variableName = self.SetObject
             let attributeName = self.ObjAttribute
             
-            try ctx.setObjProp(objName: variableName, propName: attributeName, valueExpression: ValueExpression, modifiers: ModifiersList, lineNo: lineNo)
+            try ctx.setObjProp(objName: variableName, propName: attributeName, valueExpression: ValueExpression, modifiers: ModifiersList, pInfo: pInfo)
         }
         
         return nil
@@ -115,7 +115,7 @@ public class SetObjectAttributeStmt: BlockOrLineTemplateStmt, CustomDebugStringC
     public var debugDescription: String {
         if self.isBlockVariant {
             var str =  """
-            SET OBJ_ATTRIB Block stmt (level: \(level))
+            SET OBJ_ATTRIB Block stmt (level: \(pInfo.level))
             - setObj: \(self.SetObject)
             - objAttrib: \(self.ObjAttribute)
             - modifiers: \(self.ModifiersList.nameString())
@@ -129,7 +129,7 @@ public class SetObjectAttributeStmt: BlockOrLineTemplateStmt, CustomDebugStringC
 
         } else { //line variant
             let str =  """
-            SET OBJ_ATTRIB Line stmt (level: \(level))
+            SET OBJ_ATTRIB Line stmt (level: \(pInfo.level))
             - setObj: \(self.SetObject)
             - objAttrib: \(self.ObjAttribute)
             - valueExpr: \(self.ValueExpression)
@@ -141,12 +141,12 @@ public class SetObjectAttributeStmt: BlockOrLineTemplateStmt, CustomDebugStringC
         }
     }
     
-    public init(parseTill endKeyWord: String) {
-        super.init(startKeyword: Self.START_KEYWORD, endKeyword: endKeyWord)
+    public init(parseTill endKeyWord: String, pInfo: ParsedInfo) {
+        super.init(startKeyword: Self.START_KEYWORD, endKeyword: endKeyWord, pInfo: pInfo)
     }
     
-    static var register = BlockOrLineTemplateStmtConfig(keyword: START_KEYWORD, endKeyword: "endset" ) { endKeyWord in
-        SetObjectAttributeStmt(parseTill: endKeyWord)
+    static var register = BlockOrLineTemplateStmtConfig(keyword: START_KEYWORD, endKeyword: "endset" ) { endKeyWord, pInfo in
+        SetObjectAttributeStmt(parseTill: endKeyWord, pInfo: pInfo)
     }
 }
 

@@ -50,7 +50,7 @@ public class API_Wrap : ObjectWrapper {
         }
     }()
     
-    public func dynamicLookup(property propname: String, lineNo: Int) throws -> Any {
+    public func dynamicLookup(property propname: String, pInfo: ParsedInfo) throws -> Any {
         
         let value: Any = switch propname {
             case "entity": CodeObject_Wrap(item.entity)
@@ -83,7 +83,7 @@ public class API_Wrap : ObjectWrapper {
             if item.attribs.has(propname) {
                 item.attribs[propname] as Any
             } else {
-                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(lineNo, propname)
+                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(pInfo.lineNo, propname)
             }
         }
         
@@ -100,7 +100,7 @@ public class API_Wrap : ObjectWrapper {
 public class APIParam_Wrap : DynamicMemberLookup {
     public private(set) var item: APIQueryParamWrapper
     
-    public func dynamicLookup(property propname: String, lineNo: Int) throws -> Any {
+    public func dynamicLookup(property propname: String, pInfo: ParsedInfo) throws -> Any {
 
         let value: Any = switch propname {
             //case "query-param-obj" : item.queryParam
@@ -110,7 +110,7 @@ public class APIParam_Wrap : DynamicMemberLookup {
             case "second-param-name" : item.queryParam.SecondName
             case "has-multiple-params" : item.queryParam.canHaveMultipleValues
             default:
-                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(lineNo, propname)
+            throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(pInfo.lineNo, propname)
         }
 
         return value
@@ -124,14 +124,14 @@ public class APIParam_Wrap : DynamicMemberLookup {
 public class APICustomParameter_Wrap : DynamicMemberLookup {
     public private(set) var item: MethodParameter
     
-    public func dynamicLookup(property propname: String, lineNo: Int) throws -> Any {
+    public func dynamicLookup(property propname: String, pInfo: ParsedInfo) throws -> Any {
         
         let value: Any = switch propname {
         case "name" : item.name
         case "type" : item.type
         case "is-array" : item.type.isArray
         default:
-            throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(lineNo, propname)
+            throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(pInfo.lineNo, propname)
         }
         
         return value

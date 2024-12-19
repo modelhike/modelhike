@@ -26,7 +26,7 @@ public struct LocalFileTemplate : ScriptedTemplate {
     
 }
 
-public protocol FileTemplateStatement : TemplateItem {
+public protocol FileTemplateStatement : TemplateItemWithParsedInfo {
 }
 
 public protocol FileTemplateStmtConfig : TemplateItemConfig {

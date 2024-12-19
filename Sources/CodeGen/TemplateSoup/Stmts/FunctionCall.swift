@@ -21,7 +21,7 @@ public class FunctionCallStmt: LineTemplateStmt, CustomDebugStringConvertible {
         CommonRegEx.comments
     }
     
-    override func matchLine(line: String, level: Int, with ctx: Context) throws -> Bool {
+    override func matchLine(line: String) throws -> Bool {
         guard let match = line.wholeMatch(of: stmtRegex ) else { return false }
         
         let (_, fnName, argsString) = match.output
@@ -47,7 +47,7 @@ public class FunctionCallStmt: LineTemplateStmt, CustomDebugStringConvertible {
     
     public var debugDescription: String {
         let str =  """
-        CALL Function stmt (level: \(level))
+        CALL Function stmt (level: \(pInfo.level))
         - fn name: \(self.FnName)
         - args: \(self.Args)
         
@@ -56,10 +56,10 @@ public class FunctionCallStmt: LineTemplateStmt, CustomDebugStringConvertible {
         return str
     }
     
-    public init() {
-        super.init(keyword: Self.START_KEYWORD)
+    public init(_ pInfo: ParsedInfo) {
+        super.init(keyword: Self.START_KEYWORD, pInfo: pInfo)
     }
     
-    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) { FunctionCallStmt() }
+    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) {pInfo in FunctionCallStmt(pInfo) }
 }
 

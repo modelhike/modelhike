@@ -7,8 +7,9 @@
 import Foundation
 
 public struct ExpressionEvaluator {
-    public func evaluate(value valueStr: String, lineNo: Int, with ctx: Context) throws -> Optional<Any> {
+    public func evaluate(value valueStr: String, pInfo: ParsedInfo) throws -> Optional<Any> {
         let value = valueStr.trim()
+        let ctx = pInfo.ctx
         
         //check if string literal
         if let match = value.wholeMatch(of: CommonRegEx.stringLiteralPattern_Capturing) {
@@ -26,7 +27,7 @@ public struct ExpressionEvaluator {
         
         //check if variable or object property
         if let _ = value.wholeMatch(of: CommonRegEx.variableOrObjectProperty) {
-            if let value = try ctx.valueOf(variableOrObjProp: value, lineNo: lineNo) {
+            if let value = try ctx.valueOf(variableOrObjProp: value, pInfo: pInfo) {
                 return value
             }
         }
@@ -38,14 +39,15 @@ public struct ExpressionEvaluator {
         return nil
     }
     
-    public func evaluate(expression: String, lineNo: Int, with ctx: Context) throws -> Optional<Any> {
+    public func evaluate(expression: String, pInfo: ParsedInfo) throws -> Optional<Any> {
         let expn = expression.trim()
+        let ctx = pInfo.ctx
         
         if ctx.variables.has(expn) {
             return ctx.variables[expn]
         }
         
-        if let result = try evaluate(value: expn, lineNo: lineNo, with: ctx) {
+        if let result = try evaluate(value: expn, pInfo: pInfo) {
             return result
         }
         
@@ -55,11 +57,11 @@ public struct ExpressionEvaluator {
         //nested paranthesis is not supported;
         //but single-level of paranthesis is allowed
         var parser: RegularExpressionEvaluator = RegularExpressionEvaluator()
-        return try parser.evaluate(expression: expn, lineNo: lineNo, with: ctx)
+        return try parser.evaluate(expression: expn, pInfo: pInfo)
     }
     
-    public func evaluateCondition(expression: String, lineNo: Int, with ctx: Context) throws -> Bool {
-        if let result = try evaluate(expression: expression, lineNo: lineNo, with: ctx) {
+    public func evaluateCondition(expression: String, pInfo: ParsedInfo) throws -> Bool {
+        if let result = try evaluate(expression: expression, pInfo: pInfo) {
             return getEvaluatedBoolValueFor(result)
         } else {
             return false

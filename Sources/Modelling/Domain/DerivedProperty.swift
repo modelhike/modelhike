@@ -18,7 +18,7 @@ public class DerivedProperty : CodeMember {
 
     public var comment: String?
     
-    public static func parse(with pctx: ParsingContext) throws -> DerivedProperty? {
+    public static func parse(with pctx: ParsedInfo) throws -> DerivedProperty? {
         
         let originalLine = pctx.line
         let firstWord = pctx.firstWord

@@ -25,7 +25,7 @@ public struct ContainerModuleMember : Artifact {
         return hasAttrib(name.rawValue)
     }
     
-    static func parse(with pctx: ParsingContext) throws -> ContainerModuleMember? {
+    static func parse(with pctx: ParsedInfo) throws -> ContainerModuleMember? {
         let originalLine = pctx.line
         let firstWord = pctx.firstWord
         

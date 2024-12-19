@@ -27,7 +27,7 @@ public class CodeObject_Wrap : ObjectWrapper {
                 $0.type == .pushDataList ) { return API_Wrap($0) } else {return nil}    })
     }()
     
-    public func dynamicLookup(property propname: String, lineNo: Int) throws -> Any {
+    public func dynamicLookup(property propname: String, pInfo: ParsedInfo) throws -> Any {
         if propname.hasPrefix("has-prop-") {
             let propName = propname.removingPrefix("has-prop-")
             return item.hasProp(propName)
@@ -49,7 +49,7 @@ public class CodeObject_Wrap : ObjectWrapper {
             if item.attribs.has(propname) {
                 item.attribs[propname] as Any
             } else {
-                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(lineNo, propname)
+                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(pInfo.lineNo, propname)
             }
         }
         
@@ -71,7 +71,7 @@ public class TypeProperty_Wrap : ObjectWrapper {
         set { item.attribs = newValue }
     }
     
-    public func dynamicLookup(property propname: String, lineNo: Int) throws -> Any {
+    public func dynamicLookup(property propname: String, pInfo: ParsedInfo) throws -> Any {
         if propname.hasPrefix("has-attrib-") {
             let attributeName = propname.removingPrefix("has-attrib-")
             return item.hasAttrib(attributeName)
@@ -113,7 +113,7 @@ public class TypeProperty_Wrap : ObjectWrapper {
             if item.attribs.has(propname) {
                 item.attribs[propname] as Any
             } else {
-                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(lineNo, propname)
+                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(pInfo.lineNo, propname)
             }
         }
         

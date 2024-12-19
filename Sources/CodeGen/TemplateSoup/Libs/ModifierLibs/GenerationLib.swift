@@ -20,27 +20,27 @@ public struct GenerationLib {
     }
     
     public static var kebabcase: Modifier {
-        return CreateModifier.withoutParams("kebabcase") { (value: String, lineNo: Int) -> String? in value.normalizeForFolderName() }
+        return CreateModifier.withoutParams("kebabcase") { (value: String, pInfo: ParsedInfo) -> String? in value.normalizeForFolderName() }
     }
     
     public static var camelcaseToKebabcase: Modifier {
-        return CreateModifier.withoutParams("split-camel-to-kebabcase") { (value: String, lineNo: Int) -> String? in value.camelCaseToKebabCase() }
+        return CreateModifier.withoutParams("split-camel-to-kebabcase") { (value: String, pInfo: ParsedInfo) -> String? in value.camelCaseToKebabCase() }
     }
     
     public static var snakecase: Modifier {
-        return CreateModifier.withoutParams("snakecase") { (value: String, lineNo: Int) -> String? in value.camelCaseToSnakeCase() }
+        return CreateModifier.withoutParams("snakecase") { (value: String, pInfo: ParsedInfo) -> String? in value.camelCaseToSnakeCase() }
     }
     
     public static var identifierCase: Modifier {
-        return CreateModifier.withoutParams("identifier-case") { (value: String, lineNo: Int) -> String? in value.normalizeForVariableName() }
+        return CreateModifier.withoutParams("identifier-case") { (value: String, pInfo: ParsedInfo) -> String? in value.normalizeForVariableName() }
     }
     
     public static var packageCase: Modifier {
-        return CreateModifier.withoutParams("package-case") { (value: String, lineNo: Int) -> String? in value.normalizeForPackageName() }
+        return CreateModifier.withoutParams("package-case") { (value: String, pInfo: ParsedInfo) -> String? in value.normalizeForPackageName() }
     }
     
     public static var plural: Modifier {
-        return CreateModifier.withoutParams("plural") { (value: String, lineNo: Int) -> String? in value.pluralized(count: 2) }
+        return CreateModifier.withoutParams("plural") { (value: String, pInfo: ParsedInfo) -> String? in value.pluralized(count: 2) }
     }
     
 }

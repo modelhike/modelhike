@@ -23,7 +23,7 @@ public class ConsoleLogStmt: LineTemplateStmt, CustomDebugStringConvertible {
         CommonRegEx.comments
     }
     
-    override func matchLine(line: String, level: Int, with ctx: Context) throws -> Bool {
+    override func matchLine(line: String) throws -> Bool {
         guard let match = line.wholeMatch(of: stmtRegex ) else { return false }
         
         let (_, expn) = match.output
@@ -37,7 +37,7 @@ public class ConsoleLogStmt: LineTemplateStmt, CustomDebugStringConvertible {
         guard Expression.isNotEmpty else { return nil }
         
         //see if it is an object
-        if let expn = try? ctx.evaluate(value: Expression, lineNo: lineNo) {
+        if let expn = try? ctx.evaluate(value: Expression, pInfo: pInfo) {
             if expn is String {
                 print("🏷️ [Line \(lineNo)] \(expn)")
             } else if let obj = deepUnwrap(expn) {
@@ -53,7 +53,7 @@ public class ConsoleLogStmt: LineTemplateStmt, CustomDebugStringConvertible {
         }
         
         //see if it is an expression
-        if let expn = try? ctx.evaluate(expression: Expression, lineNo: lineNo) {
+        if let expn = try? ctx.evaluate(expression: Expression, pInfo: pInfo) {
             print("🏷️ [Line \(lineNo)] \(expn)")
             return nil
         }
@@ -64,7 +64,7 @@ public class ConsoleLogStmt: LineTemplateStmt, CustomDebugStringConvertible {
     
     public var debugDescription: String {
         let str =  """
-        CONSOLE LOG stmt (level: \(level))
+        CONSOLE LOG stmt (level: \(pInfo.level))
         - expn: \(self.Expression)
         
         """
@@ -72,11 +72,11 @@ public class ConsoleLogStmt: LineTemplateStmt, CustomDebugStringConvertible {
         return str
     }
     
-    public init() {
-        super.init(keyword: Self.START_KEYWORD)
+    public init(_ pInfo: ParsedInfo) {
+        super.init(keyword: Self.START_KEYWORD, pInfo: pInfo)
     }
     
-    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) { ConsoleLogStmt() }
+    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) {pInfo in ConsoleLogStmt(pInfo) }
 }
 
 

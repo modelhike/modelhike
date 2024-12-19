@@ -11,7 +11,7 @@ public enum AnnotationParser {
         return firstWord == ModelConstants.Annotation_Start
     }
     
-    public static func parse(with pctx: ParsingContext) throws -> (any Annotation)? {
+    public static func parse(with pctx: ParsedInfo) throws -> (any Annotation)? {
         let line = pctx.line.remainingLine(after: pctx.firstWord) //remove first word
 
         let split = line.split(separator: ModelConstants.Annotation_Split, maxSplits: 1, omittingEmptySubsequences: true)

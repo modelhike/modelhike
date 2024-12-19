@@ -47,7 +47,7 @@ public enum DomainObjectParser {
         while parser.linesRemaining {
             if parser.isCurrentLineEmptyOrCommented() { parser.skipLine(); continue }
             
-            guard let pctx = parser.currentParsingContext() else { parser.skipLine(); continue }
+            guard let pctx = parser.currentParsedInfo(level: 0) else { parser.skipLine(); continue }
             if parser.isCurrentLineHumaneComment(pctx) { parser.skipLine(); continue } //humane comment
 
             if Property.canParse(firstWord: pctx.firstWord) {

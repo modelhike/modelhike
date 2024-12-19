@@ -60,7 +60,7 @@ public class C4Component_Wrap : ObjectWrapper {
             $0.item.type == .listByCustomProperties 
         ) { return $0 } else {return nil}    }) }()
     
-    public func dynamicLookup(property propname: String, lineNo: Int) throws -> Any {
+    public func dynamicLookup(property propname: String, pInfo: ParsedInfo) throws -> Any {
         let value: Any = switch propname {
             case "name": item.name
             case "types" : types
@@ -83,7 +83,7 @@ public class C4Component_Wrap : ObjectWrapper {
             if item.attribs.has(propname) {
                 item.attribs[propname] as Any
             } else {
-                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(lineNo, propname)
+                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(pInfo.lineNo, propname)
             }
         }
         

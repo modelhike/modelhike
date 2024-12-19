@@ -72,14 +72,15 @@ public class TemplateSoup : TemplateRenderer {
     
     public func forEach(forInExpression expression: String, parser: LineParser, renderClosure: () throws -> Void ) throws {
         let line = "\(ForStmt.START_KEYWORD) \(expression)"
-        guard let match = line.wholeMatch(of: ForStmt.stmtRegex ) else {
+        guard let match = line.wholeMatch(of: ForStmt.stmtRegex ),
+              let pInfo = parser.currentParsedInfo(level: parser.curLevelForDisplay) else {
             throw ParsingError.invalidLineWithoutErr(parser.curLineNoForDisplay, parser.identifier, expression)
         }
         
         let (_, forVar, inArrayVar) = match.output
         let loopVariableName = forVar
         
-        guard let loopItems = try context.valueOf(variableOrObjProp: inArrayVar, lineNo: parser.curLineNoForDisplay) as? [Any] else {
+        guard let loopItems = try context.valueOf(variableOrObjProp: inArrayVar, pInfo: pInfo) as? [Any] else {
             throw ParsingError.invalidLineWithoutErr(parser.curLineNoForDisplay, parser.identifier, expression)
         }
         

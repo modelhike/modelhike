@@ -9,6 +9,7 @@ import Foundation
 public class LineParser {
     private var lines: [String] = []
     private var _curLineNo: Int = 0
+    private var _curLevel: Int = 0
     private var _breakParsing: Bool = false
     private var file: LocalFile?
     internal let ctx: Context
@@ -16,20 +17,23 @@ public class LineParser {
     public private(set) var identifier: String
     
     public var curLineNoForDisplay: Int { _curLineNo + 1 }
+    public var curLevelForDisplay: Int { _curLevel }
     
-    public func parse(till endKeyWord: String? = nil, lineHandler: ((_ firstWord: String, _ secondWord: String?, _ line: String, Context) throws -> ())) throws {
+    public func parse(till endKeyWord: String? = nil, level: Int, lineHandler: ((_ pctx: ParsedInfo, _ secondWord: String?, Context) throws -> ())) throws {
         resetFlags()
         
         while linesRemaining {
             if isCurrentLineEmpty() { skipEmptyLine() ; continue }
             if isCurrentLineCommented() { skipCommentedLine(); continue }
             
-            //the currentLine() returns a trummed string, while removes prefixed space for content;
+            //the currentLine() returns a trummed string, which removes prefixed space for content;
             //so, another method, that does not trim prefix, is used for content
-            let curLine = currentLine_TrimTrailing()
+            guard let pctx = self.currentParsedInfo(level: level) else { self.skipLine(); continue }
+
+            let curLine = pctx.line
             let (firstWord, secondWord) = curLine.firstAndsecondWord()
             
-            if let firstWord = firstWord,
+            if let _ = firstWord,
                let secondWord = secondWord {
                     
                     if let endKeyWord = endKeyWord {
@@ -44,9 +48,10 @@ public class LineParser {
                     
                     ctx.debugLog.line(curLine, lineNo: curLineNoForDisplay)
                     
-                    try lineHandler(firstWord, secondWord, curLine, ctx)
+                    try lineHandler(pctx, secondWord, ctx)
             } else {
-                try lineHandler("", secondWord, curLine, ctx)
+                pctx.firstWord = ""
+                try lineHandler(pctx, secondWord, ctx)
             }
             
             if _breakParsing {break}
@@ -154,12 +159,13 @@ public class LineParser {
         return line.hasPrefix(TemplateConstants.comments)
     }
         
-    public func currentParsingContext() -> ParsingContext? {
+    public func currentParsedInfo(level: Int) -> ParsedInfo? {
         if ctx.debugLog.flags.lineByLineParsing {
             ctx.debugLog.line(currentLine(), lineNo: curLineNoForDisplay)
         }
         
-        return ParsingContext(parser: self)
+        self._curLevel = level
+        return ParsedInfo(parser: self)
     }
         
     public func currentLineWithoutStmtKeyword() -> String {
@@ -251,7 +257,7 @@ public extension LineParser {
         return isCurrentLineEmpty() || isCurrentLineCommented()
     }
 
-    func isCurrentLineHumaneComment(_ pctx: ParsingContext) -> Bool {
+    func isCurrentLineHumaneComment(_ pctx: ParsedInfo) -> Bool {
         if pctx.firstWord.isStartingWithAlphabet {
             let nextLine = pctx.parser.nextLine().trim()
             if nextLine.isEmpty {

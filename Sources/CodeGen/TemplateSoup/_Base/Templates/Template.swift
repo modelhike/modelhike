@@ -24,22 +24,27 @@ public protocol TemplateItem {
     func execute(with ctx: Context) throws -> String?
 }
 
+public protocol TemplateItemWithParsedInfo : TemplateItem {
+    var pInfo: ParsedInfo {get}
+    func execute(with ctx: Context) throws -> String?
+}
+
 public protocol TemplateItemConfig {
     associatedtype T
     
     var keyword : String {get}
     var kind: TemplateStmtKind {get}
-    func getNewObject() -> T
+    func getNewObject(_ pInfo: ParsedInfo) -> T
 }
 
 public protocol TemplateInitialiserWithArg {
     associatedtype T
     
-    var initialiser: (String) -> T {get}
+    var initialiser: (String, ParsedInfo) -> T {get}
 }
 
 public protocol TemplateInitialiserWithNoArg {
     associatedtype T
     
-    var initialiser: () -> T {get}
+    var initialiser: (ParsedInfo) -> T {get}
 }

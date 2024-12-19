@@ -11,7 +11,7 @@ public class TemplateFunctionContainer : TemplateStmtContainer {
     
     let params: [String]
     let name: String
-    let lineNo: Int
+    let pInfo: ParsedInfo
     
     public func execute(args: [ArgumentDeclaration], with ctx: Context) throws -> String? {
         var rendering = ""
@@ -34,7 +34,7 @@ public class TemplateFunctionContainer : TemplateStmtContainer {
         
         //set the macro function arguments into context
         for arg in args {
-            ctx.variables[arg.name] = try? ctx.evaluate(value: "\(arg.value)", lineNo: lineNo )
+            ctx.variables[arg.name] = try? ctx.evaluate(value: "\(arg.value)", pInfo: pInfo )
         }
         
         if let body = try container.execute(with: ctx) {
@@ -77,10 +77,10 @@ public class TemplateFunctionContainer : TemplateStmtContainer {
         return str
     }
     
-    public init(name: String, params: [String], lineNo: Int) {
+    public init(name: String, params: [String], pInfo: ParsedInfo) {
         self.params = params
         self.name = name
-        self.lineNo = lineNo
+        self.pInfo = pInfo
         
         container = GenericStmtsContainer(.macro, name: name)
     }

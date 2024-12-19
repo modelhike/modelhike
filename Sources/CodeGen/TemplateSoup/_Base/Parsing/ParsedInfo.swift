@@ -6,11 +6,13 @@
 
 import Foundation
 
-public class ParsingContext {
+public class ParsedInfo {
     public internal(set) var line: String
+    public internal(set) var lineNo: Int
+    public internal(set) var level: Int
     public internal(set) var firstWord: String
     public internal(set) var parser: LineParser
-    let context: Context
+    public var ctx: Context { parser.ctx }
     
     public func parseAttachedItems(for obj: ArtifactHolder, with section: AttachedSection) throws -> [Artifact] {
         if let cls = obj as? CodeObject {
@@ -58,20 +60,30 @@ public class ParsingContext {
         }
     }
     
+    public static func dummy(for line: String, with ctx: Context) -> ParsedInfo {
+        let parser = LineParser(with: ctx)
+        return ParsedInfo(parser: parser, line: line, lineNo: -1, level: 0, firstWord: "")
+    }
+    
     public init?(parser: LineParser) {
-        self.line = parser.currentLine()
+        //the currentLine() returns a trummed string, which removes prefixed space for content;
+        //so, another method, that does not trim prefix, is used
+        self.line = parser.currentLine_TrimTrailing()
+        self.lineNo = parser.curLineNoForDisplay
         
         guard let firstWord = line.firstWord() else { return nil }
         self.firstWord = firstWord
         self.parser = parser
-        self.context = parser.ctx
+        self.level = parser.curLevelForDisplay
     }
     
-    public init(parser: LineParser, line: String, firstWord: String) {
+    public init(parser: LineParser, line: String, lineNo: Int, level: Int, firstWord: String) {
         self.line = line
+        self.lineNo = lineNo
+
         self.firstWord = firstWord
         self.parser = parser
-        self.context = parser.ctx
+        self.level = level
     }
 }
 
@@ -80,7 +92,7 @@ public class ParsedContextInfo {
     public var lineNo: Int
     public var identifier: String
     
-    public init(with pctx: ParsingContext) {
+    public init(with pctx: ParsedInfo) {
         self.line = pctx.line
         self.lineNo = pctx.parser.curLineNoForDisplay
         self.identifier = pctx.parser.identifier

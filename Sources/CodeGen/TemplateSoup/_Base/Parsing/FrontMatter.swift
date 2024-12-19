@@ -11,11 +11,11 @@ public struct FrontMatter {
     private let parser: LineParser
     private let ctx: Context
     
-    public func hasDirective(_ directive: String) -> ParsingContext? {
+    public func hasDirective(_ directive: String) -> ParsedInfo? {
         do {
             let directiveString = "/\(directive)"
             if let rhs = try self.rhs(for: directiveString) {
-                return ParsingContext(parser: parser, line: rhs, firstWord: directiveString)
+                return ParsedInfo(parser: parser, line: rhs, lineNo: -1, level: 0, firstWord: directiveString)
             }
             
             return nil
@@ -25,10 +25,10 @@ public struct FrontMatter {
         
     }
     
-    public func evalDirective(_ directive: String) throws -> Any? {
+    public func evalDirective(_ directive: String, pInfo: ParsedInfo) throws -> Any? {
         let directiveString = "/\(directive)"
         if let rhs = try self.rhs(for: directiveString) {
-            return try ContentLine.eval(line: rhs, with: ctx)
+            return try ContentHandler.eval(line: rhs, pInfo: pInfo)
         }
         return nil
     }
@@ -59,10 +59,13 @@ public struct FrontMatter {
         
         switch directiveName {
             case ParserDirectives.includeIf :
-                let result = try ctx.evaluateCondition(expression: rhs, lineNo: parser.curLineNoForDisplay)
+            if let pInfo = parser.currentParsedInfo(level: 0) {
+                let result = try ctx.evaluateCondition(expression: rhs, pInfo: pInfo)
                 if !result {
                     throw ParserDirectives.excludeFile(parser.identifier)
                 }
+            }
+                
             case ParserDirectives.includeFor:
                 //handled elsewhere
                 break

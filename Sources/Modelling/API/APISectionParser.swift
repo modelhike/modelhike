@@ -14,7 +14,7 @@ public enum APISectionParser {
         while parser.linesRemaining {
             if parser.isCurrentLineEmptyOrCommented() { parser.skipLine(); continue }
 
-            guard let pctx = parser.currentParsingContext() else { parser.skipLine(); continue }
+            guard let pctx = parser.currentParsedInfo(level: 0) else { parser.skipLine(); continue }
 
             if pctx.firstWord == ModelConstants.AttachedSection {
                 //either it is the starting of another attached section

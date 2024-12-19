@@ -8,7 +8,7 @@ import Foundation
 
 public class TextContent: ContentLineItem {
     let content : String
-    let lineNo: Int
+    public let pInfo: ParsedInfo
     let level: Int
     
     public func execute(with ctx: Context) throws -> String? {
@@ -18,9 +18,9 @@ public class TextContent: ContentLineItem {
     public var debugDescription: String { content }
     
     
-    public init(_ content: String, lineNo: Int, level: Int) {
+    public init(_ content: String, pInfo: ParsedInfo, level: Int) {
         self.content = content
-        self.lineNo = lineNo
+        self.pInfo = pInfo
         self.level = level
     }
 }

@@ -9,9 +9,9 @@ import Foundation
 public class MultiBlockTemplateStmt : FileTemplateStatement {
     let keyword : String
     let endKeyword : String
-    var level: Int = -1
-    var lineNo: Int = -1
-    
+    public private(set) var pInfo: ParsedInfo
+    public var lineNo: Int { return pInfo.lineNo }
+
     var children = GenericStmtsContainer()
     var blocks : [PartOfMultiBlockContainer] = []
 
@@ -21,32 +21,30 @@ public class MultiBlockTemplateStmt : FileTemplateStatement {
         return nil
     }
     
-    private func parseStmtLine(lineParser: LineParser, level: Int, with ctx: Context) throws {
+    private func parseStmtLine(lineParser: LineParser) throws {
         let line = lineParser.currentLineWithoutStmtKeyword()
-        let matched = try matchLine(line: line, level: level, with: ctx)
+        let matched = try matchLine(line: line)
         
         if !matched {
             throw TemplateSoup_ParsingError.invalidStmt(line)
         }
     }
     
-    func matchLine(line: String, level: Int, with ctx: Context) throws -> Bool { return false }
+    func matchLine(line: String) throws -> Bool { return false }
     
-    func checkIfSupportedAndGetBlock(blockLime: UnIdentifiedStmt, with ctx: Context) throws -> PartOfMultiBlockContainer? { return nil }
+    func checkIfSupportedAndGetBlock(blockLime: UnIdentifiedStmt) throws -> PartOfMultiBlockContainer? { return nil }
 
     func appendText(_ item: ContentLine) {
         children.append(item)
     }
     
-    func parseStmtLineAndBlocks(parser: TemplateSoupParser, level: Int, with ctx: Context) throws {
-        self.level = level
-        self.lineNo = parser.lineParser.curLineNoForDisplay
-        
-        try parseStmtLine(lineParser: parser.lineParser, level: level, with: ctx)
+    func parseStmtLineAndBlocks(parser: TemplateSoupParser) throws {
+        try parseStmtLine(lineParser: parser.lineParser)
             
         let stmts = GenericStmtsContainer()
-
-        try TemplateSoupParser.parseLines(startingFrom: keyword, till: endKeyword, to: stmts, templateParser: parser, level: level + 1, with: ctx)
+        let ctx = parser.context
+        
+        try TemplateSoupParser.parseLines(startingFrom: keyword, till: endKeyword, to: stmts, templateParser: parser, level: pInfo.level + 1, with: ctx)
         
         var container = self.children
         
@@ -54,7 +52,7 @@ public class MultiBlockTemplateStmt : FileTemplateStatement {
             if let _ = stmt as? TextContent {
                 container.append(stmt)
             } else if let unIdentified = stmt as? UnIdentifiedStmt {
-                if let block = try checkIfSupportedAndGetBlock(blockLime: unIdentified, with: ctx) {
+                if let block = try checkIfSupportedAndGetBlock(blockLime: unIdentified) {
                     
                     ctx.debugLog.multiBlockDetected(keyWord: block.firstWord, lineNo: unIdentified.lineNo)
                     
@@ -64,7 +62,7 @@ public class MultiBlockTemplateStmt : FileTemplateStatement {
                     ctx.debugLog.multiBlockDetectFailed(line: unIdentified.line, lineNo: unIdentified.lineNo)
                     
                     //unidentified stmt
-                    let stmt = UnIdentifiedStmt(line: unIdentified.line, lineNo: unIdentified.lineNo, level: level)
+                    let stmt = UnIdentifiedStmt(pInfo: pInfo)
                     container.append(stmt)
                 }
             } else { //identified stmt
@@ -86,38 +84,38 @@ public class MultiBlockTemplateStmt : FileTemplateStatement {
         return str
     }
     
-    public init(startKeyword: String, endKeyword: String) {
+    public init(startKeyword: String, endKeyword: String, pInfo: ParsedInfo) {
         self.keyword = startKeyword
         self.endKeyword = endKeyword
+        self.pInfo = pInfo
     }
 }
 
 public struct MultiBlockTemplateStmtConfig<T>: FileTemplateStmtConfig, TemplateInitialiserWithArg where T: MultiBlockTemplateStmt {
     public let keyword : String
     private let endKeyword : String
-    public let initialiser: (String) -> T
+    public let initialiser: (String, ParsedInfo) -> T
     public var kind: TemplateStmtKind { .multiBlock }
 
-    public init(keyword: String, initialiser: @escaping (String) -> T)  {
+    public init(keyword: String, initialiser: @escaping (String, ParsedInfo) -> T)  {
         self.keyword = keyword
         self.initialiser = initialiser
         self.endKeyword = "end" + keyword
     }
     
-    public func getNewObject() -> T {
-        return initialiser(self.endKeyword)
+    public func getNewObject(_ pInfo: ParsedInfo) -> T {
+        return initialiser(self.endKeyword, pInfo)
     }
 }
 
 public class PartOfMultiBlockContainer : GenericStmtsContainer {
-    let lineNo: Int
-    let line: String
+    public private(set) var pInfo: ParsedInfo
+    public var lineNo: Int { return pInfo.lineNo }
     let firstWord: String
     
-    public init(firstWord: String, line: String, lineNo: Int) {
-        self.line = line
-        self.lineNo = lineNo
+    public init(firstWord: String, pInfo: ParsedInfo) {
         self.firstWord = firstWord
+        self.pInfo = pInfo
         
         super.init(.partOfMultiBlock, name: firstWord)
     }

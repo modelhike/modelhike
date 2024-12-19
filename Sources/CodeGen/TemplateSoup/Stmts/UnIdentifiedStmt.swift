@@ -9,15 +9,15 @@ import Foundation
 public class UnIdentifiedStmt: TemplateItem, CustomDebugStringConvertible {
     public let line: String
     public let lineNo: Int
-    public let level: Int
-    
+    public private(set) var pInfo: ParsedInfo
+
     public func execute(with ctx: Context) throws -> String? {
         throw TemplateSoup_EvaluationError.unIdentifiedStmt(lineNo, line)
     }
     
     public var debugDescription: String {
         let str =  """
-        UN-IDENTIFIED stmt (level: \(level))
+        UN-IDENTIFIED stmt (level: \(pInfo.level))
         - line: \(line.stmtPartOnly())
         
         """
@@ -26,9 +26,9 @@ public class UnIdentifiedStmt: TemplateItem, CustomDebugStringConvertible {
         
     }
 
-    public init(line: String, lineNo: Int, level: Int) {
-        self.line = line
-        self.lineNo = lineNo
-        self.level = level
+    public init(pInfo: ParsedInfo) {
+        self.line = pInfo.line
+        self.lineNo = pInfo.lineNo
+        self.pInfo = pInfo
     }
 }

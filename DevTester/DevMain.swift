@@ -140,7 +140,7 @@ struct Development {
 struct TestData : DynamicMemberLookup, HasAttributes {
     public var attribs = Attributes()
     
-    public func dynamicLookup(property propname: String, lineNo: Int) throws -> Any {
+    public func dynamicLookup(property propname: String, pInfo: ParsedInfo) throws -> Any {
         return self.attribs[propname] as Any
     }
     

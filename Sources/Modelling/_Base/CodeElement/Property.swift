@@ -20,7 +20,7 @@ public class Property : CodeMember {
     public var arrayMultiplicity: MultiplicityKind = .noBounds
     public var comment: String?
     
-    public static func parse(with pctx: ParsingContext) throws -> Property? {
+    public static func parse(with pctx: ParsedInfo) throws -> Property? {
         let originalLine = pctx.line
         let firstWord = pctx.firstWord
         

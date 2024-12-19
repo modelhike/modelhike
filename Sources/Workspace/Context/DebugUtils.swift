@@ -105,21 +105,21 @@ public struct ContextDebugLog {
         }
     }
     
-    public func ifConditionSatisfied(_ line: String, lineNo: Int) {
+    public func ifConditionSatisfied(condition: String, pInfo: ParsedInfo) {
         if flags.lineByLineParsing || flags.blockByBlockParsing || flags.controlFlow {
-            print("[\(lineNo)] IF Condition Satisfied>> \(line)")
+            print("[\(pInfo.lineNo)] IF Condition Satisfied>> \(pInfo.line)")
         }
     }
     
-    public func elseIfConditionSatisfied(_ line: String, lineNo: Int) {
+    public func elseIfConditionSatisfied(condition: String, pInfo: ParsedInfo) {
         if flags.lineByLineParsing || flags.blockByBlockParsing || flags.controlFlow {
-            print("[\(lineNo)] ELSE IF Condition Satisfied>> \(line)")
+            print("[\(pInfo.lineNo)] ELSE IF Condition Satisfied>> \(pInfo.line)")
         }
     }
     
-    public func elseBlockExecuting(_ line: String, lineNo: Int) {
+    public func elseBlockExecuting(_ pInfo: ParsedInfo) {
         if flags.lineByLineParsing || flags.blockByBlockParsing || flags.controlFlow {
-            print("[\(lineNo)] ELSE Block executing>> \(line)")
+            print("[\(pInfo.lineNo)] ELSE Block executing>> \(pInfo.line)")
         }
     }
     

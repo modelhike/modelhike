@@ -9,22 +9,22 @@ import Foundation
 public struct ModifierInstanceWithoutArgs<I, T> : ModifierInstanceWithoutArgsProtocol {
     public let name : String
     private let callerType: Any.Type
-    private let handler: (I, Int) throws  -> T?
+    private let handler: (I, ParsedInfo) throws  -> T?
     
-    public func applyTo(value : Any, lineNo: Int, with ctx: Context) throws -> Any {
+    public func applyTo(value : Any, pInfo: ParsedInfo) throws -> Any {
         
         if let typedValue = value as? I {
             if type(of: typedValue) != self.callerType {
                 throw TemplateSoup_ParsingError.modifierCalledOnwrongType(self.name, String(describing: type(of: value)))
             }
             
-            return try handler(typedValue, lineNo) as Any
+            return try handler(typedValue, pInfo) as Any
         } else {
             throw TemplateSoup_ParsingError.modifierCalledOnwrongType(self.name, String(describing: type(of: value)))
         }
     }
     
-    public init(name: String, handler: @escaping (I, Int) throws -> T?) {
+    public init(name: String, handler: @escaping (I, ParsedInfo) throws -> T?) {
         self.name = name
         self.callerType = I.self
         self.handler = handler
@@ -34,14 +34,14 @@ public struct ModifierInstanceWithoutArgs<I, T> : ModifierInstanceWithoutArgsPro
 public struct ModifierInstanceWithUnNamedArgs<I, T> : ModifierInstanceWithUnNamedArgsProtocol {
     public var name : String
     public let callerType: Any.Type
-    private let handler: (I, [Any], Int) throws -> T?
+    private let handler: (I, [Any], ParsedInfo) throws -> T?
     private var arguments: [String] = []
     
     public mutating func setArgsGiven(arguments: [String]) {
         self.arguments = arguments
     }
     
-    public func applyTo(value : Any, lineNo: Int, with ctx: Context) throws -> Any {
+    public func applyTo(value : Any, pInfo: ParsedInfo) throws -> Any {
         
         if let typedValue = value as? I {
             if type(of: typedValue) != self.callerType {
@@ -51,21 +51,21 @@ public struct ModifierInstanceWithUnNamedArgs<I, T> : ModifierInstanceWithUnName
             var argumentValues: [Any] = []
             
             for argument in arguments {
-                if let argValue = try ctx.evaluate(expression: argument, lineNo: lineNo) {
+                if let argValue = try pInfo.ctx.evaluate(expression: argument, pInfo: pInfo) {
                     argumentValues.append(argValue)
                 } else {
                     //argumentValues.append(Optional<Any>.none as Any)
-                    throw TemplateSoup_ParsingError.modifierInvalidArguments(lineNo, self.name)
+                    throw TemplateSoup_ParsingError.modifierInvalidArguments(pInfo.lineNo, self.name)
                 }
             }
             
-            return try handler(typedValue, argumentValues, lineNo) as Any
+            return try handler(typedValue, argumentValues, pInfo) as Any
         } else {
             throw TemplateSoup_ParsingError.modifierCalledOnwrongType(self.name, String(describing: type(of: value)))
         }
     }
     
-    public init(name: String, handler: @escaping (I, [Any], Int) throws -> T?) {
+    public init(name: String, handler: @escaping (I, [Any], ParsedInfo) throws -> T?) {
         self.name = name
         self.callerType = I.self
         self.handler = handler
@@ -85,5 +85,5 @@ public protocol ModifierInstanceWithArgsProtocol : ModifierInstance {
 public protocol ModifierInstance {
     var name : String {get}
     //var callerType: Any.Type {get}
-    func applyTo(value : Any, lineNo: Int, with ctx: Context) throws -> Any
+    func applyTo(value : Any, pInfo: ParsedInfo) throws -> Any
 }

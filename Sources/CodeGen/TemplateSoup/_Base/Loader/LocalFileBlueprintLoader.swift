@@ -76,7 +76,7 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
                 let actualFilename = file.nameExcludingExtension
                 
                 //render the filename if it has an expression within '{{' and '}}'
-                let filename = try ContentLine.eval(line: actualFilename, with: templateSoup.context) ?? actualFilename
+                let filename = try ContentHandler.eval(expression: actualFilename, with: templateSoup.context) ?? actualFilename
                 
                 //if handler returns false, dont render file
                 if try !context.events.canRender(filename: filename) {
@@ -101,10 +101,10 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
                 
                 let parsingIdentifier = actualFilename
                 if let frontMatter = try templateSoup.frontMatter(in: contents, identifier: parsingIdentifier),
-                   let pctx = frontMatter.hasDirective(ParserDirectives.includeFor) {
-                    try templateSoup.forEach(forInExpression: pctx.line, parser: pctx.parser) {
+                   let pInfo = frontMatter.hasDirective(ParserDirectives.includeFor) {
+                    try templateSoup.forEach(forInExpression: pInfo.line, parser: pInfo.parser) {
                         if let _ = frontMatter.hasDirective(ParserDirectives.outputFilename) {
-                            if let outputFilename = try frontMatter.evalDirective( ParserDirectives.outputFilename) as? String {
+                            if let outputFilename = try frontMatter.evalDirective( ParserDirectives.outputFilename, pInfo: pInfo) as? String {
                                 try renderClosure(outputFilename)
                             }
                         } else {
@@ -127,7 +127,7 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
         
         //copy files from subfolders also
         for subFolder in inFolder.subFolders {
-            let subfoldername = try ContentLine.eval(line: subFolder.name, with: templateSoup.context) ?? subFolder.name
+            let subfoldername = try ContentHandler.eval(expression: subFolder.name, with: templateSoup.context) ?? subFolder.name
             
             let newFolder = outputFolder / subfoldername
             try renderLocalFiles(from: subFolder, to: newFolder, using: templateSoup)

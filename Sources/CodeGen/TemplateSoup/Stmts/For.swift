@@ -34,7 +34,7 @@ public class ForStmt: BlockTemplateStmt, CustomDebugStringConvertible {
         CommonRegEx.comments
     }
     
-    override func matchLine(line: String, level: Int, with ctx: Context) throws -> Bool {
+    override func matchLine(line: String) throws -> Bool {
         guard let match = line.wholeMatch(of: Self.stmtRegex ) else { return false }
 
         let (_, forVar, inVar) = match.output
@@ -49,7 +49,7 @@ public class ForStmt: BlockTemplateStmt, CustomDebugStringConvertible {
               InArrayVar.isNotEmpty,
               children.count != 0 else { return nil }
 
-        guard let loopItems = try ctx.valueOf(variableOrObjProp: InArrayVar, lineNo: lineNo) as? [Any] else { return nil }
+        guard let loopItems = try ctx.valueOf(variableOrObjProp: InArrayVar, pInfo: pInfo) as? [Any] else { return nil }
         
         let loopVariableName = ForVar
         var rendering = ""
@@ -75,7 +75,7 @@ public class ForStmt: BlockTemplateStmt, CustomDebugStringConvertible {
     
     public var debugDescription: String {
         var str =  """
-        FOR stmt (level: \(level))
+        FOR stmt (level: \(pInfo.level))
         - forVar: \(self.ForVar)
         - inVar: \(self.InArrayVar)
         - children:
@@ -87,10 +87,10 @@ public class ForStmt: BlockTemplateStmt, CustomDebugStringConvertible {
         return str
     }
     
-    public init(parseTill endKeyWord: String) {
-        super.init(startKeyword: Self.START_KEYWORD, endKeyword: endKeyWord)
+    public init(parseTill endKeyWord: String, pInfo: ParsedInfo) {
+        super.init(startKeyword: Self.START_KEYWORD, endKeyword: endKeyWord, pInfo: pInfo)
     }
     
-    static var register = BlockTemplateStmtConfig(keyword: START_KEYWORD) { endKeyWord in ForStmt(parseTill: endKeyWord)
+    static var register = BlockTemplateStmtConfig(keyword: START_KEYWORD) { endKeyWord, pInfo in ForStmt(parseTill: endKeyWord, pInfo: pInfo)
     }
 }

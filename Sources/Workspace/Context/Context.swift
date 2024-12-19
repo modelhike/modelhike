@@ -72,34 +72,34 @@ public class Context {
     //Expression Evaluation
     fileprivate let evaluator = ExpressionEvaluator()
 
-    public func evaluate(value: String, lineNo: Int) throws -> Optional<Any> {
-        return try evaluator.evaluate(value: value, lineNo: lineNo, with: self)
+    public func evaluate(value: String, pInfo: ParsedInfo) throws -> Optional<Any> {
+        return try evaluator.evaluate(value: value, pInfo: pInfo)
     }
     
-    public func evaluate(expression: String, lineNo: Int) throws -> Optional<Any> {
-        return try evaluator.evaluate(expression: expression, lineNo: lineNo, with: self)
+    public func evaluate(expression: String, pInfo: ParsedInfo) throws -> Optional<Any> {
+        return try evaluator.evaluate(expression: expression, pInfo: pInfo)
     }
     
-    public func evaluateCondition(expression: String, lineNo: Int) throws -> Bool {
-        return try evaluator.evaluateCondition(expression: expression, lineNo: lineNo, with: self)
+    public func evaluateCondition(expression: String, pInfo: ParsedInfo) throws -> Bool {
+        return try evaluator.evaluateCondition(expression: expression, pInfo: pInfo)
     }
     
-    public func evaluateCondition(value: Any, lineNo: Int) -> Bool {
+    public func evaluateCondition(value: Any, pInfo: ParsedInfo) -> Bool {
         return evaluator.evaluateCondition(value: value, with: self)
     }
     
     //manage obj attributes in the context variables
-    public func valueOf(objName: String, propName attributeName: String, lineNo: Int) throws -> Optional<Any> {
-        return try self.objManager.getObjAttributeValue(objName: objName, attributeName: attributeName, lineNo: lineNo)
+    public func valueOf(objName: String, propName attributeName: String, pInfo: ParsedInfo) throws -> Optional<Any> {
+        return try self.objManager.getObjAttributeValue(objName: objName, attributeName: attributeName, pInfo: pInfo)
     }
     
-    public func valueOf(variableOrObjProp name: String, lineNo: Int) throws -> Optional<Any> {
+    public func valueOf(variableOrObjProp name: String, pInfo: ParsedInfo) throws -> Optional<Any> {
         let split = name.split(separator: ".")
         if split.count > 1 { //object attribute
             let variableName = "\(split[0])"
             let attributeName = "\(split[1])"
 
-            return try self.objManager!.getObjAttributeValue(objName: variableName, attributeName: attributeName, lineNo: lineNo)
+            return try self.objManager!.getObjAttributeValue(objName: variableName, attributeName: attributeName, pInfo: pInfo)
             
         } else { // object only
             let variableName = "\(split[0])"
@@ -112,12 +112,12 @@ public class Context {
         return nil
     }
     
-    public func setObjProp(objName: String, propName: String, valueExpression: String, modifiers: [ModifierInstance], lineNo: Int) throws {
-        try objManager.setObjAttribute(objName: objName, attributeName: propName, valueExpression: valueExpression, modifiers: modifiers, lineNo: lineNo, with: self)
+    public func setObjProp(objName: String, propName: String, valueExpression: String, modifiers: [ModifierInstance], pInfo: ParsedInfo) throws {
+        try objManager.setObjAttribute(objName: objName, attributeName: propName, valueExpression: valueExpression, modifiers: modifiers, pInfo: pInfo)
     }
     
-    public func setObjProp(objName: String, propName: String, body: String?, modifiers: [ModifierInstance], lineNo: Int) throws {
-        try objManager.setObjAttribute(objName: objName, attributeName: propName, body: body, modifiers: modifiers, lineNo: lineNo, with: self)
+    public func setObjProp(objName: String, propName: String, body: String?, modifiers: [ModifierInstance], pInfo: ParsedInfo) throws {
+        try objManager.setObjAttribute(objName: objName, attributeName: propName, body: body, modifiers: modifiers, pInfo: pInfo)
     }
     
     //parsed model

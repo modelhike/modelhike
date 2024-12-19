@@ -29,7 +29,7 @@ public struct TemplateEvaluator: TemplateSoupEvaluator {
             
             ctx.debugLog.templateParsingStarting()
             
-            if let containers = try parser.populateContainers() {
+            if let containers = try parser.parseContainers() {
                 ctx.debugLog.printParsedTree(for: containers)
                 
                 ctx.debugLog.templateExecutionStarting()

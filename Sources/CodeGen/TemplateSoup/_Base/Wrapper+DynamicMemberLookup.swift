@@ -7,7 +7,7 @@
 import Foundation
 
 public protocol DynamicMemberLookup {
-    func dynamicLookup(property propname: String, lineNo: Int) throws -> Any
+    func dynamicLookup(property propname: String, pInfo: ParsedInfo) throws -> Any
 }
 
 public protocol ObjectWrapper : DynamicMemberLookup, HasAttributes, CustomDebugStringConvertible {

@@ -15,7 +15,7 @@ public struct GraphQLLib {
 
     
     public static var typename: Modifier {
-        return CreateModifier.withoutParams("graphql-typename") { (value: Any, lineNo: Int) -> String? in
+        return CreateModifier.withoutParams("graphql-typename") { (value: Any, pInfo: ParsedInfo) -> String? in
             
             var type = PropertyKind.unKnown
             

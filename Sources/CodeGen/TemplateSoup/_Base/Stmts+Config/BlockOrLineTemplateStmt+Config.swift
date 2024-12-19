@@ -9,9 +9,9 @@ import Foundation
 public class BlockOrLineTemplateStmt : FileTemplateStatement {
     let keyword : String
     let endKeyword : String
-    var level: Int = -1
-    var lineNo: Int = -1
-    
+    public private(set) var pInfo: ParsedInfo
+    public var lineNo: Int { return pInfo.lineNo }
+
     var children = GenericStmtsContainer()
     var isEmpty: Bool { children.isEmpty }
     var isBlockVariant: Bool = false
@@ -20,50 +20,47 @@ public class BlockOrLineTemplateStmt : FileTemplateStatement {
         return nil
     }
     
-    private func parseStmtLine_BlockVariant(line: String, lineParser: LineParser, level: Int, with ctx: Context) throws {
-        let matched = try matchLine_BlockVariant(line: line, level: level, with: ctx)
+    private func parseStmtLine_BlockVariant(line: String, lineParser: LineParser) throws {
+        let matched = try matchLine_BlockVariant(line: line)
         
         if !matched {
             throw TemplateSoup_ParsingError.invalidStmt(line)
         }
     }
     
-    private func parseStmtLine_LineVariant(line: String, lineParser: LineParser, level: Int, with ctx: Context) throws {
-        let matched = try matchLine_LineVariant(line: line, level: level, with: ctx)
+    private func parseStmtLine_LineVariant(line: String, lineParser: LineParser) throws {
+        let matched = try matchLine_LineVariant(line: line)
         
         if !matched {
             throw TemplateSoup_ParsingError.invalidStmt(line)
         }
     }
     
-    func checkIfLineVariant(line: String, level: Int) -> Bool { return false }
+    func checkIfLineVariant(line: String) -> Bool { return false }
     
-    func matchLine_BlockVariant(line: String, level: Int, with ctx: Context) throws -> Bool { return false }
-    func matchLine_LineVariant(line: String, level: Int, with ctx: Context) throws -> Bool { return false }
+    func matchLine_BlockVariant(line: String) throws -> Bool { return false }
+    func matchLine_LineVariant(line: String) throws -> Bool { return false }
 
     func appendText(_ item: ContentLine) {
         children.append(item)
     }
     
-    private func parseStmtLineAndChildren(line : String, parser: TemplateSoupParser, level: Int, with ctx: Context) throws {
+    private func parseStmtLineAndChildren(line : String, parser: TemplateSoupParser) throws {
         
-        try parseStmtLine_BlockVariant(line : line, lineParser: parser.lineParser, level: level, with: ctx)
+        try parseStmtLine_BlockVariant(line : line, lineParser: parser.lineParser)
                 
-        try TemplateSoupParser.parseLines(startingFrom: keyword, till: endKeyword, to: self.children, templateParser: parser, level: level + 1, with: ctx)
+        try TemplateSoupParser.parseLines(startingFrom: keyword, till: endKeyword, to: self.children, templateParser: parser, level: pInfo.level + 1, with: parser.context)
     }
 
-    func parseAsPerVariant(parser: TemplateSoupParser, level: Int, with ctx: Context) throws {
-        self.level = level
-        self.lineNo = parser.lineParser.curLineNoForDisplay
-        
+    func parseAsPerVariant(parser: TemplateSoupParser) throws {
         let line = parser.lineParser.currentLineWithoutStmtKeyword()
 
-        if checkIfLineVariant(line: line, level: level) {
+        if checkIfLineVariant(line: line) {
             isBlockVariant = false
-            try parseStmtLine_LineVariant(line : line, lineParser: parser.lineParser, level: level, with: ctx)
+            try parseStmtLine_LineVariant(line : line, lineParser: parser.lineParser)
         } else {
             isBlockVariant = true
-            try parseStmtLineAndChildren(line : line, parser: parser, level: level, with: ctx)
+            try parseStmtLineAndChildren(line : line, parser: parser)
         }
     }
     
@@ -79,31 +76,32 @@ public class BlockOrLineTemplateStmt : FileTemplateStatement {
         return str
     }
     
-    public init(startKeyword: String, endKeyword: String) {
+    public init(startKeyword: String, endKeyword: String, pInfo: ParsedInfo) {
         self.keyword = startKeyword
         self.endKeyword = endKeyword
+        self.pInfo = pInfo
     }
 }
 
 public struct BlockOrLineTemplateStmtConfig<T>: FileTemplateStmtConfig, TemplateInitialiserWithArg where T: BlockOrLineTemplateStmt {
     public let keyword : String
     private let endKeyword : String
-    public let initialiser: (String) -> T
+    public let initialiser: (String, ParsedInfo) -> T
     public var kind: TemplateStmtKind { .blockOrLine }
 
-    public init(keyword: String, initialiser: @escaping (String) -> T)  {
+    public init(keyword: String, initialiser: @escaping (String, ParsedInfo) -> T)  {
         self.keyword = keyword
         self.initialiser = initialiser
         self.endKeyword = "end" + keyword
     }
     
-    public init(keyword: String, endKeyword: String, initialiser: @escaping (String) -> T)  {
+    public init(keyword: String, endKeyword: String, initialiser: @escaping (String, ParsedInfo) -> T)  {
         self.keyword = keyword
         self.initialiser = initialiser
         self.endKeyword = endKeyword
     }
     
-    public func getNewObject() -> T {
-        return initialiser(self.endKeyword)
+    public func getNewObject(_ pInfo: ParsedInfo) -> T {
+        return initialiser(self.endKeyword, pInfo)
     }
 }

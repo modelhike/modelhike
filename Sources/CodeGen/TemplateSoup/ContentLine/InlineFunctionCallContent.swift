@@ -9,17 +9,16 @@ import Foundation
 public class InlineFunctionCallContent: ContentLineItem {
     let fnCallLine : String
     let level: Int
-    let lineNo: Int
-    let ctx: Context
+    public let pInfo: ParsedInfo
     var fnCall : FunctionCallStmt!
     
     fileprivate func parseLine(_ line: String) throws {
-        let stmt = FunctionCallStmt()
+        let stmt = FunctionCallStmt(pInfo)
         
-        if try stmt.matchLine(line: line, level: level, with: ctx) {
+        if try stmt.matchLine(line: line) {
             self.fnCall = stmt
         } else {
-            throw TemplateSoup_ParsingError.invalidExpression(lineNo, line)
+            throw TemplateSoup_ParsingError.invalidExpression(pInfo.lineNo, line)
         }
     }
     
@@ -56,11 +55,10 @@ public class InlineFunctionCallContent: ContentLineItem {
         }
     }
     
-    public init(fnCallLine: String, lineNo: Int, level: Int, with ctx: Context) throws {
+    public init(fnCallLine: String, pInfo: ParsedInfo, level: Int) throws {
         self.fnCallLine = fnCallLine
-        self.lineNo = lineNo
+        self.pInfo = pInfo
         self.level = level
-        self.ctx = ctx
         
         try parseLine(fnCallLine.trim())
     }

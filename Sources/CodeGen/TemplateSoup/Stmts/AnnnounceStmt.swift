@@ -23,7 +23,7 @@ public class AnnnounceStmt: LineTemplateStmt, CustomDebugStringConvertible {
         CommonRegEx.comments
     }
     
-    override func matchLine(line: String, level: Int, with ctx: Context) throws -> Bool {
+    override func matchLine(line: String) throws -> Bool {
         guard let match = line.wholeMatch(of: stmtRegex ) else { return false }
         
         let (_, expn) = match.output
@@ -37,7 +37,7 @@ public class AnnnounceStmt: LineTemplateStmt, CustomDebugStringConvertible {
         guard Expression.isNotEmpty else { return nil }
         
         //see if it is an object
-        if let expn = try? ctx.evaluate(value: Expression, lineNo: lineNo) {
+        if let expn = try? ctx.evaluate(value: Expression, pInfo: pInfo) {
             print("🔈 \(expn)")
         } else {
             print("🔈🎈[Line no: \(lineNo)] - nothing to announce")
@@ -48,7 +48,7 @@ public class AnnnounceStmt: LineTemplateStmt, CustomDebugStringConvertible {
     
     public var debugDescription: String {
         let str =  """
-        ANNOUNCE stmt (level: \(level))
+        ANNOUNCE stmt (level: \(pInfo.level))
         - expn: \(self.Expression)
         
         """
@@ -56,11 +56,11 @@ public class AnnnounceStmt: LineTemplateStmt, CustomDebugStringConvertible {
         return str
     }
     
-    public init() {
-        super.init(keyword: Self.START_KEYWORD)
+    public init(_ pInfo: ParsedInfo) {
+        super.init(keyword: Self.START_KEYWORD, pInfo: pInfo)
     }
     
-    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) { AnnnounceStmt() }
+    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) {pInfo in AnnnounceStmt(pInfo) }
 }
 
 

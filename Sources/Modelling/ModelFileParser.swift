@@ -29,23 +29,23 @@ public class ModelFileParser {
 
         do {
             
-            try lineParser.parse() {firstWord, secondWord, line, ctx in
+            try lineParser.parse(level: 0) {pctx, secondWord, ctx in
                 if lineParser.isCurrentLineEmptyOrCommented() { lineParser.skipLine(); return }
 
-                guard let pctx = lineParser.currentParsingContext() else { lineParser.skipLine(); return }
+                guard let pctx = lineParser.currentParsedInfo(level : pctx.level) else { lineParser.skipLine(); return }
 
                 if ContainerParser.canParse(parser: lineParser) {
-                    try parseContainer(firstWord: firstWord, line: line, parser: lineParser)
+                    try parseContainer(firstWord: pctx.firstWord, line: pctx.line, parser: lineParser)
                     return
                 }
                 
                 if ModuleParser.canParse(parser: lineParser) {
-                    try parseModule(firstWord: firstWord, line: line, parser: lineParser)
+                    try parseModule(firstWord: pctx.firstWord, line: pctx.line, parser: lineParser)
                     return
                 }
                 
                 if SubModuleParser.canParse(parser: lineParser) {
-                    try parseSubModule(firstWord: firstWord, line: line, parser: lineParser)
+                    try parseSubModule(firstWord: pctx.firstWord, line: pctx.line, parser: lineParser)
                     return
                 }
                 
@@ -55,7 +55,7 @@ public class ModelFileParser {
                         self.component.append(item)
                         return
                     } else {
-                        throw Model_ParsingError.invalidDomainObjectLine(line)
+                        throw Model_ParsingError.invalidDomainObjectLine(pctx.line)
                     }
                 }
                 
@@ -64,7 +64,7 @@ public class ModelFileParser {
                         self.component.append(item)
                         return
                     } else {
-                        throw Model_ParsingError.invalidDtoObjectLine(line)
+                        throw Model_ParsingError.invalidDtoObjectLine(pctx.line)
                     }
                 }
                 
@@ -73,7 +73,7 @@ public class ModelFileParser {
                         self.component.append(item)
                         return
                     } else {
-                        throw Model_ParsingError.invalidUIViewLine(line)
+                        throw Model_ParsingError.invalidUIViewLine(pctx.line)
                     }
                 }
                 

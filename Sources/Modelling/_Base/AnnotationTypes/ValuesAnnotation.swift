@@ -21,7 +21,7 @@ public struct ValuesAnnotation: Annotation {
         return lhs.name == rhs.name
     }
     
-    public init(_ name: String, line: Substring, with pctx: ParsingContext) throws {
+    public init(_ name: String, line: Substring, with pctx: ParsedInfo) throws {
         self.name = name.trim()
         self.parsedContextInfo = ParsedContextInfo(with: pctx)
 

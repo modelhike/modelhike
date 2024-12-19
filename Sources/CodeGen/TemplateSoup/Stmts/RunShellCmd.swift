@@ -23,7 +23,7 @@ public class RunShellCmdStmt: LineTemplateStmt, CustomDebugStringConvertible {
         CommonRegEx.comments
     }
     
-    override func matchLine(line: String, level: Int, with ctx: Context) throws -> Bool {
+    override func matchLine(line: String) throws -> Bool {
         guard let match = line.wholeMatch(of: stmtRegex ) else { return false }
         
         let (_, expn) = match.output
@@ -65,7 +65,7 @@ public class RunShellCmdStmt: LineTemplateStmt, CustomDebugStringConvertible {
     
     public var debugDescription: String {
         let str =  """
-        RUN SHELL CMD stmt (level: \(level))
+        RUN SHELL CMD stmt (level: \(pInfo.level))
         - expn: \(self.CommandToRun)
         
         """
@@ -73,9 +73,9 @@ public class RunShellCmdStmt: LineTemplateStmt, CustomDebugStringConvertible {
         return str
     }
     
-    public init() {
-        super.init(keyword: Self.START_KEYWORD)
+    public init(_ pInfo: ParsedInfo) {
+        super.init(keyword: Self.START_KEYWORD, pInfo: pInfo)
     }
     
-    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) { RunShellCmdStmt() }
+    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) {pInfo in RunShellCmdStmt(pInfo) }
 }

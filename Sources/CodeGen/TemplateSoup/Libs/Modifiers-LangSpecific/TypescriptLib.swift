@@ -16,7 +16,7 @@ public struct TypescriptLib {
     
 
     public static var typename: Modifier {
-        return CreateModifier.withoutParams("typename") { (value: Any, lineNo: Int) -> String? in
+        return CreateModifier.withoutParams("typename") { (value: Any, pInfo: ParsedInfo) -> String? in
             
             var type = PropertyKind.unKnown
             
@@ -56,7 +56,7 @@ public struct TypescriptLib {
     }
     
     public static var defaultValue: Modifier {
-        return CreateModifier.withoutParams("default-value") { (value: Any, lineNo: Int) -> String? in
+        return CreateModifier.withoutParams("default-value") { (value: Any, pInfo: ParsedInfo) -> String? in
             
             var type = PropertyKind.unKnown
             

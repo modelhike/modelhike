@@ -39,7 +39,7 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
     }
     
     
-    override func checkIfSupportedAndGetBlock(blockLime: UnIdentifiedStmt, with ctx: Context) throws -> PartOfMultiBlockContainer? {
+    override func checkIfSupportedAndGetBlock(blockLime: UnIdentifiedStmt) throws -> PartOfMultiBlockContainer? {
         
         let keyWord = blockLime.line.secondWord()
         
@@ -51,7 +51,7 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
             if let match = line.wholeMatch(of: elseIfRegex ) {
                 let (_, ELSEIFCondition) = match.output
                 
-                let block = ElseIfBlock(condition: ELSEIFCondition, firstWord: blockLime.line.firstWord()!, line: blockLime.line, lineNo: blockLime.lineNo)
+                let block = ElseIfBlock(condition: ELSEIFCondition, pInfo: blockLime.pInfo)
                 
                 self.elseIfBlocks.append(block)
                 return block
@@ -61,7 +61,7 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
             let actualStmt = line.stmtPartOnly()
             let elseMatches = actualStmt == ELSE_KEYWORD
             if elseMatches {
-                let block = PartOfMultiBlockContainer(firstWord: ELSE_KEYWORD, line: blockLime.line, lineNo: blockLime.lineNo)
+                let block = PartOfMultiBlockContainer(firstWord: ELSE_KEYWORD, pInfo: blockLime.pInfo)
                 
                 self.elseBlock = block
                 return block
@@ -74,7 +74,7 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
         return nil
     }
     
-    override func matchLine(line: String, level: Int, with ctx: Context) throws -> Bool {
+    override func matchLine(line: String) throws -> Bool {
         guard let match = line.wholeMatch(of: ifRegex ) else { return false }
 
         let (_, IFCondition) = match.output
@@ -89,8 +89,8 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
         
         var rendering = ""
         
-        if try ctx.evaluateCondition(expression: IFCondition, lineNo: lineNo) {
-            ctx.debugLog.ifConditionSatisfied(IFCondition, lineNo: lineNo)
+        if try ctx.evaluateCondition(expression: IFCondition, pInfo: pInfo) {
+            ctx.debugLog.ifConditionSatisfied(condition: IFCondition, pInfo: self.pInfo)
             
             if let body = try children.execute(with: ctx) {
                 rendering += body
@@ -99,8 +99,8 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
             var conditionEvalIsTrue = false
             
             for elseIfBlock in elseIfBlocks {
-                if try ctx.evaluateCondition(expression: elseIfBlock.condition, lineNo: elseIfBlock.lineNo) {
-                    ctx.debugLog.elseIfConditionSatisfied(elseIfBlock.condition, lineNo: elseIfBlock.lineNo)
+                if try ctx.evaluateCondition(expression: elseIfBlock.condition, pInfo: elseIfBlock.pInfo) {
+                    ctx.debugLog.elseIfConditionSatisfied(condition: elseIfBlock.condition, pInfo: elseIfBlock.pInfo)
                     
                     conditionEvalIsTrue = true
 
@@ -113,7 +113,7 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
 
             //if no condition is evaluating to true
             if let elseBlock = self.elseBlock, !conditionEvalIsTrue {
-                ctx.debugLog.elseBlockExecuting(elseBlock.line, lineNo: elseBlock.lineNo)
+                ctx.debugLog.elseBlockExecuting(elseBlock.pInfo)
                 
                 if let body = try elseBlock.execute(with: ctx) {
                     rendering += body
@@ -126,7 +126,7 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
     
     public var debugDescription: String {
         var str =  """
-        IF stmt (level: \(level))
+        IF stmt (level: \(pInfo.level))
         - condn: \(self.IFCondition)
         - children:
         
@@ -138,7 +138,7 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
             if !elseIfBlock.isEmpty {
                 str +=  """
                 
-                ELSE IF stmt (level: \(level))
+                ELSE IF stmt (level: \(pInfo.level))
                 - condn: \(elseIfBlock.condition)
                 - children:
                 
@@ -151,7 +151,7 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
         if let elseBlock = self.elseBlock {
             str +=  """
             
-            ELSE stmt (level: \(level))
+            ELSE stmt (level: \(pInfo.level))
             - children:
             
             """
@@ -163,12 +163,12 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
     }
     
     
-    public init(parseTill endKeyWord: String) {
-        super.init(startKeyword: Self.START_KEYWORD, endKeyword: endKeyWord)
+    public init(parseTill endKeyWord: String, pInfo: ParsedInfo) {
+        super.init(startKeyword: Self.START_KEYWORD, endKeyword: endKeyWord, pInfo: pInfo)
     }
     
-    static var register = MultiBlockTemplateStmtConfig(keyword: START_KEYWORD) { endKeyWord in
-        IfStmt(parseTill: endKeyWord)
+    static var register = MultiBlockTemplateStmtConfig(keyword: START_KEYWORD) { endKeyWord, pInfo in
+        IfStmt(parseTill: endKeyWord, pInfo: pInfo)
     }
 }
 
@@ -176,8 +176,8 @@ public class ElseIfBlock : PartOfMultiBlockContainer {
     
     public var condition = ""
     
-    public init(condition: String, firstWord: String, line: String, lineNo: Int) {
-        super.init(firstWord: firstWord, line: line, lineNo: lineNo)
+    public init(condition: String, pInfo: ParsedInfo) {
+        super.init(firstWord: pInfo.firstWord, pInfo: pInfo)
         self.condition = condition
     }
 }

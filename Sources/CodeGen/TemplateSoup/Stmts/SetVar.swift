@@ -46,31 +46,31 @@ public class SetVarStmt: BlockOrLineTemplateStmt, CustomDebugStringConvertible {
         CommonRegEx.comments
     }
     
-    override func checkIfLineVariant(line: String, level: Int) -> Bool {
+    override func checkIfLineVariant(line: String) -> Bool {
         let match = line.wholeMatch(of: setVarLineRegex )
         return match != nil
     }
 
-    override func matchLine_BlockVariant(line: String, level: Int, with ctx: Context) throws -> Bool {
+    override func matchLine_BlockVariant(line: String) throws -> Bool {
         guard let match = line.wholeMatch(of: setVarBlockRegex )
                                                                 else { return false }
 
         let (_, setVar, modifiersList) = match.output
         self.SetVar = setVar
         self.ValueExpression = ""
-        self.ModifiersList = try Modifiers.parse(string: modifiersList, context: ctx)
+        self.ModifiersList = try Modifiers.parse(string: modifiersList, context: pInfo.ctx)
 
         return true
     }
     
-    override func matchLine_LineVariant(line: String, level: Int, with ctx: Context) throws -> Bool {
+    override func matchLine_LineVariant(line: String) throws -> Bool {
         guard let match = line.wholeMatch(of: setVarLineRegex )
                                                                 else { return false }
         
         let (_, setVar, value, modifiersList) = match.output
         self.SetVar = setVar
         self.ValueExpression = value
-        self.ModifiersList = try Modifiers.parse(string: modifiersList, context: ctx)
+        self.ModifiersList = try Modifiers.parse(string: modifiersList, context: pInfo.ctx)
 
         return true
     }
@@ -83,7 +83,7 @@ public class SetVarStmt: BlockOrLineTemplateStmt, CustomDebugStringConvertible {
             let variableName = self.SetVar
 
             if let body = try children.execute(with: ctx) {
-                let modifiedBody = try Modifiers.apply(to: body.trim(), modifiers: self.ModifiersList, lineNo: lineNo, with: ctx)
+                let modifiedBody = try Modifiers.apply(to: body.trim(), modifiers: self.ModifiersList, pInfo: pInfo)
                 
                 //special handling for setting current working directory
                 if ctx.isWorkingDirectoryVariable(variableName) {
@@ -111,8 +111,8 @@ public class SetVarStmt: BlockOrLineTemplateStmt, CustomDebugStringConvertible {
             
             let variableName = self.SetVar
 
-            if let body = try ctx.evaluate(expression: ValueExpression, lineNo: lineNo) {
-                    let modifiedBody = try Modifiers.apply(to: body, modifiers: self.ModifiersList, lineNo: lineNo, with: ctx)
+            if let body = try ctx.evaluate(expression: ValueExpression, pInfo: pInfo) {
+                    let modifiedBody = try Modifiers.apply(to: body, modifiers: self.ModifiersList, pInfo: pInfo)
                     
                     //special handling for setting current working directory
                     if ctx.isWorkingDirectoryVariable(variableName) {
@@ -142,7 +142,7 @@ public class SetVarStmt: BlockOrLineTemplateStmt, CustomDebugStringConvertible {
     public var debugDescription: String {
         if self.isBlockVariant {
             var str =  """
-            SET VAR Block stmt (level: \(level))
+            SET VAR Block stmt (level: \(pInfo.level))
             - setVar: \(self.SetVar)
             - modifiers: \(self.ModifiersList.nameString())
             - children:
@@ -155,7 +155,7 @@ public class SetVarStmt: BlockOrLineTemplateStmt, CustomDebugStringConvertible {
 
         } else { //line variant
             let str =  """
-            SET VAR Line stmt (level: \(level))
+            SET VAR Line stmt (level: \(pInfo.level))
             - setVar: \(self.SetVar)
             - valueExpr: \(self.ValueExpression)
             - modifiers: \(self.ModifiersList.nameString())
@@ -166,12 +166,12 @@ public class SetVarStmt: BlockOrLineTemplateStmt, CustomDebugStringConvertible {
         }
     }
     
-    public init(parseTill endKeyWord: String) {
-        super.init(startKeyword: Self.START_KEYWORD, endKeyword: endKeyWord)
+    public init(parseTill endKeyWord: String, pInfo: ParsedInfo) {
+        super.init(startKeyword: Self.START_KEYWORD, endKeyword: endKeyWord, pInfo: pInfo)
     }
     
-    static var register = BlockOrLineTemplateStmtConfig(keyword: START_KEYWORD) { endKeyWord in
-        SetVarStmt(parseTill: endKeyWord)
+    static var register = BlockOrLineTemplateStmtConfig(keyword: START_KEYWORD) { endKeyWord, pInfo in
+        SetVarStmt(parseTill: endKeyWord, pInfo: pInfo)
     }
 }
 

@@ -33,7 +33,7 @@ public class RenderTemplateFileStmt: LineTemplateStmt, CustomDebugStringConverti
         CommonRegEx.comments
     }
     
-    override func matchLine(line: String, level: Int, with ctx: Context) throws -> Bool {
+    override func matchLine(line: String) throws -> Bool {
         guard let match = line.wholeMatch(of: stmtRegex ) else { return false }
         
         let (_, fromTemplate, toFile) = match.output
@@ -51,7 +51,7 @@ public class RenderTemplateFileStmt: LineTemplateStmt, CustomDebugStringConverti
             throw TemplateSoup_EvaluationError.workingDirectoryNotSet(lineNo)
         }
         
-        guard let fromTemplate = try? ctx.evaluate(value: FromTemplate, lineNo: lineNo) as? String
+        guard let fromTemplate = try? ctx.evaluate(value: FromTemplate, pInfo: pInfo) as? String
                                                                                 else { return nil }
         
         try ctx.fileGenerator.setRelativePath(ctx.workingDirectoryString)
@@ -61,13 +61,13 @@ public class RenderTemplateFileStmt: LineTemplateStmt, CustomDebugStringConverti
         if ToFile.isEmpty {
             filename = fromTemplate
         } else {
-            guard let toFile = try? ctx.evaluate(value: ToFile, lineNo: lineNo) as? String
+            guard let toFile = try? ctx.evaluate(value: ToFile, pInfo: pInfo) as? String
                                                                         else { return nil }
             filename = toFile
         }
         
         //render the filename if it has an expression within '{{' and '}}'
-        filename = try ContentLine.eval(line: filename, with: ctx) ?? filename
+        filename = try ContentHandler.eval(expression: filename, with: ctx) ?? filename
 
         ctx.debugLog.generatingFile(filename, with: fromTemplate)
         if let file = try ctx.fileGenerator.generateFile(filename, template: fromTemplate) {
@@ -81,7 +81,7 @@ public class RenderTemplateFileStmt: LineTemplateStmt, CustomDebugStringConverti
     
     public var debugDescription: String {
         let str =  """
-        RENDER FILE stmt (level: \(level))
+        RENDER FILE stmt (level: \(pInfo.level))
         - to: \(self.ToFile)
         - template: \(self.FromTemplate)
         
@@ -90,10 +90,10 @@ public class RenderTemplateFileStmt: LineTemplateStmt, CustomDebugStringConverti
         return str
     }
     
-    public init() {
-        super.init(keyword: Self.START_KEYWORD)
+    public init(_ pInfo: ParsedInfo) {
+        super.init(keyword: Self.START_KEYWORD, pInfo: pInfo)
     }
     
-    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) { RenderTemplateFileStmt() }
+    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) {pInfo in RenderTemplateFileStmt(pInfo) }
 }
 
