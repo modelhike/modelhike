@@ -26,7 +26,7 @@ public class MultiBlockTemplateStmt : FileTemplateStatement {
         let matched = try matchLine(line: line)
         
         if !matched {
-            throw TemplateSoup_ParsingError.invalidStmt(line)
+            throw TemplateSoup_ParsingError.invalidStmt(pInfo)
         }
     }
     
@@ -54,15 +54,15 @@ public class MultiBlockTemplateStmt : FileTemplateStatement {
             } else if let unIdentified = stmt as? UnIdentifiedStmt {
                 if let block = try checkIfSupportedAndGetBlock(blockLime: unIdentified) {
                     
-                    ctx.debugLog.multiBlockDetected(keyWord: block.firstWord, lineNo: unIdentified.lineNo)
+                    ctx.debugLog.multiBlockDetected(keyWord: block.firstWord, pInfo: unIdentified.pInfo)
                     
                     container = block
                     self.blocks.append(block)
                 } else {
-                    ctx.debugLog.multiBlockDetectFailed(line: unIdentified.line, lineNo: unIdentified.lineNo)
+                    ctx.debugLog.multiBlockDetectFailed(pInfo: unIdentified.pInfo)
                     
                     //unidentified stmt
-                    let stmt = UnIdentifiedStmt(pInfo: pInfo)
+                    let stmt = UnIdentifiedStmt(pInfo: unIdentified.pInfo)
                     container.append(stmt)
                 }
             } else { //identified stmt

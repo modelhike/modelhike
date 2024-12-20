@@ -9,7 +9,7 @@ import Foundation
 public struct ValuesAnnotation: Annotation {
     
     public let name: String
-    public let parsedContextInfo: ParsedContextInfo
+    public let pInfo: ParsedInfo
 
     public private(set) var values: [String] = []
     
@@ -21,9 +21,9 @@ public struct ValuesAnnotation: Annotation {
         return lhs.name == rhs.name
     }
     
-    public init(_ name: String, line: Substring, with pctx: ParsedInfo) throws {
+    public init(_ name: String, line: Substring, pInfo: ParsedInfo) throws {
         self.name = name.trim()
-        self.parsedContextInfo = ParsedContextInfo(with: pctx)
+        self.pInfo = pInfo
 
         let components = line.split(separator: ",", omittingEmptySubsequences: true)
         for component in components {

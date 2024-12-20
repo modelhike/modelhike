@@ -41,11 +41,11 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
     
     override func checkIfSupportedAndGetBlock(blockLime: UnIdentifiedStmt) throws -> PartOfMultiBlockContainer? {
         
-        let keyWord = blockLime.line.secondWord()
+        let keyWord = blockLime.pInfo.line.secondWord()
         
         if keyWord == ELSE_KEYWORD {
 
-            let line = blockLime.line.lineWithoutStmtKeyword()
+            let line = blockLime.pInfo.line.lineWithoutStmtKeyword()
             
             //check for 'Else if" stmt
             if let match = line.wholeMatch(of: elseIfRegex ) {
@@ -68,7 +68,7 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
             }
             
             //nothing matches the syntax
-            throw TemplateSoup_ParsingError.invalidMultiBlockStmt(blockLime.lineNo, blockLime.line)
+            throw TemplateSoup_ParsingError.invalidMultiBlockStmt(blockLime.pInfo)
         }
         
         return nil

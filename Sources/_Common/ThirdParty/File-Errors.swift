@@ -26,30 +26,38 @@
 import Foundation
 
 /// Error type thrown by all of Files' throwing APIs.
-public struct FilesError<Reason>: ErrorWithInfo {
+public struct FilesError<Reason>: ErrorWithMessage {
     /// The absolute path that the error occured at.
     public var path: String
     /// The reason that the error occured.
     public var reason: Reason
 
+    public var message: String?
+    
     public var info: String {
-        return """
+        if let msg = message {
+            return msg
+        } else {
+            return """
         File encountered an error at '\(path)'.
         Reason: \(reason)
         """
+            }
     }
     
     /// Initialize an instance with a path and a reason.
     /// - parameter path: The absolute path that the error occured at.
     /// - parameter reason: The reason that the error occured.
-    public init(path: String, reason: Reason) {
+    public init(path: String, reason: Reason, msg: String? = nil) {
         self.path = path
         self.reason = reason
+        self.message = msg
     }
     
-    public init(path: any Path, reason: Reason) {
+    public init(path: any Path, reason: Reason, msg: String? = nil) {
         self.path = path.string
         self.reason = reason
+        self.message = msg
     }
 }
 

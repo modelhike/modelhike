@@ -48,7 +48,7 @@ public class RenderFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
         guard FromFolder.isNotEmpty else { return nil }
         
         if ctx.workingDirectoryString.isEmpty {
-            throw TemplateSoup_EvaluationError.workingDirectoryNotSet(lineNo)
+            throw TemplateSoup_EvaluationError.workingDirectoryNotSet(pInfo)
         }
         
         guard let fromFolder = try? ctx.evaluate(value: FromFolder, pInfo: pInfo) as? String
@@ -72,7 +72,7 @@ public class RenderFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
         foldername = try ContentHandler.eval(expression: foldername, with: ctx) ?? foldername
         
         ctx.debugLog.renderingFolder(fromFolder, to: foldername)
-        let folder = try ctx.fileGenerator.renderFolder(fromFolder, to: foldername)
+        let folder = try ctx.fileGenerator.renderFolder(fromFolder, to: foldername, pInfo: pInfo)
         try ctx.addGenerated(folderPath: folder.outputFolder)
         
         return nil

@@ -14,21 +14,21 @@ public enum APISectionParser {
         while parser.linesRemaining {
             if parser.isCurrentLineEmptyOrCommented() { parser.skipLine(); continue }
 
-            guard let pctx = parser.currentParsedInfo(level: 0) else { parser.skipLine(); continue }
+            guard let pInfo = parser.currentParsedInfo(level: 0) else { parser.skipLine(); continue }
 
-            if pctx.firstWord == ModelConstants.AttachedSection {
+            if pInfo.firstWord == ModelConstants.AttachedSection {
                 //either it is the starting of another attached section
                 // or it is the end of this attached sections, which is
                 // having only '#' in the line
                 break
             }
             
-            if try pctx.tryParseAnnotations(with: obj) {
+            if try pInfo.tryParseAnnotations(with: obj) {
                 continue
             }
             
-            if pctx.firstWord == ModelConstants.AttachedSubSection {
-                let line = pctx.line.dropFirstWord().lowercased()
+            if pInfo.firstWord == ModelConstants.AttachedSubSection {
+                let line = pInfo.line.dropFirstWord().lowercased()
                 
                 if let match = line.wholeMatch(of: Self.customListApi_WithCondition_Regex ) {
                     let (_, prop1, op, prop2) = match.output
@@ -42,13 +42,13 @@ public enum APISectionParser {
                     if let property1 = obj.getProp(prop1.trim(), isCaseSensitive: false) {
                         api.properties.append(property1)
                     } else {
-                        throw Model_ParsingError.invalidPropertyUsedInApi(prop1, line)
+                        throw Model_ParsingError.invalidPropertyUsedInApi(prop1, pInfo)
                     }
                     
                     if let property2 = obj.getProp(prop2.trim(), isCaseSensitive: false) {
                         api.properties.append(property2)
                     } else {
-                        throw Model_ParsingError.invalidPropertyUsedInApi(prop2, line)
+                        throw Model_ParsingError.invalidPropertyUsedInApi(prop2, pInfo)
                     }
                     
                     apis.append(api)
@@ -61,16 +61,16 @@ public enum APISectionParser {
                     if let property1 = obj.getProp(prop1.trim(), isCaseSensitive: false) {
                         api.properties.append(property1)
                     } else {
-                        throw Model_ParsingError.invalidPropertyUsedInApi(prop1, line)
+                        throw Model_ParsingError.invalidPropertyUsedInApi(prop1, pInfo)
                     }
                     
                     apis.append(api)
-                } else if let method = try MethodObject.parse(with: pctx, skipLine: false) {
+                } else if let method = try MethodObject.parse(pInfo: pInfo, skipLine: false) {
                     //custom logic api is defined using method syntax
                     let api = CustomLogicAPI(method: method, entity: obj)
                     apis.append(api)
                 } else {
-                    throw Model_ParsingError.invalidApiLine(line)
+                    throw Model_ParsingError.invalidApiLine(pInfo)
                 }
                 
             }

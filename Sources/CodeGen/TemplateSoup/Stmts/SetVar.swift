@@ -58,7 +58,7 @@ public class SetVarStmt: BlockOrLineTemplateStmt, CustomDebugStringConvertible {
         let (_, setVar, modifiersList) = match.output
         self.SetVar = setVar
         self.ValueExpression = ""
-        self.ModifiersList = try Modifiers.parse(string: modifiersList, context: pInfo.ctx)
+        self.ModifiersList = try Modifiers.parse(string: modifiersList, pInfo: pInfo)
 
         return true
     }
@@ -70,7 +70,7 @@ public class SetVarStmt: BlockOrLineTemplateStmt, CustomDebugStringConvertible {
         let (_, setVar, value, modifiersList) = match.output
         self.SetVar = setVar
         self.ValueExpression = value
-        self.ModifiersList = try Modifiers.parse(string: modifiersList, context: pInfo.ctx)
+        self.ModifiersList = try Modifiers.parse(string: modifiersList, pInfo: pInfo)
 
         return true
     }

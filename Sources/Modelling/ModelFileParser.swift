@@ -32,20 +32,20 @@ public class ModelFileParser {
             try lineParser.parse(level: 0) {pctx, secondWord, ctx in
                 if lineParser.isCurrentLineEmptyOrCommented() { lineParser.skipLine(); return }
 
-                guard let pctx = lineParser.currentParsedInfo(level : pctx.level) else { lineParser.skipLine(); return }
+                guard let pInfo = lineParser.currentParsedInfo(level : pctx.level) else { lineParser.skipLine(); return }
 
                 if ContainerParser.canParse(parser: lineParser) {
-                    try parseContainer(firstWord: pctx.firstWord, line: pctx.line, parser: lineParser)
+                    try parseContainer(firstWord: pInfo.firstWord, pInfo: pInfo, parser: lineParser)
                     return
                 }
                 
                 if ModuleParser.canParse(parser: lineParser) {
-                    try parseModule(firstWord: pctx.firstWord, line: pctx.line, parser: lineParser)
+                    try parseModule(firstWord: pInfo.firstWord, pInfo: pInfo, parser: lineParser)
                     return
                 }
                 
                 if SubModuleParser.canParse(parser: lineParser) {
-                    try parseSubModule(firstWord: pctx.firstWord, line: pctx.line, parser: lineParser)
+                    try parseSubModule(firstWord: pInfo.firstWord, pInfo: pInfo, parser: lineParser)
                     return
                 }
                 
@@ -55,7 +55,7 @@ public class ModelFileParser {
                         self.component.append(item)
                         return
                     } else {
-                        throw Model_ParsingError.invalidDomainObjectLine(pctx.line)
+                        throw Model_ParsingError.invalidDomainObjectLine(pInfo)
                     }
                 }
                 
@@ -64,7 +64,7 @@ public class ModelFileParser {
                         self.component.append(item)
                         return
                     } else {
-                        throw Model_ParsingError.invalidDtoObjectLine(pctx.line)
+                        throw Model_ParsingError.invalidDtoObjectLine(pInfo)
                     }
                 }
                 
@@ -73,16 +73,16 @@ public class ModelFileParser {
                         self.component.append(item)
                         return
                     } else {
-                        throw Model_ParsingError.invalidUIViewLine(pctx.line)
+                        throw Model_ParsingError.invalidUIViewLine(pInfo)
                     }
                 }
                 
                 if let subComponent = self.subComponent { //sub module active
-                    if try pctx.tryParseAnnotations(with: subComponent) {
+                    if try pInfo.tryParseAnnotations(with: subComponent) {
                         return
                     }
                 } else {
-                    if try pctx.tryParseAnnotations(with: self.component) {
+                    if try pInfo.tryParseAnnotations(with: self.component) {
                         return
                     }
                 }
@@ -93,10 +93,10 @@ public class ModelFileParser {
             return modelSpace
         } catch let err {
             if let parseErr = err as? Model_ParsingError {
-                if case .invalidAnnotation(_ , _) = parseErr {
-                    throw ParsingError.invalidLineWithInfo_HavingLineno(identifier, parseErr.info, parseErr)
+                if case .invalidAnnotationLine(_) = parseErr {
+                    throw ParsingError.invalidLine(parseErr.pInfo, parseErr)
                 } else {
-                    throw ParsingError.invalidLine(self.lineParser.curLineNoForDisplay, identifier, parseErr.info, parseErr)
+                    throw ParsingError.invalidLine(parseErr.pInfo, parseErr)
                 }
             } else {
                 throw err
@@ -104,35 +104,35 @@ public class ModelFileParser {
         }
     }
     
-    func parseModule(firstWord: String, line: String, parser: LineParser) throws {
+    func parseModule(firstWord: String, pInfo: ParsedInfo, parser: LineParser) throws {
         if let module = try ModuleParser.parse(parser: lineParser, with: ctx) {
             self.component = module
             self.subComponent = nil
             self.modelSpace.append(module: module)
         } else {
-            throw Model_ParsingError.invalidModuleLine(line)
+            throw Model_ParsingError.invalidModuleLine(pInfo)
         }
     }
     
-    func parseSubModule(firstWord: String, line: String, parser: LineParser) throws {
+    func parseSubModule(firstWord: String, pInfo: ParsedInfo, parser: LineParser) throws {
         if let submodule = try SubModuleParser.parse(parser: lineParser, with: ctx) {
             self.subComponent = submodule
             self.component.append(submodule: submodule)
         } else {
-            throw Model_ParsingError.invalidSubModuleLine(line)
+            throw Model_ParsingError.invalidSubModuleLine(pInfo)
         }
     }
     
-    func parseContainer(firstWord: String, line: String, parser: LineParser) throws {
+    func parseContainer(firstWord: String, pInfo: ParsedInfo, parser: LineParser) throws {
         if let container = try ContainerParser.parse(parser: lineParser, with: ctx) {
             self.modelSpace.append(container: container)
         } else {
-            throw Model_ParsingError.invalidContainerLine(line)
+            throw Model_ParsingError.invalidContainerLine(pInfo)
         }
     }
     
     public init(with context: Context) {
-        lineParser = LineParser(with: context)
+        lineParser = LineParser(identifier: "", with: context)
         self.ctx = context
     }
 }

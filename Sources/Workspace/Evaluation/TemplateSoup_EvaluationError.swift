@@ -6,24 +6,24 @@
 
 import Foundation
 
-public enum TemplateSoup_EvaluationError: ErrorWithInfo {
-    case objectNotFound(Int, String)
-    case unIdentifiedStmt(Int, String)
-    case errorInExpression(Int, String)
-    case workingDirectoryNotSet(Int)
-    case templateDoesNotExist(String)
-    case templateReadingError(String)
+public enum TemplateSoup_EvaluationError: ErrorWithMessageAndParsedInfo {
+    case objectNotFound(String, ParsedInfo)
+    case unIdentifiedStmt(ParsedInfo)
+    case errorInExpression(String, ParsedInfo)
+    case workingDirectoryNotSet(ParsedInfo)
+    case templateDoesNotExist(String, ParsedInfo)
+    case templateReadingError(String, ParsedInfo)
     
     public var info: String {
         switch (self) {
-            case .workingDirectoryNotSet(let lineNo) : return "[line no : \(lineNo)] Working Directory not set!!!"
-            case .templateDoesNotExist(let templateName) : return "Template '\(templateName)' not found!!!"
-            case .templateReadingError(let templateName) : return "Template '\(templateName)' reading error!!!"
-            case .objectNotFound(let lineNo, let obj) :  return "[line \(lineNo)] object: \(obj) not found"
-            case .unIdentifiedStmt(let lineNo, let line) :
-            var str = "[Line \(lineNo) - unidentified stmt]  \(line)"
+        case .workingDirectoryNotSet(_) : return "Working Directory not set!!!"
+        case .templateDoesNotExist(let templateName, _) : return "Template '\(templateName)' not found!!!"
+        case .templateReadingError(let templateName, _) : return "Template '\(templateName)' reading error!!!"
+        case .objectNotFound(let obj, _) :  return "object: \(obj) not found"
+            case .unIdentifiedStmt(let pInfo) :
+            var str = "unidentified stmt-  \(pInfo.line)"
 
-            var modifiedLine = line.trim()
+            var modifiedLine = pInfo.line.trim()
             
             if modifiedLine.starts(with: ":") {
                 modifiedLine = String(modifiedLine.dropFirst())
@@ -37,7 +37,18 @@ public enum TemplateSoup_EvaluationError: ErrorWithInfo {
             }
             return str
             
-            case .errorInExpression(let lineNo, let expn) : return "[line \(lineNo)] expression: \(expn) error during evaluation"
+        case .errorInExpression(let expn, _) : return "expression: \(expn) error during evaluation"
+        }
+    }
+    
+    public var pInfo: ParsedInfo {
+        return switch (self) {
+        case .workingDirectoryNotSet(let pInfo) : pInfo
+        case .templateDoesNotExist(_, let pInfo) : pInfo
+        case .templateReadingError(_, let pInfo) : pInfo
+        case .objectNotFound(_, let pInfo) : pInfo
+        case .unIdentifiedStmt(let pInfo) : pInfo
+        case .errorInExpression(_, let pInfo) : pInfo
         }
     }
 

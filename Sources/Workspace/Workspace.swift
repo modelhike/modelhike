@@ -13,8 +13,8 @@ open class Workspace {
     private var modifiers: [Modifier] = []
     private var statements: [any FileTemplateStmtConfig] = []
     public private(set) var context: Context
-    private var isModelsLoaded = false
-    private var isSymbolsLoaded = false
+    public private(set) var isModelsLoaded = false
+    public private(set) var isSymbolsLoaded = false
 
     //MARK: event handlers
     public var onLoadTemplate : LoadTemplateHandler {
@@ -74,7 +74,8 @@ open class Workspace {
     public func generateCodebase(container: String, usingBlueprintsFrom blueprintLoader: BlueprintRepository) -> String? {
         do {
             if !isModelsLoaded {
-                throw EvaluationError.invalidAppState("No models Loaded!!!")
+                let pInfo = ParsedInfo.dummyForAppState(with: context)
+                throw EvaluationError.invalidAppState("No models Loaded!!!", pInfo)
             }
             
             if !isSymbolsLoaded {
@@ -117,21 +118,42 @@ open class Workspace {
     
     fileprivate func printRenderingError(_ err: Error) {
         if let parseErr = err as? ParsingError {
-            print(parseErr.info)
+            let pInfo = parseErr.pInfo
+            let msg = """
+                      🐞🐞 \(pInfo.identifier) >> [line no : \(pInfo.lineNo)] \(parseErr.info)
+                      """
+            print(msg)
             //print(Thread.callStackSymbols)
         } else if let parseErr = err as? Model_ParsingError {
-            print(parseErr.info)
+            let pInfo = parseErr.pInfo
+            let msg = """
+                      🐞🐞 \(pInfo.identifier) >> [line no : \(pInfo.lineNo)] \(parseErr.info)
+                      """
+            print(msg)
             //print(Thread.callStackSymbols)
         } else if let evalErr = err as? EvaluationError {
-                print(evalErr.info)
-                //print(Thread.callStackSymbols)
+            let pInfo = evalErr.pInfo
+
+            var info = ""
+            if case let .invalidAppState(string, _) = evalErr {
+                info = string
+            } else if case let .invalidInput(string, _) = evalErr {
+                info = string
+            } else {
+                info = evalErr.info
+            }
+            let msg = """
+                  🐞🐞 \(pInfo.identifier) >> [line no : \(pInfo.lineNo)] \(info)
+                  """
+            print(msg)
+            //print(Thread.callStackSymbols)
         } else {
             print("❌❌ UNKNOWN INTERNAL ERROR ❌❌")
         }
     }
     
     fileprivate func printModelError(_ err: Error) {
-        if let parseErr = err as? Model_ParsingError {
+        if let parseErr = err as? ErrorWithMessageAndParsedInfo {
             print(parseErr.info)
             //print(Thread.callStackSymbols)
         } else if let parseErr = err as? ParsingError {

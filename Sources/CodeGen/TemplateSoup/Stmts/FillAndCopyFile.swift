@@ -48,7 +48,7 @@ public class FillAndCopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible
         guard FromFile.isNotEmpty else { return nil }
         
         if ctx.workingDirectoryString.isEmpty {
-            throw TemplateSoup_EvaluationError.workingDirectoryNotSet(lineNo)
+            throw TemplateSoup_EvaluationError.workingDirectoryNotSet(pInfo)
         }
         
         guard let fromFile = try? ctx.evaluate(value: FromFile, pInfo: pInfo) as? String
@@ -60,7 +60,7 @@ public class FillAndCopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible
             let fileName = fromFile
             
             ctx.debugLog.generatingFile(fileName)
-            if let file = try ctx.fileGenerator.fillPlaceholdersAndCopyFile(fileName) {
+            if let file = try ctx.fileGenerator.fillPlaceholdersAndCopyFile(fileName, pInfo: pInfo) {
                 ctx.addGenerated(filePath: file.outputPath.string + fileName)
             } else {
                 ctx.debugLog.fileNotGenerated(fileName)
@@ -70,7 +70,7 @@ public class FillAndCopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible
                                                                         else { return nil }
             
             ctx.debugLog.generatingFile(toFile)
-            if let file = try ctx.fileGenerator.fillPlaceholdersAndCopyFile(fromFile, to: toFile) {
+            if let file = try ctx.fileGenerator.fillPlaceholdersAndCopyFile(fromFile, to: toFile, pInfo: pInfo) {
                 ctx.addGenerated(filePath: file.outputPath.string + toFile)
             } else {
                 ctx.debugLog.fileNotGenerated(toFile)

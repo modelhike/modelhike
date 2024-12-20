@@ -6,7 +6,7 @@
 
 import Foundation
 
-public enum ParserDirectives: ErrorWithInfo {
+public enum ParserDirective: ErrorWithMessage {
     static var includeIf = "include-if"
     static var includeFor = "include-for"
     static var outputFilename = "file-name"

@@ -14,7 +14,7 @@ open class ResourceBlueprintLoader : BlueprintRepository {
     let bundle: Bundle
     var resourceRoot: String
     
-    public func loadTemplate(fileName: String) throws -> Template {
+    public func loadTemplate(fileName: String, pInfo: ParsedInfo) throws -> Template {
         if let resourceURL = bundle.url(forResource: fileName,
                                         withExtension: TemplateConstants.TemplateExtension,
                                         subdirectory : resourceRoot ) {
@@ -24,10 +24,10 @@ open class ResourceBlueprintLoader : BlueprintRepository {
                 self.templateCache[fileName] = template
                 return template
             } catch {
-                throw TemplateSoup_EvaluationError.templateReadingError(fileName)
+                throw TemplateSoup_EvaluationError.templateReadingError(fileName, pInfo)
             }
         } else {
-            throw TemplateSoup_EvaluationError.templateDoesNotExist(fileName)
+            throw TemplateSoup_EvaluationError.templateDoesNotExist(fileName, pInfo)
         }
 
     }
@@ -60,14 +60,14 @@ open class ResourceBlueprintLoader : BlueprintRepository {
         }
     }
     
-    public func copyFiles(foldername: String, to outputFolder: LocalFolder) throws {
+    public func copyFiles(foldername: String, to outputFolder: LocalFolder, pInfo: ParsedInfo) throws {
         let folder = resourceRoot + foldername
         guard let resourceURL = bundle.resourceURL?.appendingPathComponent(folder) else { return }
         
-        try copyResourceFiles(from: resourceURL, to: outputFolder.path)
+        try copyResourceFiles(from: resourceURL, to: outputFolder.path, pInfo: pInfo)
     }
     
-    fileprivate func copyResourceFiles(from resUrl: URL, to outputPath: LocalPath) throws {
+    fileprivate func copyResourceFiles(from resUrl: URL, to outputPath: LocalPath, pInfo: ParsedInfo) throws {
         let fm = FileManager.default
         try outputPath.ensureExists()
 
@@ -84,23 +84,23 @@ open class ResourceBlueprintLoader : BlueprintRepository {
                     try outFile.write(contents)
                 } else { //resource folder
                     let newResUrl = resUrl.appendingPathComponent(resourceName)
-                    try copyResourceFiles(from: newResUrl, to: outputPath / resourceName)
+                    try copyResourceFiles(from: newResUrl, to: outputPath / resourceName, pInfo: pInfo)
                 }
             }
         } catch {
             print(error)
-            throw ResourceDoesNotExist(resName: resUrl.absoluteString)
+            throw ResourceDoesNotExist(resName: resUrl.absoluteString, pInfo: pInfo)
         }
     }
     
-    public func renderFiles(foldername: String, to outputFolder: LocalFolder, using templateSoup: TemplateSoup) throws {
+    public func renderFiles(foldername: String, to outputFolder: LocalFolder, using templateSoup: TemplateSoup, pInfo: ParsedInfo) throws {
         let folder = resourceRoot + foldername
         guard let resourceURL = bundle.resourceURL?.appendingPathComponent(folder) else { return }
         
-        try renderResourceFiles(from: resourceURL, to: outputFolder, using: templateSoup)
+        try renderResourceFiles(from: resourceURL, to: outputFolder, using: templateSoup, pInfo: pInfo)
     }
     
-    fileprivate func renderResourceFiles(from resUrl: URL, to outputFolder: LocalFolder, using templateSoup: TemplateSoup) throws {
+    fileprivate func renderResourceFiles(from resUrl: URL, to outputFolder: LocalFolder, using templateSoup: TemplateSoup, pInfo: ParsedInfo) throws {
         let fm = FileManager.default
 
         do {
@@ -123,8 +123,8 @@ open class ResourceBlueprintLoader : BlueprintRepository {
                         
                         let contents = try String(contentsOf: resourcePath)
 
-                        let renderClosure = { outputname in
-                            if let renderedString = try templateSoup.renderTemplate(string: contents, identifier: resourceName){
+                        let renderClosure = { outputname, pInfo in
+                            if let renderedString = try templateSoup.renderTemplate(string: contents, identifier: resourceName, pInfo: pInfo){
                                 
                                 //create the folder only if any file is rendered
                                 try outputFolder.ensureExists()
@@ -139,18 +139,19 @@ open class ResourceBlueprintLoader : BlueprintRepository {
                         
                         let parsingIdentifier = resourceName
                         if let frontMatter = try templateSoup.frontMatter(in: contents, identifier: parsingIdentifier),
-                           let pInfo = frontMatter.hasDirective(ParserDirectives.includeFor) {
-                            try templateSoup.forEach(forInExpression: pInfo.line, parser: pInfo.parser) {
-                                if let _ = frontMatter.hasDirective(ParserDirectives.outputFilename) {
-                                    if let outputFilename = try frontMatter.evalDirective( ParserDirectives.outputFilename, pInfo: pInfo) as? String {
-                                        try renderClosure(outputFilename)
+                           let pInfo = frontMatter.hasDirective(ParserDirective.includeFor) {
+                            try templateSoup.forEach(forInExpression: pInfo.line, pInfo: pInfo) {
+                                if let _ = frontMatter.hasDirective(ParserDirective.outputFilename) {
+                                    if let outputFilename = try frontMatter.evalDirective( ParserDirective.outputFilename, pInfo: pInfo) as? String {
+                                        try renderClosure(outputFilename, pInfo)
                                     }
                                 } else {
-                                    try renderClosure("")
+                                    try renderClosure("", pInfo)
                                 }
                             }
                         } else {
-                            try renderClosure("")
+                            let pInfo = ParsedInfo.dummyForFrontMatterError(identifier: parsingIdentifier, with: context)
+                            try renderClosure("", pInfo)
                         }
                         
                     } else { //not a template file
@@ -169,16 +170,16 @@ open class ResourceBlueprintLoader : BlueprintRepository {
                     let subfoldername = try ContentHandler.eval(expression: resourceName, with: templateSoup.context) ?? resourceName
                     
                     let newResUrl = resUrl.appendingPathComponent(subfoldername)
-                    try renderResourceFiles(from: newResUrl, to: outputFolder / resourceName, using: templateSoup)
+                    try renderResourceFiles(from: newResUrl, to: outputFolder / resourceName, using: templateSoup, pInfo: pInfo)
                 }
             }
         } catch {
             print(error)
-            throw ResourceDoesNotExist(resName: resUrl.absoluteString)
+            throw ResourceDoesNotExist(resName: resUrl.absoluteString, pInfo: pInfo)
         }
     }
     
-    public func readTextContents(filename: String) throws -> String {
+    public func readTextContents(filename: String, pInfo: ParsedInfo) throws -> String {
         if let resourceURL = bundle.url(forResource: filename,
                                         withExtension: TemplateConstants.TemplateExtension,
                                         subdirectory : resourceRoot ) {
@@ -186,10 +187,10 @@ open class ResourceBlueprintLoader : BlueprintRepository {
                 let content = try String(contentsOf: resourceURL)
                 return content
             } catch {
-                throw ResourceReadingError(resName: filename)
+                throw ResourceReadingError(resName: filename, pInfo: pInfo)
             }
         } else {
-            throw ResourceDoesNotExist(resName: filename)
+            throw ResourceDoesNotExist(resName: filename, pInfo: pInfo)
         }
     }
     
@@ -202,26 +203,30 @@ open class ResourceBlueprintLoader : BlueprintRepository {
 
 }
 
-public struct ResourceReadingError : ErrorWithInfo {
+public struct ResourceReadingError : ErrorWithMessageAndParsedInfo {
     let resName: String
+    public let pInfo: ParsedInfo
     
     public var info: String {
         return "Resource \(resName) reading error."
     }
     
-    public init(resName: String) {
+    public init(resName: String, pInfo: ParsedInfo) {
         self.resName = resName
+        self.pInfo = pInfo
     }
 }
 
-public struct ResourceDoesNotExist : ErrorWithInfo {
+public struct ResourceDoesNotExist : ErrorWithMessageAndParsedInfo {
     let resName: String
+    public let pInfo: ParsedInfo
     
     public var info: String {
         return "Resource \(resName) does not exist."
     }
     
-    public init(resName: String) {
+    public init(resName: String, pInfo: ParsedInfo) {
         self.resName = resName
+        self.pInfo = pInfo
     }
 }

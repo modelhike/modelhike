@@ -90,7 +90,7 @@ public extension File {
     
 }
 
-public struct FileDoesNotExist : ErrorWithInfo {
+public struct FileDoesNotExist : ErrorWithMessage {
     let filename: String
     
     public var info: String {
@@ -102,7 +102,7 @@ public struct FileDoesNotExist : ErrorWithInfo {
     }
 }
 
-public struct FolderDoesNotExist : ErrorWithInfo {
+public struct FolderDoesNotExist : ErrorWithMessage {
     let foldername: String
     
     public var info: String {

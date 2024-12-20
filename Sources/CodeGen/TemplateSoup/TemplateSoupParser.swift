@@ -67,14 +67,13 @@ public class TemplateSoupParser : CustomDebugStringConvertible {
     fileprivate static func parseStmts(_ secondWord: String, pInfo: ParsedInfo, templateParser: TemplateSoupParser, to container: any TemplateStmtContainer, with ctx: Context) throws {
         
         var isStmtIdentified = false
-        let lineParser = templateParser.lineParser
 
         for config in templateParser.context.symbols.template.statements {
             if secondWord == config.keyword {
                 isStmtIdentified = true
                 
                 if config.kind == .block {
-                    ctx.debugLog.stmtDetected(keyWord: config.keyword, lineNo: lineParser.curLineNoForDisplay)
+                    ctx.debugLog.stmtDetected(keyWord: config.keyword, pInfo: pInfo)
                     
                     let stmt = config.getNewObject(pInfo) as! BlockTemplateStmt
                     try stmt.parseStmtLineAndChildren(parser: templateParser, pInfo: pInfo)
@@ -82,7 +81,7 @@ public class TemplateSoupParser : CustomDebugStringConvertible {
                     break
                     
                 } else if config.kind == .line {
-                    ctx.debugLog.stmtDetected(keyWord: config.keyword, lineNo: lineParser.curLineNoForDisplay)
+                    ctx.debugLog.stmtDetected(keyWord: config.keyword, pInfo: pInfo)
                     
                     let stmt = config.getNewObject(pInfo) as! LineTemplateStmt
                     try stmt.parseStmtLine()
@@ -90,7 +89,7 @@ public class TemplateSoupParser : CustomDebugStringConvertible {
                     break
                     
                 } else if config.kind == .blockOrLine {
-                    ctx.debugLog.stmtDetected(keyWord: config.keyword, lineNo: lineParser.curLineNoForDisplay)
+                    ctx.debugLog.stmtDetected(keyWord: config.keyword, pInfo: pInfo)
                     
                     let stmt = config.getNewObject(pInfo) as! BlockOrLineTemplateStmt
                     try stmt.parseAsPerVariant(parser: templateParser)
@@ -98,7 +97,7 @@ public class TemplateSoupParser : CustomDebugStringConvertible {
                     break
                     
                 } else if config.kind == .multiBlock {
-                    ctx.debugLog.stmtDetected(keyWord: config.keyword, lineNo: lineParser.curLineNoForDisplay)
+                    ctx.debugLog.stmtDetected(keyWord: config.keyword, pInfo: pInfo)
                     
                     let stmt = config.getNewObject(pInfo) as! MultiBlockTemplateStmt
                     try stmt.parseStmtLineAndBlocks(parser: templateParser)
@@ -135,7 +134,7 @@ public class TemplateSoupParser : CustomDebugStringConvertible {
             
             return true
         } else {
-            throw TemplateSoup_ParsingError.invalidTemplateFunctionStmt(templateFnLine)
+            throw TemplateSoup_ParsingError.invalidTemplateFunctionStmt(templateFnLine, pInfo)
         }
     }
     

@@ -7,6 +7,7 @@
 import Foundation
 
 public class DerivedProperty : CodeMember {
+    public let pInfo: ParsedInfo
     public var attribs = Attributes()
     public var tags = Tags()
     
@@ -18,10 +19,10 @@ public class DerivedProperty : CodeMember {
 
     public var comment: String?
     
-    public static func parse(with pctx: ParsedInfo) throws -> DerivedProperty? {
+    public static func parse(pInfo: ParsedInfo) throws -> DerivedProperty? {
         
-        let originalLine = pctx.line
-        let firstWord = pctx.firstWord
+        let originalLine = pInfo.line
+        let firstWord = pInfo.firstWord
         
         let line = originalLine.remainingLine(after: firstWord) //remove first word
         
@@ -31,7 +32,7 @@ public class DerivedProperty : CodeMember {
         
         let givenName = propName.trim()
         
-        let prop = DerivedProperty(name: givenName)
+        let prop = DerivedProperty(name: givenName, pInfo: pInfo)
         
         //check if has attributes
         if let attributeString = attributeString {
@@ -43,7 +44,7 @@ public class DerivedProperty : CodeMember {
             ParserUtil.populateTags(for: prop, from: tagString)
         }
         
-        pctx.parser.skipLine()
+        pInfo.parser.skipLine()
 
         return prop
     }
@@ -64,9 +65,10 @@ public class DerivedProperty : CodeMember {
         return hasAttrib(name.rawValue)
     }
     
-    public init(name: String) {
+    public init(name: String, pInfo: ParsedInfo) {
         self.givenname = name.trim()
         self.name = self.givenname.normalizeForVariableName()
+        self.pInfo = pInfo
     }
     
 }

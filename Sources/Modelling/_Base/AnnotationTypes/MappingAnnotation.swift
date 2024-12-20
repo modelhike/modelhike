@@ -9,7 +9,7 @@ import Foundation
 public struct MappingAnnotation: Annotation {
     
     public let name: String
-    public let parsedContextInfo: ParsedContextInfo
+    public let pInfo: ParsedInfo
     
     public private(set) var mappings: [String: String] = [:]
     
@@ -29,9 +29,9 @@ public struct MappingAnnotation: Annotation {
         return lhs.name == rhs.name
     }
     
-    public init(_ name: String, line: Substring, with pctx: ParsedInfo) throws {
+    public init(_ name: String, line: Substring, pInfo: ParsedInfo) throws {
         self.name = name.trim()
-        self.parsedContextInfo = ParsedContextInfo(with: pctx)
+        self.pInfo = pInfo
         
         let components = line.split(separator: ";", omittingEmptySubsequences: true)
         for component in components {
@@ -42,7 +42,7 @@ public struct MappingAnnotation: Annotation {
                 self.mappings[key] = value
                 
             } else {
-                throw Model_ParsingError.invalidMapping(String(component))
+                throw Model_ParsingError.invalidMapping(String(component), pInfo)
             }
         }
     }

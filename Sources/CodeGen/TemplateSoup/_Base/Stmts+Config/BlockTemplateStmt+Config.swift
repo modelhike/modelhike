@@ -24,7 +24,7 @@ public class BlockTemplateStmt : FileTemplateStatement {
         let matched = try matchLine(line: line)
         
         if !matched {
-            throw TemplateSoup_ParsingError.invalidStmt(line)
+            throw TemplateSoup_ParsingError.invalidStmt(pInfo)
         }
     }
     

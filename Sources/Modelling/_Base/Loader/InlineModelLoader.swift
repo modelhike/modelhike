@@ -21,7 +21,7 @@ public class InlineModelLoader : ModelRepository {
         }
         
         //common models
-        let commons = try ModelFileParser(with: ctx)
+        let commons = try ModelFileParser( with: ctx)
                         .parse(string: commonsString, identifier: "InlineCommons", with: ctx)
         
         model.appendToCommonModel(contentsOf: commons)

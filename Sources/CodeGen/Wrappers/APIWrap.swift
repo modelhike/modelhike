@@ -83,7 +83,7 @@ public class API_Wrap : ObjectWrapper {
             if item.attribs.has(propname) {
                 item.attribs[propname] as Any
             } else {
-                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(pInfo.lineNo, propname)
+                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
             }
         }
         
@@ -110,7 +110,7 @@ public class APIParam_Wrap : DynamicMemberLookup {
             case "second-param-name" : item.queryParam.SecondName
             case "has-multiple-params" : item.queryParam.canHaveMultipleValues
             default:
-            throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(pInfo.lineNo, propname)
+            throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
         }
 
         return value
@@ -131,7 +131,7 @@ public class APICustomParameter_Wrap : DynamicMemberLookup {
         case "type" : item.type
         case "is-array" : item.type.isArray
         default:
-            throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(pInfo.lineNo, propname)
+            throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
         }
         
         return value

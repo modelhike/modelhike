@@ -28,9 +28,9 @@ public class LineParser {
             
             //the currentLine() returns a trummed string, which removes prefixed space for content;
             //so, another method, that does not trim prefix, is used for content
-            guard let pctx = self.currentParsedInfo(level: level) else { self.skipLine(); continue }
+            guard let pInfo = self.currentParsedInfo(level: level) else { self.skipLine(); continue }
 
-            let curLine = pctx.line
+            let curLine = pInfo.line
             let (firstWord, secondWord) = curLine.firstAndsecondWord()
             
             if let _ = firstWord,
@@ -38,20 +38,20 @@ public class LineParser {
                     
                     if let endKeyWord = endKeyWord {
                         if secondWord == endKeyWord {
-                            ctx.debugLog.line(curLine, lineNo: curLineNoForDisplay)
-                            ctx.debugLog.parseLines(ended: endKeyWord, lineNo: curLineNoForDisplay)
+                            ctx.debugLog.line(curLine, pInfo: pInfo)
+                            ctx.debugLog.parseLines(ended: endKeyWord, pInfo: pInfo)
                             
                             //skipLine()
                             break
                         }
                     }
                     
-                    ctx.debugLog.line(curLine, lineNo: curLineNoForDisplay)
+                    ctx.debugLog.line(curLine, pInfo: pInfo)
                     
-                    try lineHandler(pctx, secondWord, ctx)
+                    try lineHandler(pInfo, secondWord, ctx)
             } else {
-                pctx.firstWord = ""
-                try lineHandler(pctx, secondWord, ctx)
+                pInfo.firstWord = ""
+                try lineHandler(pInfo, secondWord, ctx)
             }
             
             if _breakParsing {break}
@@ -160,12 +160,14 @@ public class LineParser {
     }
         
     public func currentParsedInfo(level: Int) -> ParsedInfo? {
+        self._curLevel = level
+        guard let pInfo = ParsedInfo(parser: self) else { return nil }
+        
         if ctx.debugLog.flags.lineByLineParsing {
-            ctx.debugLog.line(currentLine(), lineNo: curLineNoForDisplay)
+            ctx.debugLog.line(currentLine(), pInfo: pInfo)
         }
         
-        self._curLevel = level
-        return ParsedInfo(parser: self)
+        return pInfo
     }
         
     public func currentLineWithoutStmtKeyword() -> String {
@@ -208,9 +210,9 @@ public class LineParser {
         }
     }
     
-    internal init(with context: Context) {
+    internal init(identifier: String, with context: Context) {
         self.ctx = context
-        self.identifier = ""
+        self.identifier = identifier
         
         self._curLineNo = 0
         self.autoIncrementLineNoForEveryLoop = true
@@ -236,8 +238,7 @@ public class LineParser {
     
     public convenience init?(file: LocalFile, with context: Context) {
         do {
-            self.init(with: context)
-            self.identifier = file.name
+            self.init(identifier: file.name, with: context)
             
             self.file = file
             self.lines = try file.readTextLines(ignoreEmptyLines: true)

@@ -6,53 +6,78 @@
 
 import Foundation
 
-public enum Model_ParsingError: ErrorWithInfo {
-    case objectNotFound(String)
-    case invalidMapping(String)
-    case invalidPropertyLine(String)
-    case invalidMethodLine(String)
-    case invalidDerivedPropertyLine(String)
-    case invalidContainerMemberLine(String)
-    case invalidContainerLine(String)
-    case invalidModuleLine(String)
-    case invalidSubModuleLine(String)
-    case invalidDomainObjectLine(String)
-    case invalidDtoObjectLine(String)
-    case invalidUIViewLine(String)
-    case invalidAnnotation(Int, String)
-    case invalidAttachedSection(String)
-    case invalidApiLine(String)
-    case invalidPropertyUsedInApi(String, String)
-    case moduleNameEmpty
+public enum Model_ParsingError: ErrorWithMessageAndParsedInfo {
+    case objectNotFound(String, ParsedInfo)
+    case invalidMapping(String, ParsedInfo)
+    case invalidPropertyLine(ParsedInfo)
+    case invalidMethodLine(ParsedInfo)
+    case invalidDerivedProperty(String, ParsedInfo)
+    case invalidContainerMemberLine(ParsedInfo)
+    case invalidContainerLine(ParsedInfo)
+    case invalidModuleLine(ParsedInfo)
+    case invalidSubModuleLine(ParsedInfo)
+    case invalidDomainObjectLine(ParsedInfo)
+    case invalidDtoObjectLine(ParsedInfo)
+    case invalidUIViewLine(ParsedInfo)
+    case invalidAnnotationLine(ParsedInfo)
+    case invalidAttachedSection(ParsedInfo)
+    case invalidApiLine(ParsedInfo)
+    case invalidPropertyUsedInApi(String, ParsedInfo)
+    case moduleNameEmpty(ParsedInfo)
 
     public var info: String {
         switch (self) {
-            case .objectNotFound(let obj) : return "object: \(obj) not found"
-            case .invalidPropertyLine(let prop) : return "invalid property: \(prop)"
-            case .invalidDerivedPropertyLine(let prop) : return "invalid derived property: \(prop)"
-            case .invalidMethodLine(let method) : return "invalid method: \(method)"
+        case .objectNotFound(let obj, _) : return "object: \(obj) not found"
+        case .invalidPropertyLine(let pInfo) : return "invalid property: \(pInfo.line)"
+        case .invalidDerivedProperty(let msg, _) : return "invalid derived property: \(msg)"
+        case .invalidMethodLine(let pInfo) : return "invalid method: \(pInfo.line)"
 
-            case .invalidMapping(let mapping) : return "invalid mapping: \(mapping)"
-            case .invalidAnnotation(let lineNo, let annotation) :
-                return "[line no : \(lineNo)] invalid annotation: \(annotation)"
+        case .invalidMapping(let mapping, _) : return "invalid mapping: \(mapping)"
+        case .invalidAnnotationLine(let pInfo) :
+            return "invalid annotation: \(pInfo.line)"
             
-            case .invalidContainerLine(let line) : return "invalid container: \(line)"
-            case .invalidContainerMemberLine(let line) : return "invalid container member: \(line)"
-            case .invalidModuleLine(let line) : return "invalid module: \(line)"
-            case .invalidSubModuleLine(let line) : return "invalid sub module: \(line)"
-            case .invalidAttachedSection(let line) : return "invalid attached section: \(line)"
+        case .invalidContainerLine(let pInfo) : return "invalid container: \(pInfo.line)"
+        case .invalidContainerMemberLine(let pInfo) : return "invalid container member: \(pInfo.line)"
+        case .invalidModuleLine(let pInfo) : return "invalid module: \(pInfo.line)"
+        case .invalidSubModuleLine(let pInfo) : return "invalid sub module: \(pInfo.line)"
+        case .invalidAttachedSection(let pInfo) : return "invalid attached section: \(pInfo.line)"
                 
-            case .invalidDomainObjectLine(let line) : return "invalid domain object: \(line)"
-            case .invalidDtoObjectLine(let line) : return "invalid dto object: \(line)"
-            case .invalidUIViewLine(let line) : return "invalid ui view: \(line)"
+        case .invalidDomainObjectLine(let pInfo) : return "invalid domain object: \(pInfo.line)"
+        case .invalidDtoObjectLine(let pInfo) : return "invalid dto object: \(pInfo.line)"
+        case .invalidUIViewLine(let pInfo) : return "invalid ui view: \(pInfo.line)"
 
-            case .invalidApiLine(let line) : return "invalid api: \(line)"
-            case .invalidPropertyUsedInApi(let prop, let line) :
-                return "invalid property \(prop) used in '\(line)'"
+        case .invalidApiLine(let pInfo) : return "invalid api: \(pInfo.line)"
+        case .invalidPropertyUsedInApi(let prop, let pInfo) :
+            return "invalid property \(prop) used in '\(pInfo.line)'"
 
-            case .moduleNameEmpty : return "module Name Empty"
-
+        case .moduleNameEmpty(_) : return "module Name Empty"
         }
     }
 
+    public var pInfo: ParsedInfo {
+        return switch (self) {
+        case .objectNotFound(_, let pInfo) : pInfo
+        case .invalidPropertyLine(let pInfo) : pInfo
+        case .invalidDerivedProperty(_, let pInfo) : pInfo
+        case .invalidMethodLine(let pInfo) : pInfo
+
+        case .invalidMapping(_, let pInfo) : pInfo
+        case .invalidAnnotationLine(let pInfo) :pInfo
+            
+        case .invalidContainerLine(let pInfo) : pInfo
+        case .invalidContainerMemberLine(let pInfo) : pInfo
+        case .invalidModuleLine(let pInfo) : pInfo
+        case .invalidSubModuleLine(let pInfo) : pInfo
+        case .invalidAttachedSection(let pInfo) : pInfo
+                
+        case .invalidDomainObjectLine(let pInfo) : pInfo
+        case .invalidDtoObjectLine(let pInfo) : pInfo
+        case .invalidUIViewLine(let pInfo) : pInfo
+
+        case .invalidApiLine(let pInfo) : pInfo
+        case .invalidPropertyUsedInApi(_, let pInfo) : pInfo
+
+        case .moduleNameEmpty(let pInfo) : pInfo
+        }
+    }
 }

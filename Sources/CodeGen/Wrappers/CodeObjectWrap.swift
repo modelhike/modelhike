@@ -49,7 +49,7 @@ public class CodeObject_Wrap : ObjectWrapper {
             if item.attribs.has(propname) {
                 item.attribs[propname] as Any
             } else {
-                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(pInfo.lineNo, propname)
+                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
             }
         }
         
@@ -113,7 +113,7 @@ public class TypeProperty_Wrap : ObjectWrapper {
             if item.attribs.has(propname) {
                 item.attribs[propname] as Any
             } else {
-                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(pInfo.lineNo, propname)
+                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
             }
         }
         

@@ -10,7 +10,6 @@ import RegexBuilder
 public struct RegularExpressionEvaluator {
     public mutating func evaluate(expression: String, pInfo: ParsedInfo) throws -> Optional<Any> {
         let ctx = pInfo.ctx
-        let lineNo = pInfo.lineNo
         
         var negatedResult = false
         
@@ -20,13 +19,13 @@ public struct RegularExpressionEvaluator {
             expressionToParse = expressionToParse.remainingLine(after: firstWord)
         }
         
-        var parsedArrList = try parseAsArray(expression: expressionToParse, lineNo: lineNo, ctx: ctx)
+        var parsedArrList = try parseAsArray(expression: expressionToParse, pInfo: pInfo)
         //print(parsedArrList)
 
         //there is some expression given, but there is no parsed output
         //which means that something is wrong
         if parsedArrList.count == 0 && expression.trim().isNotEmpty {
-            throw TemplateSoup_EvaluationError.errorInExpression(lineNo, expression)
+            throw TemplateSoup_EvaluationError.errorInExpression(expression, pInfo)
         }
         
         guard parsedArrList.count != 0 else { return nil }
@@ -38,20 +37,20 @@ public struct RegularExpressionEvaluator {
             //in the parsed array list, every even item is an operator,
             //which will be a single item in an array
             guard let op = parsedArrList.removeFirst().first else {
-                throw TemplateSoup_EvaluationError.errorInExpression(lineNo, expression)
+                throw TemplateSoup_EvaluationError.errorInExpression(expression, pInfo)
             }
             
             var rhsArray = parsedArrList.removeFirst()
             
             guard let rhsResult = try executeArrayItems(&rhsArray, expression, pInfo: pInfo) else {
-                throw TemplateSoup_EvaluationError.errorInExpression(lineNo, expression)
+                throw TemplateSoup_EvaluationError.errorInExpression(expression, pInfo)
             }
             
             guard let infix = ctx.symbols.template.infixOperators.first(where: { $0.name == op }) else {
-                throw TemplateSoup_ParsingError.infixOperatorNotFound(op)
+                throw TemplateSoup_ParsingError.infixOperatorNotFound(op, pInfo)
             }
                  
-            accumulated = try infix.applyTo(lhs: accumulated, rhs: rhsResult)
+            accumulated = try infix.applyTo(lhs: accumulated, rhs: rhsResult, pInfo: pInfo)
         }
         
         guard let accumulated = accumulated else { return nil }
@@ -63,9 +62,7 @@ public struct RegularExpressionEvaluator {
     fileprivate func executeArrayItems(_ arr: inout [String], _ expression: String, pInfo: ParsedInfo) throws -> Optional<Any> {
         guard arr.count > 0 else { return nil }
 
-        let ctx = pInfo.ctx
-        let lineNo = pInfo.lineNo
-        
+        let ctx = pInfo.ctx        
         let lhs = arr.removeFirst()
         
         guard var result = try ctx.evaluate(value: lhs, pInfo: pInfo) else { return nil }
@@ -75,20 +72,20 @@ public struct RegularExpressionEvaluator {
             let op = arr.removeFirst()
             
             guard arr.count > 0 else {
-                throw TemplateSoup_EvaluationError.errorInExpression(lineNo, expression)
+                throw TemplateSoup_EvaluationError.errorInExpression(expression, pInfo)
             }
             
             let rhs = arr.removeFirst()
             
             guard let rhsResult = try ctx.evaluate(value: rhs, pInfo: pInfo) else {
-                throw TemplateSoup_EvaluationError.objectNotFound(lineNo, rhs)
+                throw TemplateSoup_EvaluationError.objectNotFound(rhs, pInfo)
             }
             
             guard let infix = ctx.symbols.template.infixOperators.first(where: { $0.name == op }) else {
-                throw TemplateSoup_ParsingError.infixOperatorNotFound(op)
+                throw TemplateSoup_ParsingError.infixOperatorNotFound(op, pInfo)
             }
                 
-            result = try infix.applyTo(lhs: result, rhs: rhsResult)
+            result = try infix.applyTo(lhs: result, rhs: rhsResult, pInfo: pInfo)
                 
         }
         
@@ -130,7 +127,7 @@ public struct RegularExpressionEvaluator {
     fileprivate var inner:[String] = []
     fileprivate var paranthesisStarted = false
     
-    fileprivate mutating func parseAsArray(expression: String, lineNo: Int, ctx: Context) throws -> [[String]] {
+    fileprivate mutating func parseAsArray(expression: String, pInfo: ParsedInfo) throws -> [[String]] {
         outer = []
         inner = []
         paranthesisStarted = false
@@ -148,7 +145,7 @@ public struct RegularExpressionEvaluator {
                         inner = []
                     }
                 } else {
-                    throw TemplateSoup_EvaluationError.errorInExpression(lineNo, expression)
+                    throw TemplateSoup_EvaluationError.errorInExpression(expression, pInfo)
                 }
             }
             
@@ -164,7 +161,7 @@ public struct RegularExpressionEvaluator {
                         inner = []
                     }
                 } else {
-                    throw TemplateSoup_EvaluationError.errorInExpression(lineNo, expression)
+                    throw TemplateSoup_EvaluationError.errorInExpression(expression, pInfo)
                 }
             }
 
@@ -189,6 +186,7 @@ public struct RegularExpressionEvaluator {
         // item 3 - and
         // item 4 - var4, or, var5
         
+        let ctx = pInfo.ctx
         var newOuter: [[String]] = []
         
         var i = 0
@@ -223,7 +221,7 @@ public struct RegularExpressionEvaluator {
                     }
                 }
                 
-                throw TemplateSoup_ParsingError.invalidExpression(lineNo, expression)
+                throw TemplateSoup_ParsingError.invalidExpression(expression, pInfo)
             } else {
                 newOuter.append(inner)
             }

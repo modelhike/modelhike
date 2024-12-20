@@ -24,7 +24,7 @@ public class BlockOrLineTemplateStmt : FileTemplateStatement {
         let matched = try matchLine_BlockVariant(line: line)
         
         if !matched {
-            throw TemplateSoup_ParsingError.invalidStmt(line)
+            throw TemplateSoup_ParsingError.invalidStmt(pInfo)
         }
     }
     
@@ -32,7 +32,7 @@ public class BlockOrLineTemplateStmt : FileTemplateStatement {
         let matched = try matchLine_LineVariant(line: line)
         
         if !matched {
-            throw TemplateSoup_ParsingError.invalidStmt(line)
+            throw TemplateSoup_ParsingError.invalidStmt(pInfo)
         }
     }
     

@@ -24,7 +24,7 @@ public class UIObject_Wrap : ObjectWrapper {
             if item.attribs.has(propname) {
                 item.attribs[propname] as Any
             } else {
-                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(pInfo.lineNo, propname)
+                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
             }
         }
         

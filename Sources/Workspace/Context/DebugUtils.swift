@@ -9,7 +9,7 @@ import Foundation
 public struct ContextDebugLog {
     public var flags = ContextDebugFlags()
 
-    public func parseLines(startingFrom startKeyword : String?, till endKeyWord: String?, line: String?, lineNo: Int ) {
+    public func parseLines(startingFrom startKeyword : String?, till endKeyWord: String?, line: String?, lineNo : Int ) {
         if flags.lineByLineParsing || flags.blockByBlockParsing {
             if let startKeyword = startKeyword, let endKeyWord = endKeyWord, let line = line {
                 print("[\(lineNo)] PARSE LINES START \"\(startKeyword)\" till>> \(endKeyWord)")
@@ -20,28 +20,28 @@ public struct ContextDebugLog {
         }
     }
     
-    public func parseLines(ended endKeyWord: String, lineNo: Int) {
+    public func parseLines(ended endKeyWord: String, pInfo: ParsedInfo) {
         if flags.lineByLineParsing || flags.blockByBlockParsing {
-            print("[\(lineNo)] PARSE LINES ENDED>> \(endKeyWord)")
+            print("[\(pInfo.lineNo)] PARSE LINES ENDED>> \(endKeyWord)")
         }
     }
     
-    public func stmtDetected(keyWord: String, lineNo: Int) {
+    public func stmtDetected(keyWord: String, pInfo: ParsedInfo) {
         if flags.lineByLineParsing {
-            print("[\(lineNo)] STMT DETECT>> \(keyWord)")
+            print("[\(pInfo.lineNo)] STMT DETECT>> \(keyWord)")
         }
     }
     
-    public func multiBlockDetected(keyWord: String, lineNo: Int) {
+    public func multiBlockDetected(keyWord: String, pInfo: ParsedInfo) {
         if flags.lineByLineParsing || flags.blockByBlockParsing {
-            print("[\(lineNo)] MULTIBLOCK DETECT>> \(keyWord)")
+            print("[\(pInfo.lineNo)] MULTIBLOCK DETECT>> \(keyWord)")
         }
         
     }
     
-    public func multiBlockDetectFailed(line: String, lineNo: Int) {
+    public func multiBlockDetectFailed(pInfo: ParsedInfo) {
         if flags.lineByLineParsing || flags.blockByBlockParsing {
-            print("[\(lineNo)] FAILED MULTIBLOCK PARSE>> \(line) ")
+            print("[\(pInfo.lineNo)] FAILED MULTIBLOCK PARSE>> \(pInfo.line) ")
         }
     }
     
@@ -49,27 +49,27 @@ public struct ContextDebugLog {
         print("[\(lineNo)] \(line)")
     }
     
-    public func content(_ line: String, lineNo: Int) {
+    public func content(_ line: String, pInfo: ParsedInfo) {
         if flags.lineByLineParsing {
-            print("[\(lineNo)] --txt-- \(line)")
+            print("[\(pInfo.lineNo)] --txt-- \(line)")
         }
     }
     
-    public func inlineExpression(_ line: String, lineNo: Int) {
+    public func inlineExpression(_ line: String, pInfo: ParsedInfo) {
         if flags.lineByLineParsing {
-            print("[\(lineNo)] -------{{ \(line) }}")
+            print("[\(pInfo.lineNo)] -------{{ \(line) }}")
         }
     }
     
-    public func inlineFunctionCall(_ line: String, lineNo: Int) {
+    public func inlineFunctionCall(_ line: String, pInfo: ParsedInfo) {
         if flags.lineByLineParsing {
-            print("[\(lineNo)] -------={{ \(line) }}=")
+            print("[\(pInfo.lineNo)] -------={{ \(line) }}=")
         }
     }
     
-    public func line(_ line: String, lineNo: Int) {
+    public func line(_ line: String, pInfo: ParsedInfo) {
         if flags.lineByLineParsing {
-            print("[\(lineNo)]-- \(line)")
+            print("[\(pInfo.lineNo)]-- \(line)")
         }
     }
     

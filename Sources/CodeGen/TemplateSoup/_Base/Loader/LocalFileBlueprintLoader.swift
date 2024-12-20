@@ -13,7 +13,7 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
     public var paths: [LocalPath]
     public let blueprintName: String
     
-    public func loadTemplate(fileName: String) throws -> Template {
+    public func loadTemplate(fileName: String, pInfo: ParsedInfo) throws -> Template {
         for loadPath in paths {
             let templateName = "\(fileName).\(TemplateConstants.TemplateExtension)"
 
@@ -27,11 +27,11 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
                 self.templateCache[fileName] = template
                 return template
             } else {
-                throw TemplateSoup_EvaluationError.templateReadingError( fileName)
+                throw TemplateSoup_EvaluationError.templateReadingError(fileName, pInfo)
             }
         }
 
-        throw TemplateSoup_EvaluationError.templateDoesNotExist(fileName)
+        throw TemplateSoup_EvaluationError.templateDoesNotExist(fileName, pInfo)
     }
     
     public func blueprintExists() -> Bool {
@@ -47,24 +47,41 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
         return inFolder.path.exists
     }
     
-    public func copyFiles(foldername: String, to outputFolder: LocalFolder) throws {
+    public func copyFiles(foldername: String, to outputFolder: LocalFolder, pInfo: ParsedInfo) throws {
         guard self.defaultTemplatesPath.exists else {
-            throw EvaluationError.invalidInput("There is no folder called \(self.defaultTemplatesPath.string)")
+            throw EvaluationError.invalidInput("There is no folder called \(self.defaultTemplatesPath.string)", pInfo)
         }
         
-        let inFolder = LocalFolder(path: self.defaultTemplatesPath / foldername)
-        try inFolder.copyFiles(to: outputFolder)
+        do {
+            let inFolder = LocalFolder(path: self.defaultTemplatesPath / foldername)
+            try inFolder.copyFiles(to: outputFolder)
+        } catch let err {
+            if let _ = err as? ErrorWithMessageAndParsedInfo {
+                throw err
+            } else {
+                let message = "Could not copy files from \(foldername) to \(outputFolder.path.string)"
+                throw EvaluationError.failedWriteOperation(message, pInfo)
+            }
+        }
     }
     
-    public func renderFiles(foldername: String, to outputFolder: LocalFolder, using templateSoup: TemplateSoup) throws {
+    public func renderFiles(foldername: String, to outputFolder: LocalFolder, using templateSoup: TemplateSoup, pInfo: ParsedInfo) throws {
         guard self.defaultTemplatesPath.exists else {
-            throw EvaluationError.invalidInput("There is no folder called \(self.defaultTemplatesPath.string)")
+            throw EvaluationError.invalidInput("There is no folder called \(self.defaultTemplatesPath.string)", pInfo)
         }
         
-        let inFolder = LocalFolder(path: self.defaultTemplatesPath / foldername)
-        
-        try renderLocalFiles(from: inFolder, to: outputFolder, using: templateSoup)
-        
+        do {
+            let inFolder = LocalFolder(path: self.defaultTemplatesPath / foldername)
+            
+            try renderLocalFiles(from: inFolder, to: outputFolder, using: templateSoup)
+        } catch let err {
+            if let _ = err as? ErrorWithMessageAndParsedInfo {
+                throw err
+            } else {
+                let message = "Could not render files from \(foldername) to \(outputFolder.path.string)"
+                throw EvaluationError.failedWriteOperation(message, pInfo)
+            }
+        }
     }
     
     private func renderLocalFiles(from inFolder: LocalFolder, to outputFolder: LocalFolder, using templateSoup: TemplateSoup) throws {
@@ -85,8 +102,8 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
                 
                 let contents = try file.readTextContents()
                 
-                let renderClosure = { outputname in
-                    if let renderedString = try templateSoup.renderTemplate(string: contents, identifier: actualFilename) {
+                let renderClosure = { outputname, pInfo in
+                    if let renderedString = try templateSoup.renderTemplate(string: contents, identifier: actualFilename, pInfo: pInfo) {
                         
                         //create the folder only if any file is rendered
                         try outputFolder.ensureExists()
@@ -101,18 +118,19 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
                 
                 let parsingIdentifier = actualFilename
                 if let frontMatter = try templateSoup.frontMatter(in: contents, identifier: parsingIdentifier),
-                   let pInfo = frontMatter.hasDirective(ParserDirectives.includeFor) {
-                    try templateSoup.forEach(forInExpression: pInfo.line, parser: pInfo.parser) {
-                        if let _ = frontMatter.hasDirective(ParserDirectives.outputFilename) {
-                            if let outputFilename = try frontMatter.evalDirective( ParserDirectives.outputFilename, pInfo: pInfo) as? String {
-                                try renderClosure(outputFilename)
+                   let pInfo = frontMatter.hasDirective(ParserDirective.includeFor) {
+                    try templateSoup.forEach(forInExpression: pInfo.line, pInfo: pInfo) {
+                        if let _ = frontMatter.hasDirective(ParserDirective.outputFilename) {
+                            if let outputFilename = try frontMatter.evalDirective( ParserDirective.outputFilename, pInfo: pInfo) as? String {
+                                try renderClosure(outputFilename, pInfo)
                             }
                         } else {
-                            try renderClosure("")
+                            try renderClosure("", pInfo)
                         }
                     }
                 } else {
-                    try renderClosure("")
+                    let pInfo = ParsedInfo.dummyForFrontMatterError(identifier: parsingIdentifier, with: context)
+                    try renderClosure("", pInfo)
                 }
                 
             } else { //not a template file
@@ -135,9 +153,9 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
         
     }
     
-    public func readTextContents(filename: String) throws -> String {
+    public func readTextContents(filename: String, pInfo: ParsedInfo) throws -> String {
         guard self.defaultTemplatesPath.exists else {
-            throw EvaluationError.invalidInput("There is no folder called \(self.defaultTemplatesPath.string)")
+            throw EvaluationError.invalidInput("There is no folder called \(self.defaultTemplatesPath.string)", pInfo)
         }
         
         let inFile = LocalFile(path: self.defaultTemplatesPath / filename)

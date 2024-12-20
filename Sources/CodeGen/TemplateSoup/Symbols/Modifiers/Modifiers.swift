@@ -20,12 +20,13 @@ public enum Modifiers  {
         return result
     }
     
-    public static func parse(string: String?, context: Context) throws -> [ModifierInstance] {
+    public static func parse(string: String?, pInfo: ParsedInfo) throws -> [ModifierInstance] {
         guard let string = string else { return [] }
         
         let components = string.trim().split(separator: TemplateConstants.multiModifierSplit).trim()
         guard components.count > 0 else { return [] }
         
+        let context = pInfo.ctx
         var result : [ModifierInstance] = []
         
         for component in components {
@@ -38,7 +39,7 @@ public enum Modifiers  {
                     
                     result.append(instance)
                 } else {
-                    throw TemplateSoup_ParsingError.modifierInvalidSyntax(str)
+                    throw TemplateSoup_ParsingError.modifierInvalidSyntax(str, pInfo)
                 }
 
             } else if let match = str.wholeMatch(of: CommonRegEx.functionInvocation_unNamedArgs_Capturing) {
@@ -57,10 +58,10 @@ public enum Modifiers  {
                         result.append(instanceWithUnNamedArgs)
                     }
                 } else {
-                    throw TemplateSoup_ParsingError.modifierInvalidSyntax(str)
+                    throw TemplateSoup_ParsingError.modifierInvalidSyntax(str, pInfo)
                 }
             } else {
-                throw TemplateSoup_ParsingError.modifierNotFound(str)
+                throw TemplateSoup_ParsingError.modifierNotFound(str, pInfo)
             }
         }
         

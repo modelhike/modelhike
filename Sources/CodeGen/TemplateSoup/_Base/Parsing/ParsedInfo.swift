@@ -6,11 +6,12 @@
 
 import Foundation
 
-public class ParsedInfo {
+public class ParsedInfo : Equatable {
     public internal(set) var line: String
     public internal(set) var lineNo: Int
     public internal(set) var level: Int
     public internal(set) var firstWord: String
+    public internal(set) var identifier: String
     public internal(set) var parser: LineParser
     public var ctx: Context { parser.ctx }
     
@@ -30,7 +31,7 @@ public class ParsedInfo {
                 item.attachedSections[section.name] = section
                 return true
             } else {
-                throw Model_ParsingError.invalidAttachedSection(self.line)
+                throw Model_ParsingError.invalidAttachedSection(self)
             }
         }
         
@@ -39,13 +40,13 @@ public class ParsedInfo {
     
     public func parseAnnotation(with item: HasAnnotations) throws -> (any Annotation)? {
         if AnnotationParser.canParse(firstWord: self.firstWord) {
-            if let annotation = try AnnotationParser.parse(with: self) {
+            if let annotation = try AnnotationParser.parse(pInfo: self) {
                 item.annotations[annotation.name] = annotation
                 try AnnotationProcessor.process(annotation, for: item)
                 self.parser.skipLine()
                 return annotation
             } else {
-                throw Model_ParsingError.invalidAnnotation(self.parser.curLineNoForDisplay, self.line)
+                throw Model_ParsingError.invalidAnnotationLine(self)
             }
         }
         
@@ -60,9 +61,25 @@ public class ParsedInfo {
         }
     }
     
-    public static func dummy(for line: String, with ctx: Context) -> ParsedInfo {
-        let parser = LineParser(with: ctx)
+    public static func == (lhs: ParsedInfo, rhs: ParsedInfo) -> Bool {
+        return (lhs.line == rhs.line) && (lhs.lineNo == rhs.lineNo)
+    }
+    
+    public static func dummy(line: String, identifier: String, with ctx: Context) -> ParsedInfo {
+        let parser = LineParser(identifier: identifier, with: ctx)
         return ParsedInfo(parser: parser, line: line, lineNo: -1, level: 0, firstWord: "")
+    }
+    
+    public static func dummyForFrontMatterError(identifier: String, with ctx: Context) -> ParsedInfo {
+        return dummy(line: "Front-Matter", identifier: identifier, with: ctx)
+    }
+    
+    public static func dummyForMainFile(with ctx: Context) -> ParsedInfo {
+        return dummy(line: "Main-File", identifier: "Main-File", with: ctx)
+    }
+    
+    public static func dummyForAppState(with ctx: Context) -> ParsedInfo {
+        return dummy(line: "App-State", identifier: "Main-File", with: ctx)
     }
     
     public init?(parser: LineParser) {
@@ -75,6 +92,7 @@ public class ParsedInfo {
         self.firstWord = firstWord
         self.parser = parser
         self.level = parser.curLevelForDisplay
+        self.identifier = parser.identifier
     }
     
     public init(parser: LineParser, line: String, lineNo: Int, level: Int, firstWord: String) {
@@ -84,17 +102,7 @@ public class ParsedInfo {
         self.firstWord = firstWord
         self.parser = parser
         self.level = level
+        self.identifier = parser.identifier
     }
 }
 
-public class ParsedContextInfo {
-    public var line: String
-    public var lineNo: Int
-    public var identifier: String
-    
-    public init(with pctx: ParsedInfo) {
-        self.line = pctx.line
-        self.lineNo = pctx.parser.curLineNoForDisplay
-        self.identifier = pctx.parser.identifier
-    }
-}

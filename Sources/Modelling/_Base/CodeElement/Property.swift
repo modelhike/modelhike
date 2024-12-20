@@ -7,6 +7,7 @@
 import Foundation
 
 public class Property : CodeMember {
+    public let pInfo: ParsedInfo
     public var attribs = Attributes()
     public var tags = Tags()
     
@@ -20,9 +21,9 @@ public class Property : CodeMember {
     public var arrayMultiplicity: MultiplicityKind = .noBounds
     public var comment: String?
     
-    public static func parse(with pctx: ParsedInfo) throws -> Property? {
-        let originalLine = pctx.line
-        let firstWord = pctx.firstWord
+    public static func parse(pInfo: ParsedInfo) throws -> Property? {
+        let originalLine = pInfo.line
+        let firstWord = pInfo.firstWord
         
         let line = originalLine.remainingLine(after: firstWord) //remove first word
         
@@ -32,7 +33,7 @@ public class Property : CodeMember {
         
         let givenName = propName.trim()
 
-        let prop = Property(givenName)
+        let prop = Property(givenName, pInfo: pInfo)
         
         //check if has attributes
         if let attributeString = attributeString {
@@ -73,7 +74,7 @@ public class Property : CodeMember {
             }
         }
         
-        pctx.parser.skipLine()
+        pInfo.parser.skipLine()
 
         return prop
     }
@@ -99,29 +100,32 @@ public class Property : CodeMember {
         return hasAttrib(name.rawValue)
     }
     
-    public init(_ givenName: String) {
+    public init(_ givenName: String, pInfo: ParsedInfo) {
         self.givenname = givenName.trim()
         self.type = TypeInfo()
         self.name = self.givenname.normalizeForVariableName()
+        self.pInfo = pInfo
     }
     
-    public init(_ givenName: String, type: PropertyKind, isUnique: Bool = false, required: RequiredKind = .no) {
+    public init(_ givenName: String, type: PropertyKind, isUnique: Bool = false, required: RequiredKind = .no, pInfo: ParsedInfo) {
         self.givenname = givenName.trim()
         self.name = self.givenname.normalizeForVariableName()
         self.type = TypeInfo(type)
         self.isUnique = isUnique
         self.required = required
+        self.pInfo = pInfo
     }
     
-    public init(_ givenName: String, type: PropertyKind, isObjectID: Bool, required: RequiredKind = .no) {
+    public init(_ givenName: String, type: PropertyKind, isObjectID: Bool, required: RequiredKind = .no, pInfo: ParsedInfo) {
         self.givenname = givenName.trim()
         self.name = self.givenname.normalizeForVariableName()
         self.type = TypeInfo(type)
         self.isObjectID = isObjectID
         self.required = required
+        self.pInfo = pInfo
     }
     
-    public init(_ givenName: String, type: PropertyKind, isArray: Bool, arrayMultiplicity: MultiplicityKind, required: RequiredKind = .no) {
+    public init(_ givenName: String, type: PropertyKind, isArray: Bool, arrayMultiplicity: MultiplicityKind, required: RequiredKind = .no, pInfo: ParsedInfo) {
         self.givenname = givenName.trim()
         self.name = self.givenname.normalizeForVariableName()
         
@@ -129,6 +133,7 @@ public class Property : CodeMember {
         self.type = typeInfo
         self.required = required
         self.arrayMultiplicity = arrayMultiplicity
+        self.pInfo = pInfo
     }
 }
 

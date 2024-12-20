@@ -12,7 +12,7 @@ public protocol HasAnnotations {
 
 public protocol Annotation : Hashable {
     var name: String {get}
-    var parsedContextInfo: ParsedContextInfo {get}
+    var pInfo: ParsedInfo {get}
 }
 
 public class Annotations : ExpressibleByArrayLiteral, ExpressibleByDictionaryLiteral {

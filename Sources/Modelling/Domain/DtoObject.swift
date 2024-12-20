@@ -50,7 +50,7 @@ public class DtoObject : CodeObject {
             
             if derivedProperty.prop == nil { //no matching name found
                 let msg = "\(derivedProperty.givenname) in \(self.givenname)"
-                throw Model_ParsingError.invalidDerivedPropertyLine(msg)
+                throw Model_ParsingError.invalidDerivedProperty(msg, derivedProperty.pInfo)
             }
             
             i += 1

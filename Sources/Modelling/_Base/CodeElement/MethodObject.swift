@@ -7,6 +7,7 @@
 import Foundation
 
 public class MethodObject : CodeMember {
+    public let pInfo: ParsedInfo
     public var attribs = Attributes()
     public var tags = Tags()
 
@@ -19,9 +20,9 @@ public class MethodObject : CodeMember {
     
     public var comment: String?
     
-    public static func parse(with pctx: ParsedInfo, skipLine: Bool = true) throws -> MethodObject? {
-        let originalLine = pctx.line
-        let firstWord = pctx.firstWord
+    public static func parse(pInfo: ParsedInfo, skipLine: Bool = true) throws -> MethodObject? {
+        let originalLine = pInfo.line
+        let firstWord = pInfo.firstWord
         
         let line = originalLine.remainingLine(after: firstWord) //remove first word
         
@@ -31,7 +32,7 @@ public class MethodObject : CodeMember {
         
         let givenName = methodName.trim()
         
-        let method = MethodObject(givenName)
+        let method = MethodObject(givenName, pInfo: pInfo)
         
         let matches = arguments.matches(of: CommonRegEx.namedParameters_Capturing)
         
@@ -51,7 +52,7 @@ public class MethodObject : CodeMember {
         }
         
         if skipLine {
-            pctx.parser.skipLine()
+            pInfo.parser.skipLine()
         }
         
         return method
@@ -64,18 +65,20 @@ public class MethodObject : CodeMember {
         }
     }
     
-    public init(_ name: String, returnType: PropertyKind? = nil) {
+    public init(_ name: String, returnType: PropertyKind? = nil, pInfo: ParsedInfo) {
         self.givenname = name.trim()
         self.name = self.givenname.normalizeForVariableName()
         self.returnType = TypeInfo(returnType)
         self.body = StringTemplate("")
+        self.pInfo = pInfo
     }
     
-    public init(_ name: String, returnType: PropertyKind? = nil, @StringConvertibleBuilder _ body: () -> [StringConvertible]) {
+    public init(_ name: String, returnType: PropertyKind? = nil, pInfo: ParsedInfo, @StringConvertibleBuilder _ body: () -> [StringConvertible]) {
         self.givenname = name.trim()
         self.name = self.givenname.normalizeForVariableName()
         self.returnType = TypeInfo(returnType)
         self.body = StringTemplate(body)
+        self.pInfo = pInfo
     }
 }
 

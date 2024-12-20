@@ -48,7 +48,7 @@ public class RenderTemplateFileStmt: LineTemplateStmt, CustomDebugStringConverti
         guard FromTemplate.isNotEmpty else { return nil }
         
         if ctx.workingDirectoryString.isEmpty {
-            throw TemplateSoup_EvaluationError.workingDirectoryNotSet(lineNo)
+            throw TemplateSoup_EvaluationError.workingDirectoryNotSet(pInfo)
         }
         
         guard let fromTemplate = try? ctx.evaluate(value: FromTemplate, pInfo: pInfo) as? String
@@ -70,7 +70,7 @@ public class RenderTemplateFileStmt: LineTemplateStmt, CustomDebugStringConverti
         filename = try ContentHandler.eval(expression: filename, with: ctx) ?? filename
 
         ctx.debugLog.generatingFile(filename, with: fromTemplate)
-        if let file = try ctx.fileGenerator.generateFile(filename, template: fromTemplate) {
+        if let file = try ctx.fileGenerator.generateFile(filename, template: fromTemplate, pInfo: pInfo) {
             ctx.addGenerated(filePath: file.outputPath.string + filename)
         } else {
             ctx.debugLog.fileNotGenerated(filename, with: fromTemplate)

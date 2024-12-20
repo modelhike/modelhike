@@ -51,28 +51,28 @@ public enum ContainerParser {
         while parser.linesRemaining {
             if parser.isCurrentLineEmptyOrCommented() { parser.skipLine(); continue }
             
-            guard let pctx = parser.currentParsedInfo(level: 0) else { parser.skipLine(); continue }
-            if parser.isCurrentLineHumaneComment(pctx) { parser.skipLine(); continue } //humane comment
+            guard let pInfo = parser.currentParsedInfo(level: 0) else { parser.skipLine(); continue }
+            if parser.isCurrentLineHumaneComment(pInfo) { parser.skipLine(); continue } //humane comment
             
-            if ContainerModuleMember.canParse(firstWord: pctx.firstWord) {
-                if let member = try ContainerModuleMember.parse(with: pctx) {
+            if ContainerModuleMember.canParse(firstWord: pInfo.firstWord) {
+                if let member = try ContainerModuleMember.parse(with: pInfo) {
                     item.append(unResolved: member)
                     continue
                 } else {
-                    throw Model_ParsingError.invalidContainerMemberLine(pctx.line)
+                    throw Model_ParsingError.invalidContainerMemberLine(pInfo)
                 }
             }
             
-            if try pctx.tryParseAnnotations(with: item) {
+            if try pInfo.tryParseAnnotations(with: item) {
                 continue
             }
             
-            if MethodObject.canParse(firstWord: pctx.firstWord) {
-                if let method = try MethodObject.parse(with: pctx) {
+            if MethodObject.canParse(firstWord: pInfo.firstWord) {
+                if let method = try MethodObject.parse(pInfo: pInfo) {
                     item.append(method)
                     continue
                 } else {
-                    throw Model_ParsingError.invalidMethodLine(pctx.line)
+                    throw Model_ParsingError.invalidMethodLine(pInfo)
                 }
             }
             

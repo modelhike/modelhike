@@ -25,12 +25,12 @@ public class PrintExpressionContent: ContentLineItem {
     fileprivate func parseLine(_ line: String) throws {
         guard let match = line.wholeMatch(of: expressionRegex )
                             else {
-            throw TemplateSoup_ParsingError.invalidExpression(pInfo.lineNo, line)
+            throw TemplateSoup_ParsingError.invalidExpression(line, pInfo)
                             }
 
         let (_, expn, modifiersList) = match.output
         self.expression = expn
-        self.ModifiersList = try Modifiers.parse(string: modifiersList, context: pInfo.ctx)
+        self.ModifiersList = try Modifiers.parse(string: modifiersList, pInfo: pInfo)
 
     }
     
@@ -45,7 +45,7 @@ public class PrintExpressionContent: ContentLineItem {
                 return String(describing: modifiedBody)
             }
         } else {
-            throw TemplateSoup_ParsingError.invalidExpression(pInfo.lineNo, expression)
+            throw TemplateSoup_ParsingError.invalidExpression(expression, pInfo)
         }
     }
     

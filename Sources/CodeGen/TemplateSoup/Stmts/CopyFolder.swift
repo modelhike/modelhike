@@ -48,7 +48,7 @@ public class CopyFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
         guard FromFolder.isNotEmpty else { return nil }
         
         if ctx.workingDirectoryString.isEmpty {
-            throw TemplateSoup_EvaluationError.workingDirectoryNotSet(lineNo)
+            throw TemplateSoup_EvaluationError.workingDirectoryNotSet(pInfo)
         }
         
         guard let fromFolder = try? ctx.evaluate(value: FromFolder, pInfo: pInfo) as? String
@@ -60,14 +60,14 @@ public class CopyFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
             let folderName = fromFolder
 
             ctx.debugLog.copyingFolder(folderName)
-            let file = try ctx.fileGenerator.copyFolder(folderName)
+            let file = try ctx.fileGenerator.copyFolder(folderName, pInfo: pInfo)
             try ctx.addGenerated(folderPath: file.outputFolder)
         } else {
             guard let toFolder = try? ctx.evaluate(value: ToFolder, pInfo: pInfo) as? String
                                                                         else { return nil }
             
             ctx.debugLog.copyingFolder(fromFolder, to: toFolder)
-            let folder = try ctx.fileGenerator.copyFolder(fromFolder, to: toFolder)
+            let folder = try ctx.fileGenerator.copyFolder(fromFolder, to: toFolder, pInfo: pInfo)
             try ctx.addGenerated(folderPath: folder.outputFolder)
         }
         

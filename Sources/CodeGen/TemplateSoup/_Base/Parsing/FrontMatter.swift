@@ -10,6 +10,7 @@ public struct FrontMatter {
     private let lines: [String]
     private let parser: LineParser
     private let ctx: Context
+    private let pInfo: ParsedInfo
     
     public func hasDirective(_ directive: String) -> ParsedInfo? {
         do {
@@ -34,8 +35,13 @@ public struct FrontMatter {
     }
     
     public func processVariables() throws {
-        
+        let curPInfo = pInfo
+        var index = 1 // front matter starts after the separator (---) line
+
         for line in lines {
+            curPInfo.line = line
+            curPInfo.lineNo = index
+            
             let split = line.split(separator: TemplateConstants.frontMatterSplit, maxSplits: 1, omittingEmptySubsequences: true)
             if split.count == 2 {
                 let lhs = String(split[0]).trim()
@@ -43,37 +49,39 @@ public struct FrontMatter {
 
                 if let firstChar = lhs.first {
                     switch firstChar {
-                        case "/" : try processCondition(lhs: lhs, rhs: rhs)
-                        default: setVariablesToMemory(lhs: lhs, rhs: rhs)
+                    case "/" : try processCondition(lhs: lhs, rhs: rhs, pInfo: curPInfo)
+                    default: setVariablesToMemory(lhs: lhs, rhs: rhs)
                     }
                 }
             } else {
-                throw TemplateSoup_ParsingError.invalidFrontMatter(line)
+                throw TemplateSoup_ParsingError.invalidFrontMatter(line, curPInfo)
             }
+            
+            index += 1
         }
         
     }
     
-    private func processCondition(lhs: String, rhs: String) throws {
+    private func processCondition(lhs: String, rhs: String, pInfo: ParsedInfo) throws {
         let directiveName = lhs.dropFirst().lowercased()
         
         switch directiveName {
-            case ParserDirectives.includeIf :
+            case ParserDirective.includeIf :
             if let pInfo = parser.currentParsedInfo(level: 0) {
                 let result = try ctx.evaluateCondition(expression: rhs, pInfo: pInfo)
                 if !result {
-                    throw ParserDirectives.excludeFile(parser.identifier)
+                    throw ParserDirective.excludeFile(parser.identifier)
                 }
             }
                 
-            case ParserDirectives.includeFor:
+            case ParserDirective.includeFor:
                 //handled elsewhere
                 break
-            case ParserDirectives.outputFilename:
+            case ParserDirective.outputFilename:
                 //handled elsewhere
                 break
             default:
-                throw ParsingError.unrecognisedParsingDirective(parser.curLineNoForDisplay, parser.identifier, String(directiveName))
+            throw ParsingError.unrecognisedParsingDirective(String(directiveName), pInfo)
         }
     }
     
@@ -82,7 +90,13 @@ public struct FrontMatter {
     }
     
     public func rhs(for lhsValueToCheck: String) throws -> String? {
+        let curPInfo = pInfo
+        var index = 1 // front matter starts after the separator (---) line
+        
         for line in lines {
+            curPInfo.line = line
+            curPInfo.lineNo = index
+            
             let split = line.split(separator: TemplateConstants.frontMatterSplit, maxSplits: 1, omittingEmptySubsequences: true)
             if split.count == 2 {
                 let lhs = String(split[0]).trim()
@@ -92,8 +106,10 @@ public struct FrontMatter {
                     return rhs
                 }
             } else {
-                throw TemplateSoup_ParsingError.invalidFrontMatter(line)
+                throw TemplateSoup_ParsingError.invalidFrontMatter(line, curPInfo)
             }
+            
+            index += 1
         }
         
         return nil
@@ -107,5 +123,7 @@ public struct FrontMatter {
         lineParser.skipLine()
         self.lines = lineParser.parseLinesTill(lineHasOnly: TemplateConstants.frontMatterIndicator)
         lineParser.skipLine()
+        
+        self.pInfo = ParsedInfo.dummy(line: "FrontMatter", identifier: lineParser.identifier, with: ctx)
     }
 }

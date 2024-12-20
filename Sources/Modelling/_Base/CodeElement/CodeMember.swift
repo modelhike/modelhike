@@ -7,6 +7,7 @@
 import Foundation
 
 public protocol CodeMember : HasAttributes, HasTags, CustomDebugStringConvertible {
+    var pInfo: ParsedInfo {get}
     var name: String {get}
     var givenname : String {get}
 }

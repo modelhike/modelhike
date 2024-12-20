@@ -6,30 +6,40 @@
 
 import Foundation
 
-public enum EvaluationError: ErrorWithInfo {
-    case invalidLine(Int, String, String, Error)
-    case invalidLineWithInfo_HavingLineno(String, String, Error)
-    case invalidInput(String)
-    case invalidAppState(String)
-    case workingDirectoryNotSet(Int, String)
-    case templateDoesNotExist(Int, String, String)
-    case readingError(Int, String, String)
+public enum EvaluationError: ErrorWithMessageAndParsedInfo {
+    case invalidLine(ParsedInfo, ErrorWithMessage)
+    //case invalidLineWithInfo_HavingLineno(ParsedInfo, ErrorWithMessage)
+    case invalidInput(String, ParsedInfo)
+    case invalidAppState(String, ParsedInfo)
+    case failedWriteOperation(String, ParsedInfo)
+    case workingDirectoryNotSet(ParsedInfo, ErrorWithMessage)
+    case templateDoesNotExist(ParsedInfo, ErrorWithMessage)
+    case readingError(ParsedInfo, ErrorWithMessage)
 
     public var info: String {
         switch (self) {
-            case .invalidLine(let lineNo, let identifier, let info,  _) :
-                return "🐞🐞 \(identifier) >> [line no : \(lineNo)] \(info)"
-            case .invalidLineWithInfo_HavingLineno(let identifier, let info,  _) :
-                return "🐞🐞 \(identifier) >> \(info)"
-            case .invalidInput(let msg): return msg
-            case .invalidAppState(let msg): return msg
-            case .workingDirectoryNotSet(let lineNo, let identifier) : 
-                return "🐞🐞 \(identifier) >> [line no : \(lineNo)] Working info not set!!!"
-            case .templateDoesNotExist(let lineNo, let identifier, let info) :
-                return "🐞🐞 \(identifier) >> [line no : \(lineNo)] \(info)"
-            case .readingError(let lineNo, let identifier, let info) :
-                return "🐞🐞 \(identifier) >> [line no : \(lineNo)] \(info)"
+        case .invalidLine(_, let err) : return err.info
+//            case .invalidLineWithInfo_HavingLineno(let pInfo, let err) :
+//                return "🐞🐞 \(pInfo.identifier) >> \(err.info)"
+        case .invalidInput(let msg, _): return msg
+        case .invalidAppState(let msg, _): return msg
+        case .failedWriteOperation(let msg, _): return msg
+        case .workingDirectoryNotSet(_, let err) : return err.info
+        case .templateDoesNotExist(_, let err) : return err.info
+        case .readingError(_, let err) : return err.info
         }
     }
 
+    public var pInfo: ParsedInfo {
+        switch (self) {
+        case .invalidLine(let pInfo, _) : pInfo
+        //case .invalidLineWithInfo_HavingLineno(let pInfo, _) : pInfo
+        case .invalidInput(_, let pInfo): pInfo
+        case .invalidAppState(_, let pInfo): pInfo
+        case .failedWriteOperation(_, let pInfo): pInfo
+        case .workingDirectoryNotSet(let pInfo, _) : pInfo
+        case .templateDoesNotExist(let pInfo, _) : pInfo
+        case .readingError(let pInfo, _) : pInfo
+        }
+    }
 }

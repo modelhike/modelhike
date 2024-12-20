@@ -46,32 +46,33 @@ public enum DtoObjectParser {
         while parser.linesRemaining {
             if parser.isCurrentLineEmptyOrCommented() { parser.skipLine(); continue }
 
-            guard let pctx = parser.currentParsedInfo(level : 0) else { parser.skipLine(); continue }
-            if parser.isCurrentLineHumaneComment(pctx) { parser.skipLine(); continue } //humane comment
+            guard let pInfo = parser.currentParsedInfo(level : 0) else { parser.skipLine(); continue }
+            if parser.isCurrentLineHumaneComment(pInfo) { parser.skipLine(); continue } //humane comment
 
-            if DerivedProperty.canParse(firstWord: pctx.firstWord) {
-                if let prop = try DerivedProperty.parse(with: pctx) {
+            if DerivedProperty.canParse(firstWord: pInfo.firstWord) {
+                if let prop = try DerivedProperty.parse(pInfo: pInfo) {
                     item.append(prop)
                     continue
                 } else {
-                    throw Model_ParsingError.invalidDerivedPropertyLine(pctx.line)
+                    let msg = pInfo.line
+                    throw Model_ParsingError.invalidDerivedProperty(msg, pInfo)
                 }
             }
             
-            if MethodObject.canParse(firstWord: pctx.firstWord) {
-                if let method = try MethodObject.parse(with: pctx) {
+            if MethodObject.canParse(firstWord: pInfo.firstWord) {
+                if let method = try MethodObject.parse(pInfo: pInfo) {
                     item.append(method)
                     continue
                 } else {
-                    throw Model_ParsingError.invalidMethodLine(pctx.line)
+                    throw Model_ParsingError.invalidMethodLine(pInfo)
                 }
             }
             
-            if try pctx.tryParseAnnotations(with: item) {
+            if try pInfo.tryParseAnnotations(with: item) {
                 continue
             }
             
-            if try pctx.tryParseAttachedSections(with: item) {
+            if try pInfo.tryParseAttachedSections(with: item) {
                 continue
             }
             

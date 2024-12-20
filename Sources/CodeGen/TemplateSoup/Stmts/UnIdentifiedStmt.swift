@@ -7,18 +7,16 @@
 import Foundation
 
 public class UnIdentifiedStmt: TemplateItem, CustomDebugStringConvertible {
-    public let line: String
-    public let lineNo: Int
     public private(set) var pInfo: ParsedInfo
 
     public func execute(with ctx: Context) throws -> String? {
-        throw TemplateSoup_EvaluationError.unIdentifiedStmt(lineNo, line)
+        throw TemplateSoup_EvaluationError.unIdentifiedStmt(pInfo)
     }
     
     public var debugDescription: String {
         let str =  """
         UN-IDENTIFIED stmt (level: \(pInfo.level))
-        - line: \(line.stmtPartOnly())
+        - line: \(pInfo.line.stmtPartOnly())
         
         """
        
@@ -27,8 +25,6 @@ public class UnIdentifiedStmt: TemplateItem, CustomDebugStringConvertible {
     }
 
     public init(pInfo: ParsedInfo) {
-        self.line = pInfo.line
-        self.lineNo = pInfo.lineNo
         self.pInfo = pInfo
     }
 }

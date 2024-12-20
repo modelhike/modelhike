@@ -15,12 +15,12 @@ public struct ModifierInstanceWithoutArgs<I, T> : ModifierInstanceWithoutArgsPro
         
         if let typedValue = value as? I {
             if type(of: typedValue) != self.callerType {
-                throw TemplateSoup_ParsingError.modifierCalledOnwrongType(self.name, String(describing: type(of: value)))
+                throw TemplateSoup_ParsingError.modifierCalledOnwrongType(self.name, String(describing: type(of: value)), pInfo)
             }
             
             return try handler(typedValue, pInfo) as Any
         } else {
-            throw TemplateSoup_ParsingError.modifierCalledOnwrongType(self.name, String(describing: type(of: value)))
+            throw TemplateSoup_ParsingError.modifierCalledOnwrongType(self.name, String(describing: type(of: value)), pInfo)
         }
     }
     
@@ -45,7 +45,7 @@ public struct ModifierInstanceWithUnNamedArgs<I, T> : ModifierInstanceWithUnName
         
         if let typedValue = value as? I {
             if type(of: typedValue) != self.callerType {
-                throw TemplateSoup_ParsingError.modifierCalledOnwrongType(self.name, String(describing: type(of: value)))
+                throw TemplateSoup_ParsingError.modifierCalledOnwrongType(self.name, String(describing: type(of: value)), pInfo)
             }
             
             var argumentValues: [Any] = []
@@ -55,13 +55,13 @@ public struct ModifierInstanceWithUnNamedArgs<I, T> : ModifierInstanceWithUnName
                     argumentValues.append(argValue)
                 } else {
                     //argumentValues.append(Optional<Any>.none as Any)
-                    throw TemplateSoup_ParsingError.modifierInvalidArguments(pInfo.lineNo, self.name)
+                    throw TemplateSoup_ParsingError.modifierInvalidArguments(self.name, pInfo)
                 }
             }
             
             return try handler(typedValue, argumentValues, pInfo) as Any
         } else {
-            throw TemplateSoup_ParsingError.modifierCalledOnwrongType(self.name, String(describing: type(of: value)))
+            throw TemplateSoup_ParsingError.modifierCalledOnwrongType(self.name, String(describing: type(of: value)), pInfo)
         }
     }
     

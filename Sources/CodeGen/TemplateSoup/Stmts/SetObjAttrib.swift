@@ -68,7 +68,7 @@ public class SetObjectAttributeStmt: BlockOrLineTemplateStmt, CustomDebugStringC
         self.SetObject = setObj
         self.ObjAttribute = objAttrib
         self.ValueExpression = ""
-        self.ModifiersList = try Modifiers.parse(string: modifiersList, context: pInfo.ctx)
+        self.ModifiersList = try Modifiers.parse(string: modifiersList, pInfo: pInfo)
         
         return true
     }
@@ -81,7 +81,7 @@ public class SetObjectAttributeStmt: BlockOrLineTemplateStmt, CustomDebugStringC
         self.SetObject = setObj
         self.ObjAttribute = objAttrib
         self.ValueExpression = value
-        self.ModifiersList = try Modifiers.parse(string: modifiersList, context: pInfo.ctx)
+        self.ModifiersList = try Modifiers.parse(string: modifiersList, pInfo: pInfo)
 
         return true
     }

@@ -18,7 +18,7 @@ public class InlineFunctionCallContent: ContentLineItem {
         if try stmt.matchLine(line: line) {
             self.fnCall = stmt
         } else {
-            throw TemplateSoup_ParsingError.invalidExpression(pInfo.lineNo, line)
+            throw TemplateSoup_ParsingError.invalidExpression(line, pInfo)
         }
     }
     

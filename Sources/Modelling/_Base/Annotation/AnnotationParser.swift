@@ -11,8 +11,8 @@ public enum AnnotationParser {
         return firstWord == ModelConstants.Annotation_Start
     }
     
-    public static func parse(with pctx: ParsedInfo) throws -> (any Annotation)? {
-        let line = pctx.line.remainingLine(after: pctx.firstWord) //remove first word
+    public static func parse(pInfo: ParsedInfo) throws -> (any Annotation)? {
+        let line = pInfo.line.remainingLine(after: pInfo.firstWord) //remove first word
 
         let split = line.split(separator: ModelConstants.Annotation_Split, maxSplits: 1, omittingEmptySubsequences: true)
         
@@ -22,14 +22,14 @@ public enum AnnotationParser {
             
             switch annotationName {
                 case AnnotationConstants.listApi:
-                    return try MappingAnnotation(annotationName, line: remainingLine, with: pctx)
+                    return try MappingAnnotation(annotationName, line: remainingLine, pInfo: pInfo)
                 case AnnotationConstants.apisToGenerate:
-                    return try ValuesAnnotation(annotationName, line: remainingLine, with: pctx)
+                    return try ValuesAnnotation(annotationName, line: remainingLine, pInfo: pInfo)
                 default:
-                    throw Model_ParsingError.invalidAnnotation(pctx.parser.curLineNoForDisplay, pctx.line)
+                    throw Model_ParsingError.invalidAnnotationLine(pInfo)
             }
         } else {
-            throw Model_ParsingError.invalidAnnotation(pctx.parser.curLineNoForDisplay, pctx.line)
+            throw Model_ParsingError.invalidAnnotationLine(pInfo)
         }
         
     }

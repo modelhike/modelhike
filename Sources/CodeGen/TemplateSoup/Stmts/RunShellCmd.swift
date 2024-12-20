@@ -37,7 +37,7 @@ public class RunShellCmdStmt: LineTemplateStmt, CustomDebugStringConvertible {
         guard CommandToRun.isNotEmpty else { return nil }
         
         if ctx.workingDirectoryString.isEmpty {
-            throw TemplateSoup_EvaluationError.workingDirectoryNotSet(lineNo)
+            throw TemplateSoup_EvaluationError.workingDirectoryNotSet(pInfo)
         }
         
         print("⚙️  Running the shell command...")

@@ -34,13 +34,13 @@ public enum AnnotationProcessor {
                             case "none":
                                 break //nothing to add
                             default :
-                                throw Model_ParsingError.invalidAnnotation(annotation.parsedContextInfo.lineNo, annotation.parsedContextInfo.line)
+                            throw Model_ParsingError.invalidAnnotationLine(annotation.pInfo)
                         }
                     }
                     
                 }
             default:
-                throw Model_ParsingError.invalidAnnotation(annotation.parsedContextInfo.lineNo, annotation.parsedContextInfo.line)
+            throw Model_ParsingError.invalidAnnotationLine(annotation.pInfo)
         }
     }
 }

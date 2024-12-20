@@ -59,11 +59,10 @@ public enum ContentHandler {
     
     static func parseLine(_ line: String, pInfo: ParsedInfo, level: Int) throws -> [ContentLineItem] {
         let ctx = pInfo.ctx
-        let lineNo = pInfo.lineNo
         
         var items: [ContentLineItem] = []
 
-        ctx.debugLog.content(line, lineNo: lineNo)
+        ctx.debugLog.content(line, pInfo: pInfo)
         
         let matches = line.matches(of: Self.lineRegEx )
             
@@ -78,14 +77,14 @@ public enum ContentHandler {
             }
             
             if let inlineCall = inlineCall {
-                ctx.debugLog.inlineFunctionCall(inlineCall, lineNo: lineNo)
+                ctx.debugLog.inlineFunctionCall(inlineCall, pInfo: pInfo)
                 
                 let inlineCallContent = try InlineFunctionCallContent(fnCallLine: inlineCall, pInfo: pInfo, level: level)
                 items.append(inlineCallContent)
             }
             
             if let expression = expression {
-                ctx.debugLog.inlineExpression(expression, lineNo: lineNo)
+                ctx.debugLog.inlineExpression(expression, pInfo: pInfo)
                 
                 let expressionContent = try PrintExpressionContent(expressionLine: expression, pInfo: pInfo, level: level)
                 items.append(expressionContent)
@@ -95,10 +94,10 @@ public enum ContentHandler {
         return items
     }
     
-    public static func execute(line: String, with ctx: Context) throws -> String? {
+    public static func execute(line: String, identifier: String, with ctx: Context) throws -> String? {
         var str = ""
         
-        let pInfo = ParsedInfo.dummy(for: line, with: ctx);
+        let pInfo = ParsedInfo.dummy(line: line, identifier: identifier, with: ctx);
         let items = try parseLine(line, pInfo: pInfo, level: 0)
         
         for item in items {
@@ -111,10 +110,10 @@ public enum ContentHandler {
     }
     
     public static func eval(line: String, pInfo: ParsedInfo) throws -> String? {
-        return try ContentHandler.execute(line: line, with: pInfo.ctx)
+        return try ContentHandler.execute(line: line, identifier: pInfo.identifier, with: pInfo.ctx)
     }
     
     public static func eval(expression: String, with ctx: Context) throws -> String? {
-        return try ContentHandler.execute(line: expression, with: ctx)
+        return try ContentHandler.execute(line: expression, identifier: "Eval", with: ctx)
     }
 }

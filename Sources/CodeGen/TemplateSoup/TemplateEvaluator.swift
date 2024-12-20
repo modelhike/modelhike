@@ -39,31 +39,17 @@ public struct TemplateEvaluator: TemplateSoupEvaluator {
                 }
             }
         } catch let err {
-            let identifier = lineParser.identifier
             if let parseErr = err as? TemplateSoup_ParsingError {
-                //as the multiblock is proccessed separately, getting current line will not work for that; so lineNo is passed along
-                if case let .invalidMultiBlockStmt(lineNo, _) = parseErr {
-                    throw ParsingError.invalidLine(lineNo, identifier, parseErr.info, parseErr)
-                } else if case let .modifierInvalidArguments(lineNo, _) = parseErr {
-                    throw ParsingError.invalidLine(lineNo, identifier, parseErr.info, parseErr)
-                } else if case let .invalidExpression(lineNo, _) = parseErr {
-                        throw ParsingError.invalidLine(lineNo, identifier, parseErr.info, parseErr)
-                } else if case let .invalidPropertyNameUsedInCall(lineNo, _) = parseErr {
-                        throw ParsingError.invalidLine(lineNo, identifier, parseErr.info, parseErr)
-                } else if case let .templateFunctionNotFound(lineNo, _) = parseErr {
-                    throw ParsingError.invalidLine(lineNo, identifier, parseErr.info, parseErr)
-                } else {
-                    throw ParsingError.invalidLine(parser.lineParser.curLineNoForDisplay, identifier, parseErr.info, parseErr)
-                }
+                throw ParsingError.invalidLine(parseErr.pInfo, parseErr)
             } else if let evalErr = err as? TemplateSoup_EvaluationError {
-                if case let .workingDirectoryNotSet(lineNo) = evalErr {
-                    throw EvaluationError.workingDirectoryNotSet(lineNo, identifier)
-                } else if case .unIdentifiedStmt(_, _) = evalErr {
-                    throw EvaluationError.invalidLineWithInfo_HavingLineno(identifier, evalErr.info, evalErr)
+                if case let .workingDirectoryNotSet(pInfo) = evalErr {
+                    throw EvaluationError.workingDirectoryNotSet(pInfo, evalErr)
+                } else if case let .unIdentifiedStmt(pInfo) = evalErr {
+                    throw EvaluationError.invalidLine(pInfo, evalErr)
                 } else {
-                    throw EvaluationError.invalidLine(parser.lineParser.curLineNoForDisplay, identifier, evalErr.info,   evalErr)
+                    throw EvaluationError.invalidLine(evalErr.pInfo, evalErr)
                 }
-            } else if let directive = err as? ParserDirectives {
+            } else if let directive = err as? ParserDirective {
                 if case let .excludeFile(filename) = directive {
                     ctx.debugLog.excludingFile(filename)
                     return nil //nothing to generate from this excluded file
