@@ -16,7 +16,7 @@ open class StaticFolder  {
 //    }
     
     public func copyFiles() throws {
-        try repo.copyFiles(foldername: foldername, to: outputFolder, pInfo: pInfo)
+        try repo.copyFiles(foldername: foldername, to: outputFolder, with: pInfo)
     }
     
     public init(foldername: String, repo: InputFileRepository, to newFoldername:String, path outFilePath: LocalPath, pInfo: ParsedInfo) {

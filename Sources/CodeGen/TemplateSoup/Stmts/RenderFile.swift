@@ -51,7 +51,7 @@ public class RenderTemplateFileStmt: LineTemplateStmt, CustomDebugStringConverti
             throw TemplateSoup_EvaluationError.workingDirectoryNotSet(pInfo)
         }
         
-        guard let fromTemplate = try? ctx.evaluate(value: FromTemplate, pInfo: pInfo) as? String
+        guard let fromTemplate = try? ctx.evaluate(value: FromTemplate, with: pInfo) as? String
                                                                                 else { return nil }
         
         try ctx.fileGenerator.setRelativePath(ctx.workingDirectoryString)
@@ -61,7 +61,7 @@ public class RenderTemplateFileStmt: LineTemplateStmt, CustomDebugStringConverti
         if ToFile.isEmpty {
             filename = fromTemplate
         } else {
-            guard let toFile = try? ctx.evaluate(value: ToFile, pInfo: pInfo) as? String
+            guard let toFile = try? ctx.evaluate(value: ToFile, with: pInfo) as? String
                                                                         else { return nil }
             filename = toFile
         }
@@ -70,7 +70,7 @@ public class RenderTemplateFileStmt: LineTemplateStmt, CustomDebugStringConverti
         filename = try ContentHandler.eval(expression: filename, with: ctx) ?? filename
 
         ctx.debugLog.generatingFile(filename, with: fromTemplate)
-        if let file = try ctx.fileGenerator.generateFile(filename, template: fromTemplate, pInfo: pInfo) {
+        if let file = try ctx.fileGenerator.generateFile(filename, template: fromTemplate, with: pInfo) {
             ctx.addGenerated(filePath: file.outputPath.string + filename)
         } else {
             ctx.debugLog.fileNotGenerated(filename, with: fromTemplate)

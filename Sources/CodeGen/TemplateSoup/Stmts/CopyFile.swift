@@ -51,7 +51,7 @@ public class CopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible {
             throw TemplateSoup_EvaluationError.workingDirectoryNotSet(pInfo)
         }
         
-        guard let fromFile = try? ctx.evaluate(value: FromFile, pInfo: pInfo) as? String
+        guard let fromFile = try? ctx.evaluate(value: FromFile, with: pInfo) as? String
                                                                     else { return nil }
         
         try ctx.fileGenerator.setRelativePath(ctx.workingDirectoryString)
@@ -60,14 +60,14 @@ public class CopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible {
             let fileName = fromFile
 
             ctx.debugLog.copyingFile(fileName)
-            let file = try ctx.fileGenerator.copyFile(fileName, pInfo: pInfo)
+            let file = try ctx.fileGenerator.copyFile(fileName, with: pInfo)
             ctx.addGenerated(filePath: file.outputPath.string + fileName)
         } else {
-            guard let toFile = try? ctx.evaluate(value: ToFile, pInfo: pInfo) as? String
+            guard let toFile = try? ctx.evaluate(value: ToFile, with: pInfo) as? String
                                                                         else { return nil }
             
             ctx.debugLog.copyingFile(fromFile, to: toFile)
-            let file = try ctx.fileGenerator.copyFile(fromFile, to: toFile, pInfo: pInfo)
+            let file = try ctx.fileGenerator.copyFile(fromFile, to: toFile, with: pInfo)
             ctx.addGenerated(filePath: file.outputPath.string + toFile)
         }
         

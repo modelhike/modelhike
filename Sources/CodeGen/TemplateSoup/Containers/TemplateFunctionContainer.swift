@@ -34,7 +34,7 @@ public class TemplateFunctionContainer : TemplateStmtContainer {
         
         //set the macro function arguments into context
         for arg in args {
-            ctx.variables[arg.name] = try? ctx.evaluate(value: "\(arg.value)", pInfo: pInfo )
+            ctx.variables[arg.name] = try? ctx.evaluate(value: "\(arg.value)", with: pInfo )
         }
         
         if let body = try container.execute(with: ctx) {

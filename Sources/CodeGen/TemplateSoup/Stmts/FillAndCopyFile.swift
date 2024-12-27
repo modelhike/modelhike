@@ -51,7 +51,7 @@ public class FillAndCopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible
             throw TemplateSoup_EvaluationError.workingDirectoryNotSet(pInfo)
         }
         
-        guard let fromFile = try? ctx.evaluate(value: FromFile, pInfo: pInfo) as? String
+        guard let fromFile = try? ctx.evaluate(value: FromFile, with: pInfo) as? String
                                                                     else { return nil }
 
         try ctx.fileGenerator.setRelativePath(ctx.workingDirectoryString)
@@ -60,17 +60,17 @@ public class FillAndCopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible
             let fileName = fromFile
             
             ctx.debugLog.generatingFile(fileName)
-            if let file = try ctx.fileGenerator.fillPlaceholdersAndCopyFile(fileName, pInfo: pInfo) {
+            if let file = try ctx.fileGenerator.fillPlaceholdersAndCopyFile(fileName, with: pInfo) {
                 ctx.addGenerated(filePath: file.outputPath.string + fileName)
             } else {
                 ctx.debugLog.fileNotGenerated(fileName)
             }
         } else {
-            guard let toFile = try? ctx.evaluate(value: ToFile, pInfo: pInfo) as? String
+            guard let toFile = try? ctx.evaluate(value: ToFile, with: pInfo) as? String
                                                                         else { return nil }
             
             ctx.debugLog.generatingFile(toFile)
-            if let file = try ctx.fileGenerator.fillPlaceholdersAndCopyFile(fromFile, to: toFile, pInfo: pInfo) {
+            if let file = try ctx.fileGenerator.fillPlaceholdersAndCopyFile(fromFile, to: toFile, with: pInfo) {
                 ctx.addGenerated(filePath: file.outputPath.string + toFile)
             } else {
                 ctx.debugLog.fileNotGenerated(toFile)

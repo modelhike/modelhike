@@ -16,7 +16,7 @@ open class PlaceHolderFile : OutputFile {
     public func persist() throws {
         let data : [String: Any] = [:]
         
-        if let contents = try renderer.renderTemplate(fileName: self.oldFilename, data: data, pInfo: pInfo) {
+        if let contents = try renderer.renderTemplate(fileName: self.oldFilename, data: data, with: pInfo) {
             let outFile = LocalFile(path: outputPath / filename)
             try outFile.write(contents)
         }

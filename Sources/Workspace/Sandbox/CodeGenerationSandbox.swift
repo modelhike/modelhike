@@ -54,7 +54,7 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
             print("⚠️ Didn't find 'Root' folder in Blueprint !!!")
         }
         
-        return try templateSoup.renderTemplate(fileName: TemplateConstants.MainTemplateFile, pInfo: pInfo)
+        return try templateSoup.renderTemplate(fileName: TemplateConstants.MainTemplateFile, with: pInfo)
     }
     
     
@@ -65,14 +65,14 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
         }
         
         context.debugLog.renderingFolder(fromFolder, to: toFolder)
-        let folder = try context.fileGenerator.renderFolder(fromFolder, to: toFolder, pInfo: pInfo)
+        let folder = try context.fileGenerator.renderFolder(fromFolder, to: toFolder, with: pInfo)
         return folder
     }
     
     public func renderTemplate(string templateString: String, data: [String: Any]) throws -> String? {
         let pInfo = ParsedInfo.dummyForMainFile(with: context)
 
-        return try templateSoup.renderTemplate(string: templateString, data: data, pInfo: pInfo)
+        return try templateSoup.renderTemplate(string: templateString, data: data, with: pInfo)
     }
     
     public init(context: Context) {
@@ -94,7 +94,7 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
         try generation_dir.ensureExists()
     }
     
-    public func generateFile(_ filename: String, template: String, pInfo: ParsedInfo) throws -> RenderedFile? {
+    public func generateFile(_ filename: String, template: String, with pInfo: ParsedInfo) throws -> RenderedFile? {
         if try !context.events.canRender(filename: filename) { //if handler returns false, dont render file
             return nil
         }
@@ -104,7 +104,7 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
         return file
     }
     
-    public func generateFileWithData(_ filename: String, template: String, data: [String: Any], pInfo: ParsedInfo) throws -> RenderedFile? {
+    public func generateFileWithData(_ filename: String, template: String, data: [String: Any], with pInfo: ParsedInfo) throws -> RenderedFile? {
         if try !context.events.canRender(filename: filename) { //if handler returns false, dont render file
             return nil
         }
@@ -114,31 +114,31 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
         return file
     }
     
-    public func copyFile(_ filename: String, pInfo: ParsedInfo) throws -> StaticFile {
+    public func copyFile(_ filename: String, with pInfo: ParsedInfo) throws -> StaticFile {
         let file = StaticFile(filename: filename, repo: templateSoup.repo, to: filename, path: generation_dir, pInfo: pInfo)
         try file.persist()
         return file
     }
         
-    public func copyFile(_ filename: String, to newFilename: String, pInfo: ParsedInfo) throws -> StaticFile {
+    public func copyFile(_ filename: String, to newFilename: String, with pInfo: ParsedInfo) throws -> StaticFile {
         let file = StaticFile(filename: filename, repo: templateSoup.repo, to: newFilename, path: generation_dir, pInfo: pInfo)
         try file.persist()
         return file
     }
     
-    public func copyFolder(_ foldername: String, pInfo: ParsedInfo) throws -> StaticFolder {
+    public func copyFolder(_ foldername: String, with pInfo: ParsedInfo) throws -> StaticFolder {
         let folder = StaticFolder(foldername: foldername, repo: templateSoup.repo, to: foldername, path: generation_dir, pInfo: pInfo)
         try folder.copyFiles()
         return folder
     }
     
-    public func copyFolder(_ foldername: String, to newPath: String, pInfo: ParsedInfo) throws -> StaticFolder {
+    public func copyFolder(_ foldername: String, to newPath: String, with pInfo: ParsedInfo) throws -> StaticFolder {
         let folder = StaticFolder(foldername: foldername, repo: templateSoup.repo, to: newPath, path: generation_dir, pInfo: pInfo)
         try folder.copyFiles()
         return folder
     }
     
-    public func renderFolder(_ foldername: String, to newPath: String, pInfo: ParsedInfo) throws -> RenderedFolder {
+    public func renderFolder(_ foldername: String, to newPath: String, with pInfo: ParsedInfo) throws -> RenderedFolder {
         //While rendering folder, onBeforeRenderFile is handled within the folder-rendering function
         //This is possibleas onBeforeRenderFile is part of templateSoup
         let folder = RenderedFolder(foldername: foldername, templateSoup: templateSoup, to: newPath, path: generation_dir, pInfo: pInfo)
@@ -146,7 +146,7 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
         return folder
     }
     
-    public func fillPlaceholdersAndCopyFile(_ filename: String, pInfo: ParsedInfo) throws -> PlaceHolderFile? {
+    public func fillPlaceholdersAndCopyFile(_ filename: String, with pInfo: ParsedInfo) throws -> PlaceHolderFile? {
         if try !context.events.canRender(filename: filename) { //if handler returns false, dont render file
             return nil
         }
@@ -156,7 +156,7 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
         return file
     }
 
-    public func fillPlaceholdersAndCopyFile(_ filename: String, to newFilename: String, pInfo: ParsedInfo) throws -> PlaceHolderFile? {
+    public func fillPlaceholdersAndCopyFile(_ filename: String, to newFilename: String, with pInfo: ParsedInfo) throws -> PlaceHolderFile? {
         if try !context.events.canRender(filename: filename) { //if handler returns false, dont render file
             return nil
         }

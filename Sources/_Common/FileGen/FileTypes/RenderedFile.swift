@@ -18,11 +18,11 @@ open class RenderedFile : OutputFile {
         let file = LocalFile(path: outputPath / filename)
                 
         if let data = data {
-            if let contents = try renderer.renderTemplate(fileName: template, data: data, pInfo: pInfo) {
+            if let contents = try renderer.renderTemplate(fileName: template, data: data, with: pInfo) {
                 try file.write(contents)
             }
         } else {
-            if let contents = try renderer.renderTemplate(fileName: template, data: [:], pInfo: pInfo) {
+            if let contents = try renderer.renderTemplate(fileName: template, data: [:], with: pInfo) {
                 try file.write(contents)
             }
         }

@@ -9,7 +9,7 @@ import Foundation
 public struct ObjectAttributeManager {
     let ctx: Context
     
-    public func getObjAttributeValue(objName: String, attributeName: String, pInfo: ParsedInfo) throws -> Optional<Any> {
+    public func getObjAttributeValue(objName: String, attributeName: String, with pInfo: ParsedInfo) throws -> Optional<Any> {
         
         if let obj = ctx.variables[objName] as? HasAttributes {
             if obj.attribs.has(attributeName) {
@@ -24,9 +24,9 @@ public struct ObjectAttributeManager {
         return nil
     }
     
-    public func setObjAttribute(objName: String, attributeName: String, valueExpression: String, modifiers: [ModifierInstance], pInfo: ParsedInfo) throws {
+    public func setObjAttribute(objName: String, attributeName: String, valueExpression: String, modifiers: [ModifierInstance], with pInfo: ParsedInfo) throws {
         if let obj = ctx.variables[objName] as? HasAttributes {
-            if let body = try ctx.evaluate(expression: valueExpression, pInfo: pInfo) {
+            if let body = try ctx.evaluate(expression: valueExpression, with: pInfo) {
                 if let modifiedBody = try Modifiers.apply(to: body, modifiers: modifiers, pInfo: pInfo) {
                     obj.attribs[attributeName] = modifiedBody
                 } else {
@@ -38,7 +38,7 @@ public struct ObjectAttributeManager {
         }
     }
     
-    public func setObjAttribute(objName: String, attributeName: String, value: Any?, pInfo: ParsedInfo) throws {
+    public func setObjAttribute(objName: String, attributeName: String, value: Any?, with pInfo: ParsedInfo) throws {
         if let obj = ctx.variables[objName] as? HasAttributes {
             if let body = value {
                 obj.attribs[attributeName] = body
@@ -48,7 +48,7 @@ public struct ObjectAttributeManager {
         }
     }
     
-    public func setObjAttribute(objName: String, attributeName: String, body: String?, modifiers: [ModifierInstance], pInfo: ParsedInfo) throws {
+    public func setObjAttribute(objName: String, attributeName: String, body: String?, modifiers: [ModifierInstance], with pInfo: ParsedInfo) throws {
         if let obj = ctx.variables[objName] as? HasAttributes {
             if let body = body {
                 if let modifiedBody = try Modifiers.apply(to: body, modifiers: modifiers, pInfo: pInfo) {

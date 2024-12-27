@@ -14,7 +14,7 @@ open class StaticFile : OutputFile {
     public var outputPath: LocalPath!
     let pInfo: ParsedInfo
     public func persist() throws {
-        let contents = try repo.readTextContents(filename: self.oldFilename, pInfo: pInfo)
+        let contents = try repo.readTextContents(filename: self.oldFilename, with: pInfo)
 
         let outFile = LocalFile(path: outputPath / filename)
         try outFile.write(contents)

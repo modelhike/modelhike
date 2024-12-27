@@ -90,7 +90,7 @@ public class SetVarStmt: BlockOrLineTemplateStmt, CustomDebugStringConvertible {
             guard SetVar.isNotEmpty,
                   ValueExpression.isNotEmpty else { return nil }
             
-            if let body = try ctx.evaluate(expression: ValueExpression, pInfo: pInfo) {
+            if let body = try ctx.evaluate(expression: ValueExpression, with: pInfo) {
                 let modifiedBody = try Modifiers.apply(to: body, modifiers: self.ModifiersList, pInfo: pInfo)
                 actualBody = modifiedBody
             }
@@ -106,7 +106,7 @@ public class SetVarStmt: BlockOrLineTemplateStmt, CustomDebugStringConvertible {
                     ctx.variables[variableName] = str
                 }
             } else {
-                try ctx.setValueOf(variableOrObjProp: variableName, value: actualBody, pInfo: pInfo)
+                try ctx.setValueOf(variableOrObjProp: variableName, value: actualBody, with: pInfo)
             }
         } else {
             
@@ -116,7 +116,7 @@ public class SetVarStmt: BlockOrLineTemplateStmt, CustomDebugStringConvertible {
                 ctx.debugLog.workingDirectoryChanged("(base path)")
                 ctx.variables[variableName] = ""
             } else {
-                ctx.variables.removeValue(forKey: variableName)
+                try ctx.setValueOf(variableOrObjProp: variableName, value: nil, with: pInfo)
             }
         }
         

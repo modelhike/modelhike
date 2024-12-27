@@ -51,7 +51,7 @@ public struct ModifierInstanceWithUnNamedArgs<I, T> : ModifierInstanceWithUnName
             var argumentValues: [Any] = []
             
             for argument in arguments {
-                if let argValue = try pInfo.ctx.evaluate(expression: argument, pInfo: pInfo) {
+                if let argValue = try pInfo.ctx.evaluate(expression: argument, with: pInfo) {
                     argumentValues.append(argValue)
                 } else {
                     //argumentValues.append(Optional<Any>.none as Any)

@@ -37,7 +37,7 @@ public class AnnnounceStmt: LineTemplateStmt, CustomDebugStringConvertible {
         guard Expression.isNotEmpty else { return nil }
         
         //see if it is an object
-        if let expn = try? ctx.evaluate(value: Expression, pInfo: pInfo) {
+        if let expn = try? ctx.evaluate(value: Expression, with: pInfo) {
             print("🔈 \(expn)")
         } else {
             print("🔈🎈[Line no: \(lineNo)] - nothing to announce")

@@ -49,7 +49,7 @@ public class ForStmt: BlockTemplateStmt, CustomDebugStringConvertible {
               InArrayVar.isNotEmpty,
               children.count != 0 else { return nil }
 
-        guard let loopItems = try ctx.valueOf(variableOrObjProp: InArrayVar, pInfo: pInfo) as? [Any] else { return nil }
+        guard let loopItems = try ctx.valueOf(variableOrObjProp: InArrayVar, with: pInfo) as? [Any] else { return nil }
         
         let loopVariableName = ForVar
         var rendering = ""

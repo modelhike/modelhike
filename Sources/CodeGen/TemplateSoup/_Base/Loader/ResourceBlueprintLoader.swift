@@ -15,7 +15,7 @@ open class ResourceBlueprintLoader : BlueprintRepository {
     var blueprintPath: String
     var resourceRoot: String
 
-    public func loadTemplate(fileName: String, pInfo: ParsedInfo) throws -> Template {
+    public func loadTemplate(fileName: String, with pInfo: ParsedInfo) throws -> Template {
         if let resourceURL = bundle.url(forResource: fileName,
                                         withExtension: TemplateConstants.TemplateExtension,
                                         subdirectory : blueprintPath ) {
@@ -70,7 +70,7 @@ open class ResourceBlueprintLoader : BlueprintRepository {
         }
     }
     
-    public func copyFiles(foldername: String, to outputFolder: LocalFolder, pInfo: ParsedInfo) throws {
+    public func copyFiles(foldername: String, to outputFolder: LocalFolder, with pInfo: ParsedInfo) throws {
         let folder = blueprintPath + foldername
         guard let resourceURL = bundle.resourceURL?.appendingPathComponent(folder) else { return }
         
@@ -103,7 +103,7 @@ open class ResourceBlueprintLoader : BlueprintRepository {
         }
     }
     
-    public func renderFiles(foldername: String, to outputFolder: LocalFolder, using templateSoup: TemplateSoup, pInfo: ParsedInfo) throws {
+    public func renderFiles(foldername: String, to outputFolder: LocalFolder, using templateSoup: TemplateSoup, with pInfo: ParsedInfo) throws {
         let folder = blueprintPath + foldername
         guard let resourceURL = bundle.resourceURL?.appendingPathComponent(folder) else { return }
         
@@ -134,7 +134,7 @@ open class ResourceBlueprintLoader : BlueprintRepository {
                         let contents = try String(contentsOf: resourcePath)
 
                         let renderClosure = { outputname, pInfo in
-                            if let renderedString = try templateSoup.renderTemplate(string: contents, identifier: resourceName, pInfo: pInfo){
+                            if let renderedString = try templateSoup.renderTemplate(string: contents, identifier: resourceName, with: pInfo){
                                 
                                 //create the folder only if any file is rendered
                                 try outputFolder.ensureExists()
@@ -150,7 +150,7 @@ open class ResourceBlueprintLoader : BlueprintRepository {
                         let parsingIdentifier = resourceName
                         if let frontMatter = try templateSoup.frontMatter(in: contents, identifier: parsingIdentifier),
                            let pInfo = frontMatter.hasDirective(ParserDirective.includeFor) {
-                            try templateSoup.forEach(forInExpression: pInfo.line, pInfo: pInfo) {
+                            try templateSoup.forEach(forInExpression: pInfo.line, with: pInfo) {
                                 if let _ = frontMatter.hasDirective(ParserDirective.outputFilename) {
                                     if let outputFilename = try frontMatter.evalDirective( ParserDirective.outputFilename, pInfo: pInfo) as? String {
                                         try renderClosure(outputFilename, pInfo)
@@ -189,7 +189,7 @@ open class ResourceBlueprintLoader : BlueprintRepository {
         }
     }
     
-    public func readTextContents(filename: String, pInfo: ParsedInfo) throws -> String {
+    public func readTextContents(filename: String, with pInfo: ParsedInfo) throws -> String {
         if let resourceURL = bundle.url(forResource: filename,
                                         withExtension: TemplateConstants.TemplateExtension,
                                         subdirectory : blueprintPath ) {

@@ -72,30 +72,30 @@ public class Context {
     //Expression Evaluation
     fileprivate let evaluator = ExpressionEvaluator()
 
-    public func evaluate(value: String, pInfo: ParsedInfo) throws -> Optional<Any> {
+    public func evaluate(value: String, with pInfo: ParsedInfo) throws -> Optional<Any> {
         return try evaluator.evaluate(value: value, pInfo: pInfo)
     }
     
-    public func evaluate(expression: String, pInfo: ParsedInfo) throws -> Optional<Any> {
+    public func evaluate(expression: String, with pInfo: ParsedInfo) throws -> Optional<Any> {
         return try evaluator.evaluate(expression: expression, pInfo: pInfo)
     }
     
-    public func evaluateCondition(expression: String, pInfo: ParsedInfo) throws -> Bool {
+    public func evaluateCondition(expression: String, with pInfo: ParsedInfo) throws -> Bool {
         return try evaluator.evaluateCondition(expression: expression, pInfo: pInfo)
     }
     
-    public func evaluateCondition(value: Any, pInfo: ParsedInfo) -> Bool {
+    public func evaluateCondition(value: Any, with pInfo: ParsedInfo) -> Bool {
         return evaluator.evaluateCondition(value: value, with: self)
     }
     
     //manage obj attributes in the context variables
-    public func valueOf(variableOrObjProp name: String, pInfo: ParsedInfo) throws -> Optional<Any> {
+    public func valueOf(variableOrObjProp name: String, with pInfo: ParsedInfo) throws -> Optional<Any> {
         let split = name.split(separator: ".")
         if split.count > 1 { //object attribute
             let variableName = "\(split[0])"
             let attributeName = "\(split[1])"
 
-            return try self.objManager!.getObjAttributeValue(objName: variableName, attributeName: attributeName, pInfo: pInfo)
+            return try self.objManager!.getObjAttributeValue(objName: variableName, attributeName: attributeName, with: pInfo)
             
         } else { // object only
             let variableName = "\(split[0])"
@@ -108,19 +108,19 @@ public class Context {
         return nil
     }
     
-    public func setValueOf(variableOrObjProp name: String, valueExpression: String, modifiers: [ModifierInstance] = [], pInfo: ParsedInfo) throws {
+    public func setValueOf(variableOrObjProp name: String, valueExpression: String, modifiers: [ModifierInstance] = [], with pInfo: ParsedInfo) throws {
         
         let split = name.split(separator: ".")
         if split.count > 1 { //object attribute
             let variableName = "\(split[0])"
             let attributeName = "\(split[1])"
 
-            try objManager.setObjAttribute(objName: variableName, attributeName: attributeName, valueExpression: valueExpression, modifiers: modifiers, pInfo: pInfo)
+            try objManager.setObjAttribute(objName: variableName, attributeName: attributeName, valueExpression: valueExpression, modifiers: modifiers, with: pInfo)
             
         } else { // object only
             let variableName = "\(split[0])"
 
-            if let body = try self.evaluate(expression: valueExpression, pInfo: pInfo) {
+            if let body = try self.evaluate(expression: valueExpression, with: pInfo) {
                 self.variables[variableName] = body
             } else {
                 self.variables.removeValue(forKey: variableName)
@@ -128,14 +128,14 @@ public class Context {
         }
     }
     
-    public func setValueOf(variableOrObjProp name: String, value: Any?, pInfo: ParsedInfo) throws {
+    public func setValueOf(variableOrObjProp name: String, value: Any?, with pInfo: ParsedInfo) throws {
         
         let split = name.split(separator: ".")
         if split.count > 1 { //object attribute
             let variableName = "\(split[0])"
             let attributeName = "\(split[1])"
 
-            try objManager.setObjAttribute(objName: variableName, attributeName: attributeName, value: value, pInfo: pInfo)
+            try objManager.setObjAttribute(objName: variableName, attributeName: attributeName, value: value, with: pInfo)
             
         } else { // object only
             let variableName = "\(split[0])"
@@ -148,14 +148,14 @@ public class Context {
         }
     }
     
-    public func setValueOf(variableOrObjProp name: String, body: String?, modifiers: [ModifierInstance] = [], pInfo: ParsedInfo) throws {
+    public func setValueOf(variableOrObjProp name: String, body: String?, modifiers: [ModifierInstance] = [], with pInfo: ParsedInfo) throws {
         
         let split = name.split(separator: ".")
         if split.count > 1 { //object attribute
             let variableName = "\(split[0])"
             let attributeName = "\(split[1])"
 
-            try objManager.setObjAttribute(objName: variableName, attributeName: attributeName, body: body, modifiers: modifiers, pInfo: pInfo)
+            try objManager.setObjAttribute(objName: variableName, attributeName: attributeName, body: body, modifiers: modifiers, with: pInfo)
             
         } else { // object only
             let variableName = "\(split[0])"

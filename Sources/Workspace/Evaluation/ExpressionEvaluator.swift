@@ -27,7 +27,7 @@ public struct ExpressionEvaluator {
         
         //check if variable or object property
         if let _ = value.wholeMatch(of: CommonRegEx.variableOrObjectProperty) {
-            if let value = try ctx.valueOf(variableOrObjProp: value, pInfo: pInfo) {
+            if let value = try ctx.valueOf(variableOrObjProp: value, with: pInfo) {
                 return value
             }
         }

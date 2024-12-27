@@ -55,7 +55,7 @@ public struct RegularExpressionEvaluator {
         
         guard let accumulated = accumulated else { return nil }
         
-        let result = ctx.evaluateCondition(value: accumulated, pInfo: pInfo)
+        let result = ctx.evaluateCondition(value: accumulated, with: pInfo)
         return negatedResult ? !result : result
     }
     
@@ -65,7 +65,7 @@ public struct RegularExpressionEvaluator {
         let ctx = pInfo.ctx        
         let lhs = arr.removeFirst()
         
-        guard var result = try ctx.evaluate(value: lhs, pInfo: pInfo) else { return nil }
+        guard var result = try ctx.evaluate(value: lhs, with: pInfo) else { return nil }
         
         while arr.count > 0 {
             //in the parsed array list, every even item is an operator
@@ -77,7 +77,7 @@ public struct RegularExpressionEvaluator {
             
             let rhs = arr.removeFirst()
             
-            guard let rhsResult = try ctx.evaluate(value: rhs, pInfo: pInfo) else {
+            guard let rhsResult = try ctx.evaluate(value: rhs, with: pInfo) else {
                 throw TemplateSoup_EvaluationError.objectNotFound(rhs, pInfo)
             }
             

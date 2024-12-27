@@ -51,7 +51,7 @@ public class RenderFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
             throw TemplateSoup_EvaluationError.workingDirectoryNotSet(pInfo)
         }
         
-        guard let fromFolder = try? ctx.evaluate(value: FromFolder, pInfo: pInfo) as? String
+        guard let fromFolder = try? ctx.evaluate(value: FromFolder, with: pInfo) as? String
                                                                     else { return nil }
         
         try ctx.fileGenerator.setRelativePath(ctx.workingDirectoryString)
@@ -62,7 +62,7 @@ public class RenderFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
             foldername = fromFolder
 
         } else {
-            guard let toFolder = try? ctx.evaluate(value: ToFolder, pInfo: pInfo) as? String
+            guard let toFolder = try? ctx.evaluate(value: ToFolder, with: pInfo) as? String
                                                                         else { return nil }
             
             foldername = toFolder
@@ -72,7 +72,7 @@ public class RenderFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
         foldername = try ContentHandler.eval(expression: foldername, with: ctx) ?? foldername
         
         ctx.debugLog.renderingFolder(fromFolder, to: foldername)
-        let folder = try ctx.fileGenerator.renderFolder(fromFolder, to: foldername, pInfo: pInfo)
+        let folder = try ctx.fileGenerator.renderFolder(fromFolder, to: foldername, with: pInfo)
         try ctx.addGenerated(folderPath: folder.outputFolder)
         
         return nil

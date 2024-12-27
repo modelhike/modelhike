@@ -14,21 +14,21 @@ public class TemplateSoup : TemplateRenderer {
     
     public var onLoadTemplate : LoadTemplateHandler = { (templateName, loader, pInfo) throws -> Template in
         do {
-            return try loader.loadTemplate(fileName: templateName, pInfo: pInfo)
+            return try loader.loadTemplate(fileName: templateName, with: pInfo)
         } catch {
             throw TemplateSoup_EvaluationError.templateDoesNotExist(templateName, pInfo)
         }
     }
     
-    public func loadTemplate(fileName: String, pInfo: ParsedInfo) throws -> Template {
+    public func loadTemplate(fileName: String, with pInfo: ParsedInfo) throws -> Template {
         return try onLoadTemplate(fileName, repo, pInfo)
     }
     
     //MARK: TemplateRenderer protocol implementation
-    public func renderTemplate(fileName templateFile: String, data: StringDictionary = [:], pInfo: ParsedInfo) throws -> String? {
+    public func renderTemplate(fileName templateFile: String, data: StringDictionary = [:], with pInfo: ParsedInfo) throws -> String? {
         do {
             
-            let fileTemplate = try self.loadTemplate(fileName: templateFile, pInfo: pInfo)
+            let fileTemplate = try self.loadTemplate(fileName: templateFile, with: pInfo)
             
             context.pushSnapshot()
             context.append(variables: data)
@@ -52,7 +52,7 @@ public class TemplateSoup : TemplateRenderer {
         }
     }
     
-    public func renderTemplate(string templateString: String, identifier: String = "", data: StringDictionary = [:], pInfo: ParsedInfo) throws -> String? {
+    public func renderTemplate(string templateString: String, identifier: String = "", data: StringDictionary = [:], with pInfo: ParsedInfo) throws -> String? {
         
         let template = StringTemplate(contents: templateString, name: identifier)
 
@@ -68,7 +68,7 @@ public class TemplateSoup : TemplateRenderer {
         return rendering
     }
     
-    public func forEach(forInExpression expression: String, pInfo: ParsedInfo, renderClosure: () throws -> Void ) throws {
+    public func forEach(forInExpression expression: String, with pInfo: ParsedInfo, renderClosure: () throws -> Void ) throws {
         let line = "\(ForStmt.START_KEYWORD) \(expression)"
                                                   
         guard let match = line.wholeMatch(of: ForStmt.stmtRegex ) else {
@@ -78,7 +78,7 @@ public class TemplateSoup : TemplateRenderer {
         let (_, forVar, inArrayVar) = match.output
         let loopVariableName = forVar
         
-        guard let loopItems = try context.valueOf(variableOrObjProp: inArrayVar, pInfo: pInfo) as? [Any] else {
+        guard let loopItems = try context.valueOf(variableOrObjProp: inArrayVar, with: pInfo) as? [Any] else {
             throw ParsingError.invalidLineWithoutErr(expression, pInfo)
         }
         
@@ -121,6 +121,6 @@ public class TemplateSoup : TemplateRenderer {
 }
 
 public protocol TemplateRenderer {
-    func renderTemplate(fileName templateFile: String, data: StringDictionary, pInfo: ParsedInfo) throws -> String?
-    func renderTemplate(string templateString: String, identifier: String, data: StringDictionary, pInfo: ParsedInfo) throws -> String?
+    func renderTemplate(fileName templateFile: String, data: StringDictionary, with pInfo: ParsedInfo) throws -> String?
+    func renderTemplate(string templateString: String, identifier: String, data: StringDictionary, with pInfo: ParsedInfo) throws -> String?
 }

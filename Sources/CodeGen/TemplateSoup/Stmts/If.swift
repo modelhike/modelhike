@@ -89,7 +89,7 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
         
         var rendering = ""
         
-        if try ctx.evaluateCondition(expression: IFCondition, pInfo: pInfo) {
+        if try ctx.evaluateCondition(expression: IFCondition, with: pInfo) {
             ctx.debugLog.ifConditionSatisfied(condition: IFCondition, pInfo: self.pInfo)
             
             if let body = try children.execute(with: ctx) {
@@ -99,7 +99,7 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
             var conditionEvalIsTrue = false
             
             for elseIfBlock in elseIfBlocks {
-                if try ctx.evaluateCondition(expression: elseIfBlock.condition, pInfo: elseIfBlock.pInfo) {
+                if try ctx.evaluateCondition(expression: elseIfBlock.condition, with: elseIfBlock.pInfo) {
                     ctx.debugLog.elseIfConditionSatisfied(condition: elseIfBlock.condition, pInfo: elseIfBlock.pInfo)
                     
                     conditionEvalIsTrue = true

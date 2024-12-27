@@ -68,7 +68,7 @@ public struct FrontMatter {
         switch directiveName {
             case ParserDirective.includeIf :
             if let pInfo = parser.currentParsedInfo(level: 0) {
-                let result = try ctx.evaluateCondition(expression: rhs, pInfo: pInfo)
+                let result = try ctx.evaluateCondition(expression: rhs, with: pInfo)
                 if !result {
                     throw ParserDirective.excludeFile(parser.identifier)
                 }

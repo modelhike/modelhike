@@ -37,7 +37,7 @@ public class ConsoleLogStmt: LineTemplateStmt, CustomDebugStringConvertible {
         guard Expression.isNotEmpty else { return nil }
         
         //see if it is an object
-        if let expn = try? ctx.evaluate(value: Expression, pInfo: pInfo) {
+        if let expn = try? ctx.evaluate(value: Expression, with: pInfo) {
             if expn is String {
                 print("🏷️ [Line \(lineNo)] \(expn)")
             } else if let obj = deepUnwrap(expn) {
@@ -53,7 +53,7 @@ public class ConsoleLogStmt: LineTemplateStmt, CustomDebugStringConvertible {
         }
         
         //see if it is an expression
-        if let expn = try? ctx.evaluate(expression: Expression, pInfo: pInfo) {
+        if let expn = try? ctx.evaluate(expression: Expression, with: pInfo) {
             print("🏷️ [Line \(lineNo)] \(expn)")
             return nil
         }

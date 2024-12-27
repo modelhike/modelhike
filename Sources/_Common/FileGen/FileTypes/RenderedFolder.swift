@@ -13,7 +13,7 @@ open class RenderedFolder  {
     let pInfo: ParsedInfo
     
     public func renderFiles() throws {
-        try templateSoup.repo.renderFiles(foldername: foldername, to: outputFolder, using: templateSoup, pInfo: pInfo)
+        try templateSoup.repo.renderFiles(foldername: foldername, to: outputFolder, using: templateSoup, with: pInfo)
     }
     
     public init(foldername: String, templateSoup: TemplateSoup, to newFoldername:String, path outFilePath: LocalPath, pInfo: ParsedInfo) {
