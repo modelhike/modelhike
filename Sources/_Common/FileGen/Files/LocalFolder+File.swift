@@ -15,6 +15,10 @@ public struct LocalFolder : Folder, LocalFileSystemItem {
         return self
     }
     
+    public var exists : Bool {
+        return path.exists
+    }
+    
     public func fileExists(_ path: String) -> Bool {
         let url = URL(filePath: path)
         if let keys = try? url.resourceValues(forKeys: [.isDirectoryKey, .isRegularFileKey, .isSymbolicLinkKey]) {
@@ -188,6 +192,14 @@ public struct LocalFolder : Folder, LocalFileSystemItem {
         return items.count == 0
     }
     
+    public init(relativePath: String, basePath: String) {
+        self.path = LocalPath(relativePath: relativePath, basePath: basePath)
+    }
+    
+    public init(relativePath: String, basePath: LocalFolder) {
+        self.path = LocalPath(relativePath: relativePath, basePath: basePath.path)
+    }
+    
     public init(path value: String) {
         self.path = LocalPath(value)
     }
@@ -262,6 +274,14 @@ public struct LocalFile : File, LocalFileSystemItem {
     }
     
     public var exists:  Bool { path.exists }
+    
+    public init(relativePath: String, basePath: String) {
+        self.path = LocalPath(relativePath: relativePath, basePath: basePath)
+    }
+    
+    public init(relativePath: String, basePath: LocalPath) {
+        self.path = LocalPath(relativePath: relativePath, basePath: basePath)
+    }
     
     public init(path value: String) {
         self.path = LocalPath(value)

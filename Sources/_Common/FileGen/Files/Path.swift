@@ -103,6 +103,18 @@ public struct LocalPath : Path {
         return symlinkPath
     }
     
+    public init(relativePath: String, basePath: String) {
+        let baseURL = URL(filePath: basePath, directoryHint: .checkFileSystem)
+        let combinedURL = baseURL.appendingPathComponent(relativePath)
+        self.url = combinedURL.standardized
+    }
+    
+    public init(relativePath: String, basePath: LocalPath) {
+        let baseURL = basePath.url
+        let combinedURL = baseURL.appendingPathComponent(relativePath)
+        self.url = combinedURL.standardized
+    }
+    
     public init(_ string: String) {
         self.url = URL(filePath: string, directoryHint: .checkFileSystem)
     }
