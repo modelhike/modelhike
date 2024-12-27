@@ -8,13 +8,19 @@ import Foundation
 
 public class LocalFileBlueprintLoader: BlueprintRepository {
     private var templateCache : [String: Template] = [:]
-    public let defaultTemplatesPath: LocalPath
+    public let blueprintPath: LocalPath
+    public let rootPath: LocalPath
     public let context: Context
     public var paths: [LocalPath]
     public let blueprintName: String
     
     public func loadTemplate(fileName: String, pInfo: ParsedInfo) throws -> Template {
         for loadPath in paths {
+            if !loadPath.exists {
+                let pInfo = ParsedInfo.dummyForAppState(with: context)
+                throw EvaluationError.invalidAppState("Blueprint folder '\(loadPath.string)' not found!!!", pInfo)
+            }
+            
             let templateName = "\(fileName).\(TemplateConstants.TemplateExtension)"
 
             let templatePath = loadPath / templateName
@@ -34,26 +40,35 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
         throw TemplateSoup_EvaluationError.templateDoesNotExist(fileName, pInfo)
     }
     
-    public func blueprintExists() -> Bool {
-        return self.defaultTemplatesPath.exists
+    private func loadPathExists() -> Bool {
+        return rootPath.exists
+    }
+    
+    public func blueprintExists() throws -> Bool {
+        if !loadPathExists() {
+            let pInfo = ParsedInfo.dummyForAppState(with: context)
+            throw EvaluationError.invalidAppState("Blueprint root folder '\(rootPath.string)'not found!!!", pInfo)
+        }
+        
+        return self.blueprintPath.exists
     }
     
     public func hasFolder(_ foldername: String) -> Bool {
-        guard self.defaultTemplatesPath.exists else {
+        guard self.blueprintPath.exists else {
             return false
         }
         
-        let inFolder = LocalFolder(path: self.defaultTemplatesPath / foldername)
+        let inFolder = LocalFolder(path: self.blueprintPath / foldername)
         return inFolder.path.exists
     }
     
     public func copyFiles(foldername: String, to outputFolder: LocalFolder, pInfo: ParsedInfo) throws {
-        guard self.defaultTemplatesPath.exists else {
-            throw EvaluationError.invalidInput("There is no folder called \(self.defaultTemplatesPath.string)", pInfo)
+        guard self.blueprintPath.exists else {
+            throw EvaluationError.invalidInput("There is no folder called \(self.blueprintPath.string)", pInfo)
         }
         
         do {
-            let inFolder = LocalFolder(path: self.defaultTemplatesPath / foldername)
+            let inFolder = LocalFolder(path: self.blueprintPath / foldername)
             try inFolder.copyFiles(to: outputFolder)
         } catch let err {
             if let _ = err as? ErrorWithMessageAndParsedInfo {
@@ -66,12 +81,12 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
     }
     
     public func renderFiles(foldername: String, to outputFolder: LocalFolder, using templateSoup: TemplateSoup, pInfo: ParsedInfo) throws {
-        guard self.defaultTemplatesPath.exists else {
-            throw EvaluationError.invalidInput("There is no folder called \(self.defaultTemplatesPath.string)", pInfo)
+        guard self.blueprintPath.exists else {
+            throw EvaluationError.invalidInput("There is no folder called \(self.blueprintPath.string)", pInfo)
         }
         
         do {
-            let inFolder = LocalFolder(path: self.defaultTemplatesPath / foldername)
+            let inFolder = LocalFolder(path: self.blueprintPath / foldername)
             
             try renderLocalFiles(from: inFolder, to: outputFolder, using: templateSoup)
         } catch let err {
@@ -154,29 +169,13 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
     }
     
     public func readTextContents(filename: String, pInfo: ParsedInfo) throws -> String {
-        guard self.defaultTemplatesPath.exists else {
-            throw EvaluationError.invalidInput("There is no folder called \(self.defaultTemplatesPath.string)", pInfo)
+        guard self.blueprintPath.exists else {
+            throw EvaluationError.invalidInput("There is no folder called \(self.blueprintPath.string)", pInfo)
         }
         
-        let inFile = LocalFile(path: self.defaultTemplatesPath / filename)
+        let inFile = LocalFile(path: self.blueprintPath / filename)
         let inFileContents = try inFile.readTextContents()
         return inFileContents
-    }
-    
-    public init(blueprint: String, path templatesPath: LocalPath, with ctx: Context) {
-        let path = templatesPath / blueprint
-
-        self.paths = [path]
-        self.context = ctx
-        self.defaultTemplatesPath = path
-        self.blueprintName = blueprint
-    }
-    
-    internal init(path: LocalPath, with ctx: Context) {
-        self.paths = [path]
-        self.context = ctx
-        self.defaultTemplatesPath = path
-        self.blueprintName = ""
     }
     
     public func add(paths: LocalPath...) {
@@ -185,6 +184,24 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
     
     public func add(paths: [LocalPath]) {
         self.paths.append(contentsOf: paths)
+    }
+    
+    public init(blueprint: String, path templatesPath: LocalPath, with ctx: Context) {
+        let path = templatesPath / blueprint
+
+        self.paths = [path]
+        self.context = ctx
+        self.blueprintPath = path
+        self.blueprintName = blueprint
+        self.rootPath = templatesPath
+    }
+    
+    internal init(path: LocalPath, with ctx: Context) {
+        self.paths = [path]
+        self.context = ctx
+        self.blueprintPath = path
+        self.rootPath = path
+        self.blueprintName = ""
     }
 }
 

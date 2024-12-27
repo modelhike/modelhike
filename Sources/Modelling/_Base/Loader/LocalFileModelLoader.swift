@@ -14,6 +14,11 @@ public class LocalFileModelLoader : ModelRepository {
     public let configFileName = TemplateConstants.MainTemplateFile + "." + ModelConstants.ConfigFile_Extension
 
     public func loadModel(to model: AppModel) throws {
+        if !loadPath.exists {
+            let pInfo = ParsedInfo.dummyForAppState(with: ctx)
+            throw EvaluationError.invalidAppState("Model folder '\(loadPath.path.string)' not found!!!", pInfo)
+        }
+        
         let file = LocalFile(path: loadPath.path / commonsFileName)
         
         if file.exists { //commons file found

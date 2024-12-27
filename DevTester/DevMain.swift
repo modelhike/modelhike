@@ -26,11 +26,15 @@ struct Development {
     }
     
     static func runCodebaseGeneration() throws {
-        let ws = Workspace();
                 
-        ws.basePath = SystemFolder.documents.path / "diagsoup"
-        //ws.debugLog.flags.fileGeneration = true
+        let basePath = SystemFolder.documents.path / "diagsoup"
+        let templatesPath = basePath / "_gen.templates"
         
+        let ws = Workspace();
+        ws.basePath = basePath
+        
+        //ws.debugLog.flags.fileGeneration = true
+
         //let blueprint = "nestjs-monorepo"
         //try ws.loadSymbols([.typescript, .mongodb_typescript])
         let blueprint = "springboot-monorepo"
@@ -39,7 +43,6 @@ struct Development {
         let modelRepo = LocalFileModelLoader(path: ws.basePath, with: ws.context)
         //let modelRepo = inlineModel(ws)
                 
-        let templatesPath = ws.basePath / "_gen.templates"
         let templatesRepo = LocalFileBlueprintLoader(blueprint: blueprint, path: templatesPath, with: ws.context)
         
 //        ws.context.events.onBeforeRenderFile = { filename, context in

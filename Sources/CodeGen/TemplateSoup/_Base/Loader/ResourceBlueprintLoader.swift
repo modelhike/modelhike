@@ -12,12 +12,13 @@ open class ResourceBlueprintLoader : BlueprintRepository {
 
     public let blueprintName: String
     let bundle: Bundle
+    var blueprintPath: String
     var resourceRoot: String
-    
+
     public func loadTemplate(fileName: String, pInfo: ParsedInfo) throws -> Template {
         if let resourceURL = bundle.url(forResource: fileName,
                                         withExtension: TemplateConstants.TemplateExtension,
-                                        subdirectory : resourceRoot ) {
+                                        subdirectory : blueprintPath ) {
             do {
                 let content = try String(contentsOf: resourceURL)
                 let template = StringTemplate(contents: content, name: fileName)
@@ -32,9 +33,9 @@ open class ResourceBlueprintLoader : BlueprintRepository {
 
     }
     
-    public func blueprintExists() -> Bool {
+    private func loadPathExists() -> Bool {
         do {
-            let folder = resourceRoot
+            let folder = blueprintPath
             guard let resourceURL = bundle.resourceURL?.appendingPathComponent(folder) else { return false }
             
             let fm = FileManager.default
@@ -46,9 +47,18 @@ open class ResourceBlueprintLoader : BlueprintRepository {
         }
     }
     
+    public func blueprintExists() throws -> Bool {
+        if !loadPathExists() {
+            let pInfo = ParsedInfo.dummyForAppState(with: context)
+            throw EvaluationError.invalidAppState("Blueprint resource root folder not found!!!", pInfo)
+        }
+        
+        return hasFolder("") //check blueprint path
+    }
+    
     public func hasFolder(_ foldername: String) -> Bool {
         do {
-            let folder = resourceRoot + foldername
+            let folder = blueprintPath + foldername
             guard let resourceURL = bundle.resourceURL?.appendingPathComponent(folder) else { return false }
             
             let fm = FileManager.default
@@ -61,7 +71,7 @@ open class ResourceBlueprintLoader : BlueprintRepository {
     }
     
     public func copyFiles(foldername: String, to outputFolder: LocalFolder, pInfo: ParsedInfo) throws {
-        let folder = resourceRoot + foldername
+        let folder = blueprintPath + foldername
         guard let resourceURL = bundle.resourceURL?.appendingPathComponent(folder) else { return }
         
         try copyResourceFiles(from: resourceURL, to: outputFolder.path, pInfo: pInfo)
@@ -94,7 +104,7 @@ open class ResourceBlueprintLoader : BlueprintRepository {
     }
     
     public func renderFiles(foldername: String, to outputFolder: LocalFolder, using templateSoup: TemplateSoup, pInfo: ParsedInfo) throws {
-        let folder = resourceRoot + foldername
+        let folder = blueprintPath + foldername
         guard let resourceURL = bundle.resourceURL?.appendingPathComponent(folder) else { return }
         
         try renderResourceFiles(from: resourceURL, to: outputFolder, using: templateSoup, pInfo: pInfo)
@@ -182,7 +192,7 @@ open class ResourceBlueprintLoader : BlueprintRepository {
     public func readTextContents(filename: String, pInfo: ParsedInfo) throws -> String {
         if let resourceURL = bundle.url(forResource: filename,
                                         withExtension: TemplateConstants.TemplateExtension,
-                                        subdirectory : resourceRoot ) {
+                                        subdirectory : blueprintPath ) {
             do {
                 let content = try String(contentsOf: resourceURL)
                 return content
@@ -197,7 +207,8 @@ open class ResourceBlueprintLoader : BlueprintRepository {
     public init(blueprint: String, bundle: Bundle, with ctx: Context) {
         self.bundle = bundle
         self.blueprintName = blueprint
-        self.resourceRoot = "/Resources/\(blueprint)/"
+        self.blueprintPath = "/Resources/\(blueprint)/"
+        self.resourceRoot = "/Resources/"
         self.context = ctx
     }
 

@@ -27,7 +27,7 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
     //MARK: Generation code
     public func generateFilesFor(container: String, usingBlueprintsFrom blueprintLoader: BlueprintRepository) throws -> String? {
         
-        if !blueprintLoader.blueprintExists() {
+        if try !blueprintLoader.blueprintExists() {
             let pInfo = ParsedInfo.dummyForAppState(with: context)
             throw EvaluationError.invalidInput("There is no blueprint called \(blueprintLoader.blueprintName)", pInfo)
         }
