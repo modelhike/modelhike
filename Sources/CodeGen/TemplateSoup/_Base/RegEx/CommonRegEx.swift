@@ -51,9 +51,19 @@ public enum CommonRegEx {
     }
 
     public static let objectPropertyPattern: Regex<Substring> = Regex {
-        variable
-        "."
-        variable
+        CharacterClass(
+            .anyOf("@_"), //'@' is the prefix used for pre-defined variables
+            ("A"..."Z"),
+            ("a"..."z")
+        )
+        ZeroOrMore {
+            CharacterClass(
+                .anyOf("._-"), //includes for operator for property names
+                ("A"..."Z"),
+                ("a"..."z"),
+                ("0"..."9")
+            )
+        }
     }
     
     public static let variableOrObjectProperty: Regex<Substring> = Regex {

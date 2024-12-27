@@ -89,10 +89,6 @@ public class Context {
     }
     
     //manage obj attributes in the context variables
-    public func valueOf(objName: String, propName attributeName: String, pInfo: ParsedInfo) throws -> Optional<Any> {
-        return try self.objManager.getObjAttributeValue(objName: objName, attributeName: attributeName, pInfo: pInfo)
-    }
-    
     public func valueOf(variableOrObjProp name: String, pInfo: ParsedInfo) throws -> Optional<Any> {
         let split = name.split(separator: ".")
         if split.count > 1 { //object attribute
@@ -112,12 +108,68 @@ public class Context {
         return nil
     }
     
-    public func setObjProp(objName: String, propName: String, valueExpression: String, modifiers: [ModifierInstance], pInfo: ParsedInfo) throws {
-        try objManager.setObjAttribute(objName: objName, attributeName: propName, valueExpression: valueExpression, modifiers: modifiers, pInfo: pInfo)
+    public func setValueOf(variableOrObjProp name: String, valueExpression: String, modifiers: [ModifierInstance] = [], pInfo: ParsedInfo) throws {
+        
+        let split = name.split(separator: ".")
+        if split.count > 1 { //object attribute
+            let variableName = "\(split[0])"
+            let attributeName = "\(split[1])"
+
+            try objManager.setObjAttribute(objName: variableName, attributeName: attributeName, valueExpression: valueExpression, modifiers: modifiers, pInfo: pInfo)
+            
+        } else { // object only
+            let variableName = "\(split[0])"
+
+            if let body = try self.evaluate(expression: valueExpression, pInfo: pInfo) {
+                self.variables[variableName] = body
+            } else {
+                self.variables.removeValue(forKey: variableName)
+            }
+        }
     }
     
-    public func setObjProp(objName: String, propName: String, body: String?, modifiers: [ModifierInstance], pInfo: ParsedInfo) throws {
-        try objManager.setObjAttribute(objName: objName, attributeName: propName, body: body, modifiers: modifiers, pInfo: pInfo)
+    public func setValueOf(variableOrObjProp name: String, value: Any?, pInfo: ParsedInfo) throws {
+        
+        let split = name.split(separator: ".")
+        if split.count > 1 { //object attribute
+            let variableName = "\(split[0])"
+            let attributeName = "\(split[1])"
+
+            try objManager.setObjAttribute(objName: variableName, attributeName: attributeName, value: value, pInfo: pInfo)
+            
+        } else { // object only
+            let variableName = "\(split[0])"
+
+            if let body = value {
+                self.variables[variableName] = body
+            } else {
+                self.variables.removeValue(forKey: variableName)
+            }
+        }
+    }
+    
+    public func setValueOf(variableOrObjProp name: String, body: String?, modifiers: [ModifierInstance] = [], pInfo: ParsedInfo) throws {
+        
+        let split = name.split(separator: ".")
+        if split.count > 1 { //object attribute
+            let variableName = "\(split[0])"
+            let attributeName = "\(split[1])"
+
+            try objManager.setObjAttribute(objName: variableName, attributeName: attributeName, body: body, modifiers: modifiers, pInfo: pInfo)
+            
+        } else { // object only
+            let variableName = "\(split[0])"
+
+            if let body = body {
+                if let modifiedBody = try Modifiers.apply(to: body, modifiers: modifiers, pInfo: pInfo) {
+                    self.variables[variableName] = modifiedBody
+                } else {
+                    self.variables.removeValue(forKey: variableName)
+                }
+            } else {
+                self.variables.removeValue(forKey: variableName)
+            }
+        }
     }
     
     //parsed model

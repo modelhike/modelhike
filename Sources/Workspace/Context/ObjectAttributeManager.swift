@@ -38,6 +38,16 @@ public struct ObjectAttributeManager {
         }
     }
     
+    public func setObjAttribute(objName: String, attributeName: String, value: Any?, pInfo: ParsedInfo) throws {
+        if let obj = ctx.variables[objName] as? HasAttributes {
+            if let body = value {
+                obj.attribs[attributeName] = body
+            } else {
+                obj.attribs.removeValue(forKey: attributeName)
+            }
+        }
+    }
+    
     public func setObjAttribute(objName: String, attributeName: String, body: String?, modifiers: [ModifierInstance], pInfo: ParsedInfo) throws {
         if let obj = ctx.variables[objName] as? HasAttributes {
             if let body = body {

@@ -26,7 +26,6 @@ public struct StatementsLibrary {
             AnnnounceStmt.register,
             
             SetVarStmt.register,
-            SetObjectAttributeStmt.register,
             
             SpacelessStmt.register
         ]

@@ -19,7 +19,7 @@ public class ForStmt: BlockTemplateStmt, CustomDebugStringConvertible {
         START_KEYWORD
         OneOrMore(.whitespace)
         Capture {
-            CommonRegEx.variable
+            CommonRegEx.variableOrObjectProperty
         } transform: { String($0) }
         OneOrMore(.whitespace)
         "in"

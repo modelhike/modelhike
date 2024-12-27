@@ -18,7 +18,7 @@ public class SetVarStmt: BlockOrLineTemplateStmt, CustomDebugStringConvertible {
         START_KEYWORD
         OneOrMore(.whitespace)
         Capture {
-            CommonRegEx.variable
+            CommonRegEx.variableOrObjectProperty
         } transform: { String($0) }
         
         CommonRegEx.modifiersForExpression_Capturing
@@ -76,63 +76,47 @@ public class SetVarStmt: BlockOrLineTemplateStmt, CustomDebugStringConvertible {
     }
     
     public override func execute(with ctx: Context) throws -> String? {
+        var actualBody: Any? = nil
+        
         if isBlockVariant {
             guard SetVar.isNotEmpty,
                   children.count != 0 else { return nil }
             
-            let variableName = self.SetVar
-
             if let body = try children.execute(with: ctx) {
                 let modifiedBody = try Modifiers.apply(to: body.trim(), modifiers: self.ModifiersList, pInfo: pInfo)
-                
-                //special handling for setting current working directory
-                if ctx.isWorkingDirectoryVariable(variableName) {
-                    if let str = modifiedBody as? String {
-                        ctx.debugLog.workingDirectoryChanged(str)
-                        ctx.variables[variableName] = str
-                    }
-                } else {
-                    ctx.variables[variableName] = modifiedBody
-                }
-            } else {
-                
-                //special handling for setting current working directory
-                if ctx.isWorkingDirectoryVariable(variableName) {
-                    //reset to base path
-                    ctx.variables[variableName] = ""
-                } else {
-                    ctx.variables[variableName] = ""
-                }
+                actualBody = modifiedBody
             }
-                
         } else {
             guard SetVar.isNotEmpty,
                   ValueExpression.isNotEmpty else { return nil }
             
-            let variableName = self.SetVar
-
             if let body = try ctx.evaluate(expression: ValueExpression, pInfo: pInfo) {
-                    let modifiedBody = try Modifiers.apply(to: body, modifiers: self.ModifiersList, pInfo: pInfo)
-                    
-                    //special handling for setting current working directory
-                    if ctx.isWorkingDirectoryVariable(variableName) {
-                        if let str = modifiedBody as? String {
-                            ctx.debugLog.workingDirectoryChanged(str)
-                            ctx.variables[variableName] = str
-                        }
-                    } else {
-                        ctx.variables[variableName] = modifiedBody
-                    }
-                
-            } else {
-                
-                //special handling for setting current working directory
-                if ctx.isWorkingDirectoryVariable(variableName) {
-                    //reset to base path
-                    ctx.variables[variableName] = ""
-                } else {
-                    ctx.variables[variableName] = nil
+                let modifiedBody = try Modifiers.apply(to: body, modifiers: self.ModifiersList, pInfo: pInfo)
+                actualBody = modifiedBody
+            }
+        }
+            
+        let variableName = self.SetVar
+
+        if actualBody != nil {
+            //special handling for setting current working directory
+            if ctx.isWorkingDirectoryVariable(variableName) {
+                if let str = actualBody as? String {
+                    ctx.debugLog.workingDirectoryChanged(str)
+                    ctx.variables[variableName] = str
                 }
+            } else {
+                try ctx.setValueOf(variableOrObjProp: variableName, value: actualBody, pInfo: pInfo)
+            }
+        } else {
+            
+            //special handling for setting current working directory
+            if ctx.isWorkingDirectoryVariable(variableName) {
+                //reset to base path
+                ctx.debugLog.workingDirectoryChanged("(base path)")
+                ctx.variables[variableName] = ""
+            } else {
+                ctx.variables.removeValue(forKey: variableName)
             }
         }
         
