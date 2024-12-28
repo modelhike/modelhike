@@ -88,7 +88,7 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
         do {
             let inFolder = LocalFolder(path: self.blueprintPath / foldername)
             
-            try renderLocalFiles(from: inFolder, to: outputFolder, using: templateSoup)
+            try renderLocalFiles(from: inFolder, to: outputFolder, using: templateSoup, with: pInfo)
         } catch let err {
             if let _ = err as? ErrorWithMessageAndParsedInfo {
                 throw err
@@ -99,7 +99,7 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
         }
     }
     
-    private func renderLocalFiles(from inFolder: LocalFolder, to outputFolder: LocalFolder, using templateSoup: TemplateSoup) throws {
+    private func renderLocalFiles(from inFolder: LocalFolder, to outputFolder: LocalFolder, using templateSoup: TemplateSoup, with pInfo: ParsedInfo) throws {
                 
         let files = inFolder.files
         
@@ -111,7 +111,7 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
                 let filename = try ContentHandler.eval(expression: actualFilename, with: templateSoup.context) ?? actualFilename
                 
                 //if handler returns false, dont render file
-                if try !context.events.canRender(filename: filename) {
+                if try !context.events.canRender(filename: filename, with: pInfo) {
                     continue
                 }
                 
@@ -163,7 +163,7 @@ public class LocalFileBlueprintLoader: BlueprintRepository {
             let subfoldername = try ContentHandler.eval(expression: subFolder.name, with: templateSoup.context) ?? subFolder.name
             
             let newFolder = outputFolder / subfoldername
-            try renderLocalFiles(from: subFolder, to: newFolder, using: templateSoup)
+            try renderLocalFiles(from: subFolder, to: newFolder, using: templateSoup, with: pInfo)
         }
         
     }

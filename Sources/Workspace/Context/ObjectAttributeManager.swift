@@ -7,10 +7,10 @@
 import Foundation
 
 public struct ObjectAttributeManager {
-    let ctx: Context
     
     public func getObjAttributeValue(objName: String, attributeName: String, with pInfo: ParsedInfo) throws -> Optional<Any> {
-        
+        let ctx = pInfo.ctx
+
         if let obj = ctx.variables[objName] as? HasAttributes {
             if obj.attribs.has(attributeName) {
                 return obj.attribs[attributeName]
@@ -25,6 +25,9 @@ public struct ObjectAttributeManager {
     }
     
     public func setObjAttribute(objName: String, attributeName: String, valueExpression: String, modifiers: [ModifierInstance], with pInfo: ParsedInfo) throws {
+        
+        let ctx = pInfo.ctx
+        
         if let obj = ctx.variables[objName] as? HasAttributes {
             if let body = try ctx.evaluate(expression: valueExpression, with: pInfo) {
                 if let modifiedBody = try Modifiers.apply(to: body, modifiers: modifiers, pInfo: pInfo) {
@@ -39,6 +42,9 @@ public struct ObjectAttributeManager {
     }
     
     public func setObjAttribute(objName: String, attributeName: String, value: Any?, with pInfo: ParsedInfo) throws {
+        
+        let ctx = pInfo.ctx
+        
         if let obj = ctx.variables[objName] as? HasAttributes {
             if let body = value {
                 obj.attribs[attributeName] = body
@@ -49,6 +55,9 @@ public struct ObjectAttributeManager {
     }
     
     public func setObjAttribute(objName: String, attributeName: String, body: String?, modifiers: [ModifierInstance], with pInfo: ParsedInfo) throws {
+        
+        let ctx = pInfo.ctx
+        
         if let obj = ctx.variables[objName] as? HasAttributes {
             if let body = body {
                 if let modifiedBody = try Modifiers.apply(to: body, modifiers: modifiers, pInfo: pInfo) {
@@ -62,7 +71,6 @@ public struct ObjectAttributeManager {
         }
     }
     
-    public init(context ctx: Context) {
-        self.ctx = ctx
+    public init() {
     }
 }

@@ -9,10 +9,10 @@ import Foundation
 public typealias StringDictionary = [String: Any]
 
 public class Context {
-    public var events: CodeGenerationEvents!
+    public var events = CodeGenerationEvents()
     public var debugLog = ContextDebugLog()
     
-    private var objManager: ObjectAttributeManager!
+    private let objManager = ObjectAttributeManager()
     public internal(set) var symbols = ContextSymbols()
     public internal(set) var paths = ContextPaths()
     
@@ -95,7 +95,7 @@ public class Context {
             let variableName = "\(split[0])"
             let attributeName = "\(split[1])"
 
-            return try self.objManager!.getObjAttributeValue(objName: variableName, attributeName: attributeName, with: pInfo)
+            return try self.objManager.getObjAttributeValue(objName: variableName, attributeName: attributeName, with: pInfo)
             
         } else { // object only
             let variableName = "\(split[0])"
@@ -178,11 +178,6 @@ public class Context {
     public init(paths: ContextPaths) {
         self.paths = paths
         self.model = AppModel()
-
-        defer {
-            self.objManager = ObjectAttributeManager(context: self)
-            self.events = CodeGenerationEvents(with: self)
-        }
     }
     
     public convenience init(data: StringDictionary) {

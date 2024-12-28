@@ -51,7 +51,7 @@ public class ModelFileParser {
                 
                 //check for class starting
                 if DomainObjectParser.canParse(parser: lineParser) {
-                    if let item = try DomainObjectParser.parse(parser: lineParser, with: ctx) {
+                    if let item = try DomainObjectParser.parse(parser: lineParser, with: pInfo) {
                         self.component.append(item)
                         return
                     } else {
@@ -60,7 +60,7 @@ public class ModelFileParser {
                 }
                 
                 if DtoObjectParser.canParse(parser: lineParser) {
-                    if let item = try DtoObjectParser.parse(parser: lineParser, with: ctx) {
+                    if let item = try DtoObjectParser.parse(parser: lineParser, with: pInfo) {
                         self.component.append(item)
                         return
                     } else {

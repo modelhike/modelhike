@@ -21,14 +21,14 @@ public enum DomainObjectParser {
         return false
     }
     
-    public static func parse(parser: LineParser, with ctx: Context) throws -> DomainObject? {
+    public static func parse(parser: LineParser, with pInfo: ParsedInfo) throws -> DomainObject? {
         let line = parser.currentLine()
         
         guard let match = line.wholeMatch(of: ModelRegEx.className_Capturing)                                                                                  else { return nil }
         
         let (_, className, attributeString, tagString) = match.output
         
-        try ctx.events.onParse(objectName: className, parser: parser)
+        try pInfo.ctx.events.onParse(objectName: className, with: pInfo)
         
         let item = DomainObject(name: className.trim())
         

@@ -95,7 +95,7 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
     }
     
     public func generateFile(_ filename: String, template: String, with pInfo: ParsedInfo) throws -> RenderedFile? {
-        if try !context.events.canRender(filename: filename) { //if handler returns false, dont render file
+        if try !context.events.canRender(filename: filename, with: pInfo) { //if handler returns false, dont render file
             return nil
         }
         
@@ -105,7 +105,7 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
     }
     
     public func generateFileWithData(_ filename: String, template: String, data: [String: Any], with pInfo: ParsedInfo) throws -> RenderedFile? {
-        if try !context.events.canRender(filename: filename) { //if handler returns false, dont render file
+        if try !context.events.canRender(filename: filename, with: pInfo) { //if handler returns false, dont render file
             return nil
         }
         
@@ -147,7 +147,7 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
     }
     
     public func fillPlaceholdersAndCopyFile(_ filename: String, with pInfo: ParsedInfo) throws -> PlaceHolderFile? {
-        if try !context.events.canRender(filename: filename) { //if handler returns false, dont render file
+        if try !context.events.canRender(filename: filename, with: pInfo) { //if handler returns false, dont render file
             return nil
         }
         
@@ -157,7 +157,7 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
     }
 
     public func fillPlaceholdersAndCopyFile(_ filename: String, to newFilename: String, with pInfo: ParsedInfo) throws -> PlaceHolderFile? {
-        if try !context.events.canRender(filename: filename) { //if handler returns false, dont render file
+        if try !context.events.canRender(filename: filename, with: pInfo) { //if handler returns false, dont render file
             return nil
         }
         

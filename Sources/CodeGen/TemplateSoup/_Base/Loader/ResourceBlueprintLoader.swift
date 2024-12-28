@@ -107,10 +107,10 @@ open class ResourceBlueprintLoader : BlueprintRepository {
         let folder = blueprintPath + foldername
         guard let resourceURL = bundle.resourceURL?.appendingPathComponent(folder) else { return }
         
-        try renderResourceFiles(from: resourceURL, to: outputFolder, using: templateSoup, pInfo: pInfo)
+        try renderResourceFiles(from: resourceURL, to: outputFolder, using: templateSoup, with: pInfo)
     }
     
-    fileprivate func renderResourceFiles(from resUrl: URL, to outputFolder: LocalFolder, using templateSoup: TemplateSoup, pInfo: ParsedInfo) throws {
+    fileprivate func renderResourceFiles(from resUrl: URL, to outputFolder: LocalFolder, using templateSoup: TemplateSoup, with pInfo: ParsedInfo) throws {
         let fm = FileManager.default
 
         do {
@@ -127,7 +127,7 @@ open class ResourceBlueprintLoader : BlueprintRepository {
                         let filename = try ContentHandler.eval(expression: resourceName, with: templateSoup.context) ?? resourceName
                         
                         //if handler returns false, dont render file
-                        if try !context.events.canRender(filename: filename) {
+                        if try !context.events.canRender(filename: filename, with: pInfo) {
                             continue
                         }
                         
@@ -180,7 +180,7 @@ open class ResourceBlueprintLoader : BlueprintRepository {
                     let subfoldername = try ContentHandler.eval(expression: resourceName, with: templateSoup.context) ?? resourceName
                     
                     let newResUrl = resUrl.appendingPathComponent(subfoldername)
-                    try renderResourceFiles(from: newResUrl, to: outputFolder / resourceName, using: templateSoup, pInfo: pInfo)
+                    try renderResourceFiles(from: newResUrl, to: outputFolder / resourceName, using: templateSoup, with: pInfo)
                 }
             }
         } catch {
