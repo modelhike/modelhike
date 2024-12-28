@@ -14,7 +14,7 @@ public class UIObject_Wrap : ObjectWrapper {
         set { item.attribs = newValue }
     }
     
-    public func dynamicLookup(property propname: String, pInfo: ParsedInfo) throws -> Any {
+    public func getValueOf(property propname: String, with pInfo: ParsedInfo) throws -> Any {
         
         let value: Any = switch propname {
         case "name": item.name

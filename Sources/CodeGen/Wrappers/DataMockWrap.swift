@@ -9,7 +9,7 @@ import Foundation
 public class Mocking_Wrap : DynamicMemberLookup {
     public private(set) var item: MockData_Generator
     
-    public func dynamicLookup(property propname: String, pInfo: ParsedInfo) throws -> Any {
+    public func getValueOf(property propname: String, with pInfo: ParsedInfo) throws -> Any {
 
         let value: Any = switch propname {
             case "object-id": item.randomObjectId_MongoDb()

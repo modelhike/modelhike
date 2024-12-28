@@ -90,15 +90,18 @@ public class Context {
     
     //manage obj attributes in the context variables
     public func valueOf(variableOrObjProp name: String, with pInfo: ParsedInfo) throws -> Optional<Any> {
-        let split = name.split(separator: ".")
-        if split.count > 1 { //object attribute
-            let variableName = "\(split[0])"
-            let attributeName = "\(split[1])"
+        
+        if let dotIndex = name.firstIndex(of: ".") { //object attribute
+            let beforeDot = String(name[..<dotIndex])
+            let afterDot = String(name[name.index(after: dotIndex)...])
 
-            return try self.objManager.getObjAttributeValue(objName: variableName, attributeName: attributeName, with: pInfo)
+            let variableName = beforeDot
+            let attributeName = afterDot
+
+            return try self.objManager.getObjAttributeValue(objName: variableName, propName: attributeName, with: pInfo)
             
         } else { // object only
-            let variableName = "\(split[0])"
+            let variableName = name
 
             if let obj = self.variables[variableName]  {
                 return obj
@@ -110,15 +113,17 @@ public class Context {
     
     public func setValueOf(variableOrObjProp name: String, valueExpression: String, modifiers: [ModifierInstance] = [], with pInfo: ParsedInfo) throws {
         
-        let split = name.split(separator: ".")
-        if split.count > 1 { //object attribute
-            let variableName = "\(split[0])"
-            let attributeName = "\(split[1])"
+        if let dotIndex = name.firstIndex(of: ".") { //object attribute
+            let beforeDot = String(name[..<dotIndex])
+            let afterDot = String(name[name.index(after: dotIndex)...])
 
-            try objManager.setObjAttribute(objName: variableName, attributeName: attributeName, valueExpression: valueExpression, modifiers: modifiers, with: pInfo)
+            let variableName = beforeDot
+            let attributeName = afterDot
+
+            try objManager.setObjAttribute(objName: variableName, propName: attributeName, valueExpression: valueExpression, modifiers: modifiers, with: pInfo)
             
         } else { // object only
-            let variableName = "\(split[0])"
+            let variableName = name
 
             if let body = try self.evaluate(expression: valueExpression, with: pInfo) {
                 self.variables[variableName] = body
@@ -130,15 +135,17 @@ public class Context {
     
     public func setValueOf(variableOrObjProp name: String, value: Any?, with pInfo: ParsedInfo) throws {
         
-        let split = name.split(separator: ".")
-        if split.count > 1 { //object attribute
-            let variableName = "\(split[0])"
-            let attributeName = "\(split[1])"
+        if let dotIndex = name.firstIndex(of: ".") { //object attribute
+            let beforeDot = String(name[..<dotIndex])
+            let afterDot = String(name[name.index(after: dotIndex)...])
 
-            try objManager.setObjAttribute(objName: variableName, attributeName: attributeName, value: value, with: pInfo)
+            let variableName = beforeDot
+            let attributeName = afterDot
+
+            try objManager.setObjAttribute(objName: variableName, propName: attributeName, value: value, with: pInfo)
             
         } else { // object only
-            let variableName = "\(split[0])"
+            let variableName = name
 
             if let body = value {
                 self.variables[variableName] = body
@@ -150,15 +157,17 @@ public class Context {
     
     public func setValueOf(variableOrObjProp name: String, body: String?, modifiers: [ModifierInstance] = [], with pInfo: ParsedInfo) throws {
         
-        let split = name.split(separator: ".")
-        if split.count > 1 { //object attribute
-            let variableName = "\(split[0])"
-            let attributeName = "\(split[1])"
+        if let dotIndex = name.firstIndex(of: ".") { //object attribute
+            let beforeDot = String(name[..<dotIndex])
+            let afterDot = String(name[name.index(after: dotIndex)...])
 
-            try objManager.setObjAttribute(objName: variableName, attributeName: attributeName, body: body, modifiers: modifiers, with: pInfo)
+            let variableName = beforeDot
+            let attributeName = afterDot
+
+            try objManager.setObjAttribute(objName: variableName, propName: attributeName, body: body, modifiers: modifiers, with: pInfo)
             
         } else { // object only
-            let variableName = "\(split[0])"
+            let variableName = name
 
             if let body = body {
                 if let modifiedBody = try Modifiers.apply(to: body, modifiers: modifiers, pInfo: pInfo) {

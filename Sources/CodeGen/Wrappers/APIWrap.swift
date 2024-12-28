@@ -50,7 +50,7 @@ public class API_Wrap : ObjectWrapper {
         }
     }()
     
-    public func dynamicLookup(property propname: String, pInfo: ParsedInfo) throws -> Any {
+    public func getValueOf(property propname: String, with pInfo: ParsedInfo) throws -> Any {
         
         let value: Any = switch propname {
             case "entity": CodeObject_Wrap(item.entity)
@@ -100,7 +100,7 @@ public class API_Wrap : ObjectWrapper {
 public class APIParam_Wrap : DynamicMemberLookup {
     public private(set) var item: APIQueryParamWrapper
     
-    public func dynamicLookup(property propname: String, pInfo: ParsedInfo) throws -> Any {
+    public func getValueOf(property propname: String, with pInfo: ParsedInfo) throws -> Any {
 
         let value: Any = switch propname {
             //case "query-param-obj" : item.queryParam
@@ -124,7 +124,7 @@ public class APIParam_Wrap : DynamicMemberLookup {
 public class APICustomParameter_Wrap : DynamicMemberLookup {
     public private(set) var item: MethodParameter
     
-    public func dynamicLookup(property propname: String, pInfo: ParsedInfo) throws -> Any {
+    public func getValueOf(property propname: String, with pInfo: ParsedInfo) throws -> Any {
         
         let value: Any = switch propname {
         case "name" : item.name

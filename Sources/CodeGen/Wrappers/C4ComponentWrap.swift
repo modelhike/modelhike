@@ -60,7 +60,7 @@ public class C4Component_Wrap : ObjectWrapper {
             $0.item.type == .listByCustomProperties 
         ) { return $0 } else {return nil}    }) }()
     
-    public func dynamicLookup(property propname: String, pInfo: ParsedInfo) throws -> Any {
+    public func getValueOf(property propname: String, with pInfo: ParsedInfo) throws -> Any {
         let value: Any = switch propname {
             case "name": item.name
             case "types" : types

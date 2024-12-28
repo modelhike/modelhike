@@ -27,27 +27,30 @@ public class CodeObject_Wrap : ObjectWrapper {
                 $0.type == .pushDataList ) { return API_Wrap($0) } else {return nil}    })
     }()
     
-    public func dynamicLookup(property propname: String, pInfo: ParsedInfo) throws -> Any {
+    public func getValueOf(property propname: String, with pInfo: ParsedInfo) throws -> Any {
         if propname.hasPrefix("has-prop-") {
             let propName = propname.removingPrefix("has-prop-")
             return item.hasProp(propName)
         }
         
         let value: Any = switch propname {
-            case "name": item.name
-            case "given-name": item.givenname
-            case "properties" : properties
-            case "entity" : item.dataType == .entity
-            case "dto" : item.dataType == .dto
-            case "common" : item.dataType == .valueType
-            case "cache" : item.dataType == .cache
-            case "workflow" : item.dataType == .workflow
-            case "has-push-apis" : pushDataApis.count != 0
-            case "has-any-apis" : apis.count != 0
-            default:
+        case "name": item.name
+        case "given-name": item.givenname
+        case "properties" : properties
+        case "entity" : item.dataType == .entity
+        case "dto" : item.dataType == .dto
+        case "common" : item.dataType == .valueType
+        case "cache" : item.dataType == .cache
+        case "workflow" : item.dataType == .workflow
+        case "has-push-apis" : pushDataApis.count != 0
+        case "has-any-apis" : apis.count != 0
+        default:
             //nothing found; so check in module attributes
             if item.attribs.has(propname) {
                 item.attribs[propname] as Any
+            } else if let value = RuntimeReflection.getValueOf(property: propname, in: item, with: pInfo) {
+                //chk for the object property using reflection
+                value
             } else {
                 throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
             }
@@ -71,7 +74,7 @@ public class TypeProperty_Wrap : ObjectWrapper {
         set { item.attribs = newValue }
     }
     
-    public func dynamicLookup(property propname: String, pInfo: ParsedInfo) throws -> Any {
+    public func getValueOf(property propname: String, with pInfo: ParsedInfo) throws -> Any {
         if propname.hasPrefix("has-attrib-") {
             let attributeName = propname.removingPrefix("has-attrib-")
             return item.hasAttrib(attributeName)
