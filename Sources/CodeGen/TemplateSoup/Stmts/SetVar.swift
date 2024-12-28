@@ -83,7 +83,7 @@ public class SetVarStmt: BlockOrLineTemplateStmt, CustomDebugStringConvertible {
                   children.count != 0 else { return nil }
             
             if let body = try children.execute(with: ctx) {
-                let modifiedBody = try Modifiers.apply(to: body.trim(), modifiers: self.ModifiersList, pInfo: pInfo)
+                let modifiedBody = try Modifiers.apply(to: body.trim(), modifiers: self.ModifiersList, with: pInfo)
                 actualBody = modifiedBody
             }
         } else {
@@ -91,7 +91,7 @@ public class SetVarStmt: BlockOrLineTemplateStmt, CustomDebugStringConvertible {
                   ValueExpression.isNotEmpty else { return nil }
             
             if let body = try ctx.evaluate(expression: ValueExpression, with: pInfo) {
-                let modifiedBody = try Modifiers.apply(to: body, modifiers: self.ModifiersList, pInfo: pInfo)
+                let modifiedBody = try Modifiers.apply(to: body, modifiers: self.ModifiersList, with: pInfo)
                 actualBody = modifiedBody
             }
         }

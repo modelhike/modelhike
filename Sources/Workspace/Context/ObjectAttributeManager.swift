@@ -44,7 +44,7 @@ public struct ObjectAttributeManager {
            dynamicLookup.hasSettable(property: propName) {
             
             if let body = try ctx.evaluate(expression: valueExpression, with: pInfo) {
-                if let modifiedBody = try Modifiers.apply(to: body, modifiers: modifiers, pInfo: pInfo) {
+                if let modifiedBody = try Modifiers.apply(to: body, modifiers: modifiers, with: pInfo) {
                     try dynamicLookup.setValueOf(property: propName, value: modifiedBody, with: pInfo)
                     return
                 }
@@ -61,7 +61,7 @@ public struct ObjectAttributeManager {
         
         if let obj = ctx.variables[objName] as? HasAttributes {
             if let body = try ctx.evaluate(expression: valueExpression, with: pInfo) {
-                if let modifiedBody = try Modifiers.apply(to: body, modifiers: modifiers, pInfo: pInfo) {
+                if let modifiedBody = try Modifiers.apply(to: body, modifiers: modifiers, with: pInfo) {
                     obj.attribs[propName] = modifiedBody
                     return
                 }
@@ -122,7 +122,7 @@ public struct ObjectAttributeManager {
            dynamicLookup.hasSettable(property: propName) {
             
             if let body = body {
-                if let modifiedBody = try Modifiers.apply(to: body, modifiers: modifiers, pInfo: pInfo) {
+                if let modifiedBody = try Modifiers.apply(to: body, modifiers: modifiers, with: pInfo) {
                     try dynamicLookup.setValueOf(property: propName, value: modifiedBody, with: pInfo)
                     return
                 }
@@ -139,7 +139,7 @@ public struct ObjectAttributeManager {
         
         if let obj = ctx.variables[objName] as? HasAttributes {
             if let body = body {
-                if let modifiedBody = try Modifiers.apply(to: body, modifiers: modifiers, pInfo: pInfo) {
+                if let modifiedBody = try Modifiers.apply(to: body, modifiers: modifiers, with: pInfo) {
                     obj.attribs[propName] = modifiedBody
                     return
                 }

@@ -7,10 +7,10 @@
 import Foundation
 
 public enum Modifiers  {
-    public static func apply<T>(to value: T, modifiers: [ModifierInstance], pInfo: ParsedInfo) throws -> Optional<Any> {
+    public static func apply<T>(to value: T, modifiers: [ModifierInstance], with pInfo: ParsedInfo) throws -> Optional<Any> {
         var result : T = value
         for modifier in modifiers {
-            if let resultValue = try modifier.applyTo(value: result, pInfo: pInfo) as? T {
+            if let resultValue = try modifier.applyTo(value: result, with: pInfo) as? T {
                 result = resultValue
             } else {
                 return nil

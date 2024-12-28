@@ -170,7 +170,7 @@ public class Context {
             let variableName = name
 
             if let body = body {
-                if let modifiedBody = try Modifiers.apply(to: body, modifiers: modifiers, pInfo: pInfo) {
+                if let modifiedBody = try Modifiers.apply(to: body, modifiers: modifiers, with: pInfo) {
                     self.variables[variableName] = modifiedBody
                 } else {
                     self.variables.removeValue(forKey: variableName)

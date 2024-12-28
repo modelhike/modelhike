@@ -11,7 +11,7 @@ public struct ModifierInstanceWithoutArgs<I, T> : ModifierInstanceWithoutArgsPro
     private let callerType: Any.Type
     private let handler: (I, ParsedInfo) throws  -> T?
     
-    public func applyTo(value : Any, pInfo: ParsedInfo) throws -> Any {
+    public func applyTo(value : Any, with pInfo: ParsedInfo) throws -> Any {
         
         if let typedValue = value as? I {
             if type(of: typedValue) != self.callerType {
@@ -41,7 +41,7 @@ public struct ModifierInstanceWithUnNamedArgs<I, T> : ModifierInstanceWithUnName
         self.arguments = arguments
     }
     
-    public func applyTo(value : Any, pInfo: ParsedInfo) throws -> Any {
+    public func applyTo(value : Any, with pInfo: ParsedInfo) throws -> Any {
         
         if let typedValue = value as? I {
             if type(of: typedValue) != self.callerType {
@@ -85,5 +85,5 @@ public protocol ModifierInstanceWithArgsProtocol : ModifierInstance {
 public protocol ModifierInstance {
     var name : String {get}
     //var callerType: Any.Type {get}
-    func applyTo(value : Any, pInfo: ParsedInfo) throws -> Any
+    func applyTo(value : Any, with pInfo: ParsedInfo) throws -> Any
 }

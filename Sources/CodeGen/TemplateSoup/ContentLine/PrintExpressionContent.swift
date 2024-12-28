@@ -37,7 +37,7 @@ public class PrintExpressionContent: ContentLineItem {
     public func execute(with ctx: Context) throws -> String? {
         
         if let body = try ctx.evaluate(expression: expression, with: pInfo) ,
-           let modifiedBody = try Modifiers.apply(to: body, modifiers: self.ModifiersList, pInfo: pInfo) {
+           let modifiedBody = try Modifiers.apply(to: body, modifiers: self.ModifiersList, with: pInfo) {
             //if string, return it as-such; else convert to string
             if let result = modifiedBody as? String {
                 return result
