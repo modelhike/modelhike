@@ -6,13 +6,11 @@
 
 import Foundation
 
-public protocol Node {
+public protocol Node  {
     var attributes: Attributes {get set}
-    //func name() -> String
-    func render(_ config: RenderConfig, level: Int) -> String
 }
 
-public protocol ContainerNode: Node, ExpressibleByArrayLiteral {
+public protocol ContainerNode: Node {
     
 }
 
@@ -20,7 +18,7 @@ public protocol RestrictedContainerNode: Node {
     
 }
 
-public protocol LeafNode: Node, ExpressibleByStringLiteral {
+public protocol LeafNode: Node {
     
 }
 
@@ -56,7 +54,4 @@ public extension Node {
         return self
     }
     
-    func render(_ config: RenderConfig) -> String {
-        render(config, level: 0)
-    }
 }

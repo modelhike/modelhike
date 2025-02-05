@@ -87,6 +87,15 @@ public class Attributes : ExpressibleByDictionaryLiteral, CustomDebugStringConve
         }
     }
     
+    public func getString(_ key: String) -> Optional<String> {
+        let keyToFind = key.lowercased()
+        if let item = items.first(where: {$0.key == keyToFind}) {
+            return item.value as? String
+        } else {
+            return nil
+        }
+    }
+    
     public var attributesList : [Attribute] {
         return Array(items)
     }

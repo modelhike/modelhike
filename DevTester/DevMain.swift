@@ -35,9 +35,9 @@ struct Development {
         
         //ws.debugLog.flags.fileGeneration = true
 
-        //let blueprint = "nestjs-monorepo"
+        //let blueprint = "api-nestjs-monorepo"
         //try ws.loadSymbols([.typescript, .mongodb_typescript])
-        let blueprint = "springboot-monorepo"
+        let blueprint = "api-springboot-monorepo"
         try ws.loadSymbols([.java])
 
         let modelRepo = LocalFileModelLoader(path: ws.basePath, with: ws.context)
@@ -49,7 +49,7 @@ struct Development {
 //            if filename.lowercased() == "MonitoredLiveAirport".lowercased() {
 //                print("rendering \(filename)")
 //            }
-//            
+//
 //            return true
 //        }
         
@@ -145,7 +145,7 @@ struct Development {
 struct TestData : DynamicMemberLookup, HasAttributes {
     public var attribs = Attributes()
     
-    public func dynamicLookup(property propname: String, pInfo: ParsedInfo) throws -> Any {
+    public func getValueOf(property propname: String, with pInfo: ParsedInfo) throws -> Any {
         return self.attribs[propname] as Any
     }
     
