@@ -12,8 +12,8 @@ open class ResourceBlueprintLoader : BlueprintRepository {
 
     public let blueprintName: String
     let bundle: Bundle
-    var blueprintPath: String
-    var resourceRoot: String
+    public var blueprintPath: String
+    public var resourceRoot: String
 
     public func loadTemplate(fileName: String, with pInfo: ParsedInfo) throws -> Template {
         if let resourceURL = bundle.url(forResource: fileName,
@@ -168,7 +168,7 @@ open class ResourceBlueprintLoader : BlueprintRepository {
                         //create the folder only if any file is copied
                         try outputFolder.ensureExists()
                         
-                        let contents = try String(contentsOf: resourcePath)
+                        let contents = try Data(contentsOf: resourcePath)
                         let filename = resourceName
 
                         templateSoup.context.debugLog.copyingFileInFolder(filename, folder: outputFolder)
@@ -207,7 +207,7 @@ open class ResourceBlueprintLoader : BlueprintRepository {
     public init(blueprint: String, bundle: Bundle, with ctx: Context) {
         self.bundle = bundle
         self.blueprintName = blueprint
-        self.blueprintPath = "/Resources/\(blueprint)/"
+        self.blueprintPath = "/Resources/blueprints/\(blueprint)/"
         self.resourceRoot = "/Resources/"
         self.context = ctx
     }

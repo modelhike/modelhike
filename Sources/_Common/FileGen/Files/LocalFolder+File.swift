@@ -241,6 +241,14 @@ public struct LocalFile : File, LocalFileSystemItem {
         }
     }
     
+    public func write(_ data: Data) throws {
+        do {
+            try data.write(to: url, options: [.atomic])
+        } catch {
+            throw WriteError(path: path, reason: .writeFailed(error))
+        }
+    }
+    
     public func write(_ string: String) throws {
         try write(string, encoding: .utf8)
     }
