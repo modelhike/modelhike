@@ -16,7 +16,7 @@ public class BlockTemplateStmt : FileTemplateStatement {
     var isEmpty: Bool { children.isEmpty }
 
     public func execute(with ctx: Context) throws -> String? {
-        return nil
+        fatalError("This method must be overridden")
     }
     
     private func parseStmtLine(lineParser: LineParser) throws {
@@ -28,7 +28,9 @@ public class BlockTemplateStmt : FileTemplateStatement {
         }
     }
     
-    func matchLine(line: String) throws -> Bool { return false }
+    func matchLine(line: String) throws -> Bool {
+        fatalError("This method must be overridden")
+    }
     
     func appendText(_ item: ContentLine) {
         children.append(item)

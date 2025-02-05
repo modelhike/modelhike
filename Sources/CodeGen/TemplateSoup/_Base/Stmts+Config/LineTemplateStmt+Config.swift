@@ -12,7 +12,7 @@ public class LineTemplateStmt: FileTemplateStatement {
     public var lineNo: Int { return pInfo.lineNo }
     
     public func execute(with ctx: Context) throws -> String? {
-        return nil
+        fatalError("This method must be overridden")
     }
     
     func parseStmtLine() throws {
@@ -24,7 +24,9 @@ public class LineTemplateStmt: FileTemplateStatement {
         }
     }
     
-    func matchLine(line: String) throws -> Bool { return false }
+    func matchLine(line: String) throws -> Bool {
+        fatalError("This method must be overridden")
+    }
     
     public init(keyword: String, pInfo: ParsedInfo) {
         self.keyword = keyword
