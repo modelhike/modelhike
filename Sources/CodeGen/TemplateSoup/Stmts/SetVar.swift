@@ -30,7 +30,7 @@ public class SetVarStmt: BlockOrLineTemplateStmt, CustomDebugStringConvertible {
         START_KEYWORD
         OneOrMore(.whitespace)
         Capture {
-            CommonRegEx.variable
+            CommonRegEx.variableOrObjectProperty
         } transform: { String($0) }
         OneOrMore(.whitespace)
         
@@ -85,6 +85,8 @@ public class SetVarStmt: BlockOrLineTemplateStmt, CustomDebugStringConvertible {
             if let body = try children.execute(with: ctx) {
                 let modifiedBody = try Modifiers.apply(to: body.trim(), modifiers: self.ModifiersList, with: pInfo)
                 actualBody = modifiedBody
+            } else { //for block variant, return empty string for invalid cases
+                actualBody = String.empty
             }
         } else {
             guard SetVar.isNotEmpty,

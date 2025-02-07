@@ -32,7 +32,7 @@ open class Workspace {
             
             isModelsLoaded = true
         } catch let err {
-            printModelError(err)
+            printRenderingError(err)
             print("❌❌ ERROR IN LOADING MODELS ❌❌")
         }
     }
@@ -147,17 +147,8 @@ open class Workspace {
                   """
             print(msg)
             //print(Thread.callStackSymbols)
-        } else {
-            print("❌❌ UNKNOWN INTERNAL ERROR ❌❌")
-        }
-    }
-    
-    fileprivate func printModelError(_ err: Error) {
-        if let parseErr = err as? ErrorWithMessageAndParsedInfo {
-            print(parseErr.info)
-            //print(Thread.callStackSymbols)
-        } else if let parseErr = err as? ParsingError {
-            print(parseErr.info)
+        } else if let err = err as? ErrorWithMessageAndParsedInfo {
+            print(err.info)
             //print(Thread.callStackSymbols)
         } else {
             print("❌❌ UNKNOWN INTERNAL ERROR ❌❌")
