@@ -20,6 +20,9 @@ public struct TemplateEvaluator: TemplateSoupEvaluator {
         let parser = TemplateSoupParser(lineParser: lineParser, context: ctx)
 
         do {
+            ctx.debugLog.templateParsingStarting()
+            try ctx.events.onBeforeParseTemplate?(lineParser.identifier, ctx)
+            
             let curLine = lineParser.currentLine()
             
             if curLine.hasOnly(TemplateConstants.frontMatterIndicator) {
@@ -27,13 +30,12 @@ public struct TemplateEvaluator: TemplateSoupEvaluator {
                 try frontMatter.processVariables()
             }
             
-            ctx.debugLog.templateParsingStarting()
-            
             if let containers = try parser.parseContainers() {
                 ctx.debugLog.printParsedTree(for: containers)
                 
                 ctx.debugLog.templateExecutionStarting()
-                
+                try ctx.events.onBeforeParseTemplate?(lineParser.identifier, ctx)
+
                 if let body = try containers.execute(with: ctx) {
                     return body
                 }

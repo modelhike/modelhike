@@ -35,10 +35,10 @@ struct Development {
         
         //ws.debugLog.flags.fileGeneration = true
 
-        //let blueprint = "api-nestjs-monorepo"
-        //try ws.loadSymbols([.typescript, .mongodb_typescript])
-        let blueprint = "api-springboot-monorepo"
-        try ws.loadSymbols([.java])
+        let blueprint = "api-nestjs-monorepo"
+        try ws.loadSymbols([.typescript, .mongodb_typescript])
+        //let blueprint = "api-springboot-monorepo"
+        //try ws.loadSymbols([.java])
 
         let modelRepo = LocalFileModelLoader(path: ws.basePath, with: ws.context)
         //let modelRepo = inlineModel(ws)
@@ -51,6 +51,18 @@ struct Development {
 //            }
 //
 //            return true
+//        }
+        
+//        ws.context.events.onBeforeParseTemplate = { templatename, context in
+//            if templatename.lowercased() == "entity.validator.teso".lowercased() {
+//                print("rendering \(templatename)")
+//            }
+//        }
+//        
+//        ws.context.events.onBeforeExecuteTemplate = { templatename, context in
+//            if templatename.lowercased() == "entity.validator.teso".lowercased() {
+//                print("rendering \(templatename)")
+//            }
 //        }
         
 //        ws.context.events.onStartParseObject = { objname, parser, context in
