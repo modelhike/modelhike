@@ -17,6 +17,8 @@ public extension String {
     
     func hasOnly(_ txt: String) -> Bool {
         let trimmed = self.trim()
+        if (trimmed.isEmpty) { return false }
+            
         let selfCount = trimmed.count
         let comparedString = String(repeating: String(txt), count: selfCount)
         return trimmed == comparedString
@@ -24,6 +26,8 @@ public extension String {
     
     func hasOnly(_ times: Int, of txt: String) -> Bool {
         let trimmed = self.trim()
+        if (trimmed.isEmpty) { return false }
+
         let comparedString = String(repeating: String(txt), count: times)
         return trimmed == comparedString
     }
