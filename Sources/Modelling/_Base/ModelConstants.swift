@@ -18,7 +18,8 @@ public enum ModelConstants {
     public static let Member_Derived_For_Dto = "."
     
     public static let External_Import_File = "+"
-    
+    public static let Container_Member = "+"
+
     public static let AttachedSection = "#"
     public static let AttachedSubSection = "##"
 

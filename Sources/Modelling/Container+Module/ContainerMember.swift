@@ -56,8 +56,7 @@ public struct ContainerModuleMember : Artifact {
     
     public static func canParse(firstWord: String) -> Bool {
         switch firstWord {
-            case ModelConstants.Member_Mandatory : return true
-            case ModelConstants.Member_Optional : return true
+            case ModelConstants.Container_Member : return true
           default :
                 return false
         }
