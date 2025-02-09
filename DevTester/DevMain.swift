@@ -75,9 +75,7 @@ struct Development {
 //        }
         
         try ws.loadModels(from: modelRepo)
-        if ws.isModelsLoaded {
-            ws.generateCodebase(container: "APIs", usingBlueprintsFrom: templatesRepo)
-        }
+        ws.generateCodebase(container: "APIs", usingBlueprintsFrom: templatesRepo)
     }
     
     
