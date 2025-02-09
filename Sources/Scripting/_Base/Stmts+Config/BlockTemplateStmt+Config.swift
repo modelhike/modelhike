@@ -36,12 +36,12 @@ public class BlockTemplateStmt : FileTemplateStatement {
         children.append(item)
     }
     
-    func parseStmtLineAndChildren(parser: TemplateSoupParser, pInfo: ParsedInfo) throws {
+    func parseStmtLineAndChildren(scriptParser: SoupyScriptParser, pInfo: ParsedInfo) throws {
         self.pInfo = pInfo
         
         try parseStmtLine(lineParser: pInfo.parser)
                 
-        try TemplateSoupParser.parseLines(startingFrom: keyword, till: endKeyword, to: self.children, templateParser: parser, level: pInfo.level + 1, with: parser.context)
+        try scriptParser.parseLines(startingFrom: keyword, till: endKeyword, to: self.children, level: pInfo.level + 1, with: pInfo.ctx)
         
     }
     

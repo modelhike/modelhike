@@ -40,13 +40,13 @@ public class MultiBlockTemplateStmt : FileTemplateStatement {
         children.append(item)
     }
     
-    func parseStmtLineAndBlocks(parser: TemplateSoupParser) throws {
-        try parseStmtLine(lineParser: parser.lineParser)
+    func parseStmtLineAndBlocks(scriptParser: SoupyScriptParser) throws {
+        try parseStmtLine(lineParser: pInfo.parser)
             
         let stmts = GenericStmtsContainer()
-        let ctx = parser.context
+        let ctx = pInfo.ctx
         
-        try TemplateSoupParser.parseLines(startingFrom: keyword, till: endKeyword, to: stmts, templateParser: parser, level: pInfo.level + 1, with: ctx)
+        try scriptParser.parseLines(startingFrom: keyword, till: endKeyword, to: stmts, level: pInfo.level + 1, with: ctx)
         
         var container = self.children
         

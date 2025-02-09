@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class TemplateFunctionContainer : TemplateStmtContainer {
+public class TemplateFunctionContainer : SoupyScriptStmtContainer {
     let container : GenericStmtsContainer
     
     let params: [String]

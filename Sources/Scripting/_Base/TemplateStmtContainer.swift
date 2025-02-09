@@ -6,11 +6,11 @@
 
 import Foundation
 
-public protocol TemplateStmtContainer : IteratorProtocol, Sequence, CustomDebugStringConvertible {
+public protocol SoupyScriptStmtContainer : IteratorProtocol, Sequence, CustomDebugStringConvertible {
     func append(_ item: TemplateItem)
 }
 
-public class GenericStmtsContainer : TemplateStmtContainer {
+public class GenericStmtsContainer : SoupyScriptStmtContainer {
     
     public var kind: TemplateStmtContainerKind = .global
     public var name: String?

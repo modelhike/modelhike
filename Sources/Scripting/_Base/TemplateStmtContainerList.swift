@@ -8,10 +8,10 @@ import Foundation
 
 public class TemplateStmtContainerList : IteratorProtocol, Sequence, CustomDebugStringConvertible {
     public let name: String
-    var items : [any TemplateStmtContainer] = []
+    var items : [any SoupyScriptStmtContainer] = []
     private var currentIndex = 0
     
-    public func forEach(by transform: (inout any TemplateStmtContainer) throws -> Void) rethrows {
+    public func forEach(by transform: (inout any SoupyScriptStmtContainer) throws -> Void) rethrows {
         _ = try items.map { el in
             var el = el
             try transform(&el)
@@ -19,7 +19,7 @@ public class TemplateStmtContainerList : IteratorProtocol, Sequence, CustomDebug
         }
     }
     
-    public func next() -> (any TemplateStmtContainer)? {
+    public func next() -> (any SoupyScriptStmtContainer)? {
         if currentIndex <= items.count - 1 {
             let compo = items[currentIndex]
             currentIndex += 1
@@ -30,11 +30,11 @@ public class TemplateStmtContainerList : IteratorProtocol, Sequence, CustomDebug
         }
     }
     
-    public func append(_ item: any TemplateStmtContainer) {
+    public func append(_ item: any SoupyScriptStmtContainer) {
         items.append(item)
     }
     
-    public func append(contentsOf newItems: [any TemplateStmtContainer]) {
+    public func append(contentsOf newItems: [any SoupyScriptStmtContainer]) {
         self.items.append(contentsOf: newItems)
     }
     
@@ -69,12 +69,12 @@ public class TemplateStmtContainerList : IteratorProtocol, Sequence, CustomDebug
         return str
     }
     
-    public init(name: String, _ items: any TemplateStmtContainer...) {
+    public init(name: String, _ items: any SoupyScriptStmtContainer...) {
         self.name = name
         self.items = items
     }
     
-    public init(name: String, _ items: [any TemplateStmtContainer]) {
+    public init(name: String, _ items: [any SoupyScriptStmtContainer]) {
         self.name = name
         self.items = items
     }
