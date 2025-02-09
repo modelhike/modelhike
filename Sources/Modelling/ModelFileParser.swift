@@ -19,7 +19,7 @@ public class ModelFileParser {
     }
     
     public func parse(string: String, identifier: String, with ctx: Context) throws -> ModelSpace {
-        let lines = string.components(separatedBy: .newlines)
+        let lines = string.splitIntoLines()
         return try self.parse(lines: lines, identifier: identifier, with: ctx)
     }
     
@@ -93,11 +93,7 @@ public class ModelFileParser {
             return modelSpace
         } catch let err {
             if let parseErr = err as? Model_ParsingError {
-                if case .invalidAnnotationLine(_) = parseErr {
-                    throw ParsingError.invalidLine(parseErr.pInfo, parseErr)
-                } else {
-                    throw ParsingError.invalidLine(parseErr.pInfo, parseErr)
-                }
+                throw ParsingError.invalidLine(parseErr.pInfo, parseErr)
             } else {
                 throw err
             }

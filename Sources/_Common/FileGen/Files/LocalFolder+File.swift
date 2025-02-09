@@ -233,7 +233,7 @@ public struct LocalFile : File, LocalFileSystemItem {
 
         do {
             let contents = try readTextContents()
-            let lines = contents.components(separatedBy: .newlines)
+            let lines = contents.splitIntoLines()
             return lines
         }
         catch {

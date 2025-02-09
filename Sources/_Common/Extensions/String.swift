@@ -261,6 +261,12 @@ public extension String {
     }
     
     static var newLine = "\n"
+    static var newLine2 = "\r\n"
+
+    func splitIntoLines() -> [String] {
+        //return self.components(separatedBy: .newlines)
+        return split(omittingEmptySubsequences: false, whereSeparator: \.isNewline).map(String.init)
+    }
 }
 
 public extension Array where Element == String {

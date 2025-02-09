@@ -45,7 +45,12 @@ public class PrintExpressionContent: ContentLineItem {
                 return String(describing: modifiedBody)
             }
         } else {
-            throw TemplateSoup_ParsingError.invalidExpression(expression, pInfo)
+            //if expression is printing a single variable or object value
+            if expression.isPattern(CommonRegEx.variableOrObjectProperty) {
+                throw TemplateSoup_ParsingError.invalidExpression_VariableOrObjPropNotFound(expression, pInfo)
+            } else {
+                throw TemplateSoup_ParsingError.invalidExpression(expression, pInfo)
+            }
         }
     }
     

@@ -223,7 +223,7 @@ public class LineParser {
         self.identifier = identifier
         
         self._curLineNo = 0
-        self.lines = string.components(separatedBy: .newlines)
+        self.lines = string.splitIntoLines()
         self.autoIncrementLineNoForEveryLoop = true
     }
     

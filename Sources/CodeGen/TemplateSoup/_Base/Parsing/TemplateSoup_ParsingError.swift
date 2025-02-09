@@ -18,6 +18,7 @@ public enum TemplateSoup_ParsingError: ErrorWithMessageAndParsedInfo, Equatable 
     case modifierInvalidArguments(String, ParsedInfo)
     case modifierCalledOnwrongType(String, String, ParsedInfo)
     case invalidExpression(String, ParsedInfo)
+    case invalidExpression_VariableOrObjPropNotFound(String, ParsedInfo)
     case infixOperatorNotFound(String, ParsedInfo)
     case infixOperatorCalledOnwrongLhsType(String, String, ParsedInfo)
     case infixOperatorCalledOnwrongRhsType(String, String, ParsedInfo)
@@ -55,7 +56,9 @@ public enum TemplateSoup_ParsingError: ErrorWithMessageAndParsedInfo, Equatable 
         
         case .invalidExpression(let expn, _) :
             return suffix + "expression - invalid syntax: \(expn)"
-        
+        case .invalidExpression_VariableOrObjPropNotFound(let expn, _) :
+            return suffix + "expression - value not found for: \(expn)"
+            
         case .invalidPropertyNameUsedInCall(let propName, _) :
             return suffix + "Invalid prop : \(propName)"
         case .templateFunctionNotFound(let fnName, _) :
@@ -81,7 +84,8 @@ public enum TemplateSoup_ParsingError: ErrorWithMessageAndParsedInfo, Equatable 
             case .infixOperatorCalledOnwrongRhsType(_, _, let pInfo) : pInfo
             
             case .invalidExpression(_, let pInfo) : pInfo
-            
+            case .invalidExpression_VariableOrObjPropNotFound(_, let pInfo) : pInfo
+
             case .invalidPropertyNameUsedInCall(_, let pInfo) : pInfo
             case .templateFunctionNotFound(_, let pInfo) : pInfo
             

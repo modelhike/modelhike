@@ -30,7 +30,9 @@ open class Workspace {
             
             try repo.processAfterLoad(model: model, with: context)
             
-            isModelsLoaded = true
+            if model.types.items.count > 0 {
+                isModelsLoaded = true
+            }
         } catch let err {
             printRenderingError(err)
             print("❌❌ ERROR IN LOADING MODELS ❌❌")
