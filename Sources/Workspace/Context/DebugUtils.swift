@@ -99,7 +99,7 @@ public struct ContextDebugLog {
         }
     }
     
-    public func printParsedTree(for containers: TemplateStmtContainerList) {
+    public func printParsedTree(for containers: SoupyScriptStmtContainerList) {
         if flags.printParsedTree {
             print(containers.debugDescription)
         }

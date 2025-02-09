@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class TemplateStmtContainerList : IteratorProtocol, Sequence, CustomDebugStringConvertible {
+public class SoupyScriptStmtContainerList : IteratorProtocol, Sequence, CustomDebugStringConvertible {
     public let name: String
     var items : [any SoupyScriptStmtContainer] = []
     private var currentIndex = 0

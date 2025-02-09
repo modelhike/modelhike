@@ -36,28 +36,28 @@ public struct RuntimeReflection {
 //        return setValue(value, for: lastKey, in: &object, keys: keys)
     }
 
-    private static func setValue(_ value: Any, for key: String, in object: inout Any, keys: [String]) -> Bool {
-        if keys.isEmpty {
-            // Base case: Set the value directly
-            let mirror = Mirror(reflecting: object)
-            guard var child = mirror.children.first(where: { $0.label == key }) else { return false }
-            child.value = value
-            return true
-
-        } else {
-            // Recursive case: Drill down into the hierarchy
-            let mirror = Mirror(reflecting: object)
-            guard let child = mirror.children.first(where: { $0.label == keys.first }) else { return false }
-            
-            var childValue = child.value
-            let success = setValue(value, for: key, in: &childValue, keys: Array(keys.dropFirst()))
-            
-            // Reassign the updated child back to the parent
-            if success {
-                object = childValue
-                return true
-            }
-        }
-        return false
-    }
+//    private static func setValue(_ value: Any, for key: String, in object: inout Any, keys: [String]) -> Bool {
+//        if keys.isEmpty {
+//            // Base case: Set the value directly
+//            let mirror = Mirror(reflecting: object)
+//            guard var child = mirror.children.first(where: { $0.label == key }) else { return false }
+//            child.value = value
+//            return true
+//
+//        } else {
+//            // Recursive case: Drill down into the hierarchy
+//            let mirror = Mirror(reflecting: object)
+//            guard let child = mirror.children.first(where: { $0.label == keys.first }) else { return false }
+//            
+//            var childValue = child.value
+//            let success = setValue(value, for: key, in: &childValue, keys: Array(keys.dropFirst()))
+//            
+//            // Reassign the updated child back to the parent
+//            if success {
+//                object = childValue
+//                return true
+//            }
+//        }
+//        return false
+//    }
 }
