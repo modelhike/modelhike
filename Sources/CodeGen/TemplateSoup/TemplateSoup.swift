@@ -83,12 +83,14 @@ public class TemplateSoup : TemplateRenderer {
         }
         
         context.pushSnapshot()
+        var loopWrap = ForLoop_Wrap()
+        context.variables[ForStmt.LOOP_VARIABLE] = loopWrap
         
         for (index, loopItem) in loopItems.enumerated() {
             context.variables[loopVariableName] = loopItem
             
-            context.variables[ForStmt.FIRST_IN_LOOP] = index == loopItems.startIndex
-            context.variables[ForStmt.LAST_IN_LOOP] = index == loopItems.index(before: loopItems.endIndex)
+            loopWrap.FIRST_IN_LOOP = index == loopItems.startIndex
+            loopWrap.LAST_IN_LOOP = index == loopItems.index(before: loopItems.endIndex)
             
             try renderClosure()
         }

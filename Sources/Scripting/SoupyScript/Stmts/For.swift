@@ -9,8 +9,7 @@ import RegexBuilder
 
 public class ForStmt: BlockTemplateStmt, CustomDebugStringConvertible {
     static let START_KEYWORD = "for"
-    static let FIRST_IN_LOOP = "_firstInLoop"
-    static let LAST_IN_LOOP = "_lastInLoop"
+    static let LOOP_VARIABLE = "@loop"
 
     public private(set) var ForVar: String = ""
     public private(set) var InArrayVar: String = ""
@@ -55,12 +54,14 @@ public class ForStmt: BlockTemplateStmt, CustomDebugStringConvertible {
         var rendering = ""
 
         ctx.pushSnapshot()
+        var loopWrap = ForLoop_Wrap(self)
+        ctx.variables[ForStmt.LOOP_VARIABLE] = loopWrap
         
         for (index, loopItem) in loopItems.enumerated() {
             ctx.variables[loopVariableName] = loopItem
 
-            ctx.variables[Self.FIRST_IN_LOOP] = index == loopItems.startIndex
-            ctx.variables[Self.LAST_IN_LOOP] = index == loopItems.index(before: loopItems.endIndex)
+            loopWrap.FIRST_IN_LOOP = index == loopItems.startIndex
+            loopWrap.LAST_IN_LOOP = index == loopItems.index(before: loopItems.endIndex)
             
             if let body = try children.execute(with: ctx) {
                 rendering += body
