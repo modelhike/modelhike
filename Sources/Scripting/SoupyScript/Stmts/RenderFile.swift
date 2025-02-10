@@ -7,7 +7,7 @@
 import Foundation
 import RegexBuilder
 
-public class RenderTemplateFileStmt: LineTemplateStmt, CustomDebugStringConvertible {
+public class RenderTemplateFileStmt: LineTemplateStmt, CallStackable, CustomDebugStringConvertible {
     static let START_KEYWORD = "render-file"
 
     public private(set) var ToFile: String = ""
@@ -66,6 +66,8 @@ public class RenderTemplateFileStmt: LineTemplateStmt, CustomDebugStringConverti
             filename = toFile
         }
         
+        ctx.pushCallStack(self)
+
         //render the filename if it has an expression within '{{' and '}}'
         filename = try ContentHandler.eval(expression: filename, with: ctx) ?? filename
 
@@ -75,6 +77,8 @@ public class RenderTemplateFileStmt: LineTemplateStmt, CustomDebugStringConverti
         } else {
             ctx.debugLog.fileNotGenerated(filename, with: fromTemplate)
         }
+        
+        ctx.popCallStack()
         
         return nil
     }
@@ -90,6 +94,8 @@ public class RenderTemplateFileStmt: LineTemplateStmt, CustomDebugStringConverti
         return str
     }
     
+    public var callStackItem: CallStackItem { CallStackItem(self, pInfo: pInfo) }
+
     public init(_ pInfo: ParsedInfo) {
         super.init(keyword: Self.START_KEYWORD, pInfo: pInfo)
     }

@@ -44,6 +44,14 @@ public class Context {
         }
     }
     
+    public func pushCallStack(_ item: CallStackable) {
+        debugLog.stack.push(item)
+    }
+
+    public func popCallStack() {
+        debugLog.stack.popLast()
+    }
+    
     // File Generation
     public var fileGenerator : FileGeneratorProtocol!
     var generatedFiles: [ String] = []

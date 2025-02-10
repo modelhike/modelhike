@@ -7,7 +7,7 @@
 import Foundation
 import RegexBuilder
 
-public class RenderFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
+public class RenderFolderStmt: LineTemplateStmt, CallStackable, CustomDebugStringConvertible {
     static let START_KEYWORD = "render-folder"
 
     public private(set) var FromFolder: String = ""
@@ -68,6 +68,8 @@ public class RenderFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
             foldername = toFolder
         }
         
+        ctx.pushCallStack(self)
+
         //render the foldername if it has an expression within '{{' and '}}'
         foldername = try ContentHandler.eval(expression: foldername, with: ctx) ?? foldername
         
@@ -75,6 +77,8 @@ public class RenderFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
         let folder = try ctx.fileGenerator.renderFolder(fromFolder, to: foldername, with: pInfo)
         try ctx.addGenerated(folderPath: folder.outputFolder)
         
+        ctx.popCallStack()
+
         return nil
     }
     
@@ -89,6 +93,8 @@ public class RenderFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
         return str
     }
     
+    public var callStackItem: CallStackItem { CallStackItem(self, pInfo: pInfo) }
+
     public init(_ pInfo: ParsedInfo) {
         super.init(keyword: Self.START_KEYWORD, pInfo: pInfo)
     }

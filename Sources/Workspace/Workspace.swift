@@ -34,7 +34,7 @@ open class Workspace {
                 isModelsLoaded = true
             }
         } catch let err {
-            printRenderingError(err)
+            printError(err)
             print("❌❌ ERROR IN LOADING MODELS ❌❌")
         }
     }
@@ -96,7 +96,7 @@ open class Workspace {
             return rendering
             
         } catch let err {
-            printRenderingError(err)
+            printError(err)
             print("❌❌❌ TERMINATED DUE TO ERROR ❌❌❌")
             return nil
         }
@@ -112,24 +112,43 @@ open class Workspace {
             return rendering?.trim()
 
         } catch let err {
-            printRenderingError(err)
+            printError(err)
             print("❌❌❌ TERMINATED DUE TO ERROR ❌❌❌")
             return nil
         }
     }
     
-    fileprivate func printRenderingError(_ err: Error) {
+    fileprivate func printError(_ err: Error) {
+        let extraInfo = StringTemplate {
+            "[Call Stack]"
+            
+            for log in context.debugLog.stack {
+                let pInfo = log.callStackItem.pInfo
+                
+                "\n"
+                " \(pInfo.identifier) [\(pInfo.lineNo)] \(pInfo.line)"
+            }
+        }.toString()
+        
         if let parseErr = err as? ParsingError {
             let pInfo = parseErr.pInfo
             let msg = """
-                      🐞🐞 \(pInfo.identifier) >> [line no : \(pInfo.lineNo)] \(parseErr.info)
+                      🐞🐞 ERROR WHILE PARSING 🐞🐞
+                       \(pInfo.identifier) [\(pInfo.lineNo)] \(parseErr.info)
+                      
+                      \(extraInfo)
+                      
                       """
             print(msg)
             //print(Thread.callStackSymbols)
         } else if let parseErr = err as? Model_ParsingError {
             let pInfo = parseErr.pInfo
             let msg = """
-                      🐞🐞 \(pInfo.identifier) >> [line no : \(pInfo.lineNo)] \(parseErr.info)
+                      🐞🐞 ERROR WHILE PARSING MODELS 🐞🐞
+                       \(pInfo.identifier) [\(pInfo.lineNo)] \(parseErr.info)
+                      
+                      \(extraInfo)
+                      
                       """
             print(msg)
             //print(Thread.callStackSymbols)
@@ -145,16 +164,28 @@ open class Workspace {
                 info = evalErr.info
             }
             let msg = """
-                  🐞🐞 \(pInfo.identifier) >> [line no : \(pInfo.lineNo)] \(info)
+                  🐞🐞 ERROR DURING EVAL 🐞🐞
+                   \(pInfo.identifier) [\(pInfo.lineNo)] \(info)
+                  
+                  \(extraInfo)
+                  
                   """
             print(msg)
             //print(Thread.callStackSymbols)
         } else if let err = err as? ErrorWithMessageAndParsedInfo {
-            print(err.info)
+            let msg = """
+                  🐞🐞 UNKNOWN ERROR 🐞🐞
+                   \(err.info)
+                  
+                  \(extraInfo)
+                  
+                  """
+            print(msg)
             //print(Thread.callStackSymbols)
         } else {
             print("❌❌ UNKNOWN INTERNAL ERROR ❌❌")
         }
+        
     }
     
     fileprivate func setupDefaultSymbols() {

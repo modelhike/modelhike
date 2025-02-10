@@ -7,6 +7,7 @@
 import Foundation
 
 public struct ContextDebugLog {
+    public var stack = CallStack()
     public var flags = ContextDebugFlags()
 
     public func parseLines(startingFrom startKeyword : String?, till endKeyWord: String?, line: String?, lineNo : Int ) {

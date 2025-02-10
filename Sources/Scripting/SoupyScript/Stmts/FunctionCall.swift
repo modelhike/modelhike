@@ -7,7 +7,7 @@
 import Foundation
 import RegexBuilder
 
-public class FunctionCallStmt: LineTemplateStmt, CustomDebugStringConvertible {
+public class FunctionCallStmt: LineTemplateStmt, CallStackable, CustomDebugStringConvertible {
     static let START_KEYWORD = "call"
 
     public private(set) var FnName: String = ""
@@ -38,7 +38,11 @@ public class FunctionCallStmt: LineTemplateStmt, CustomDebugStringConvertible {
         let args = Args.getArray_UsingNamedArgsPattern()
 
         if let templateFn  = ctx.templateFunctions[FnName] {
+            ctx.pushCallStack(self)
+            
             let body = try templateFn.execute(args: args, with: ctx)
+            
+            ctx.popCallStack()
             return body
         } else {
             throw TemplateSoup_ParsingError.templateFunctionNotFound(FnName, pInfo)
@@ -55,6 +59,8 @@ public class FunctionCallStmt: LineTemplateStmt, CustomDebugStringConvertible {
                 
         return str
     }
+    
+    public var callStackItem: CallStackItem { CallStackItem(self, pInfo: pInfo) }
     
     public init(_ pInfo: ParsedInfo) {
         super.init(keyword: Self.START_KEYWORD, pInfo: pInfo)
