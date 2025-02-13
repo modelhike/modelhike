@@ -52,7 +52,9 @@ public class RenderFolderStmt: LineTemplateStmt, CallStackable, CustomDebugStrin
         }
         
         guard let fromFolder = try? ctx.evaluate(value: FromFolder, with: pInfo) as? String
-                                                                    else { return nil }
+        else {
+            throw TemplateSoup_ParsingError.invalidExpression_VariableOrObjPropNotFound(FromFolder, pInfo)
+        }
         
         try ctx.fileGenerator.setRelativePath(ctx.workingDirectoryString)
         

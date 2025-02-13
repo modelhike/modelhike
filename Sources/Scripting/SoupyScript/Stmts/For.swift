@@ -48,7 +48,9 @@ public class ForStmt: BlockTemplateStmt, CustomDebugStringConvertible {
               InArrayVar.isNotEmpty,
               children.count != 0 else { return nil }
 
-        guard let loopItems = try ctx.valueOf(variableOrObjProp: InArrayVar, with: pInfo) as? [Any] else { return nil }
+        guard let loopItems = try ctx.valueOf(variableOrObjProp: InArrayVar, with: pInfo) as? [Any] else {
+            throw TemplateSoup_ParsingError.invalidExpression_VariableOrObjPropNotFound(InArrayVar, pInfo)
+        }
         
         let loopVariableName = ForVar
         var rendering = ""

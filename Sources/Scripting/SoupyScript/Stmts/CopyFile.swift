@@ -52,7 +52,9 @@ public class CopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible {
         }
         
         guard let fromFile = try? ctx.evaluate(value: FromFile, with: pInfo) as? String
-                                                                    else { return nil }
+        else {
+            throw TemplateSoup_ParsingError.invalidExpression_VariableOrObjPropNotFound(FromFile, pInfo)
+        }
         
         try ctx.fileGenerator.setRelativePath(ctx.workingDirectoryString)
         
