@@ -13,7 +13,9 @@ public struct ObjectAttributeManager {
 
         if let _ = propName.firstIndex(of: ".") { //hierarchial prop name
             if let dynamicLookup = ctx.variables[objName] as? DynamicMemberLookup {
-                return try dynamicLookup.getValueOf(property: propName, with: pInfo)
+                return try getDynamicLookupValue(lookup: dynamicLookup, propName: propName, with: pInfo)
+            } else {
+                throw TemplateSoup_ParsingError.invalidExpression(objName, pInfo)
             }
         } else {
             //attributes cannot be hierarchial
@@ -26,9 +28,28 @@ public struct ObjectAttributeManager {
             if let dynamicLookup = ctx.variables[objName] as? DynamicMemberLookup {
                 return try dynamicLookup.getValueOf(property: propName, with: pInfo)
             }
+            
+            throw TemplateSoup_ParsingError.invalidExpression_VariableOrObjPropNotFound(objName, pInfo)
         }
-        
-        return nil
+    }
+    
+    private func getDynamicLookupValue(lookup: DynamicMemberLookup, propName: String, with pInfo: ParsedInfo) throws -> Optional<Any> {
+
+        if let dotIndex = propName.firstIndex(of: ".") { //hierarchial prop name
+            let beforeDot = String(propName[..<dotIndex])
+            let afterDot = String(propName[propName.index(after: dotIndex)...])
+                                    
+            let value = try lookup.getValueOf(property: beforeDot, with: pInfo)
+            
+            //if the returned value is a dynamic lookup
+            if let dynamicLookup = value as? DynamicMemberLookup {
+                return try getDynamicLookupValue(lookup: dynamicLookup, propName: afterDot, with: pInfo)
+            } else {
+                return value
+            }
+        } else {
+            return try lookup.getValueOf(property: propName, with: pInfo)
+        }
     }
     
     public func setObjAttribute(objName: String, propName: String, valueExpression: String, modifiers: [ModifierInstance], with pInfo: ParsedInfo) throws {
