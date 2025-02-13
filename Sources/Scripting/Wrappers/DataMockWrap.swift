@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class Mocking_Wrap : DynamicMemberLookup {
+public struct Mocking_Wrap : DynamicMemberLookup {
     public private(set) var item: MockData_Generator
     
     public func getValueOf(property propname: String, with pInfo: ParsedInfo) throws -> Any {

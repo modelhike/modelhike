@@ -1,5 +1,5 @@
 //
-// Loop+Container.swift
+// Loop.swift
 // DiagSoup
 // https://www.github.com/diagsoup/diagsoup
 //

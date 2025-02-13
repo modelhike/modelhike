@@ -113,10 +113,10 @@ public class Context {
 
             if let obj = self.variables[variableName]  {
                 return obj
+            } else {
+                throw TemplateSoup_ParsingError.invalidExpression_VariableOrObjPropNotFound(variableName, pInfo)
             }
         }
-        
-        return nil
     }
     
     public func setValueOf(variableOrObjProp name: String, valueExpression: String, modifiers: [ModifierInstance] = [], with pInfo: ParsedInfo) throws {
