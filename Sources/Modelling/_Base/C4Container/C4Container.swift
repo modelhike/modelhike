@@ -21,25 +21,14 @@ public class C4Container : ArtifactHolder {
     public internal(set) var unresolvedMembers: [ContainerModuleMember] = []
     public internal(set) var methods: [MethodObject] = []
     
-    public func toDictionary(using appModel: AppModel) -> [String: Any] {
-        let dict: [String: Any] = [
-            "model": appModel.types,
-            "modules" : components(self.components, appModel: appModel),
-            "commons" : components(appModel.commonModel, appModel: appModel),
-            "module-default" : getFirstModule(appModel: appModel) as Any,
-            "mock" : Mocking_Wrap()
-        ]
-        return dict
-    }
-    
     public var types : [CodeObject] {
         return components.types
     }
     
-    private func components(_ items: C4ComponentList, appModel: AppModel) -> [C4Component_Wrap]  { return items.compactMap({ C4Component_Wrap($0, model: appModel)})
+    func components(_ items: C4ComponentList, appModel: AppModel) -> [C4Component_Wrap]  { return items.compactMap({ C4Component_Wrap($0, model: appModel)})
     }
     
-    private func getFirstModule(appModel: AppModel) -> C4Component_Wrap? {
+    func getFirstModule(appModel: AppModel) -> C4Component_Wrap? {
         return (self.components.first != nil) ? C4Component_Wrap(self.components.first!, model: appModel) : nil
     }
     

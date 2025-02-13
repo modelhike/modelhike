@@ -36,9 +36,12 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
             let pInfo = ParsedInfo.dummyForAppState(with: context)
             throw EvaluationError.invalidInput("There is no container called \(container)", pInfo)
         }
+                
+        let variables : [String: Any] = [
+            "@container" : C4Container_Wrap(container, model: model),
+            "mock" : Mocking_Wrap()
+        ]
         
-        let variables = container.toDictionary(using: model)
-            
         self.context.append(variables: variables)
 
         self.templateSoup.repo = blueprintLoader
