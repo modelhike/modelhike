@@ -38,8 +38,9 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
         }
         
         let variables = container.toDictionary(using: model)
+            
         self.context.append(variables: variables)
-        
+
         self.templateSoup.repo = blueprintLoader
         
         context.setWorkingDirectory("/")
@@ -49,7 +50,12 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
         
         //handle special folders
         if blueprintLoader.hasFolder(SpecialFolderNames.root) {
+            let specialActivity = SpecialActivityCallStackItem(activityName: "Rendering Root Folder")
+            context.pushCallStack(specialActivity)
+
             try renderSpecialFolder(SpecialFolderNames.root, to: "/", pInfo: pInfo)
+            context.popCallStack()
+
         } else {
             print("⚠️ Didn't find 'Root' folder in Blueprint !!!")
         }

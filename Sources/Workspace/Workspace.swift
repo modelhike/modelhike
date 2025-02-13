@@ -123,10 +123,8 @@ open class Workspace {
             "[Call Stack]"
             
             for log in context.debugLog.stack {
-                let pInfo = log.callStackItem.pInfo
-                
-                "\n"
-                " \(pInfo.identifier) [\(pInfo.lineNo)] \(pInfo.line)"
+                String.newLine
+                log.callStackItem.renderForDisplay()
             }
         }.toString()
         
