@@ -44,7 +44,7 @@ public extension String {
     }
     
     func firstWord() -> String? {
-        let arr = self.components(separatedBy: " ")
+        let arr = self.components(separatedBy: .whitespaces)
                 
         for item in arr {
             if item.trim().isNotEmpty {
@@ -56,7 +56,7 @@ public extension String {
     }
     
     func secondWord() -> String? {
-        let arr = self.components(separatedBy: " ")
+        let arr = self.components(separatedBy: .whitespaces)
         
         let nonEmptyArray = arr.filter({ $0.trim().isNotEmpty })
                 
@@ -68,7 +68,7 @@ public extension String {
     }
     
     func firstAndsecondWord() -> (String?, String?) {
-        let arr = self.components(separatedBy: " ")
+        let arr = self.components(separatedBy: .whitespaces)
         
         let nonEmptyArray = arr.filter({ $0.trim().isNotEmpty })
                 
@@ -82,7 +82,7 @@ public extension String {
     }
     
     func lastWord() -> String? {
-        let arr = self.components(separatedBy: " ")
+        let arr = self.components(separatedBy: .whitespaces)
         
         let nonEmptyArray = arr.filter({ $0.trim().isNotEmpty })
         return nonEmptyArray.last
@@ -97,7 +97,7 @@ public extension String {
     }
     
     func dropLastWord() -> String {
-        let strWithoutLastWord = self.components(separatedBy: " ").dropLast()
+        let strWithoutLastWord = self.components(separatedBy: .whitespaces).dropLast()
                                      .joined(separator: " ")
         return strWithoutLastWord
     }
@@ -283,7 +283,7 @@ public extension Substring {
     var isNotEmpty: Bool { !isEmpty }
 
     func firstWord() -> String? {
-        return self.components(separatedBy: " ").first
+        return self.components(separatedBy: .whitespaces).first
     }
     
     func trim() -> String {
