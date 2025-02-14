@@ -119,13 +119,44 @@ open class Workspace {
     }
     
     fileprivate func printError(_ err: Error) {
-        let extraInfo = StringTemplate {
+        let callStackInfo = StringTemplate {
             "[Call Stack]"
             
             for log in context.debugLog.stack {
                 String.newLine
                 log.callStackItem.renderForDisplay()
             }
+        }
+        
+        let memoryVarsInfo = StringTemplate {
+            "[Memory]"
+            
+            for va in context.variables {
+                String.newLine
+                let value = va.value
+                
+                if let arr = value as? [Any] {
+                    "\(va.key) =" + .newLine
+                    for item in arr {
+                        "| \(item)"
+                    }
+                } else if let optionalValue = value as? Optional<Any> {  // Cast to Optional<Any>
+                    if let unwrappedValue = optionalValue {
+                        "\(va.key) = \(unwrappedValue)"
+                    } else {
+                        "\(va.key) = null"
+                    }
+                } else {
+                    "\(va.key) = \(va.value)"
+                }
+            }
+        }
+        
+        let extraInfo = StringTemplate {
+            callStackInfo
+            String.newLine
+            String.newLine
+            memoryVarsInfo
         }.toString()
         
         if let parseErr = err as? ParsingError {
