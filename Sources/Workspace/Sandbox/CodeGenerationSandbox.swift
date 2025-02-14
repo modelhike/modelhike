@@ -39,7 +39,7 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
                 
         let variables : [String: Any] = [
             "@container" : C4Container_Wrap(container, model: model),
-            "mock" : Mocking_Wrap()
+            "@mock" : Mocking_Wrap()
         ]
         
         self.context.append(variables: variables)

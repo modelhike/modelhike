@@ -40,7 +40,7 @@ public class FunctionCallStmt: LineTemplateStmt, CallStackable, CustomDebugStrin
         if let templateFn  = ctx.templateFunctions[FnName] {
             ctx.pushCallStack(self)
             
-            let body = try templateFn.execute(args: args, with: ctx)
+            let body = try templateFn.execute(args: args, pInfo: pInfo, with: ctx)
             
             ctx.popCallStack()
             return body

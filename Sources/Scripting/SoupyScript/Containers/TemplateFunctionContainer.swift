@@ -13,7 +13,7 @@ public class TemplateFunctionContainer : SoupyScriptStmtContainer {
     let name: String
     let pInfo: ParsedInfo
     
-    public func execute(args: [ArgumentDeclaration], with ctx: Context) throws -> String? {
+    public func execute(args: [ArgumentDeclaration], pInfo: ParsedInfo, with ctx: Context) throws -> String? {
         var rendering = ""
 
         //IMPORTANT : ctx push/pop should not be used here as 
@@ -34,8 +34,13 @@ public class TemplateFunctionContainer : SoupyScriptStmtContainer {
         
         //set the macro function arguments into context
         for arg in args {
-            ctx.variables[arg.name] = try? ctx.evaluate(value: "\(arg.value)", with: pInfo )
+            if let eval = try? ctx.evaluate(value: "\(arg.value)", with: pInfo ) {
+                ctx.variables[arg.name] = eval
+            } else {
+                throw TemplateSoup_ParsingError.invalidExpression_VariableOrObjPropNotFound(arg.value, pInfo)
+            }
         }
+
         
         if let body = try container.execute(with: ctx) {
             rendering += body
