@@ -36,7 +36,14 @@ public class CodeObject_Wrap : ObjectWrapper {
         let value: Any = switch propname {
         case "name": item.name
         case "given-name": item.givenname
-        case "properties" : properties
+        case "properties" :
+            if properties.count > 0 {
+                properties
+            } else {
+                let msg = "properties empty for \(item.name)"
+                throw TemplateSoup_ParsingError.invalidExpression_CustomMessage(msg, pInfo)
+            }
+            
         case "entity" : item.dataType == .entity
         case "dto" : item.dataType == .dto
         case "common" : item.dataType == .valueType

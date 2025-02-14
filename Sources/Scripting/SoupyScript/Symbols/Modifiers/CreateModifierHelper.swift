@@ -7,7 +7,7 @@
 import Foundation
 
 public struct CreateModifier {
-    public static func withoutParams<I, T>(_ name: String, body: @escaping (I, ParsedInfo) -> T?) -> Modifier {
+    public static func withoutParams<I, T>(_ name: String, body: @escaping (I, ParsedInfo) throws -> T?) -> Modifier {
         
         return ModifierWithoutArgs(name: name , handler: body)
     }

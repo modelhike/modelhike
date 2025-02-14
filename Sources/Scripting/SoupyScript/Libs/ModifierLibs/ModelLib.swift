@@ -16,16 +16,18 @@ public struct ModelLib {
     }
     
     public static func getObjectWithName(sandbox: Sandbox) -> Modifier {
-        return CreateModifier.withoutParams("get-object") { (objectName: String, pInfo: ParsedInfo) -> CodeObject_Wrap? in
+        return CreateModifier.withoutParams("get-object") { (objectName: String, pInfo: ParsedInfo) throws -> CodeObject_Wrap? in
             
             if let obj = sandbox.model.types.get(for: objectName) {
                 return CodeObject_Wrap(obj)
-            } else { return nil }
+            } else {
+                throw TemplateSoup_ParsingError.objectTypeNotFound(objectName, pInfo)
+            }
         }
     }
     
     public static func getLastRecursivePropWithName(sandbox: Sandbox) -> Modifier {
-        return CreateModifier.withParams("get-last-recursive-prop") { (propName: String, arguments: [Any], pInfo: ParsedInfo) -> TypeProperty_Wrap? in
+        return CreateModifier.withParams("get-last-recursive-prop") { (propName: String, arguments: [Any], pInfo: ParsedInfo) throws -> TypeProperty_Wrap? in
             
             guard let objectName = arguments.first as? String else { return nil }
             
@@ -36,7 +38,7 @@ public struct ModelLib {
                 }
             }
             
-            return nil
+            throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propName, pInfo)
         }
     }
     

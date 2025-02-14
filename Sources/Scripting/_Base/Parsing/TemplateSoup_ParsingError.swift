@@ -12,6 +12,7 @@ public enum TemplateSoup_ParsingError: ErrorWithMessageAndParsedInfo, Equatable 
     case invalidMultiBlockStmt(ParsedInfo)
     case invalidTemplateFunctionStmt(String, ParsedInfo)
     case objectNotFound(String, ParsedInfo)
+    case objectTypeNotFound(String, ParsedInfo)
     case invalidPropertyNameUsedInCall(String, ParsedInfo)
     case modifierNotFound(String, ParsedInfo)
     case modifierInvalidSyntax(String, ParsedInfo)
@@ -19,6 +20,7 @@ public enum TemplateSoup_ParsingError: ErrorWithMessageAndParsedInfo, Equatable 
     case modifierCalledOnwrongType(String, String, ParsedInfo)
     case invalidExpression(String, ParsedInfo)
     case invalidExpression_VariableOrObjPropNotFound(String, ParsedInfo)
+    case invalidExpression_CustomMessage(String, ParsedInfo)
     case infixOperatorNotFound(String, ParsedInfo)
     case infixOperatorCalledOnwrongLhsType(String, String, ParsedInfo)
     case infixOperatorCalledOnwrongRhsType(String, String, ParsedInfo)
@@ -38,6 +40,9 @@ public enum TemplateSoup_ParsingError: ErrorWithMessageAndParsedInfo, Equatable 
             return suffix + "invalid fn definition: \(line)"
         case .objectNotFound(let obj, _) :
             return suffix + "object: \(obj) not found"
+        case .objectTypeNotFound(let type, _) :
+            return suffix + "object type: \(type) not found"
+            
         case .modifierNotFound(let modifier, _) :
             return suffix + "modifier: \(modifier) not found"
         case .modifierInvalidSyntax(let modifier, _) :
@@ -58,6 +63,8 @@ public enum TemplateSoup_ParsingError: ErrorWithMessageAndParsedInfo, Equatable 
             return suffix + "expression - invalid syntax: \(expn)"
         case .invalidExpression_VariableOrObjPropNotFound(let expn, _) :
             return suffix + "expression - value not found for: \(expn)"
+        case .invalidExpression_CustomMessage(let msg, _) :
+            return suffix + "expression - \(msg)"
             
         case .invalidPropertyNameUsedInCall(let propName, _) :
             return suffix + "Invalid prop : \(propName)"
@@ -74,6 +81,8 @@ public enum TemplateSoup_ParsingError: ErrorWithMessageAndParsedInfo, Equatable 
             case .invalidMultiBlockStmt(let pInfo) : pInfo
             case .invalidTemplateFunctionStmt(_, let pInfo) : pInfo
             case .objectNotFound(_, let pInfo) : pInfo
+            case .objectTypeNotFound(_, let pInfo) : pInfo
+
             case .modifierNotFound(_, let pInfo) : pInfo
             case .modifierInvalidSyntax(_, let pInfo) : pInfo
             case .modifierInvalidArguments(_, let pInfo) : pInfo
@@ -85,6 +94,7 @@ public enum TemplateSoup_ParsingError: ErrorWithMessageAndParsedInfo, Equatable 
             
             case .invalidExpression(_, let pInfo) : pInfo
             case .invalidExpression_VariableOrObjPropNotFound(_, let pInfo) : pInfo
+            case .invalidExpression_CustomMessage(_, let pInfo) : pInfo
 
             case .invalidPropertyNameUsedInCall(_, let pInfo) : pInfo
             case .templateFunctionNotFound(_, let pInfo) : pInfo
