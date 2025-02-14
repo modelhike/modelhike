@@ -64,8 +64,7 @@ public class MultiBlockTemplateStmt : FileTemplateStatement {
                     ctx.debugLog.multiBlockDetectFailed(pInfo: unIdentified.pInfo)
                     
                     //unidentified stmt
-                    let stmt = UnIdentifiedStmt(pInfo: unIdentified.pInfo)
-                    container.append(stmt)
+                    throw TemplateSoup_EvaluationError.unIdentifiedStmt(unIdentified.pInfo)
                 }
             } else { //identified stmt
                 container.append(stmt)
