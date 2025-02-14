@@ -37,12 +37,12 @@ public class DomainObject : CodeObject {
     public var debugDescription: String {
         var str =  """
                     \(self.name) :
-                    Properties \(self.properties.count) items:
+                    | Properties \(self.properties.count) items:
                     """
         str += .newLine
 
         for property in properties {
-            str += property.debugDescription + .newLine
+            str += "| " + property.debugDescription + .newLine
             
         }
         

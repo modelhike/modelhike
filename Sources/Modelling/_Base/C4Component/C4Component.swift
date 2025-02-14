@@ -45,12 +45,12 @@ public class C4Component : ArtifactHolder {
     public var debugDescription: String {
         var str =  """
                     \(self.name)
-                    items \(self.items.count):
+                    | items \(self.items.count):
                     """
         str += .newLine
 
         for item in items {
-            str += item.givenname + .newLine
+            str += "| " + item.givenname + .newLine
             
         }
         

@@ -35,7 +35,7 @@ public class API : Artifact, CustomDebugStringConvertible {
     
     public var debugDescription: String {
         var str =  """
-                    \(self.name) :
+                    \(self.name)
                     """
         str += .newLine
         

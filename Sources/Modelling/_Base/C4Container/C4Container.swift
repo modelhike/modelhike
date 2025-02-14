@@ -61,13 +61,12 @@ public class C4Container : ArtifactHolder {
     public var debugDescription: String {
         var str =  """
                     \(self.name)
-                    components \(self.components.count):
+                    | components \(self.components.count):
                     """
         str += .newLine
 
         for item in components {
-            str += item.givenname + .newLine
-            
+            str += "| " + item.givenname + .newLine
         }
         
         return str

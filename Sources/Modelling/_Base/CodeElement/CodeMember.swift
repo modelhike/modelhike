@@ -14,7 +14,7 @@ public protocol CodeMember : HasAttributes, HasTags, CustomDebugStringConvertibl
 
 public extension CodeMember {
     var debugDescription: String {
-        return String(describing: self)
+        return givenname
     }
 }
 

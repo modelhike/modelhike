@@ -6,8 +6,8 @@
 
 import Foundation
 
-public struct ForLoop_Wrap : DynamicMemberLookup {
-    public private(set) var item: ForStmt?
+public struct ForLoop_Wrap : DynamicMemberLookup, CustomDebugStringConvertible {
+    public private(set) var item: ForStmt
     public var FIRST_IN_LOOP = false
     public var LAST_IN_LOOP = false
     
@@ -23,14 +23,19 @@ public struct ForLoop_Wrap : DynamicMemberLookup {
         return value
     }
     
-    public var debugDescription: String { item?.debugDescription ?? ""}
+    public var debugDescription: String {
+        let str =  """
+        FOR stmt (level: \(item.pInfo.level))
+        |- forVar: \(item.ForVar)
+        |- inVar: \(item.InArrayVar)
+        
+        """
+                
+        return str
+    }
 
     public init(_ item: ForStmt) {
         self.item = item
-    }
-    
-    public init() {
-        self.item = nil
     }
 }
 

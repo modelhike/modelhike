@@ -83,7 +83,8 @@ public class TemplateSoup : TemplateRenderer {
         }
         
         context.pushSnapshot()
-        var loopWrap = ForLoop_Wrap()
+        //dummy for-stmt instantiated
+        var loopWrap = ForLoop_Wrap(ForStmt(parseTill: "", pInfo: pInfo))
         context.variables[ForStmt.LOOP_VARIABLE] = loopWrap
         
         for (index, loopItem) in loopItems.enumerated() {
