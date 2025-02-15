@@ -59,10 +59,13 @@ public class API_Wrap : ObjectWrapper {
             case "has-path" : item.path.isNotEmpty
             case "path" : item.path
             case "name" : item.name
+            case "type" : item.type
+
             case "givenname" : item.givenname
             case "base-url" : item.baseUrl
             case "version" : item.version
             case "query-params" : queryParams
+            
             case "is-create" : item.type == .create
             case "is-update" : item.type == .update
             case "is-delete" : item.type == .delete
@@ -75,9 +78,11 @@ public class API_Wrap : ObjectWrapper {
             case "is-get-by-custom-logic" : item.type == .getByUsingCustomLogic
             case "is-list-by-custom-logic" : item.type == .listByUsingCustomLogic
             case "is-mutation-by-custom-logic" : item.type == .mutationUsingCustomLogic
+            
             case "properties-involved": customProperties
             case "is-and-condition-for-properties-involved": customProperties_and_condition
             case "custom-params" : customParameters
+            
             default:
             //nothing found; so check in module attributes
             if item.attribs.has(propname) {
