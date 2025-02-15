@@ -148,6 +148,18 @@ public struct ContextDebugLog {
         }
     }
     
+    public func stopRenderingCurrentFile(_ filepath: String, pInfo: ParsedInfo) {
+        if flags.renderingStoppedInFiles {
+            print("⚠️ Stop Rendering \(filepath) ...")
+        }
+    }
+    
+    public func throwErrorFromCurrentFile(_ filepath: String, err: String, pInfo: ParsedInfo) {
+        if flags.errorThrownInFiles {
+            print("⚠️ Error '\(err)' Thrown From \(filepath) ...")
+        }
+    }
+    
     public func generatingFile(_ filepath: String) {
         if flags.fileGeneration {
             print("Generating \(filepath) ...")
@@ -235,6 +247,8 @@ public struct ContextDebugFlags {
     public var controlFlow = false
 
     public var excludedFiles = false
+    public var renderingStoppedInFiles = true
+    public var errorThrownInFiles = true
 
     public var changesInWorkingDirectory = false
     public var fileGeneration = false

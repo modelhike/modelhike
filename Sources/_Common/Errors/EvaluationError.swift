@@ -15,6 +15,7 @@ public enum EvaluationError: ErrorWithMessageAndParsedInfo {
     case workingDirectoryNotSet(ParsedInfo, ErrorWithMessage)
     case templateDoesNotExist(ParsedInfo, ErrorWithMessage)
     case readingError(ParsedInfo, ErrorWithMessage)
+    case templateRenderingError(ParsedInfo, ErrorWithMessage)
 
     public var info: String {
         switch (self) {
@@ -27,6 +28,7 @@ public enum EvaluationError: ErrorWithMessageAndParsedInfo {
         case .workingDirectoryNotSet(_, let err) : return err.info
         case .templateDoesNotExist(_, let err) : return err.info
         case .readingError(_, let err) : return err.info
+        case .templateRenderingError(_, let err) : return err.info
         }
     }
 
@@ -40,6 +42,7 @@ public enum EvaluationError: ErrorWithMessageAndParsedInfo {
         case .workingDirectoryNotSet(let pInfo, _) : pInfo
         case .templateDoesNotExist(let pInfo, _) : pInfo
         case .readingError(let pInfo, _) : pInfo
+        case .templateRenderingError(let pInfo, _) : pInfo
         }
     }
 }

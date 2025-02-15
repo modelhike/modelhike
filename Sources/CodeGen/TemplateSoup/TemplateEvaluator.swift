@@ -54,6 +54,12 @@ public struct TemplateEvaluator: TemplateSoupEvaluator {
                 if case let .excludeFile(filename) = directive {
                     ctx.debugLog.excludingFile(filename)
                     return nil //nothing to generate from this excluded file
+                } else if case let .stopRenderingCurrentFile(filename, pInfo) = directive {
+                    ctx.debugLog.stopRenderingCurrentFile(filename, pInfo: pInfo)
+                    return nil //nothing to generate from this rendering stopped file
+                } else if case let .throwErrorFromCurrentFile(filename, errMsg, pInfo) = directive {
+                    ctx.debugLog.throwErrorFromCurrentFile(filename, err: errMsg, pInfo: pInfo)
+                    throw EvaluationError.templateRenderingError(pInfo, directive)
                 }
             } else {
                 throw err

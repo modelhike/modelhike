@@ -12,12 +12,15 @@ public enum ParserDirective: ErrorWithMessage {
     static var outputFilename = "file-name"
 
     case excludeFile(String)
-    
+    case stopRenderingCurrentFile(String, ParsedInfo)
+    case throwErrorFromCurrentFile(String /*filename*/, String /*err msg*/, ParsedInfo)
     
     public var info: String {
         switch (self) {
-            case .excludeFile(let msg): return msg
-                
+            case .excludeFile(let file): return file
+            case .stopRenderingCurrentFile(let file, _): return file
+            case .throwErrorFromCurrentFile(_, let msg, _):
+                return "Template Error: {\(msg)} thrown while rendering"
         }
     }
     

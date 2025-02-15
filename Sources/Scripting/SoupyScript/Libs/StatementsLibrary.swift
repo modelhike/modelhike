@@ -26,6 +26,10 @@ public struct StatementsLibrary {
             AnnnounceStmt.register,
             
             SetVarStmt.register,
+            SetStrVarStmt.register,
+            
+            ThrowErrorStmt.register,
+            StopRenderingCurrentTemplateStmt.register,
             
             SpacelessStmt.register
         ]
