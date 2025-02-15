@@ -67,7 +67,7 @@ final class TemplateSoup_String_Tests: XCTestCase {
             : call fn1(param1 : "Ssf")
             : for test in list
             jekii
-            : set-obj-attrib test.name = testname2| lowercase + kebabcase
+            : set test.name = testname2| lowercase + kebabcase
 
             : if test.name
             inside if {{test.name}}

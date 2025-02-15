@@ -113,6 +113,10 @@ public enum ContentHandler {
         return try ContentHandler.execute(line: line, identifier: pInfo.identifier, with: pInfo.ctx)
     }
     
+    public static func eval(expression: String, pInfo: ParsedInfo) throws -> String? {
+        return try ContentHandler.execute(line: expression, identifier: pInfo.identifier, with: pInfo.ctx)
+    }
+    
     public static func eval(expression: String, with ctx: Context) throws -> String? {
         return try ContentHandler.execute(line: expression, identifier: "Eval", with: ctx)
     }

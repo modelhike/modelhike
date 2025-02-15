@@ -71,7 +71,7 @@ public class RenderTemplateFileStmt: LineTemplateStmt, CallStackable, CustomDebu
         ctx.pushCallStack(self)
 
         //render the filename if it has an expression within '{{' and '}}'
-        filename = try ContentHandler.eval(expression: filename, with: ctx) ?? filename
+        filename = try ContentHandler.eval(line: filename, pInfo: pInfo) ?? filename
 
         ctx.debugLog.generatingFile(filename, with: fromTemplate)
         if let file = try ctx.fileGenerator.generateFile(filename, template: fromTemplate, with: pInfo) {

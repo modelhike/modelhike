@@ -73,7 +73,7 @@ public class RenderFolderStmt: LineTemplateStmt, CallStackable, CustomDebugStrin
         ctx.pushCallStack(self)
 
         //render the foldername if it has an expression within '{{' and '}}'
-        foldername = try ContentHandler.eval(expression: foldername, with: ctx) ?? foldername
+        foldername = try ContentHandler.eval(expression: foldername, pInfo: pInfo) ?? foldername
         
         ctx.debugLog.renderingFolder(fromFolder, to: foldername)
         let folder = try ctx.fileGenerator.renderFolder(fromFolder, to: foldername, with: pInfo)
