@@ -156,7 +156,7 @@ public struct ContextDebugLog {
     
     public func throwErrorFromCurrentFile(_ filepath: String, err: String, pInfo: ParsedInfo) {
         if flags.errorThrownInFiles {
-            print("⚠️ Error '\(err)' Thrown From \(filepath) ...")
+            print("🚨 Error '\(err)' Thrown From \(filepath) ...")
         }
     }
     
@@ -247,8 +247,8 @@ public struct ContextDebugFlags {
     public var controlFlow = false
 
     public var excludedFiles = false
-    public var renderingStoppedInFiles = true
-    public var errorThrownInFiles = true
+    public var renderingStoppedInFiles = false
+    public var errorThrownInFiles = false
 
     public var changesInWorkingDirectory = false
     public var fileGeneration = false

@@ -37,7 +37,7 @@ public class ThrowErrorStmt: LineTemplateStmt, CustomDebugStringConvertible {
         guard Expression.isNotEmpty else { return nil }
         
         //see if it is an expression
-        if let expn = try? ctx.evaluate(expression: Expression, with: pInfo) as? String {
+        if let expn = try ContentHandler.eval(line: Expression, pInfo: pInfo) {
             throw ParserDirective.throwErrorFromCurrentFile(pInfo.identifier, expn, pInfo)
         }
             
