@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class Pipeline {
+public struct Pipeline {
     public var outputs = OutputFolder("output")
 
     var lastRunResult: Bool = true
@@ -17,10 +17,10 @@ public class Pipeline {
     var render = RenderPhase()
     var persist = PersistPhase()
     
-    lazy var phases: [PipelinePhase] = [discover, load, hydrate, transform, render, persist]
+    lazy var phases: [any PipelinePhase] = [discover, load, hydrate, transform, render, persist]
 
     @discardableResult
-    public func fullBuild() async -> Bool {
+    public mutating func run() async -> Bool {
         lastRunResult = true
 
         do {

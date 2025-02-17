@@ -6,200 +6,117 @@
 
 import Foundation
 
-public class DiscoverPhase : PipelinePhase {
-    var passes: [DiscoveringPass] = []
+public struct DiscoverPhase : PipelinePhase {
+    public var passes: [DiscoveringPass] = []
     public var lastRunResult: Bool = true
-    
-    public func append(pass: DiscoveringPass) {
-        passes.append(pass)
-    }
-    
-    public var hasPasses: Bool { passes.count > 0 }
 
     @discardableResult
     public func runIn(pipeline: Pipeline) async throws -> Bool {
-        lastRunResult = true
-
-        do {
-            for pass in passes {
-                let success = try await pass.runIn(phase: self)
-                if !success { lastRunResult = false; break }
-            }
-        } catch {
-            print("Error: \(error)")
+        return try await runIn(pipeline: pipeline, passes: passes) { pass, phase in
+            try await pass.runIn(phase: phase)
         }
-        
-        return lastRunResult
     }
     
     public init () { }
 }
 
-public class LoadPhase : PipelinePhase {
-    var passes: [LoadingPass] = []
+public struct LoadPhase : PipelinePhase {
+    public var passes: [LoadingPass] = []
     public var lastRunResult: Bool = true
-    
-    public func append(pass: LoadingPass) {
-        passes.append(pass)
-    }
     
     public var hasPasses: Bool { passes.count > 0 }
 
     @discardableResult
     public func runIn(pipeline: Pipeline) async throws -> Bool {
-        lastRunResult = true
-
-        do {
-            for pass in passes {
-                let success = try await pass.runIn(phase: self)
-                if !success { lastRunResult = false; break }
-            }
-        } catch {
-            print("Error: \(error)")
+        return try await runIn(pipeline: pipeline, passes: passes) { pass, phase in
+            try await pass.runIn(phase: phase)
         }
-        
-        return lastRunResult
     }
     
     public init () { }
     
-    public func setupDefaultPasses() {
-        passes.append(Load.contentsFrom(folder: "contents"))
-        passes.append(LoadPagesPass(folderName: "localFolder"))
-        passes.append(LoadTemplatesPass(folderName: "localFolder"))
+    public mutating func setupDefaultPasses() {
+        append(pass: Load.contentsFrom(folder: "contents"))
+        append(pass: LoadPagesPass(folderName: "localFolder"))
+        append(pass: LoadTemplatesPass(folderName: "localFolder"))
     }
 }
 
-public class HydratePhase : PipelinePhase {
-    var passes: [HydrationPass] = []
+public struct HydratePhase : PipelinePhase {
+    public var passes: [HydrationPass] = []
     public var lastRunResult: Bool = true
-    
-    public func append(pass: HydrationPass) {
-        passes.append(pass)
-    }
-    
-    public var hasPasses: Bool { passes.count > 0 }
-    
+        
     @discardableResult
     public func runIn(pipeline: Pipeline) async throws -> Bool {
-        lastRunResult = true
-
-        do {
-            for pass in passes {
-                let success = try await pass.runIn(phase: self)
-                if !success { lastRunResult = false; break }
-            }
-        } catch {
-            print("Error: \(error)")
+        return try await runIn(pipeline: pipeline, passes: passes) { pass, phase in
+            try await pass.runIn(phase: phase)
         }
-        
-        return lastRunResult
     }
     
     public init () { }
 }
 
-public class TransformPhase : PipelinePhase {
-    var passes: [TransformationPass] = []
+public struct TransformPhase : PipelinePhase {
+    public var passes: [TransformationPass] = []
     public var lastRunResult: Bool = true
     
     let pluginsPass = PluginsPass()
 
-    public func append(pass: TransformationPass) {
-        passes.append(pass)
-    }
-    
-    public var hasPasses: Bool { passes.count > 0 }
-
     @discardableResult
     public func runIn(pipeline: Pipeline) async throws -> Bool {
-        lastRunResult = true
-
-        do {
-            for pass in passes {
-                let success = try await pass.runIn(phase: self)
-                if !success { lastRunResult = false; break }
-            }
-        } catch {
-            print("Error: \(error)")
+        return try await runIn(pipeline: pipeline, passes: passes) { pass, phase in
+            try await pass.runIn(phase: phase)
         }
-        
-        return lastRunResult
     }
     
     public init () { }
     
-    public func setupDefaultPasses() {
-        passes.append(pluginsPass)
+    public mutating func setupDefaultPasses() {
+        append(pass: pluginsPass)
     }
 }
 
-public class RenderPhase : PipelinePhase {
-    var passes: [RenderingPass] = []
+public struct RenderPhase : PipelinePhase {
+    public var passes: [RenderingPass] = []
     public var lastRunResult: Bool = true
-    
-    public func append(pass: RenderingPass) {
-        passes.append(pass)
-    }
-    
-    public var hasPasses: Bool { passes.count > 0 }
     
     @discardableResult
     public func runIn(pipeline: Pipeline) async throws -> Bool {
-        lastRunResult = true
-
-        do {
-            for pass in passes {
-                let success = try await pass.runIn(phase: self)
-                if !success { lastRunResult = false; break }
-            }
-        } catch {
-            print("Error: \(error)")
+        return try await runIn(pipeline: pipeline, passes: passes) { pass, phase in
+            try await pass.runIn(phase: phase)
         }
-        
-        return lastRunResult
     }
     
     public init () { }
 }
 
-public class PersistPhase : PipelinePhase {
-    var passes: [PersistancePass] = []
+public struct PersistPhase : PipelinePhase {
+    public var passes: [PersistancePass] = []
     public var lastRunResult: Bool = true
-    
-    public func append(pass: PersistancePass) {
-        passes.append(pass)
-    }
-    
-    public var hasPasses: Bool { passes.count > 0 }
 
     @discardableResult
     public func runIn(pipeline: Pipeline) async throws -> Bool {
-        lastRunResult = true
-
-        do {
-            for pass in passes {
-                let success = try await pass.runIn(phase: self)
-                if !success { lastRunResult = false; break }
-            }
-        } catch {
-            print("Error: \(error)")
+        return try await runIn(pipeline: pipeline, passes: passes) { pass, phase in
+            try await pass.runIn(phase: phase)
         }
-        
-        return lastRunResult
     }
     
     public init () { }
     
-    public func setupDefaultPasses() {
-        passes.append(GenerateFoldersPass())
-        passes.append(GenerateFiles())
+    public mutating func setupDefaultPasses() {
+        append(pass: GenerateFoldersPass())
+        append(pass: GenerateFiles())
     }
 }
 
 public protocol PipelinePhase {
-    var lastRunResult: Bool {get}
+    associatedtype Pass
+    var passes: [Pass] {get set}
+    
+    var lastRunResult: Bool {get set}
     var hasPasses: Bool {get}
+    
+    mutating func append(pass: Pass)
     
     @discardableResult
     func runIn(pipeline: Pipeline) async throws -> Bool
@@ -208,6 +125,32 @@ public protocol PipelinePhase {
 }
 
 public extension PipelinePhase {
+    mutating func append(pass: Pass) {
+        passes.append(pass)
+    }
+    
+    var hasPasses: Bool { passes.count > 0 }
+    
     func setupDefaultPasses() {
+    }
+    
+    @discardableResult
+    func runIn(pipeline: Pipeline, passes: [Pass], runPass: @escaping (Pass, Self) async throws -> Bool) async throws -> Bool {
+        var mutableSelf = self
+        mutableSelf.lastRunResult = true
+
+        do {
+            for pass in passes {
+                let success = try await runPass(pass, mutableSelf)
+                if !success {
+                    mutableSelf.lastRunResult = false
+                    break
+                }
+            }
+        } catch {
+            print("Error: \(error)")
+        }
+
+        return mutableSelf.lastRunResult
     }
 }
