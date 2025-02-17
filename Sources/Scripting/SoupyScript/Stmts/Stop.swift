@@ -8,7 +8,7 @@ import Foundation
 import RegexBuilder
 
 public class StopRenderingCurrentTemplateStmt: LineTemplateStmt, CustomDebugStringConvertible {
-    static let START_KEYWORD = "stop"
+    static let START_KEYWORD = "stop-render"
 
     public private(set) var Expression: String = ""
     
@@ -33,7 +33,7 @@ public class StopRenderingCurrentTemplateStmt: LineTemplateStmt, CustomDebugStri
     
     public var debugDescription: String {
         let str =  """
-        STOP stmt (level: \(pInfo.level))
+        STOP RENDER stmt (level: \(pInfo.level))
         
         """
                 

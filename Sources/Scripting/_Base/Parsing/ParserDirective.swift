@@ -20,7 +20,7 @@ public enum ParserDirective: ErrorWithMessage {
             case .excludeFile(let file): return file
             case .stopRenderingCurrentFile(let file, _): return file
             case .throwErrorFromCurrentFile(_, let msg, _):
-                return "Template Error: {\(msg)} thrown while rendering"
+                return "Template Render Error: {\(msg)}"
         }
     }
     

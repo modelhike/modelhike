@@ -8,7 +8,7 @@ import Foundation
 import RegexBuilder
 
 public class ThrowErrorStmt: LineTemplateStmt, CustomDebugStringConvertible {
-    static let START_KEYWORD = "throw-error"
+    static let START_KEYWORD = "fatal-error"
 
     public private(set) var Expression: String = ""
     
