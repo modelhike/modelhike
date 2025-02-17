@@ -2,10 +2,10 @@ import DiagSoup
 
 @main
 struct Development {
-    static func main() {
+    static func main() async {
         do {
             try runTemplateStr()
-            //try runCodebaseGeneration()
+            //try await runCodebaseGeneration()
         } catch {
             print(error)
         }
@@ -19,63 +19,17 @@ struct Development {
         
         let data: [String : Any] = ["list":arr, "var1" : true, "var2": false, "varstr": "test"]
         
-        let ws = Workspace();
-        if let result = ws.render(string: templateStr, data: data) {
+        let ws = Pipeline();
+        if let result = try ws.render(string: templateStr, data: data) {
             print(result)
         }
     }
     
-    static func runCodebaseGeneration() throws {
-                
-        let basePath = SystemFolder.documents.path / "diagsoup"
-        let templatesPath = basePath / "_gen.templates"
-        
-        let ws = Workspace();
-        ws.basePath = basePath
-        
-        //ws.debugLog.flags.fileGeneration = true
-
-        let blueprint = "api-nestjs-monorepo"
-        try ws.loadSymbols([.typescript, .mongodb_typescript])
-        //let blueprint = "api-springboot-monorepo"
-        //try ws.loadSymbols([.java])
-
-        let modelRepo = LocalFileModelLoader(path: ws.basePath, with: ws.context)
-        //let modelRepo = inlineModel(ws)
-                
-        let templatesRepo = LocalFileBlueprintLoader(blueprint: blueprint, path: templatesPath, with: ws.context)
-        
-//        ws.context.events.onBeforeRenderFile = { filename, context in
-//            if filename.lowercased() == "MonitoredLiveAirport".lowercased() {
-//                print("rendering \(filename)")
-//            }
-//
-//            return true
-//        }
-        
-//        ws.context.events.onBeforeParseTemplate = { templatename, context in
-//            if templatename.lowercased() == "entity.validator.teso".lowercased() {
-//                print("rendering \(templatename)")
-//            }
-//        }
-//        
-//        ws.context.events.onBeforeExecuteTemplate = { templatename, context in
-//            if templatename.lowercased() == "entity.validator.teso".lowercased() {
-//                print("rendering \(templatename)")
-//            }
-//        }
-        
-//        ws.context.events.onStartParseObject = { objname, parser, context in
-//            print(objname)
-//            if objname.lowercased() == "airport".lowercased() {
-//                context.debugLog.flags.lineByLineParsing = true
-//            } else {
-//                context.debugLog.flags.lineByLineParsing = false
-//            }
-//        }
-        
-        try ws.loadModels(from: modelRepo)
-        ws.generateCodebase(container: "APIs", usingBlueprintsFrom: templatesRepo)
+    static func runCodebaseGeneration() async throws {
+        let pipeline = Pipeline()
+//        let config = PipelineConfig()
+//        try await pipeline.run(using: config)
+        try await pipeline.run(using: Environment.debug)
     }
     
     
