@@ -10,7 +10,7 @@ public struct LoadPagesPass : LoadingPass {
     public let folderName: String
     public var markupDocs: [MarkupDocument] = []
     
-    public func runIn(phase: LoadPhase) async -> Bool {
+    public func runIn(_ ws: Workspace, phase: LoadPhase) async throws -> Bool {
         return true
     }
     

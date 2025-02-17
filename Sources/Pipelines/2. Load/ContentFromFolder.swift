@@ -11,7 +11,7 @@ public struct LoadContentFromFolder : LoadingPass {
     public let afterModifiedDate: Date?
     public var markupDocs: [MarkupDocument] = []
     
-    public func runIn(phase: LoadPhase) async -> Bool {
+    public func runIn(_ ws: Workspace, phase: LoadPhase) async throws -> Bool {
         return true
     }
     

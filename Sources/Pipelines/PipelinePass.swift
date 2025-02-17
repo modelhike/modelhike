@@ -14,7 +14,7 @@ public protocol DiscoveringPass : PipelinePass {
 }
 
 public protocol LoadingPass : PipelinePass {
-    func runIn(phase: LoadPhase) async throws -> Bool
+    func runIn(_ workspace: Workspace, phase: LoadPhase) async throws -> Bool
 }
 
 public protocol HydrationPass : PipelinePass {
@@ -26,7 +26,7 @@ public protocol TransformationPass : PipelinePass {
 }
 
 public protocol RenderingPass : PipelinePass {
-    func runIn(phase: RenderPhase) async throws -> Bool
+    func runIn(_ workspace: Workspace, phase: RenderPhase) async throws -> Bool
 }
 
 public protocol PersistancePass : PipelinePass {
