@@ -19,7 +19,7 @@ public struct PipelineConfig {
     public var errorOutput = ErrorOutputOptions()
     
     public var blueprints = BlueprintAggregator()
-    public func blueprint(named name: String, with pInfo: ParsedInfo) throws -> any BlueprintRepository {
+    public func blueprint(named name: String, with pInfo: ParsedInfo) throws -> any Blueprint {
         return try blueprints.blueprint(named: name, with: pInfo)
     }
     

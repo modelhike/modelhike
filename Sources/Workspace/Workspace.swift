@@ -59,7 +59,7 @@ open class Workspace {
     }
     
     @discardableResult
-    public func generateCodebase(container: String, usingBlueprintsFrom blueprintLoader: BlueprintRepository) throws -> String? {
+    public func generateCodebase(container: String, usingBlueprintsFrom blueprintLoader: Blueprint) throws -> String? {
         if !isModelsLoaded {
             let pInfo = ParsedInfo.dummyForAppState(with: context)
             throw EvaluationError.invalidAppState("No models Loaded!!!", pInfo)

@@ -21,7 +21,7 @@ open class ResourceBlueprintFinder: BlueprintFinder {
         blueprintsAvailable.contains(name)
     }
     
-    public func blueprint(named name: String, with pInfo: ParsedInfo) throws -> any BlueprintRepository {
+    public func blueprint(named name: String, with pInfo: ParsedInfo) throws -> any Blueprint {
         return ResourceBlueprintLoader(blueprint: name, blueprintsRoot: blueprintsRoot, resourceRoot: resourceRoot, bundle: bundle, with: pInfo.ctx)
     }
     

@@ -1,5 +1,5 @@
 //
-// Pipeline.swift
+// Pipelines.swift
 // DiagSoup
 // https://www.github.com/diagsoup/diagsoup
 //

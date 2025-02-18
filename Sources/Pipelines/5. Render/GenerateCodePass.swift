@@ -9,7 +9,7 @@ import Foundation
 public struct GenerateCodePass : RenderingPass {
 
     public func runIn(_ ws: Workspace, phase: RenderPhase) async throws -> Bool {
-        var templatesRepo: BlueprintRepository
+        var templatesRepo: Blueprint
         
         let blueprint = "api-nestjs-monorepo"
         //let blueprint = "api-springboot-monorepo"

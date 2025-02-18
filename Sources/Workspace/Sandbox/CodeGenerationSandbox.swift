@@ -25,7 +25,7 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
     }
     
     //MARK: Generation code
-    public func generateFilesFor(container: String, usingBlueprintsFrom blueprintLoader: BlueprintRepository) throws -> String? {
+    public func generateFilesFor(container: String, usingBlueprintsFrom blueprintLoader: Blueprint) throws -> String? {
         
         if try !blueprintLoader.blueprintExists() {
             let pInfo = ParsedInfo.dummyForAppState(with: context)

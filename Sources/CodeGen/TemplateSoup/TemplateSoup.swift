@@ -6,11 +6,11 @@
 
 import Foundation
 
-public typealias LoadTemplateHandler = (_ templateName: String,_ loader: BlueprintRepository, _ pInfo: ParsedInfo) throws -> Template
+public typealias LoadTemplateHandler = (_ templateName: String,_ loader: Blueprint, _ pInfo: ParsedInfo) throws -> Template
 
 public class TemplateSoup : TemplateRenderer {
     let context: Context
-    var repo: BlueprintRepository
+    var repo: Blueprint
     
     public var onLoadTemplate : LoadTemplateHandler = { (templateName, loader, pInfo) throws -> Template in
         do {
@@ -111,7 +111,7 @@ public class TemplateSoup : TemplateRenderer {
         return nil
     }
         
-    public init(loader: BlueprintRepository, context: Context) {
+    public init(loader: Blueprint, context: Context) {
         self.repo = loader
         self.context = context
     }

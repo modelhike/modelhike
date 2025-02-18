@@ -7,7 +7,7 @@
 public class BlueprintAggregator {
     var blueprintFinders: [BlueprintFinder] = []
     
-    public func blueprint(named name: String, with pInfo: ParsedInfo) throws -> any BlueprintRepository {
+    public func blueprint(named name: String, with pInfo: ParsedInfo) throws -> any Blueprint {
         for finder in blueprintFinders {
             if finder.hasBlueprint(named: name) {
                 return try finder.blueprint(named: name, with: pInfo)

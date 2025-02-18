@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class LocalFileBlueprintLoader: BlueprintRepository {
+public class LocalFileBlueprintLoader: Blueprint {
     private var templateCache : [String: Template] = [:]
     public let blueprintPath: LocalPath
     public let rootPath: LocalPath

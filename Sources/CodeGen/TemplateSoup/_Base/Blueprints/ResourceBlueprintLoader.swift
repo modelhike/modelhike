@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class ResourceBlueprintLoader : BlueprintRepository {
+public class ResourceBlueprintLoader : Blueprint {
     private var templateCache : [String: Template] = [:]
     public let context: Context
 

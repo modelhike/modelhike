@@ -12,7 +12,7 @@ public class LocalFileBlueprintFinder: BlueprintFinder {
         blueprintsAvailable.contains(name)
     }
     
-    public func blueprint(named name: String, with pInfo: ParsedInfo) throws -> any BlueprintRepository {
+    public func blueprint(named name: String, with pInfo: ParsedInfo) throws -> any Blueprint {
         return LocalFileBlueprintLoader(blueprint: name, path: rootPath, with: pInfo.ctx)
     }
     
@@ -36,5 +36,5 @@ public class LocalFileBlueprintFinder: BlueprintFinder {
 public protocol BlueprintFinder {
     var blueprintsAvailable : [String] {get}
     func hasBlueprint(named name: String) -> Bool
-    func blueprint(named name: String, with pInfo: ParsedInfo) throws -> BlueprintRepository
+    func blueprint(named name: String, with pInfo: ParsedInfo) throws -> Blueprint
 }
