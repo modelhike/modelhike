@@ -6,6 +6,7 @@
 
 public struct PipelineConfig {
     public var basePath: LocalPath = SystemFolder.desktop.path
+    public var localBlueprintsPath: LocalPath = SystemFolder.desktop.path
 
     public var blueprintType: BluePrintType = .localFileSystem
     public var modelLoaderType: ModelLoaderType = .localFileSystem

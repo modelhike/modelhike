@@ -5,7 +5,8 @@ enum Environment {
         var env = PipelineConfig()
 
         env.basePath = LocalPath(relativePath: "diagsoup", basePath: SystemFolder.documents.path)
-
+        env.localBlueprintsPath = LocalPath(relativePath: "blueprints", basePath: env.basePath)
+        
         return env
     }
     
@@ -13,6 +14,7 @@ enum Environment {
         var env = PipelineConfig()
 
         env.basePath = LocalPath(relativePath: "diagsoup", basePath: SystemFolder.documents.path)
+        env.localBlueprintsPath = LocalPath(relativePath: "blueprints", basePath: env.basePath)
         
         return env
     }
