@@ -45,6 +45,7 @@ public class CopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible {
     }
     
     public override func execute(with ctx: Context) throws -> String? {
+        guard let context = ctx as? GenerationContext else { return nil }
         guard FromFile.isNotEmpty else { return nil }
         
         if ctx.workingDirectoryString.isEmpty {
@@ -56,21 +57,21 @@ public class CopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible {
             throw TemplateSoup_ParsingError.invalidExpression_VariableOrObjPropNotFound(FromFile, pInfo)
         }
         
-        try ctx.fileGenerator.setRelativePath(ctx.workingDirectoryString)
+        try context.fileGenerator.setRelativePath(ctx.workingDirectoryString)
         
         if ToFile.isEmpty {
             let fileName = fromFile
 
             ctx.debugLog.copyingFile(fileName)
-            let file = try ctx.fileGenerator.copyFile(fileName, with: pInfo)
-            ctx.addGenerated(filePath: file.outputPath.string + fileName)
+            let file = try context.fileGenerator.copyFile(fileName, with: pInfo)
+            context.addGenerated(filePath: file.outputPath.string + fileName)
         } else {
             guard let toFile = try? ctx.evaluate(value: ToFile, with: pInfo) as? String
                                                                         else { return nil }
             
             ctx.debugLog.copyingFile(fromFile, to: toFile)
-            let file = try ctx.fileGenerator.copyFile(fromFile, to: toFile, with: pInfo)
-            ctx.addGenerated(filePath: file.outputPath.string + toFile)
+            let file = try context.fileGenerator.copyFile(fromFile, to: toFile, with: pInfo)
+            context.addGenerated(filePath: file.outputPath.string + toFile)
         }
         
         return nil

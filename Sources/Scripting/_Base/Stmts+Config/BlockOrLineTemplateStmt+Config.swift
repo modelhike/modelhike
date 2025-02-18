@@ -52,14 +52,14 @@ public class BlockOrLineTemplateStmt : FileTemplateStatement {
         children.append(item)
     }
     
-    private func parseStmtLineAndChildren(line : String, scriptParser: SoupyScriptParser) throws {
+    private func parseStmtLineAndChildren(line : String, scriptParser: any ScriptParser) throws {
         
         try parseStmtLine_BlockVariant(line : line, lineParser: pInfo.parser)
                 
         try scriptParser.parseLines(startingFrom: keyword, till: endKeyword, to: self.children, level: pInfo.level + 1, with: pInfo.ctx)
     }
 
-    func parseAsPerVariant(scriptParser: SoupyScriptParser) throws {
+    func parseAsPerVariant(scriptParser: any ScriptParser) throws {
         let line = pInfo.parser.currentLineWithoutStmtKeyword()
 
         if checkIfLineVariant(line: line) {

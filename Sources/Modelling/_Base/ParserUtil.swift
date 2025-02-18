@@ -36,7 +36,7 @@ public class ParserUtil {
         })
     }
     
-    public static func extractMixins(for artifact: CodeObject, with ctx: Context) throws {
+    public static func extractMixins(for artifact: CodeObject, with ctx: LoadContext) throws {
         let item = artifact
         try item.attribs.processEach { attrib in
             if let entity = ctx.model.types.get(for: attrib.name) {

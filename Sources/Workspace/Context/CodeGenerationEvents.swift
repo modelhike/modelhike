@@ -8,8 +8,8 @@ import Foundation
 
 public typealias BeforeRenderFileHandler = (_ fileName: String, _ pInfo: ParsedInfo) throws -> Bool
 public typealias StartParseObjectHandler = (_ objectName: String, _ pInfo: ParsedInfo) throws -> Void
-public typealias BeforeParseTemplateHandler = (_ templateName: String, _ pInfo: Context) throws -> Void
-public typealias BeforeExecuteTemplateHandler = (_ templateName: String, _ pInfo: Context) throws -> Void
+public typealias BeforeParseTemplateHandler = (_ templateName: String, _ pInfo: GenerationContext) throws -> Void
+public typealias BeforeExecuteTemplateHandler = (_ templateName: String, _ pInfo: GenerationContext) throws -> Void
 
 public class CodeGenerationEvents {
     public var onBeforeRenderFile : BeforeRenderFileHandler?

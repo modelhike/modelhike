@@ -26,7 +26,7 @@ public protocol TransformationPass : PipelinePass {
 }
 
 public protocol RenderingPass : PipelinePass {
-    func runIn(_ workspace: Workspace, phase: RenderPhase) async throws -> Bool
+    func runIn(_ sandbox: Sandbox, phase: RenderPhase) async throws -> Bool
 }
 
 public protocol PersistancePass : PipelinePass {

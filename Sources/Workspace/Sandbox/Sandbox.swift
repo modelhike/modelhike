@@ -7,14 +7,14 @@
 import Foundation
 
 public protocol Sandbox {
-    var basePath: LocalPath { get }
-    var outputPath: LocalPath {get}
     var model: AppModel {get}
-    var context: Context {get}
+    var context: GenerationContext {get}
+    var config: PipelineConfig {get}
     
     var onLoadTemplate : LoadTemplateHandler {get set}
+    func loadSymbols(_ sym : Set<PreDefinedSymbols>?) throws
     
     mutating func generateFilesFor(container: String, usingBlueprintsFrom templateLoader: Blueprint) throws -> String?
-    func renderTemplate(string templateString: String, data: [String: Any]) throws -> String?
+    func render(string templateString: String, data: [String: Any]) throws -> String?
 }
  

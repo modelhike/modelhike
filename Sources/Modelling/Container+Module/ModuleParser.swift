@@ -30,7 +30,7 @@ public enum ModuleParser {
         return false
     }
     
-    public static func parse(parser: LineParser, with ctx: Context) throws -> C4Component? {
+    public static func parse(parser: LineParser, with ctx: LoadContext) throws -> C4Component? {
         let line = parser.currentLine().dropFirstAndLastWords()
         guard let match = line.wholeMatch(of: ModelRegEx.moduleName_Capturing)                                                                                  else { return nil }
         

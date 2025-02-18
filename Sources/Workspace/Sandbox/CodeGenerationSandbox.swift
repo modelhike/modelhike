@@ -11,12 +11,14 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
     public private(set) var generation_dir: LocalPath
     
     public var model: AppModel { context.model }
-    
-    public var basePath: LocalPath { context.paths.basePath }
-    public var outputPath: LocalPath { context.paths.output.path }
+    public var config: PipelineConfig { context.config }
 
-    public let context: Context
-    var lineParser : LineParser
+    public private(set) var context: GenerationContext
+    private var modifiers: [Modifier] = []
+    private var statements: [any FileTemplateStmtConfig] = []
+    
+    var lineParser : LineParserDuringGeneration
+    public private(set) var isSymbolsLoaded = false
 
     //MARK: event handlers
     public var onLoadTemplate : LoadTemplateHandler {
@@ -26,6 +28,10 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
     
     //MARK: Generation code
     public func generateFilesFor(container: String, usingBlueprintsFrom blueprintLoader: Blueprint) throws -> String? {
+        
+        if !isSymbolsLoaded {
+            try loadSymbols()
+        }
         
         if try !blueprintLoader.blueprintExists() {
             let pInfo = ParsedInfo.dummyForAppState(with: context)
@@ -78,28 +84,86 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
         return folder
     }
     
-    public func renderTemplate(string templateString: String, data: [String: Any]) throws -> String? {
+    public func render(string templateString: String, data: [String : Any]) throws -> String? {
+        if !isSymbolsLoaded {
+            try loadSymbols()
+        }
+
         let pInfo = ParsedInfo.dummyForMainFile(with: context)
 
         return try templateSoup.renderTemplate(string: templateString, data: data, with: pInfo)
     }
     
-    public init(context: Context) {
-        self.context = context
-        self.lineParser  = LineParser(identifier: "-", with: context)
+    public init(model: AppModel, config: PipelineConfig) {
+        self.context = GenerationContext(model: model, config: config)
+        self.lineParser  = LineParserDuringGeneration(identifier: "-", with: context)
         
         self.templateSoup  = TemplateSoup(context: context)
 
-        self.generation_dir = context.paths.output.path
+        self.generation_dir = config.output.path
         
         context.fileGenerator = self
 
+        setupDefaultSymbols()
+    }
+    
+    //MARK: symbol loading
+    public func loadSymbols(_ sym : Set<PreDefinedSymbols>? = nil) throws {
+        if let sym = sym {
+            if let _ = sym.firstIndex(of: .typescript) {
+                self.add(modifiers: TypescriptLib.functions)
+                
+                if let _ = sym.firstIndex(of: .mongodb_typescript) {
+                    self.add(modifiers: MongoDB_TypescriptLib.functions(sandbox: self))
+                }
+            }
+            
+            if let _ = sym.firstIndex(of: .java) {
+                self.add(modifiers: JavaLib.functions)
+            }
+            
+            //add GraphQL related fns
+            self.add(modifiers: GraphQLLib.functions)
+            
+            if sym.firstIndex(of: .noMocking) == nil {
+                //"no mock" is not specified; so, load default mocking
+                self.add(modifiers: MockDataLib.functions(sandbox: self))
+            }
+            
+        } else { //nothing provided; so, just load some common modifiers alsone
+            
+            self.add(modifiers: MockDataLib.functions(sandbox: self))
+        }
+        
+        context.symbols.template.add(stmts: self.statements)
+        context.symbols.template.add(modifiers: self.modifiers)
+        
+        isSymbolsLoaded = true
+    }
+    
+    fileprivate func setupDefaultSymbols() {
+        context.symbols.template.add(stmts: StatementsLibrary.statements)
+        context.symbols.template.add(modifiers: DefaultModifiersLibrary.modifiers)
+        context.symbols.template.add(infixOperators : DefaultOperatorsLibrary.infixOperators)
+        
+        context.symbols.template.add(modifiers: ModelLib.functions(sandbox: self))
+        context.symbols.template.add(modifiers: GenerationLib.functions)
+    }
+    
+    public func add(modifiers modifiersList: [Modifier]...) {
+        let modifiers = modifiersList.flatMap( { $0 })
+        self.modifiers.append(contentsOf: modifiers)
+    }
+    
+    public func add(stmts stmtsList: [any FileTemplateStmtConfig]...) {
+        let stmts = stmtsList.flatMap( { $0 })
+        self.statements.append(contentsOf: stmts)
     }
     
     //MARK: File generation protocol
         
     public func setRelativePath(_ path: String) throws {
-        generation_dir = context.paths.output.path / path
+        generation_dir = context.config.output.path / path
         try generation_dir.ensureExists()
     }
     

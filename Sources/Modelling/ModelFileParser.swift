@@ -10,26 +10,26 @@ public class ModelFileParser {
     var modelSpace = ModelSpace()
     var component = C4Component()
     var subComponent : C4Component?
-    var lineParser : LineParser
-    let ctx: Context
+    var lineParser : LineParserDuringLoad
+    let ctx: LoadContext
     
-    public func parse(file: LocalFile, with ctx: Context) throws -> ModelSpace {
+    public func parse(file: LocalFile) throws -> ModelSpace {
         let lines = try file.readTextLines(ignoreEmptyLines: true)
-        return try self.parse(lines: lines, identifier: file.name, with: ctx)
+        return try self.parse(lines: lines, identifier: file.name)
     }
     
-    public func parse(string: String, identifier: String, with ctx: Context) throws -> ModelSpace {
+    public func parse(string: String, identifier: String) throws -> ModelSpace {
         let lines = string.splitIntoLines()
-        return try self.parse(lines: lines, identifier: identifier, with: ctx)
+        return try self.parse(lines: lines, identifier: identifier)
     }
     
-    public func parse(lines contents: [String], identifier: String, with ctx: Context) throws -> ModelSpace {
-        let lineParser = LineParser(lines: contents, identifier: identifier, with: ctx, autoIncrementLineNoForEveryLoop: false)
+    public func parse(lines contents: [String], identifier: String) throws -> ModelSpace {
+        let lineParser = LineParserDuringLoad(lines: contents, identifier: identifier, with: ctx, autoIncrementLineNoForEveryLoop: false)
         self.lineParser = lineParser
 
         do {
             
-            try lineParser.parse(level: 0) {pctx, secondWord, ctx in
+            try lineParser.parse(level: 0) {pctx, secondWord in
                 if lineParser.isCurrentLineEmptyOrCommented() { lineParser.skipLine(); return }
 
                 guard let pInfo = lineParser.currentParsedInfo(level : pctx.level) else { lineParser.skipLine(); return }
@@ -127,8 +127,8 @@ public class ModelFileParser {
         }
     }
     
-    public init(with context: Context) {
-        lineParser = LineParser(identifier: "", with: context)
+    public init(with context: LoadContext) {
+        lineParser = LineParserDuringLoad(identifier: "", with: context)
         self.ctx = context
     }
 }

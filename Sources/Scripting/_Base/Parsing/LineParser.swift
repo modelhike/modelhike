@@ -6,20 +6,54 @@
 
 import Foundation
 
-public class LineParser {
+public typealias LineParserDuringLoad = GenericLineParser<LoadContext>
+public typealias LineParserDuringGeneration = GenericLineParser<GenerationContext>
+public typealias DummyLineParserDuringLoad = GenericLineParser<LoadContext>
+public typealias DummyLineParserDuringGeneration = GenericLineParser<GenerationContext>
+
+public protocol LineParser : AnyObject {
+    var ctx: Context {get}
+    var identifier: String {get}
+    var curLineNoForDisplay: Int {get}
+    var curLevelForDisplay: Int {get}
+    var linesRemaining: Bool {get}
+    
+    func parseLinesTill(lineHasOnly txt: String) -> [String]
+    func parse(till endKeyWord: String?, level: Int, lineHandler: ((_ pctx: ParsedInfo, _ secondWord: String?) throws -> ())) throws
+    
+    func nextLine() -> String
+    func currentLine() -> String
+    func currentLine(after firstWord: String) -> String
+    func incrementLineNo()
+    func currentLineWithoutStmtKeyword() -> String
+    func lookAheadLine(by lineCount: Int) -> String
+    
+    func isCurrentLineEmpty() -> Bool
+    func isCurrentLineCommented() -> Bool
+    
+    func currentParsedInfo(level: Int) -> ParsedInfo?
+    
+    func currentLine_TrimTrailing() -> String
+    func skipLine()
+    func skipLine(by times : Int)
+}
+
+public class GenericLineParser<T> : LineParser where T: Context {
     private var lines: [String] = []
     private var _curLineNo: Int = 0
     private var _curLevel: Int = 0
     private var _breakParsing: Bool = false
     private var file: LocalFile?
-    internal let ctx: Context
+    internal let context: T
+    public var ctx: Context { context }
+    
     private let autoIncrementLineNoForEveryLoop: Bool
     public private(set) var identifier: String
     
     public var curLineNoForDisplay: Int { _curLineNo + 1 }
     public var curLevelForDisplay: Int { _curLevel }
     
-    public func parse(till endKeyWord: String? = nil, level: Int, lineHandler: ((_ pctx: ParsedInfo, _ secondWord: String?, Context) throws -> ())) throws {
+    public func parse(till endKeyWord: String? = nil, level: Int, lineHandler: ((_ pctx: ParsedInfo, _ secondWord: String?) throws -> ())) throws {
         resetFlags()
         
         while linesRemaining {
@@ -48,10 +82,10 @@ public class LineParser {
                     
                     ctx.debugLog.line(curLine, pInfo: pInfo)
                     
-                    try lineHandler(pInfo, secondWord, ctx)
+                try lineHandler(pInfo, secondWord)
             } else {
                 pInfo.firstWord = ""
-                try lineHandler(pInfo, secondWord, ctx)
+                try lineHandler(pInfo, secondWord)
             }
             
             if _breakParsing {break}
@@ -210,16 +244,16 @@ public class LineParser {
         }
     }
     
-    internal init(identifier: String, with context: Context) {
-        self.ctx = context
+    internal init(identifier: String, with context: T) {
+        self.context = context
         self.identifier = identifier
         
         self._curLineNo = 0
         self.autoIncrementLineNoForEveryLoop = true
     }
     
-    public init(string: String, identifier: String, with context: Context) {
-        self.ctx = context
+    public init(string: String, identifier: String, with context: T) {
+        self.context = context
         self.identifier = identifier
         
         self._curLineNo = 0
@@ -227,8 +261,8 @@ public class LineParser {
         self.autoIncrementLineNoForEveryLoop = true
     }
     
-    public init(lines: [String], identifier: String, with context: Context, autoIncrementLineNoForEveryLoop : Bool = true) {
-        self.ctx = context
+    public init(lines: [String], identifier: String, with context: T, autoIncrementLineNoForEveryLoop : Bool = true) {
+        self.context = context
         self.identifier = identifier
         
         self._curLineNo = 0
@@ -236,7 +270,7 @@ public class LineParser {
         self.autoIncrementLineNoForEveryLoop = autoIncrementLineNoForEveryLoop
     }
     
-    public convenience init?(file: LocalFile, with context: Context) {
+    public convenience init?(file: LocalFile, with context: T) {
         do {
             self.init(identifier: file.name, with: context)
             
@@ -247,7 +281,7 @@ public class LineParser {
         }
     }
     
-    public convenience init?(fileName: String, with context: Context) {
+    public convenience init?(fileName: String, with context: T) {
         self.init(file: LocalFile(path: fileName), with: context)
     }
 }

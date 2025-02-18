@@ -21,7 +21,7 @@ public enum UIViewParser {
         return false
     }
     
-    public static func parse(parser: LineParser, with ctx: Context) throws -> UIView? {
+    public static func parse(parser: LineParser, with ctx: LoadContext) throws -> UIView? {
         let line = parser.currentLine()
         
         guard let match = line.wholeMatch(of: ModelRegEx.uiviewName_Capturing)                                                                                  else { return nil }

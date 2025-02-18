@@ -8,12 +8,12 @@ import Foundation
 
 public protocol ModelRepository {
     func loadModel(to model: AppModel) throws
-    func processAfterLoad(model: AppModel, with ctx: Context) throws
+    func processAfterLoad(model: AppModel, with ctx: LoadContext) throws
     func loadGenerationConfigIfAny() throws
 }
 
 public extension ModelRepository {
-    func processAfterLoad(model: AppModel, with ctx: Context) throws {
+    func processAfterLoad(model: AppModel, with ctx: LoadContext) throws {
         //set specific port for each mobile
         var portNumber = 3000
         if ctx.variables.has(ModelConfigConstants.API_StartingPort) {

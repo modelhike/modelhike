@@ -45,6 +45,7 @@ public class RenderTemplateFileStmt: LineTemplateStmt, CallStackable, CustomDebu
     }
     
     public override func execute(with ctx: Context) throws -> String? {
+        guard let context = ctx as? GenerationContext else { return nil }
         guard FromTemplate.isNotEmpty else { return nil }
         
         if ctx.workingDirectoryString.isEmpty {
@@ -56,7 +57,7 @@ public class RenderTemplateFileStmt: LineTemplateStmt, CallStackable, CustomDebu
             throw TemplateSoup_ParsingError.invalidExpression_VariableOrObjPropNotFound(FromTemplate, pInfo)
         }
         
-        try ctx.fileGenerator.setRelativePath(ctx.workingDirectoryString)
+        try context.fileGenerator.setRelativePath(ctx.workingDirectoryString)
 
         var filename = ""
         
@@ -74,8 +75,8 @@ public class RenderTemplateFileStmt: LineTemplateStmt, CallStackable, CustomDebu
         filename = try ContentHandler.eval(line: filename, pInfo: pInfo) ?? filename
 
         ctx.debugLog.generatingFile(filename, with: fromTemplate)
-        if let file = try ctx.fileGenerator.generateFile(filename, template: fromTemplate, with: pInfo) {
-            ctx.addGenerated(filePath: file.outputPath.string + filename)
+        if let file = try context.fileGenerator.generateFile(filename, template: fromTemplate, with: pInfo) {
+            context.addGenerated(filePath: file.outputPath.string + filename)
         } else {
             ctx.debugLog.fileNotGenerated(filename, with: fromTemplate)
         }

@@ -24,7 +24,6 @@ public struct Pipeline {
     public func run(using config: PipelineConfig) async throws -> Bool {
         do {
             ws.config = config
-            ws.basePath = config.basePath
             
             //ws.debugLog.flags.fileGeneration = true
             

@@ -36,7 +36,7 @@ public class BlockTemplateStmt : FileTemplateStatement {
         children.append(item)
     }
     
-    func parseStmtLineAndChildren(scriptParser: SoupyScriptParser, pInfo: ParsedInfo) throws {
+    func parseStmtLineAndChildren(scriptParser: any ScriptParser, pInfo: ParsedInfo) throws {
         self.pInfo = pInfo
         
         try parseStmtLine(lineParser: pInfo.parser)

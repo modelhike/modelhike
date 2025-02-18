@@ -41,7 +41,7 @@ public class RunShellCmdStmt: LineTemplateStmt, CustomDebugStringConvertible {
         }
         
         print("⚙️  Running the shell command...")
-        let fullPath = ctx.paths.output.path / ctx.workingDirectoryString
+        let fullPath = ctx.config.output.path / ctx.workingDirectoryString
         let options = Shell.Options(workingDirectory: fullPath.string)
         let result = Shell.execute(command: CommandToRun, options: options)
 

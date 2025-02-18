@@ -4,100 +4,96 @@
 // https://www.github.com/diagsoup/diagsoup
 //
 
-import Foundation
+fileprivate let working_dir_var : String = "working_dir"
 
-public typealias StringDictionary = [String: Any]
+public protocol Context : AnyObject {
+    var config : PipelineConfig {get}
+    var debugLog: ContextDebugLog {get}
+    var events: CodeGenerationEvents {get}
+    var currentState: ContextState {get set}
+    var variables: StringDictionary {get set}
+    var symbols: ContextSymbols {get}
+    var templateFunctions: [String: TemplateFunctionContainer] {get set}
+    var snapshotStack : [ContextState] {get set}
+    var objManager: ObjectAttributeManager {get}
+    var evaluator: ExpressionEvaluator {get}
 
-public class Context {
-    public var events = CodeGenerationEvents()
-    public var debugLog = ContextDebugLog()
+    func evaluate(expression: String, with pInfo: ParsedInfo) throws -> Optional<Any>
+    func evaluateCondition(expression: String, with pInfo: ParsedInfo) throws -> Bool
+}
+
+public extension Context {
+    var variables: StringDictionary {
+        get { currentState.variables }
+        set { currentState.variables = newValue }
+    }
+
+    var debugInfo: DebugDictionary {
+        get { currentState.debugInfo }
+        set { currentState.debugInfo = newValue }
+    }
     
-    private let objManager = ObjectAttributeManager()
-    public internal(set) var symbols = ContextSymbols()
-    public internal(set) var paths = ContextPaths()
+    var templateFunctions: [String: TemplateFunctionContainer]  {
+        get { currentState.templateFunctions }
+        set { currentState.templateFunctions = newValue }
+    }
     
-    var currentState = ContextState()
+    var loopIsFirst: Bool { variables["__first"] as? Bool ?? false}
+    var loopIsLast: Bool { variables["__last"] as? Bool ?? false}
+    
+    var workingDirectoryString: String { variables[working_dir_var] as? String ?? "" }
+    var workingDirectory: LocalPath { config.output.path / workingDirectoryString }
 
-    /// Context can have different snapshots depending upon outer/inner scope they are used
-    /// E.g For loop variable has a inner scope and will have a separate context
-    /// If `pushSnapshot` is called, it saves a snapshot of the current context state to a stack
-    /// When `popSnapshot` is called, it discards any  changes after the last snapshot, by restoring latst snapshot
-    var snapshotStack : [ContextState] = []
-
-    public func replace(variables: StringDictionary) {
+    @discardableResult
+    internal func setWorkingDirectory(_ foldername: String) -> Bool {
+        variables[working_dir_var] = foldername
+        return true
+    }
+    
+    func isWorkingDirectoryVariable(_ name: String) -> Bool {
+        return name == working_dir_var
+    }
+    
+    func replace(variables: StringDictionary) {
         self.currentState.variables = variables
     }
     
-    public func append(variables: StringDictionary) {
-        variables.forEach {
-            self.variables[$0.key] = $0.value
-        }
-    }
-    
-    public func pushSnapshot() {
+    func pushSnapshot() {
         snapshotStack.append(currentState)
     }
 
-    public func popSnapshot() {
+    func popSnapshot() {
         if let last = snapshotStack.popLast() {
             self.currentState = last
         }
     }
     
-    public func pushCallStack(_ item: CallStackable) {
+    func pushCallStack(_ item: CallStackable) {
         debugLog.stack.push(item)
     }
 
-    public func popCallStack() {
+    func popCallStack() {
         debugLog.stack.popLast()
     }
     
-    // File Generation
-    public var fileGenerator : FileGeneratorProtocol!
-    var generatedFiles: [ String] = []
-    
-    public func addGenerated(filePath: String) {
-        self.generatedFiles.append(filePath)
-    }
-    
-    public func addGenerated(folderPath: LocalFolder) throws {
-        let files = folderPath.files
-        
-        for file in files {
-            self.generatedFiles.append(file.pathString)
-        }
-        
-        //add files in subfolder also
-        for folder in folderPath.subFolders {
-            let files = folder.files
-            
-            for file in files {
-                self.generatedFiles.append(file.pathString)
-            }
-        }
-    }
-    
-    //Expression Evaluation
-    fileprivate let evaluator = ExpressionEvaluator()
-
-    public func evaluate(value: String, with pInfo: ParsedInfo) throws -> Optional<Any> {
+    func evaluate(value: String, with pInfo: ParsedInfo) throws -> Optional<Any> {
         return try evaluator.evaluate(value: value, pInfo: pInfo)
     }
     
-    public func evaluate(expression: String, with pInfo: ParsedInfo) throws -> Optional<Any> {
+    func evaluate(expression: String, with pInfo: ParsedInfo) throws -> Optional<Any> {
         return try evaluator.evaluate(expression: expression, pInfo: pInfo)
     }
     
-    public func evaluateCondition(expression: String, with pInfo: ParsedInfo) throws -> Bool {
+    func evaluateCondition(expression: String, with pInfo: ParsedInfo) throws -> Bool {
         return try evaluator.evaluateCondition(expression: expression, pInfo: pInfo)
     }
     
-    public func evaluateCondition(value: Any, with pInfo: ParsedInfo) -> Bool {
+    func evaluateCondition(value: Any, with pInfo: ParsedInfo) -> Bool {
         return evaluator.evaluateCondition(value: value, with: self)
     }
     
     //manage obj attributes in the context variables
-    public func valueOf(variableOrObjProp name: String, with pInfo: ParsedInfo) throws -> Optional<Any> {
+    func valueOf(variableOrObjProp name: String, with pInfo: ParsedInfo) throws -> Optional<Any> {
         
         if let dotIndex = name.firstIndex(of: ".") { //object attribute
             let beforeDot = String(name[..<dotIndex])
@@ -119,7 +115,7 @@ public class Context {
         }
     }
     
-    public func setValueOf(variableOrObjProp name: String, valueExpression: String, modifiers: [ModifierInstance] = [], with pInfo: ParsedInfo) throws {
+    func setValueOf(variableOrObjProp name: String, valueExpression: String, modifiers: [ModifierInstance] = [], with pInfo: ParsedInfo) throws {
         
         if let dotIndex = name.firstIndex(of: ".") { //object attribute
             let beforeDot = String(name[..<dotIndex])
@@ -141,7 +137,7 @@ public class Context {
         }
     }
     
-    public func setValueOf(variableOrObjProp name: String, value: Any?, with pInfo: ParsedInfo) throws {
+    func setValueOf(variableOrObjProp name: String, value: Any?, with pInfo: ParsedInfo) throws {
         
         if let dotIndex = name.firstIndex(of: ".") { //object attribute
             let beforeDot = String(name[..<dotIndex])
@@ -163,7 +159,7 @@ public class Context {
         }
     }
     
-    public func setValueOf(variableOrObjProp name: String, body: String?, modifiers: [ModifierInstance] = [], with pInfo: ParsedInfo) throws {
+    func setValueOf(variableOrObjProp name: String, body: String?, modifiers: [ModifierInstance] = [], with pInfo: ParsedInfo) throws {
         
         if let dotIndex = name.firstIndex(of: ".") { //object attribute
             let beforeDot = String(name[..<dotIndex])
@@ -187,47 +183,5 @@ public class Context {
                 self.variables.removeValue(forKey: variableName)
             }
         }
-    }
-    
-    //parsed model
-    public let model: AppModel
-
-    public init(paths: ContextPaths) {
-        self.paths = paths
-        self.model = AppModel()
-    }
-    
-    public convenience init(data: StringDictionary) {
-        self.init()
-        self.replace(variables: data)
-    }
-    
-    public convenience init() {
-        let basePath = SystemFolder.documents.path / "codegen"
-        let output = basePath / "output"
-        
-        let paths = ContextPaths(basePath: basePath, outputPath: output)
-        
-        self.init(paths: paths)
-    }
-}
-
-public class ContextPaths {
-    public var basePath: LocalPath
-    public var output : OutputFolder
-    
-    public init(basePath: LocalPath, outputPath: LocalPath) {
-        self.basePath = basePath
-        self.output = OutputFolder(outputPath)
-    }
-    
-    public init(basePath: LocalPath) {
-        self.basePath = basePath
-        self.output = OutputFolder(basePath / "output")
-    }
-    
-    internal convenience init() {
-        let basePath = SystemFolder.documents.path / "codegen"
-        self.init(basePath: basePath)
     }
 }

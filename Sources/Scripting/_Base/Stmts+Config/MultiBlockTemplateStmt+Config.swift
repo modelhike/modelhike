@@ -40,7 +40,7 @@ public class MultiBlockTemplateStmt : FileTemplateStatement {
         children.append(item)
     }
     
-    func parseStmtLineAndBlocks(scriptParser: SoupyScriptParser) throws {
+    func parseStmtLineAndBlocks(scriptParser: any ScriptParser) throws {
         try parseStmtLine(lineParser: pInfo.parser)
             
         let stmts = GenericStmtsContainer()

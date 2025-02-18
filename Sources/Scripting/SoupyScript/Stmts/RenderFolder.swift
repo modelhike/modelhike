@@ -45,6 +45,8 @@ public class RenderFolderStmt: LineTemplateStmt, CallStackable, CustomDebugStrin
     }
     
     public override func execute(with ctx: Context) throws -> String? {
+        guard let context = ctx as? GenerationContext else { return nil }
+        
         guard FromFolder.isNotEmpty else { return nil }
         
         if ctx.workingDirectoryString.isEmpty {
@@ -56,7 +58,7 @@ public class RenderFolderStmt: LineTemplateStmt, CallStackable, CustomDebugStrin
             throw TemplateSoup_ParsingError.invalidExpression_VariableOrObjPropNotFound(FromFolder, pInfo)
         }
         
-        try ctx.fileGenerator.setRelativePath(ctx.workingDirectoryString)
+        try context.fileGenerator.setRelativePath(ctx.workingDirectoryString)
         
         var foldername = ""
 
@@ -76,8 +78,8 @@ public class RenderFolderStmt: LineTemplateStmt, CallStackable, CustomDebugStrin
         foldername = try ContentHandler.eval(expression: foldername, pInfo: pInfo) ?? foldername
         
         ctx.debugLog.renderingFolder(fromFolder, to: foldername)
-        let folder = try ctx.fileGenerator.renderFolder(fromFolder, to: foldername, with: pInfo)
-        try ctx.addGenerated(folderPath: folder.outputFolder)
+        let folder = try context.fileGenerator.renderFolder(fromFolder, to: foldername, with: pInfo)
+        try context.addGenerated(folderPath: folder.outputFolder)
         
         ctx.popCallStack()
 

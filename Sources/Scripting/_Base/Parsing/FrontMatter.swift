@@ -124,6 +124,6 @@ public struct FrontMatter {
         self.lines = lineParser.parseLinesTill(lineHasOnly: TemplateConstants.frontMatterIndicator)
         lineParser.skipLine()
         
-        self.pInfo = ParsedInfo.dummy(line: "FrontMatter", identifier: lineParser.identifier, with: ctx)
+        self.pInfo = ParsedInfo.dummy(line: "FrontMatter", identifier: lineParser.identifier, with: context)
     }
 }

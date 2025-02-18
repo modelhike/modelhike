@@ -13,7 +13,7 @@ public struct LoadModelsPass : LoadingPass {
 
         do {
             //        if config.modelLoaderType == .localFileSystem {
-            repo = LocalFileModelLoader(path: ws.basePath, with: ws.context)
+            repo = LocalFileModelLoader(path: ws.config.basePath, with: ws.context)
             //let modelRepo = inlineModel(ws)
             
             try repo.loadModel(to: ws.model)

@@ -8,14 +8,14 @@ import Foundation
 
 public struct TemplateEvaluator: TemplateSoupEvaluator {
     
-    public func execute(template: Template, with context: Context) throws -> String? {
+    public func execute(template: Template, with context: GenerationContext) throws -> String? {
         let contents = template.toString()
-        let lineparser = LineParser(string: contents, identifier: template.name, with: context)
+        let lineparser = LineParserDuringGeneration(string: contents, identifier: template.name, with: context)
 
         return try execute(lineParser: lineparser, with: context)
     }
     
-    public func execute(lineParser: LineParser, with ctx: Context) throws -> String? {
+    public func execute(lineParser: LineParserDuringGeneration, with ctx: GenerationContext) throws -> String? {
 
         let parser = TemplateSoupParser(lineParser: lineParser, context: ctx)
 
@@ -72,5 +72,5 @@ public struct TemplateEvaluator: TemplateSoupEvaluator {
 }
  
 public protocol TemplateSoupEvaluator {
-    func execute(template: Template, with ctx: Context) throws -> String?
+    func execute(template: Template, with ctx: GenerationContext) throws -> String?
 }

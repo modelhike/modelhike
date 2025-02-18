@@ -10,7 +10,7 @@ public class LocalFileBlueprintLoader: Blueprint {
     private var templateCache : [String: Template] = [:]
     public let blueprintPath: LocalPath
     public let rootPath: LocalPath
-    public let context: Context
+    public let context: GenerationContext
     public var paths: [LocalPath]
     public let blueprintName: String
     
@@ -186,7 +186,7 @@ public class LocalFileBlueprintLoader: Blueprint {
         self.paths.append(contentsOf: paths)
     }
     
-    public init(blueprint: String, path templatesPath: LocalPath, with ctx: Context) {
+    public init(blueprint: String, path templatesPath: LocalPath, with ctx: GenerationContext) {
         let path = templatesPath / blueprint
 
         self.paths = [path]
@@ -196,7 +196,7 @@ public class LocalFileBlueprintLoader: Blueprint {
         self.rootPath = templatesPath
     }
     
-    internal init(path: LocalPath, with ctx: Context) {
+    internal init(path: LocalPath, with ctx: GenerationContext) {
         self.paths = [path]
         self.context = ctx
         self.blueprintPath = path

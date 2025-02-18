@@ -117,7 +117,7 @@ public enum ContentHandler {
         return try ContentHandler.execute(line: expression, identifier: pInfo.identifier, with: pInfo.ctx)
     }
     
-    public static func eval(expression: String, with ctx: Context) throws -> String? {
+    public static func eval(expression: String, with ctx: GenerationContext) throws -> String? {
         return try ContentHandler.execute(line: expression, identifier: "Eval", with: ctx)
     }
 }

@@ -27,7 +27,7 @@ public enum ContainerParser {
         return true
     }
     
-    public static func parse(parser: LineParser, with ctx: Context) throws -> C4Container? {
+    public static func parse(parser: LineParser, with ctx: LoadContext) throws -> C4Container? {
         parser.skipLine() //skip the overline
         let line = parser.currentLine()
         

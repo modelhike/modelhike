@@ -12,7 +12,7 @@ open class AppModel {
     private var modules = C4ComponentList()
     public internal(set) var containers = C4ContainerList()
     
-    public func resolveAndLinkItems(with ctx: Context) throws {
+    public func resolveAndLinkItems(with ctx: LoadContext) throws {
 
         //resolve modules
         containers.forEach { container in

@@ -45,6 +45,7 @@ public class CopyFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
     }
     
     public override func execute(with ctx: Context) throws -> String? {
+        guard let context = ctx as? GenerationContext else { return nil }
         guard FromFolder.isNotEmpty else { return nil }
         
         if ctx.workingDirectoryString.isEmpty {
@@ -56,21 +57,21 @@ public class CopyFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
             throw TemplateSoup_ParsingError.invalidExpression_VariableOrObjPropNotFound(FromFolder, pInfo)
         }
         
-        try ctx.fileGenerator.setRelativePath(ctx.workingDirectoryString)
+        try context.fileGenerator.setRelativePath(ctx.workingDirectoryString)
         
         if ToFolder.isEmpty {
             let folderName = fromFolder
 
             ctx.debugLog.copyingFolder(folderName)
-            let file = try ctx.fileGenerator.copyFolder(folderName, with: pInfo)
-            try ctx.addGenerated(folderPath: file.outputFolder)
+            let file = try context.fileGenerator.copyFolder(folderName, with: pInfo)
+            try context.addGenerated(folderPath: file.outputFolder)
         } else {
             guard let toFolder = try? ctx.evaluate(value: ToFolder, with: pInfo) as? String
                                                                         else { return nil }
             
             ctx.debugLog.copyingFolder(fromFolder, to: toFolder)
-            let folder = try ctx.fileGenerator.copyFolder(fromFolder, to: toFolder, with: pInfo)
-            try ctx.addGenerated(folderPath: folder.outputFolder)
+            let folder = try context.fileGenerator.copyFolder(fromFolder, to: toFolder, with: pInfo)
+            try context.addGenerated(folderPath: folder.outputFolder)
         }
         
         return nil

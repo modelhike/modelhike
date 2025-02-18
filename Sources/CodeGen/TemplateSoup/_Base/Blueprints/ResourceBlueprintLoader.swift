@@ -8,7 +8,7 @@ import Foundation
 
 public class ResourceBlueprintLoader : Blueprint {
     private var templateCache : [String: Template] = [:]
-    public let context: Context
+    public let context: GenerationContext
 
     public let blueprintName: String
     let bundle: Bundle
@@ -204,7 +204,7 @@ public class ResourceBlueprintLoader : Blueprint {
         }
     }
     
-    public init(blueprint: String, blueprintsRoot: String, resourceRoot: String, bundle: Bundle, with ctx: Context) {
+    public init(blueprint: String, blueprintsRoot: String, resourceRoot: String, bundle: Bundle, with ctx: GenerationContext) {
         self.bundle = bundle
         self.blueprintName = blueprint
         self.blueprintPath = "\(blueprintsRoot)\(blueprint)/"

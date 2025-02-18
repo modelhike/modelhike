@@ -13,7 +13,11 @@ public class LocalFileBlueprintFinder: BlueprintFinder {
     }
     
     public func blueprint(named name: String, with pInfo: ParsedInfo) throws -> any Blueprint {
-        return LocalFileBlueprintLoader(blueprint: name, path: rootPath, with: pInfo.ctx)
+        if let ctx = pInfo.ctx as? GenerationContext {
+            return LocalFileBlueprintLoader(blueprint: name, path: rootPath, with: ctx)
+        } else {
+            fatalError("unknown context passed")
+        }
     }
     
     public lazy var blueprintsAvailable: [String] = {

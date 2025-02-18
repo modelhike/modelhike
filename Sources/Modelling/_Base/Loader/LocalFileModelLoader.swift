@@ -8,7 +8,7 @@ import Foundation
 
 public class LocalFileModelLoader : ModelRepository {
     let loadPath: LocalFolder
-    let ctx: Context
+    let ctx: LoadContext
     
     public var commonsFileName = "common." + ModelConstants.ModelFile_Extension
     public let configFileName = TemplateConstants.MainTemplateFile + "." + ModelConstants.ConfigFile_Extension
@@ -23,7 +23,7 @@ public class LocalFileModelLoader : ModelRepository {
         
         if file.exists { //commons file found
             let commons = try ModelFileParser(with: ctx)
-                                            .parse(file: file, with: ctx)
+                                            .parse(file: file)
             
             model.appendToCommonModel(contentsOf: commons)
         }
@@ -31,7 +31,7 @@ public class LocalFileModelLoader : ModelRepository {
         for file in loadPath.files {
             if file.name != commonsFileName && file.extension == ModelConstants.ModelFile_Extension {
                 let modelSpace = try ModelFileParser(with: ctx)
-                                                .parse(file: file, with: ctx)
+                                                .parse(file: file)
                 
                 model.append(contentsOf: modelSpace)
             }
@@ -44,14 +44,14 @@ public class LocalFileModelLoader : ModelRepository {
         let file = LocalFile(path: loadPath.path / configFileName)
         
         if file.exists { //config file found
-            try ConfigFileParser()
-                .parse(file: file, with: ctx)
+            try ConfigFileParser(with: ctx)
+                .parse(file: file)
         }
         
     }
     
-    public init(path: LocalPath, with ctx: Context) {
-        self.loadPath = LocalFolder(path: path) 
+    public init(path: LocalPath, with ctx: LoadContext) {
+        self.loadPath = LocalFolder(path: path)
         self.ctx = ctx
     }
 }

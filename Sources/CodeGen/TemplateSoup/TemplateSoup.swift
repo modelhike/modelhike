@@ -9,7 +9,7 @@ import Foundation
 public typealias LoadTemplateHandler = (_ templateName: String,_ loader: Blueprint, _ pInfo: ParsedInfo) throws -> Template
 
 public class TemplateSoup : TemplateRenderer {
-    let context: Context
+    let context: GenerationContext
     var repo: Blueprint
     
     public var onLoadTemplate : LoadTemplateHandler = { (templateName, loader, pInfo) throws -> Template in
@@ -100,7 +100,7 @@ public class TemplateSoup : TemplateRenderer {
     }
     
     public func frontMatter(in contents: String, identifier: String) throws -> FrontMatter? {
-        let lineParser = LineParser(string: contents, identifier: identifier, with: context)
+        let lineParser = LineParserDuringGeneration(string: contents, identifier: identifier, with: context)
         let curLine = lineParser.currentLine()
         
         if curLine.hasOnly(TemplateConstants.frontMatterIndicator) {
@@ -111,13 +111,13 @@ public class TemplateSoup : TemplateRenderer {
         return nil
     }
         
-    public init(loader: Blueprint, context: Context) {
+    public init(loader: Blueprint, context: GenerationContext) {
         self.repo = loader
         self.context = context
     }
 
-    public init(context: Context) {
-        let fsLoader = LocalFileBlueprintLoader(path: context.paths.basePath, with: context)
+    public init(context: GenerationContext) {
+        let fsLoader = LocalFileBlueprintLoader(path: context.config.basePath, with: context)
         self.repo = fsLoader
         self.context = context
     }

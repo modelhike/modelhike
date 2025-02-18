@@ -65,21 +65,54 @@ public class ParsedInfo : Equatable {
         return (lhs.line == rhs.line) && (lhs.lineNo == rhs.lineNo)
     }
     
-    public static func dummy(line: String, identifier: String, with ctx: Context) -> ParsedInfo {
-        let parser = LineParser(identifier: identifier, with: ctx)
+    public static func dummy(line: String, identifier: String, with ctx: GenerationContext) -> ParsedInfo {
+        let parser = DummyLineParserDuringGeneration(identifier: identifier, with: ctx)
         return ParsedInfo(parser: parser, line: line, lineNo: -1, level: 0, firstWord: "")
     }
     
+    public static func dummy(line: String, identifier: String, with ctx: LoadContext) -> ParsedInfo {
+        let parser = DummyLineParserDuringLoad(identifier: identifier, with: ctx)
+        return ParsedInfo(parser: parser, line: line, lineNo: -1, level: 0, firstWord: "")
+    }
+    
+    public static func dummy(line: String, identifier: String, with ctx: Context) -> ParsedInfo {
+        if let loadctx = ctx as? LoadContext {
+            return dummy(line: line, identifier: identifier, with: loadctx)
+        } else if let genctx = ctx as? GenerationContext {
+            return dummy(line: line, identifier: identifier, with: genctx)
+        } else {
+            fatalError("unknown Context passes")
+        }
+    }
+    
     public static func dummyForFrontMatterError(identifier: String, with ctx: Context) -> ParsedInfo {
-        return dummy(line: "Front-Matter", identifier: identifier, with: ctx)
+        if let loadctx = ctx as? LoadContext {
+            return dummy(line: "Front-Matter", identifier: identifier, with: loadctx)
+        } else if let genctx = ctx as? GenerationContext {
+            return dummy(line: "Front-Matter", identifier: identifier, with: genctx)
+        } else {
+            fatalError("unknown Context passes")
+        }
     }
     
     public static func dummyForMainFile(with ctx: Context) -> ParsedInfo {
-        return dummy(line: "Main-File", identifier: "Main-File", with: ctx)
+        if let loadctx = ctx as? LoadContext {
+            return dummy(line: "Main-File", identifier: "Main-File", with: loadctx)
+        } else if let genctx = ctx as? GenerationContext {
+            return dummy(line: "Main-File", identifier: "Main-File", with: genctx)
+        } else {
+            fatalError("unknown Context passes")
+        }
     }
     
     public static func dummyForAppState(with ctx: Context) -> ParsedInfo {
-        return dummy(line: "App-State", identifier: "Main-File", with: ctx)
+        if let loadctx = ctx as? LoadContext {
+            return dummy(line: "App-State", identifier: "Main-File", with: loadctx)
+        } else if let genctx = ctx as? GenerationContext {
+            return dummy(line: "App-State", identifier: "Main-File", with: genctx)
+        } else {
+            fatalError("unknown Context passes")
+        }
     }
     
     public init?(parser: LineParser) {

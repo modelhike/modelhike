@@ -7,7 +7,7 @@
 import Foundation
 
 public class InlineModelLoader : ModelRepository {    
-    let ctx: Context
+    let ctx: LoadContext
     public var items : [InlineModelProtocol] = []
     
     public func loadModel(to model: AppModel) throws {
@@ -22,7 +22,7 @@ public class InlineModelLoader : ModelRepository {
         
         //common models
         let commons = try ModelFileParser( with: ctx)
-                        .parse(string: commonsString, identifier: "InlineCommons", with: ctx)
+                        .parse(string: commonsString, identifier: "InlineCommons")
         
         model.appendToCommonModel(contentsOf: commons)
         
@@ -30,7 +30,7 @@ public class InlineModelLoader : ModelRepository {
         for item in items {
             if let modelItem = item as? InlineModel {
                 let modelSpace = try ModelFileParser(with: ctx)
-                    .parse(string: modelItem.string, identifier: "InlineDomain", with: ctx)
+                    .parse(string: modelItem.string, identifier: "InlineDomain")
                 
                 model.append(contentsOf: modelSpace)
             }
@@ -42,14 +42,14 @@ public class InlineModelLoader : ModelRepository {
     public func loadGenerationConfigIfAny() throws {
         for item in items {
             if let modelConfig = item as? InlineConfig {
-                try ConfigFileParser()
-                    .parse(string: modelConfig.string, identifier: "config", with: ctx)
+                try ConfigFileParser(with: ctx)
+                    .parse(string: modelConfig.string, identifier: "config")
                 
             }
         }
     }
     
-    public init(with ctx: Context, @InlineModelBuilder _ builder: () -> [InlineModelProtocol]) {
+    public init(with ctx: LoadContext, @InlineModelBuilder _ builder: () -> [InlineModelProtocol]) {
         self.ctx = ctx
         self.items = builder()
     }

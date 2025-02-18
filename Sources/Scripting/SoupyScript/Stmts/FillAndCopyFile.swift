@@ -45,6 +45,7 @@ public class FillAndCopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible
     }
     
     public override func execute(with ctx: Context) throws -> String? {
+        guard let context = ctx as? GenerationContext else { return nil }
         guard FromFile.isNotEmpty else { return nil }
         
         if ctx.workingDirectoryString.isEmpty {
@@ -56,14 +57,14 @@ public class FillAndCopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible
             throw TemplateSoup_ParsingError.invalidExpression_VariableOrObjPropNotFound(FromFile, pInfo)
         }
 
-        try ctx.fileGenerator.setRelativePath(ctx.workingDirectoryString)
+        try context.fileGenerator.setRelativePath(ctx.workingDirectoryString)
         
         if ToFile.isEmpty {
             let fileName = fromFile
             
             ctx.debugLog.generatingFile(fileName)
-            if let file = try ctx.fileGenerator.fillPlaceholdersAndCopyFile(fileName, with: pInfo) {
-                ctx.addGenerated(filePath: file.outputPath.string + fileName)
+            if let file = try context.fileGenerator.fillPlaceholdersAndCopyFile(fileName, with: pInfo) {
+                context.addGenerated(filePath: file.outputPath.string + fileName)
             } else {
                 ctx.debugLog.fileNotGenerated(fileName)
             }
@@ -72,8 +73,8 @@ public class FillAndCopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible
                                                                         else { return nil }
             
             ctx.debugLog.generatingFile(toFile)
-            if let file = try ctx.fileGenerator.fillPlaceholdersAndCopyFile(fromFile, to: toFile, with: pInfo) {
-                ctx.addGenerated(filePath: file.outputPath.string + toFile)
+            if let file = try context.fileGenerator.fillPlaceholdersAndCopyFile(fromFile, to: toFile, with: pInfo) {
+                context.addGenerated(filePath: file.outputPath.string + toFile)
             } else {
                 ctx.debugLog.fileNotGenerated(toFile)
             }

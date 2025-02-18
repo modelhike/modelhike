@@ -7,13 +7,15 @@
 import Foundation
 
 public class ConfigFileParser {
-    public func parse(file: LocalFile, with ctx: Context) throws {
+    let ctx: LoadContext
+    
+    public func parse(file: LocalFile) throws {
         let content = try file.readTextContents()
-        try self.parse(string: content, identifier: file.name, with: ctx)
+        try self.parse(string: content, identifier: file.name)
     }
     
-    public func parse(string content: String, identifier: String, with ctx: Context) throws {
-        let lineParser = LineParser(string: content, identifier: identifier, with: ctx)
+    public func parse(string content: String, identifier: String) throws {
+        let lineParser = LineParserDuringLoad(string: content, identifier: identifier, with: ctx)
         
         let curLine = lineParser.currentLine()
         
@@ -25,7 +27,7 @@ public class ConfigFileParser {
         }
     }
     
-    public init() {
-        
+    public init(with ctx: LoadContext) {
+        self.ctx = ctx
     }
 }

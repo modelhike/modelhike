@@ -22,7 +22,11 @@ open class ResourceBlueprintFinder: BlueprintFinder {
     }
     
     public func blueprint(named name: String, with pInfo: ParsedInfo) throws -> any Blueprint {
-        return ResourceBlueprintLoader(blueprint: name, blueprintsRoot: blueprintsRoot, resourceRoot: resourceRoot, bundle: bundle, with: pInfo.ctx)
+        if let ctx = pInfo.ctx as? GenerationContext {
+            return ResourceBlueprintLoader(blueprint: name, blueprintsRoot: blueprintsRoot, resourceRoot: resourceRoot, bundle: bundle, with: ctx)
+        } else {
+            fatalError("unknown context passed")
+        }
     }
     
     public init(bundle: Bundle) {
