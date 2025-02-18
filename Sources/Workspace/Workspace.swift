@@ -13,6 +13,7 @@ open class Workspace {
     private var modifiers: [Modifier] = []
     private var statements: [any FileTemplateStmtConfig] = []
     public internal(set) var config: PipelineConfig
+    
     public private(set) var context: Context
     public internal(set) var isModelsLoaded = false
     public private(set) var isSymbolsLoaded = false
@@ -129,6 +130,7 @@ open class Workspace {
         
     internal init() {
         self.config = PipelineConfig()
+
         let basePath = SystemFolder.documents.path / "codegen"
         let paths = ContextPaths(basePath: basePath)
         
@@ -136,7 +138,7 @@ open class Workspace {
 
         self.sandbox = CodeGenerationSandbox(context: context)
         self.model = sandbox.model
-                
+        
         setupDefaultSymbols()
     }
 }

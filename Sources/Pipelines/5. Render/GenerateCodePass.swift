@@ -11,9 +11,6 @@ public struct GenerateCodePass : RenderingPass {
     public func runIn(_ ws: Workspace, phase: RenderPhase) async throws -> Bool {
         var templatesRepo: BlueprintRepository
         
-        
-        let templatesPath = LocalPath(relativePath: "../Hub/CodeCave/DiagSoup/diagsoup-blueprints/Sources/Resources/blueprints", basePath: SystemFolder.documents.path)
-        
         let blueprint = "api-nestjs-monorepo"
         //let blueprint = "api-springboot-monorepo"
 
@@ -23,11 +20,8 @@ public struct GenerateCodePass : RenderingPass {
             try ws.loadSymbols([.java])
         }
         
-//        if config.blueprintType == .resources {
-//
-//        } else {
-        templatesRepo = LocalFileBlueprintLoader(blueprint: blueprint, path: templatesPath, with: ws.context)
-//        }
+        let pInfo = ParsedInfo.dummyForAppState(with: ws.context)
+        templatesRepo = try ws.config.blueprint(named: blueprint, with: pInfo)
         
         try ws.generateCodebase(container: "APIs", usingBlueprintsFrom: templatesRepo)
 

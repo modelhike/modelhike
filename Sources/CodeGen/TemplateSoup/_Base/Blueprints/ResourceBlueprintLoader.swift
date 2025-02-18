@@ -6,7 +6,7 @@
 
 import Foundation
 
-open class ResourceBlueprintLoader : BlueprintRepository {
+public class ResourceBlueprintLoader : BlueprintRepository {
     private var templateCache : [String: Template] = [:]
     public let context: Context
 
@@ -204,11 +204,11 @@ open class ResourceBlueprintLoader : BlueprintRepository {
         }
     }
     
-    public init(blueprint: String, bundle: Bundle, with ctx: Context) {
+    public init(blueprint: String, blueprintsRoot: String, resourceRoot: String, bundle: Bundle, with ctx: Context) {
         self.bundle = bundle
         self.blueprintName = blueprint
-        self.blueprintPath = "/Resources/blueprints/\(blueprint)/"
-        self.resourceRoot = "/Resources/"
+        self.blueprintPath = "\(blueprintsRoot)\(blueprint)/"
+        self.resourceRoot = resourceRoot
         self.context = ctx
     }
 

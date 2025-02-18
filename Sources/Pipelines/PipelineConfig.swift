@@ -6,12 +6,22 @@
 
 public struct PipelineConfig {
     public var basePath: LocalPath = SystemFolder.desktop.path
-    public var localBlueprintsPath: LocalPath = SystemFolder.desktop.path
+    public var localBlueprintsPath: LocalPath? {
+        didSet {
+            if let path = self.localBlueprintsPath {
+                blueprints.add(LocalFileBlueprintFinder(path: path))
+            }
+        }
+    }
 
-    public var blueprintType: BluePrintType = .localFileSystem
     public var modelLoaderType: ModelLoaderType = .localFileSystem
 
     public var errorOutput = ErrorOutputOptions()
+    
+    public var blueprints = BlueprintAggregator()
+    public func blueprint(named name: String, with pInfo: ParsedInfo) throws -> any BlueprintRepository {
+        return try blueprints.blueprint(named: name, with: pInfo)
+    }
     
     public init() {}
 }
