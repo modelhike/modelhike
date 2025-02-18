@@ -7,7 +7,9 @@
 import Foundation
 
 public enum Load {
-    
+    static func models() -> LoadingPass {
+        LoadModelsPass()
+    }
 }
 
 public extension Load {

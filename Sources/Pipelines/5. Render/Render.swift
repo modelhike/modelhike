@@ -11,8 +11,7 @@ public enum Render {
 }
 
 public extension Render {
-//    static func HtmlPage<T: PageTemplate>(using: T) -> PipelinePass  {
-//        LoadContentFromFolder(folderName: "localFolder")
-//    }
-    
+    static func code() -> RenderingPass  {
+        GenerateCodePass()
+    }
 }

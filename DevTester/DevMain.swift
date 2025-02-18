@@ -19,14 +19,14 @@ struct Development {
         
         let data: [String : Any] = ["list":arr, "var1" : true, "var2": false, "varstr": "test"]
         
-        let ws = Pipeline();
+        let ws = Pipelines.empty
         if let result = try ws.render(string: templateStr, data: data) {
             print(result)
         }
     }
     
     static func runCodebaseGeneration() async throws {
-        let pipeline = Pipeline()
+        let pipeline = Pipelines.codegen
 //        let config = PipelineConfig()
 //        try await pipeline.run(using: config)
         try await pipeline.run(using: Environment.debug)
