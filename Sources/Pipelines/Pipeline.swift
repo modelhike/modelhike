@@ -89,17 +89,7 @@ public struct Pipeline {
         return lastRunResult
     }
     
-    public init() {
-        phases = [discover, load, hydrate, transform, render, persist]
-        
-        for phase in phases {
-            phase.setupDefaultPasses()
-        }
-    }
-    
     public init(@PipelineBuilder _ builder: () -> [PipelinePass]) {
-        phases = [discover, load, hydrate, transform, render, persist]
-
         let providedPasses = builder()
         
         for pass in providedPasses {
@@ -118,11 +108,37 @@ public struct Pipeline {
             }
         }
         
-        for phase in phases {
-            if !phase.hasPasses {
-                phase.setupDefaultPasses()
+        phases = [discover, load, hydrate, transform, render, persist]
+    }
+    
+    public init(from pipe: Pipeline, @PipelineBuilder _ builder: () -> [PipelinePass]) {
+        let providedPasses = builder()
+        
+        discover.append(passes: pipe.discover)
+        load.append(passes: pipe.load)
+        hydrate.append(passes: pipe.hydrate)
+        transform.append(passes: pipe.transform)
+        render.append(passes: pipe.render)
+        persist.append(passes: pipe.persist)
+
+        
+        for pass in providedPasses {
+            if let dp = pass as? DiscoveringPass {
+                discover.append(pass: dp)
+            } else if let lp = pass as? LoadingPass {
+                load.append(pass: lp)
+            } else if let hp = pass as? HydrationPass {
+                hydrate.append(pass: hp)
+            } else if let tp = pass as? TransformationPass {
+                transform.append(pass: tp)
+            } else if let rp = pass as? RenderingPass {
+                render.append(pass: rp)
+            } else if let pp = pass as? PersistancePass {
+                persist.append(pass: pp)
             }
         }
+        
+        phases = [discover, load, hydrate, transform, render, persist]
     }
     
     fileprivate func printError(_ err: Error) {
