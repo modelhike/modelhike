@@ -9,7 +9,7 @@ import Foundation
 public struct ContextDebugLog {
     public var stack = CallStack()
     public var flags = ContextDebugFlags()
-
+    
     public func parseLines(startingFrom startKeyword : String?, till endKeyWord: String?, line: String?, lineNo : Int ) {
         if flags.lineByLineParsing || flags.blockByBlockParsing {
             if let startKeyword = startKeyword, let endKeyWord = endKeyWord, let line = line {
@@ -237,23 +237,35 @@ public struct ContextDebugLog {
             print("⚠️ File \(filepath) not Generated!!!...")
         }
     }
-}
-
-public struct ContextDebugFlags {
-    public var printParsedTree = false
     
-    public var lineByLineParsing = false
-    public var blockByBlockParsing = false
-    public var controlFlow = false
-
-    public var excludedFiles = false
-    public var renderingStoppedInFiles = false
-    public var errorThrownInFiles = false
-
-    public var changesInWorkingDirectory = false
-    public var fileGeneration = false
-
-    public var onSkipLines = false
-    public var onIncrementLines = false
-    public var onCommentedLines = false
+    public func pipelinePhaseCannotRun(_ phase: any PipelinePhase, msg: String) {
+        print("⦻ Phase \(phase) cannot run!!!...")
+        print("⦻ \(msg)!!!...")
+    }
+    
+    public func pipelinePassCannotRun(_ pass: any PipelinePass, msg: String? = nil) {
+        print("⦻ Pass \(pass) cannot run!!!...")
+        if let msg {
+            print("⦻ \(msg)!!!...")
+        }
+    }
+    
+    public struct ContextDebugFlags {
+        public var printParsedTree = false
+        
+        public var lineByLineParsing = false
+        public var blockByBlockParsing = false
+        public var controlFlow = false
+        
+        public var excludedFiles = false
+        public var renderingStoppedInFiles = false
+        public var errorThrownInFiles = false
+        
+        public var changesInWorkingDirectory = false
+        public var fileGeneration = false
+        
+        public var onSkipLines = false
+        public var onIncrementLines = false
+        public var onCommentedLines = false
+    }
 }

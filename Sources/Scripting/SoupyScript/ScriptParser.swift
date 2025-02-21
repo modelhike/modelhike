@@ -131,7 +131,7 @@ public extension ScriptParser {
         return containers
     }
     
-    public var debugDescription: String {
+    var debugDescription: String {
         return containers.debugDescription
     }
 }

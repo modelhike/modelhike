@@ -11,14 +11,14 @@ public struct Pipeline {
     
     public var outputs = OutputFolder("output")
         
-    var discover = DiscoverPhase()
-    var load = LoadPhase()
-    var hydrate = HydratePhase()
-    var transform = TransformPhase()
-    var render = RenderPhase()
-    var persist = PersistPhase()
+    var discover: DiscoverPhase
+    var load: LoadPhase
+    var hydrate: HydratePhase
+    var transform: TransformPhase
+    var render: RenderPhase
+    var persist: PersistPhase
     
-    var phases: [any PipelinePhase]
+    var phases: [any PipelinePhase] = []
     
     @discardableResult
     public func run(using config: PipelineConfig) async throws -> Bool {
@@ -89,6 +89,13 @@ public struct Pipeline {
     }
     
     public init(@PipelineBuilder _ builder: () -> [PipelinePass]) {
+        discover = DiscoverPhase(context: ws.context)
+        load = LoadPhase(context: ws.context)
+        hydrate = HydratePhase(context: ws.context)
+        transform = TransformPhase(context: ws.context)
+        render = RenderPhase(context: ws.context)
+        persist = PersistPhase(context: ws.context)
+        
         let providedPasses = builder()
         
         for pass in providedPasses {
@@ -111,6 +118,13 @@ public struct Pipeline {
     }
     
     public init(from pipe: Pipeline, @PipelineBuilder _ builder: () -> [PipelinePass]) {
+        discover = DiscoverPhase(context: ws.context)
+        load = LoadPhase(context: ws.context)
+        hydrate = HydratePhase(context: ws.context)
+        transform = TransformPhase(context: ws.context)
+        render = RenderPhase(context: ws.context)
+        persist = PersistPhase(context: ws.context)
+        
         let providedPasses = builder()
         
         discover.append(passes: pipe.discover)

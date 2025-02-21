@@ -7,13 +7,20 @@
 import Foundation
 
 public struct DiscoverPhase : PipelinePhase {
+    public private(set) var context : LoadContext
+    
     public var passes: [DiscoveringPass] = []
     public var lastRunResult: Bool = true
 
     @discardableResult
     public func runIn(pipeline: Pipeline) async throws -> Bool {
         return try await runIn(pipeline: pipeline, passes: passes) { pass, phase in
-            try await pass.runIn(phase: phase)
+            if try pass.canRunIn(phase: phase) {
+                return try await pass.runIn(phase: phase)
+            } else {
+                context.debugLog.pipelinePassCannotRun(pass)
+                return false
+            }
         }
     }
     
@@ -21,10 +28,11 @@ public struct DiscoverPhase : PipelinePhase {
         passes.append(contentsOf: phase.passes)
     }
     
-    public init () { }
+    public init (context: LoadContext) { self.context = context }
 }
 
 public struct LoadPhase : PipelinePhase {
+    public private(set) var context : LoadContext
     public var passes: [LoadingPass] = []
     public var lastRunResult: Bool = true
     public var hasPasses: Bool { passes.count > 0 }
@@ -32,7 +40,12 @@ public struct LoadPhase : PipelinePhase {
     @discardableResult
     public func runIn(pipeline: Pipeline) async throws -> Bool {
         return try await runIn(pipeline: pipeline, passes: passes) { pass, phase in
-            try await pass.runIn(pipeline.ws, phase: phase)
+            if try pass.canRunIn(phase: phase) {
+                return try await pass.runIn(pipeline.ws, phase: phase)
+            } else {
+                context.debugLog.pipelinePassCannotRun(pass)
+                return false
+            }
         }
     }
     
@@ -40,17 +53,23 @@ public struct LoadPhase : PipelinePhase {
         passes.append(contentsOf: phase.passes)
     }
     
-    public init () { }
+    public init (context: LoadContext) { self.context = context }
 }
 
 public struct HydratePhase : PipelinePhase {
+    public private(set) var context : LoadContext
     public var passes: [HydrationPass] = []
     public var lastRunResult: Bool = true
         
     @discardableResult
     public func runIn(pipeline: Pipeline) async throws -> Bool {
         return try await runIn(pipeline: pipeline, passes: passes) { pass, phase in
-            try await pass.runIn(phase: phase)
+            if try pass.canRunIn(phase: phase) {
+                return try await pass.runIn(phase: phase)
+            } else {
+                context.debugLog.pipelinePassCannotRun(pass)
+                return false
+            }
         }
     }
     
@@ -58,10 +77,11 @@ public struct HydratePhase : PipelinePhase {
         passes.append(contentsOf: phase.passes)
     }
     
-    public init () { }
+    public init (context: LoadContext) { self.context = context }
 }
 
 public struct TransformPhase : PipelinePhase {
+    public private(set) var context : LoadContext
     public var passes: [TransformationPass] = []
     public var lastRunResult: Bool = true
     
@@ -70,7 +90,12 @@ public struct TransformPhase : PipelinePhase {
     @discardableResult
     public func runIn(pipeline: Pipeline) async throws -> Bool {
         return try await runIn(pipeline: pipeline, passes: passes) { pass, phase in
-            try await pass.runIn(phase: phase)
+            if try pass.canRunIn(phase: phase) {
+                return try await pass.runIn(phase: phase)
+            } else {
+                context.debugLog.pipelinePassCannotRun(pass)
+                return false
+            }
         }
     }
     
@@ -78,12 +103,14 @@ public struct TransformPhase : PipelinePhase {
         passes.append(contentsOf: phase.passes)
     }
     
-    public init () {
+    public init (context: LoadContext) {
+        self.context = context
         append(pass: pluginsPass)
     }
 }
 
 public struct RenderPhase : PipelinePhase {
+    public private(set) var context : LoadContext
     public var passes: [RenderingPass] = []
     public var lastRunResult: Bool = true
     
@@ -94,7 +121,12 @@ public struct RenderPhase : PipelinePhase {
         sandbox.context.append(variables: loadedVars)
         
         return try await runIn(pipeline: pipeline, passes: passes) { pass, phase in
-            try await pass.runIn(sandbox, phase: phase)
+            if try pass.canRunIn(phase: phase) {
+                return try await pass.runIn(sandbox, phase: phase)
+            } else {
+                context.debugLog.pipelinePassCannotRun(pass)
+                return false
+            }
         }
     }
 
@@ -102,17 +134,23 @@ public struct RenderPhase : PipelinePhase {
         passes.append(contentsOf: phase.passes)
     }
     
-    public init () { }
+    public init (context: LoadContext) { self.context = context }
 }
 
 public struct PersistPhase : PipelinePhase {
+    public private(set) var context : LoadContext
     public var passes: [PersistancePass] = []
     public var lastRunResult: Bool = true
 
     @discardableResult
     public func runIn(pipeline: Pipeline) async throws -> Bool {
         return try await runIn(pipeline: pipeline, passes: passes) { pass, phase in
-            try await pass.runIn(phase: phase)
+            if try pass.canRunIn(phase: phase) {
+                return try await pass.runIn(phase: phase)
+            } else {
+                context.debugLog.pipelinePassCannotRun(pass)
+                return false
+            }
         }
     }
     
@@ -120,11 +158,12 @@ public struct PersistPhase : PipelinePhase {
         passes.append(contentsOf: phase.passes)
     }
     
-    public init () { }
+    public init (context: LoadContext) { self.context = context }
 }
 
 public protocol PipelinePhase {
     associatedtype Pass
+    var context : LoadContext {get}
     var passes: [Pass] {get set}
     
     var lastRunResult: Bool {get set}
@@ -138,6 +177,15 @@ public protocol PipelinePhase {
 }
 
 public extension PipelinePhase {
+    func canRunIn(pipeline: Pipeline) -> Bool {
+        if !hasPasses {
+            pipeline.ws.context.debugLog.pipelinePhaseCannotRun(self, msg: "No passes to run")
+            return false
+        } else {
+            return true
+        }
+    }
+    
     mutating func append(pass: Pass) {
         passes.append(pass)
     }
