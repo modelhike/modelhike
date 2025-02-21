@@ -7,10 +7,13 @@
 import Foundation
 
 open class Workspace {
-    var model: AppModel
-    public internal(set) var isModelsLoaded = false
     public internal(set) var context: LoadContext
     public internal(set) var config: PipelineConfig
+    var model: AppModel { context.model }
+    public internal(set) var isModelsLoaded: Bool {
+        get { model.isModelsLoaded }
+        set { model.isModelsLoaded = newValue }
+    }
     
     public func newSandbox() -> Sandbox {
         return CodeGenerationSandbox(model: self.model, config: config)
@@ -25,11 +28,9 @@ open class Workspace {
         
     internal init() {
         let config = PipelineConfig()
-        let model = AppModel()
         
         self.config = config
-        self.model = model
-        self.context = LoadContext(model: model, config: config)
+        self.context = LoadContext(config: config)
     }
 }
 

@@ -11,7 +11,8 @@ open class AppModel {
     public internal(set) var commonModel = C4ComponentList()
     private var modules = C4ComponentList()
     public internal(set) var containers = C4ContainerList()
-    
+    public internal(set) var isModelsLoaded = false
+
     public func resolveAndLinkItems(with ctx: LoadContext) throws {
 
         //resolve modules

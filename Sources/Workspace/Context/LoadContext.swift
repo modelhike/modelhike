@@ -5,6 +5,7 @@
 //
 
 public class LoadContext : Context {
+    public private(set) var model: AppModel
     public var debugLog = ContextDebugLog()
     public var events = CodeGenerationEvents()
     
@@ -12,7 +13,6 @@ public class LoadContext : Context {
     public private(set) var objManager = ObjectAttributeManager()
 
     public var currentState = ContextState()
-    public var model: AppModel
     public private(set) var config : PipelineConfig
     
     //Expression Evaluation
@@ -23,6 +23,11 @@ public class LoadContext : Context {
     /// If `pushSnapshot` is called, it saves a snapshot of the current context state to a stack
     /// When `popSnapshot` is called, it discards any  changes after the last snapshot, by restoring latst snapshot
     public var snapshotStack : [ContextState] = []
+    
+    public init(config: PipelineConfig) {
+        self.config = config
+        self.model = AppModel()
+    }
     
     public init(model: AppModel, config: PipelineConfig) {
         self.config = config
