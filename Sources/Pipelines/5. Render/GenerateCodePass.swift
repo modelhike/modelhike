@@ -7,7 +7,16 @@
 import Foundation
 
 public struct GenerateCodePass : RenderingPass {
+    public func canRunIn(phase: RenderPhase) throws -> Bool {
 
+        if !phase.context.model.isModelsLoaded {
+            let pInfo = ParsedInfo.dummyForAppState(with: phase.context)
+            throw EvaluationError.invalidAppState("No models Loaded!!!", pInfo)
+        }
+        
+        return true
+    }
+    
     public func runIn(_ sandbox: Sandbox, phase: RenderPhase) async throws -> Bool {
         
         var templatesRepo: Blueprint
@@ -32,12 +41,6 @@ public struct GenerateCodePass : RenderingPass {
     @discardableResult
     public func generateCodebase(container: String, usingBlueprintsFrom blueprintLoader: Blueprint, sandbox: Sandbox) throws -> String? {
         var mutableSandbox = sandbox
-        
-//        if !isModelsLoaded {
-//            let pInfo = ParsedInfo.dummyForAppState(with: sandbox.context)
-//            throw EvaluationError.invalidAppState("No models Loaded!!!", pInfo)
-//        }
-        
         let output = sandbox.config.output
         
         print("🛠️ Container used: \(container)")
