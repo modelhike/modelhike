@@ -25,17 +25,7 @@ public class GenerationContext: Context {
     /// If `pushSnapshot` is called, it saves a snapshot of the current context state to a stack
     /// When `popSnapshot` is called, it discards any  changes after the last snapshot, by restoring latst snapshot
     public var snapshotStack: [ContextState] = []
-
-    public func replace(variables: StringDictionary) {
-        self.currentState.variables = variables
-    }
-
-    public func append(variables: StringDictionary) {
-        variables.forEach {
-            self.variables[$0.key] = $0.value
-        }
-    }
-
+    
     // File Generation
     public var fileGenerator: FileGeneratorProtocol!
     var generatedFiles: [String] = []

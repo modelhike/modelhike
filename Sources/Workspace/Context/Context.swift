@@ -11,7 +11,7 @@ public protocol Context : AnyObject {
     var debugLog: ContextDebugLog {get}
     var events: CodeGenerationEvents {get}
     var currentState: ContextState {get set}
-    var variables: StringDictionary {get set}
+    var variables: WorkingMemory {get}
     var symbols: ContextSymbols {get}
     var templateFunctions: [String: TemplateFunctionContainer] {get set}
     var snapshotStack : [ContextState] {get set}
@@ -23,9 +23,8 @@ public protocol Context : AnyObject {
 }
 
 public extension Context {
-    var variables: StringDictionary {
+    var variables: WorkingMemory {
         get { currentState.variables }
-        set { currentState.variables = newValue }
     }
 
     var debugInfo: DebugDictionary {
@@ -54,8 +53,24 @@ public extension Context {
         return name == working_dir_var
     }
     
+    func append(variables: StringDictionary) {
+        variables.forEach {
+            self.variables[$0.key] = $0.value
+        }
+    }
+
+    func append(variables: WorkingMemory) {
+        variables.forEach {
+            self.variables[$0.key] = $0.value
+        }
+    }
+    
     func replace(variables: StringDictionary) {
-        self.currentState.variables = variables
+        self.currentState.variables.replace(variables: variables)
+    }
+    
+    func replace(variables: WorkingMemory) {
+        self.currentState.variables.replace(variables: variables)
     }
     
     func pushSnapshot() {
