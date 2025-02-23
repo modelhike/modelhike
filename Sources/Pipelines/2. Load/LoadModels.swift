@@ -19,16 +19,26 @@ public struct LoadModelsPass : LoadingPass {
             try repo.loadModel(to: ws.model)
             try repo.loadGenerationConfigIfAny()
             
-            try repo.processAfterLoad(model: ws.model, with: ws.context)
             
             if ws.model.types.items.count > 0 {
                 ws.isModelsLoaded = true
+                
+                let domainTypesCount = ws.model.containers.types.count
+                let commonTypesCount = ws.model.commonModel.types.count
+                print("💡 Loaded domain types: \(domainTypesCount), common types: \(commonTypesCount)")
+                
+                return true
+
+            } else {
+                ws.isModelsLoaded = false
+                print("❌❌ No Model Found!!!")
+                return false
             }
         } catch let err {
             printError(err, workspace: ws)
             print("❌❌ ERROR IN LOADING MODELS ❌❌")
+            return false
         }
-        return true
     }
     
     fileprivate func printError(_ err: Error, workspace: Workspace) {

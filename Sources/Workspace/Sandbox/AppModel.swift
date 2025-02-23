@@ -38,10 +38,6 @@ open class AppModel {
                     try dto.populateDerivedProperties()
                 }
                 
-                for annotation in type.annotations.annotationsList {
-                    try AnnotationProcessor.process(annotation, for: type)
-                }
-                
                 //This should be done last, as the propeties for Dtos are populated only in the above steps
                 for prop in type.properties {
                     if prop.type.isCustomType {

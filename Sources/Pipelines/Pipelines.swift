@@ -10,6 +10,8 @@ public enum Pipelines {
     
     public static let codegen = Pipeline {
         Load.models()
+        Hydrate.models()
+        Hydrate.annotations()
         Render.code()
     }
     
