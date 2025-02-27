@@ -13,6 +13,7 @@ public enum Pipelines {
         Hydrate.models()
         Hydrate.annotations()
         Render.code()
+        Persist.toOutput()
     }
     
     public static let content = Pipeline {

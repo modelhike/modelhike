@@ -76,7 +76,7 @@ public class RenderTemplateFileStmt: LineTemplateStmt, CallStackable, CustomDebu
 
         ctx.debugLog.generatingFile(filename, with: fromTemplate)
         if let file = try context.fileGenerator.generateFile(filename, template: fromTemplate, with: pInfo) {
-            context.addGenerated(filePath: file.outputPath.string + filename)
+            //file generated successfully
         } else {
             ctx.debugLog.fileNotGenerated(filename, with: fromTemplate)
         }

@@ -35,8 +35,8 @@ public protocol RenderingPass : PipelinePass {
 }
 
 public protocol PersistancePass : PipelinePass {
-    func runIn(phase: PersistPhase) async throws -> Bool
-    func canRunIn(phase: PersistPhase) throws -> Bool
+    func runIn(phase: PersistPhase, pipeline: Pipeline) async throws -> Bool
+    func canRunIn(phase: PersistPhase, pipeline: Pipeline) throws -> Bool
 }
 
 public extension DiscoveringPass {
@@ -70,7 +70,7 @@ public extension RenderingPass {
 }
 
 public extension PersistancePass {
-    func canRunIn(phase: PersistPhase) -> Bool {
+    func canRunIn(phase: PersistPhase, pipeline: Pipeline) -> Bool {
         return true
     }
 }

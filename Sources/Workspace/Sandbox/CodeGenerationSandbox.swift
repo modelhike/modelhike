@@ -6,10 +6,11 @@
 
 import Foundation
 
-public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
+public class CodeGenerationSandbox : GenerationSandbox {
     public private(set) var templateSoup: TemplateSoup
-    public private(set) var generation_dir: LocalPath
-    
+    private var generation_dir: OutputFolder
+    public private(set) var base_generation_dir: OutputFolder
+
     public var model: AppModel { context.model }
     public var config: PipelineConfig { context.config }
 
@@ -100,7 +101,8 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
         
         self.templateSoup  = TemplateSoup(context: context)
 
-        self.generation_dir = config.output.path
+        self.base_generation_dir = OutputFolder(config.output)
+        self.generation_dir = self.base_generation_dir
         
         context.fileGenerator = self
 
@@ -163,7 +165,7 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
     //MARK: File generation protocol
         
     public func setRelativePath(_ path: String) throws {
-        generation_dir = context.config.output.path / path
+        generation_dir = self.base_generation_dir.subFolder(path)
         try generation_dir.ensureExists()
     }
     
@@ -172,8 +174,10 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
             return nil
         }
         
-        let file = RenderedFile(filename: filename, filePath: generation_dir, template: template, renderer: self.templateSoup, pInfo: pInfo)
-        try file.persist()
+        let file = RenderedFile(filename: filename, filePath: generation_dir.path, template: template, renderer: self.templateSoup, pInfo: pInfo)
+        
+        //try file.persist()
+        generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
         return file
     }
     
@@ -182,40 +186,52 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
             return nil
         }
         
-        let file = RenderedFile(filename: filename, filePath: generation_dir, template: template, data: data, renderer: self.templateSoup, pInfo: pInfo)
-        try file.persist()
+        let file = RenderedFile(filename: filename, filePath: generation_dir.path, template: template, data: data, renderer: self.templateSoup, pInfo: pInfo)
+        
+        //try file.persist()
+        generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
         return file
     }
     
     public func copyFile(_ filename: String, with pInfo: ParsedInfo) throws -> StaticFile {
-        let file = StaticFile(filename: filename, repo: templateSoup.repo, to: filename, path: generation_dir, pInfo: pInfo)
-        try file.persist()
+        let file = StaticFile(filename: filename, repo: templateSoup.repo, to: filename, path: generation_dir.path, pInfo: pInfo)
+        
+        //try file.persist()
+        generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
         return file
     }
         
     public func copyFile(_ filename: String, to newFilename: String, with pInfo: ParsedInfo) throws -> StaticFile {
-        let file = StaticFile(filename: filename, repo: templateSoup.repo, to: newFilename, path: generation_dir, pInfo: pInfo)
-        try file.persist()
+        let file = StaticFile(filename: filename, repo: templateSoup.repo, to: newFilename, path: generation_dir.path, pInfo: pInfo)
+        
+        //try file.persist()
+        generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
         return file
     }
     
     public func copyFolder(_ foldername: String, with pInfo: ParsedInfo) throws -> StaticFolder {
-        let folder = StaticFolder(foldername: foldername, repo: templateSoup.repo, to: foldername, path: generation_dir, pInfo: pInfo)
-        try folder.copyFiles()
+        let folder = StaticFolder(foldername: foldername, repo: templateSoup.repo, to: foldername, path: generation_dir.path, pInfo: pInfo)
+        
+        //try folder.copyFiles()
+        generation_dir.add(folder) //to be persisted in the Persist Pipeline Phase
         return folder
     }
     
     public func copyFolder(_ foldername: String, to newPath: String, with pInfo: ParsedInfo) throws -> StaticFolder {
-        let folder = StaticFolder(foldername: foldername, repo: templateSoup.repo, to: newPath, path: generation_dir, pInfo: pInfo)
-        try folder.copyFiles()
+        let folder = StaticFolder(foldername: foldername, repo: templateSoup.repo, to: newPath, path: generation_dir.path, pInfo: pInfo)
+        
+        //try folder.copyFiles()
+        generation_dir.add(folder) //to be persisted in the Persist Pipeline Phase
         return folder
     }
     
     public func renderFolder(_ foldername: String, to newPath: String, with pInfo: ParsedInfo) throws -> RenderedFolder {
         //While rendering folder, onBeforeRenderFile is handled within the folder-rendering function
         //This is possibleas onBeforeRenderFile is part of templateSoup
-        let folder = RenderedFolder(foldername: foldername, templateSoup: templateSoup, to: newPath, path: generation_dir, pInfo: pInfo)
-        try folder.renderFiles()
+        let folder = RenderedFolder(foldername: foldername, templateSoup: templateSoup, to: newPath, path: generation_dir.path, pInfo: pInfo)
+        
+        //try folder.renderFiles()
+        generation_dir.add(folder) //to be persisted in the Persist Pipeline Phase
         return folder
     }
     
@@ -224,8 +240,10 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
             return nil
         }
         
-        let file = PlaceHolderFile(filename: filename, repo: templateSoup.repo, to: filename, path: generation_dir, renderer: self.templateSoup, pInfo: pInfo)
-        try file.persist()
+        let file = PlaceHolderFile(filename: filename, repo: templateSoup.repo, to: filename, path: generation_dir.path, renderer: self.templateSoup, pInfo: pInfo)
+        
+        //try file.persist()
+        generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
         return file
     }
 
@@ -234,8 +252,10 @@ public class CodeGenerationSandbox : Sandbox, FileGeneratorProtocol {
             return nil
         }
         
-        let file = PlaceHolderFile(filename: filename, repo: templateSoup.repo, to: newFilename, path: generation_dir, renderer: self.templateSoup, pInfo: pInfo)
-        try file.persist()
+        let file = PlaceHolderFile(filename: filename, repo: templateSoup.repo, to: newFilename, path: generation_dir.path, renderer: self.templateSoup, pInfo: pInfo)
+        
+        //try file.persist()
+        generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
         return file
     }
 }

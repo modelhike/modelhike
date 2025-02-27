@@ -6,6 +6,10 @@
 
 import Foundation
 
+public protocol GenerationSandbox : Sandbox, FileGeneratorProtocol {
+    
+}
+
 public protocol Sandbox {
     var model: AppModel {get}
     var context: GenerationContext {get}

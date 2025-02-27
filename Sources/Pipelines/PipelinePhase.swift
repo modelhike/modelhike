@@ -116,9 +116,8 @@ public struct RenderPhase : PipelinePhase {
     
     @discardableResult
     public func runIn(pipeline: Pipeline) async throws -> Bool {
-        let loadedVars = pipeline.ws.context.variables
-        let sandbox = pipeline.ws.newSandbox()
-        sandbox.context.append(variables: loadedVars)
+        let sandbox = pipeline.ws.newGenerationSandbox()
+        pipeline.generationSandboxes.append(sandbox)
         
         return try await runIn(pipeline: pipeline, passes: passes) { pass, phase in
             if try pass.canRunIn(phase: phase) {
@@ -139,14 +138,15 @@ public struct RenderPhase : PipelinePhase {
 
 public struct PersistPhase : PipelinePhase {
     public private(set) var context : LoadContext
+    public var config: PipelineConfig { context.config }
     public var passes: [PersistancePass] = []
     public var lastRunResult: Bool = true
 
     @discardableResult
     public func runIn(pipeline: Pipeline) async throws -> Bool {
         return try await runIn(pipeline: pipeline, passes: passes) { pass, phase in
-            if try pass.canRunIn(phase: phase) {
-                return try await pass.runIn(phase: phase)
+            if try pass.canRunIn(phase: phase, pipeline: pipeline) {
+                return try await pass.runIn(phase: phase, pipeline: pipeline)
             } else {
                 context.debugLog.pipelinePassCannotRun(pass)
                 return false

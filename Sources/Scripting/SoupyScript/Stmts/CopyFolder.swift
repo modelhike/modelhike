@@ -63,15 +63,15 @@ public class CopyFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
             let folderName = fromFolder
 
             ctx.debugLog.copyingFolder(folderName)
-            let file = try context.fileGenerator.copyFolder(folderName, with: pInfo)
-            try context.addGenerated(folderPath: file.outputFolder)
+            let _ = try context.fileGenerator.copyFolder(folderName, with: pInfo)
+            //folder copied successfully
         } else {
             guard let toFolder = try? ctx.evaluate(value: ToFolder, with: pInfo) as? String
                                                                         else { return nil }
             
             ctx.debugLog.copyingFolder(fromFolder, to: toFolder)
-            let folder = try context.fileGenerator.copyFolder(fromFolder, to: toFolder, with: pInfo)
-            try context.addGenerated(folderPath: folder.outputFolder)
+            let _ = try context.fileGenerator.copyFolder(fromFolder, to: toFolder, with: pInfo)
+            //folder copied successfully
         }
         
         return nil

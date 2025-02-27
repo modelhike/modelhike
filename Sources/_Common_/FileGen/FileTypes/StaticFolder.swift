@@ -6,14 +6,15 @@
 
 import Foundation
 
-open class StaticFolder  {
+open class StaticFolder : PersistableFolder {
     private let repo: InputFileRepository
-    private let foldername: String
-    public var outputFolder: LocalFolder
+    public let foldername: String
+    public private(set) var outputFolder: LocalFolder
     let pInfo: ParsedInfo
-//    public func persist() throws {
-//        try inputFolder.copy(to: outputFolder)
-//    }
+    
+    public func persist() throws {
+        try copyFiles()
+    }
     
     public func copyFiles() throws {
         try repo.copyFiles(foldername: foldername, to: outputFolder, with: pInfo)

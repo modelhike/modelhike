@@ -7,11 +7,11 @@
 public struct PipelineConfig {
     public var basePath: LocalPath = SystemFolder.desktop.path {
         didSet {
-            self.output = OutputFolder(basePath / "output")
+            self.output = LocalFolder(path: basePath / "output")
         }
     }
     
-    public var output : OutputFolder = OutputFolder(SystemFolder.documents / "diagsoup-output")
+    public var output : LocalFolder = SystemFolder.documents / "diagsoup-output"
 
     public var localBlueprintsPath: LocalPath? {
         didSet {

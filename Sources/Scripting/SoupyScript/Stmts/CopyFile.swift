@@ -63,15 +63,15 @@ public class CopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible {
             let fileName = fromFile
 
             ctx.debugLog.copyingFile(fileName)
-            let file = try context.fileGenerator.copyFile(fileName, with: pInfo)
-            context.addGenerated(filePath: file.outputPath.string + fileName)
+            let _ = try context.fileGenerator.copyFile(fileName, with: pInfo)
+            //file generated successfully
         } else {
             guard let toFile = try? ctx.evaluate(value: ToFile, with: pInfo) as? String
                                                                         else { return nil }
             
             ctx.debugLog.copyingFile(fromFile, to: toFile)
-            let file = try context.fileGenerator.copyFile(fromFile, to: toFile, with: pInfo)
-            context.addGenerated(filePath: file.outputPath.string + toFile)
+            let _ = try context.fileGenerator.copyFile(fromFile, to: toFile, with: pInfo)
+            //file generated successfully
         }
         
         return nil

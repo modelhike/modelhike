@@ -45,13 +45,9 @@ public struct GenerateCodePass : RenderingPass {
         
         print("🛠️ Container used: \(container)")
         print("🛠️ Output folder: \(output.path.string)")
-
-        try output.ensureExists()
-        try output.clearFiles()
         
         let rendering = try mutableSandbox.generateFilesFor(container: container, usingBlueprintsFrom: blueprintLoader)
         
-        print("✅ Generated \(mutableSandbox.context.generatedFiles.count) files ...")
         return rendering
     }
     fileprivate func printError(_ err: Error, workspace: Workspace) {

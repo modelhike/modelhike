@@ -6,10 +6,13 @@
 
 import Foundation
 
-public protocol OutputFile : AnyObject {
+public protocol PersistableFile {
     var filename: String {get}
-    var outputPath: LocalPath! {get set}
     func persist() throws
+}
+
+public protocol OutputFile : AnyObject, PersistableFile {
+    var outputPath: LocalPath! {get set}
 }
 
 public class OutputDocumentFile : OutputFile {

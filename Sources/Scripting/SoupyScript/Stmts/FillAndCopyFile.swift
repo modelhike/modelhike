@@ -64,7 +64,7 @@ public class FillAndCopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible
             
             ctx.debugLog.generatingFile(fileName)
             if let file = try context.fileGenerator.fillPlaceholdersAndCopyFile(fileName, with: pInfo) {
-                context.addGenerated(filePath: file.outputPath.string + fileName)
+                //file generated successfully
             } else {
                 ctx.debugLog.fileNotGenerated(fileName)
             }
@@ -74,7 +74,7 @@ public class FillAndCopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible
             
             ctx.debugLog.generatingFile(toFile)
             if let file = try context.fileGenerator.fillPlaceholdersAndCopyFile(fromFile, to: toFile, with: pInfo) {
-                context.addGenerated(filePath: file.outputPath.string + toFile)
+                //file generated successfully
             } else {
                 ctx.debugLog.fileNotGenerated(toFile)
             }

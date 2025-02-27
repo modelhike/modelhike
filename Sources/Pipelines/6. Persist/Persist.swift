@@ -11,11 +11,15 @@ public enum Persist {
 }
 
 public extension Persist {
-    static func to(folder localFolder: String) -> PipelinePass {
-        LoadContentFromFolder(folderName: localFolder)
+    static func toOutput() -> PipelinePass {
+        GenerateOutputFoldersPass()
     }
     
-    static func to(awsS3 s3: String) -> PipelinePass {
-        LoadContentFromFolder(folderName: s3)
-    }
+//    static func to(folder localFolder: String) -> PipelinePass {
+//
+//    }
+//    
+//    static func to(awsS3 s3: String) -> PipelinePass {
+//        
+//    }
 }

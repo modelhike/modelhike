@@ -6,11 +6,15 @@
 
 import Foundation
 
-open class RenderedFolder  {
+open class RenderedFolder : PersistableFolder {
     private let templateSoup: TemplateSoup
-    private let foldername: String
-    public var outputFolder: LocalFolder
+    public let foldername: String
+    public private(set) var outputFolder: LocalFolder
     let pInfo: ParsedInfo
+    
+    public func persist() throws {
+        try renderFiles()
+    }
     
     public func renderFiles() throws {
         try templateSoup.repo.renderFiles(foldername: foldername, to: outputFolder, using: templateSoup, with: pInfo)

@@ -15,8 +15,17 @@ open class Workspace {
         set { model.isModelsLoaded = newValue }
     }
     
+    public func newGenerationSandbox() -> GenerationSandbox {
+        let loadedVars = context.variables
+        let sandbox = CodeGenerationSandbox(model: self.model, config: config)
+        sandbox.context.append(variables: loadedVars)
+        
+        return sandbox
+    }
+    
     public func newSandbox() -> Sandbox {
-        return CodeGenerationSandbox(model: self.model, config: config)
+        let sandbox = CodeGenerationSandbox(model: self.model, config: config)        
+        return sandbox
     }
     
     public func render(string input: String, data: [String : Any]) throws -> String? {

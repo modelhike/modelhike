@@ -78,8 +78,8 @@ public class RenderFolderStmt: LineTemplateStmt, CallStackable, CustomDebugStrin
         foldername = try ContentHandler.eval(expression: foldername, pInfo: pInfo) ?? foldername
         
         ctx.debugLog.renderingFolder(fromFolder, to: foldername)
-        let folder = try context.fileGenerator.renderFolder(fromFolder, to: foldername, with: pInfo)
-        try context.addGenerated(folderPath: folder.outputFolder)
+        let _ = try context.fileGenerator.renderFolder(fromFolder, to: foldername, with: pInfo)
+        //folder rendered successfully
         
         ctx.popCallStack()
 

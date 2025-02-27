@@ -6,11 +6,9 @@
 
 import Foundation
 
-public struct Pipeline {
+public class Pipeline {
     var ws = Workspace()
-    
-    public var outputs = OutputFolder("output")
-        
+            
     var discover: DiscoverPhase
     var load: LoadPhase
     var hydrate: HydratePhase
@@ -20,6 +18,10 @@ public struct Pipeline {
     
     var phases: [any PipelinePhase] = []
     
+    public internal(set) var generationSandboxes: [GenerationSandbox] = []
+    
+    public var config: PipelineConfig { ws.config }
+        
     @discardableResult
     public func run(using config: PipelineConfig) async throws -> Bool {
         do {
