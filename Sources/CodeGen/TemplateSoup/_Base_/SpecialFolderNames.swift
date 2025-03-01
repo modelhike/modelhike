@@ -7,8 +7,8 @@
 import Foundation
 
 public enum SpecialFolderNames {
-    public static var root = "_root"
-    public static var hooks = "_hooks"
-    public static var renders = "_renders"
+    public static var root = "_root_"
+    public static var hooks = "_hooks_"
+    public static var renders = "_renders_"
 
 }
