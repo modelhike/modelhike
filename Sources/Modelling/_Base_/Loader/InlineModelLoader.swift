@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class InlineModelLoader : ModelRepository {    
+public class InlineModelLoader : ModelRepository {
     let ctx: LoadContext
     public var items : [InlineModelProtocol] = []
     
@@ -37,6 +37,36 @@ public class InlineModelLoader : ModelRepository {
         }
         
         try model.resolveAndLinkItems(with: ctx)
+    }
+    
+    public func probeForModelFiles() -> Bool {
+        for item in items {
+            if let _ = item as? InlineModel {
+                return true
+            }
+        }
+        
+        return false
+    }
+    
+    public func probeForCommonModelFiles() -> Bool {
+        for item in items {
+            if let _ = item as? InlineCommonTypes {
+                return true
+            }
+        }
+        
+        return false
+    }
+    
+    public func probeForGenerationConfig() -> Bool {
+        for item in items {
+            if let _ = item as? InlineConfig {
+                return true
+            }
+        }
+        
+        return false
     }
     
     public func loadGenerationConfigIfAny() throws {

@@ -10,7 +10,7 @@ public class LocalFileModelLoader : ModelRepository {
     let loadPath: LocalFolder
     let ctx: LoadContext
     
-    public var commonsFileName = "common." + ModelConstants.ModelFile_Extension
+    public var commonModelsFileName = "common." + ModelConstants.ModelFile_Extension
     public let configFileName = TemplateConstants.MainTemplateFile + "." + ModelConstants.ConfigFile_Extension
 
     public func loadModel(to model: AppModel) throws {
@@ -19,7 +19,7 @@ public class LocalFileModelLoader : ModelRepository {
             throw EvaluationError.invalidAppState("Model folder '\(loadPath.path.string)' not found!!!", pInfo)
         }
         
-        let file = LocalFile(path: loadPath.path / commonsFileName)
+        let file = LocalFile(path: loadPath.path / commonModelsFileName)
         
         if file.exists { //commons file found
             let commons = try ModelFileParser(with: ctx)
@@ -29,7 +29,7 @@ public class LocalFileModelLoader : ModelRepository {
         }
         
         for file in loadPath.files {
-            if file.name != commonsFileName && file.extension == ModelConstants.ModelFile_Extension {
+            if file.name != commonModelsFileName && file.extension == ModelConstants.ModelFile_Extension {
                 let modelSpace = try ModelFileParser(with: ctx)
                                                 .parse(file: file)
                 
@@ -40,6 +40,36 @@ public class LocalFileModelLoader : ModelRepository {
         try model.resolveAndLinkItems(with: ctx)
     }
     
+    public func probeForModelFiles() -> Bool {
+        for file in loadPath.files {
+            if file.name != commonModelsFileName && file.extension == ModelConstants.ModelFile_Extension {
+                return true
+            }
+        }
+        
+        return false
+    }
+    
+    public func probeForCommonModelFiles() -> Bool {
+        let file = LocalFile(path: loadPath.path / commonModelsFileName)
+        
+        if file.exists { //common model file found
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    public func probeForGenerationConfig() -> Bool {
+        let file = LocalFile(path: loadPath.path / configFileName)
+        
+        if file.exists { //config file found
+            return true
+        } else {
+            return false
+        }
+    }
+    
     public func loadGenerationConfigIfAny() throws {
         let file = LocalFile(path: loadPath.path / configFileName)
         
@@ -47,7 +77,6 @@ public class LocalFileModelLoader : ModelRepository {
             try ConfigFileParser(with: ctx)
                 .parse(file: file)
         }
-        
     }
     
     public init(path: LocalPath, with ctx: LoadContext) {

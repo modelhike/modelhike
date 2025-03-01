@@ -9,6 +9,7 @@ import Foundation
 public enum Pipelines {
     
     public static let codegen = Pipeline {
+        Discover.models()
         Load.models()
         Hydrate.models()
         Hydrate.annotations()

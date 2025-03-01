@@ -10,7 +10,7 @@ public protocol PipelinePass {
 }
 
 public protocol DiscoveringPass : PipelinePass {
-    func runIn(phase: DiscoverPhase) async throws -> Bool
+    func runIn(_ workspace: Workspace, phase: DiscoverPhase) async throws -> Bool
     func canRunIn(phase: DiscoverPhase) throws -> Bool
 }
 

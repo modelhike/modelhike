@@ -12,6 +12,7 @@ public struct LoadModelsPass : LoadingPass {
         var repo: ModelRepository
 
         do {
+            //TODO: Also update in Discover phase
             //        if config.modelLoaderType == .localFileSystem {
             repo = LocalFileModelLoader(path: ws.config.basePath, with: ws.context)
             //let modelRepo = inlineModel(ws)

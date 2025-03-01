@@ -17,7 +17,7 @@ public struct DiscoverPhase : PipelinePhase {
     public func runIn(pipeline: Pipeline) async throws -> Bool {
         return try await runIn(pipeline: pipeline, passes: passes) { pass, phase in
             if try pass.canRunIn(phase: phase) {
-                return try await pass.runIn(phase: phase)
+                return try await pass.runIn(pipeline.ws, phase: phase)
             } else {
                 context.debugLog.pipelinePassCannotRun(pass)
                 return false
