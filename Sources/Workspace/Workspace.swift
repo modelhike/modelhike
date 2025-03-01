@@ -8,7 +8,12 @@ import Foundation
 
 open class Workspace {
     public internal(set) var context: LoadContext
-    public internal(set) var config: OutputConfig
+    public internal(set) var config: OutputConfig {
+        didSet {
+            self.context.config = config
+        }
+    }
+    
     var model: AppModel { context.model }
     public internal(set) var isModelsLoaded: Bool {
         get { model.isModelsLoaded }

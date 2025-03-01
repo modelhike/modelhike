@@ -13,7 +13,7 @@ public class LoadContext : Context {
     public private(set) var objManager = ObjectAttributeManager()
 
     public var currentState = ContextState()
-    public private(set) var config : OutputConfig
+    public internal(set) var config : OutputConfig
     
     //Expression Evaluation
     public private(set) var evaluator = ExpressionEvaluator()

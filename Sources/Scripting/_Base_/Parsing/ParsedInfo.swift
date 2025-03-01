@@ -107,9 +107,9 @@ public class ParsedInfo : Equatable {
     
     public static func dummyForAppState(with ctx: Context) -> ParsedInfo {
         if let loadctx = ctx as? LoadContext {
-            return dummy(line: "App-State", identifier: "Main-File", with: loadctx)
+            return dummy(line: "App-State", identifier: "App-State", with: loadctx)
         } else if let genctx = ctx as? GenerationContext {
-            return dummy(line: "App-State", identifier: "Main-File", with: genctx)
+            return dummy(line: "App-State", identifier: "App-State", with: genctx)
         } else {
             fatalError("unknown Context passes")
         }

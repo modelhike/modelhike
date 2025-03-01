@@ -8,7 +8,8 @@ import Foundation
 
 public struct DiscoverPhase : PipelinePhase {
     public private(set) var context : LoadContext
-    
+    public var config: OutputConfig { context.config }
+
     public var passes: [DiscoveringPass] = []
     public var lastRunResult: Bool = true
 
@@ -33,6 +34,8 @@ public struct DiscoverPhase : PipelinePhase {
 
 public struct LoadPhase : PipelinePhase {
     public private(set) var context : LoadContext
+    public var config: OutputConfig { context.config }
+
     public var passes: [LoadingPass] = []
     public var lastRunResult: Bool = true
     public var hasPasses: Bool { passes.count > 0 }
@@ -58,6 +61,8 @@ public struct LoadPhase : PipelinePhase {
 
 public struct HydratePhase : PipelinePhase {
     public private(set) var context : LoadContext
+    public var config: OutputConfig { context.config }
+
     public var passes: [HydrationPass] = []
     public var lastRunResult: Bool = true
         
@@ -82,6 +87,8 @@ public struct HydratePhase : PipelinePhase {
 
 public struct TransformPhase : PipelinePhase {
     public private(set) var context : LoadContext
+    public var config: OutputConfig { context.config }
+
     public var passes: [TransformationPass] = []
     public var lastRunResult: Bool = true
     
@@ -111,6 +118,8 @@ public struct TransformPhase : PipelinePhase {
 
 public struct RenderPhase : PipelinePhase {
     public private(set) var context : LoadContext
+    public var config: OutputConfig { context.config }
+    
     public var passes: [RenderingPass] = []
     public var lastRunResult: Bool = true
     
@@ -139,6 +148,7 @@ public struct RenderPhase : PipelinePhase {
 public struct PersistPhase : PipelinePhase {
     public private(set) var context : LoadContext
     public var config: OutputConfig { context.config }
+    
     public var passes: [PersistancePass] = []
     public var lastRunResult: Bool = true
 
@@ -164,6 +174,8 @@ public struct PersistPhase : PipelinePhase {
 public protocol PipelinePhase {
     associatedtype Pass
     var context : LoadContext {get}
+    var config: OutputConfig {get}
+
     var passes: [Pass] {get set}
     
     var lastRunResult: Bool {get set}

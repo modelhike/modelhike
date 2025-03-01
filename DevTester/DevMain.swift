@@ -27,9 +27,9 @@ struct Development {
     
     static func runCodebaseGeneration() async throws {
         let pipeline = Pipelines.codegen
-//        let config = PipelineConfig()
-//        try await pipeline.run(using: config)
-        try await pipeline.run(using: Environment.debug)
+        var config = Environment.debug
+        config.containersToOutput = ["APIs"]
+        try await pipeline.run(using: config)
     }
     
     

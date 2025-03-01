@@ -11,8 +11,15 @@ public struct PipelineConfig : OutputConfig {
         }
     }
     
+    public var outputIten : OutputArtifactType = .container
+    public var containersToOutput: [String] = []
+    public var containerGroupsToOutput: [String] = []
+    public var systemViewsToOutput: [String] = []
+
     public var output : LocalFolder = SystemFolder.documents / "diagsoup-output"
 
+    public var modelLoaderType : ModelLoaderType = .localFileSystem
+    
     public var flags = ContextDebugFlags()
     public var errorOutput = ErrorOutputOptions()
     
@@ -45,10 +52,22 @@ public enum ModelLoaderType {
     case localFileSystem, inMemory
 }
 
+public enum OutputArtifactType {
+    case container, containerGroup, systemView
+}
+
 public protocol OutputConfig {
     var basePath: LocalPath {get set}
+    
+    var outputIten : OutputArtifactType {get set}
+    var containersToOutput: [String] {get set}
+    var containerGroupsToOutput: [String] {get set}
+    var systemViewsToOutput: [String] {get set}
+    
     var output : LocalFolder {get set}
 
+    var modelLoaderType : ModelLoaderType {get set}
+    
     var flags: ContextDebugFlags {get set}
     var errorOutput: ErrorOutputOptions {get set}
     
