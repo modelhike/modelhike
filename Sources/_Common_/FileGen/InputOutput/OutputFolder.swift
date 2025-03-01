@@ -60,11 +60,12 @@ public class OutputFolder {
         
         for folder in subFolders {
             try folder.persist(with: context)
+            context.addGenerated(folderPath: folder.path)
         }
         
         for folder in folderItems {
             try folder.persist()
-            try context.addGenerated(folderPath: folder.outputFolder)
+            context.addGenerated(folderPath: folder.outputFolder)
         }
         
         for item in items {

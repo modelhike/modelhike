@@ -29,12 +29,19 @@ public class GenerationContext: Context {
     // File Generation
     public var fileGenerator: FileGeneratorProtocol!
     var generatedFiles: [String] = []
+    var generatedFolders: [String] = []
 
     public func addGenerated(filePath: String) {
         self.generatedFiles.append(filePath)
     }
 
-    public func addGenerated(folderPath: LocalFolder) throws {
+    public func addGenerated(folderPath: LocalPath) {
+        return addGenerated(folderPath: LocalFolder(path: folderPath))
+    }
+    
+    public func addGenerated(folderPath: LocalFolder) {
+        self.generatedFolders.append(folderPath.pathString)
+        
         let files = folderPath.files
 
         for file in files {
@@ -43,6 +50,8 @@ public class GenerationContext: Context {
 
         //add files in subfolder also
         for folder in folderPath.subFolders {
+            self.generatedFolders.append(folder.pathString)
+
             let files = folder.files
 
             for file in files {

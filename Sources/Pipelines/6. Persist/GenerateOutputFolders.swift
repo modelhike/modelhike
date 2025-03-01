@@ -10,6 +10,7 @@ public struct GenerateOutputFoldersPass : PersistancePass {
     public func runIn(phase: PersistPhase, pipeline: Pipeline) async throws -> Bool {
         
         var totalFilesGenerated: Int = 0
+        var totalFoldersGenerated: Int = 0
         try pipeline.config.output.deleteAllFilesAndFolders()
         
         for sandbox in pipeline.generationSandboxes {
@@ -18,9 +19,10 @@ public struct GenerateOutputFoldersPass : PersistancePass {
             try output.persist(with: sandbox.context)
             
             totalFilesGenerated += sandbox.context.generatedFiles.count
-        }
+            totalFoldersGenerated += sandbox.context.generatedFolders.count
+       }
         
-        print("✅ Generated \(totalFilesGenerated) files ...")
+        print("✅ Generated \(totalFilesGenerated) files, \(totalFoldersGenerated) folders ...")
         return true
     }
 }
