@@ -12,7 +12,7 @@ public class CodeGenerationSandbox : GenerationSandbox {
     public private(set) var base_generation_dir: OutputFolder
 
     public var model: AppModel { context.model }
-    public var config: PipelineConfig { context.config }
+    public var config: OutputConfig { context.config }
 
     public private(set) var context: GenerationContext
     private var modifiers: [Modifier] = []
@@ -36,7 +36,7 @@ public class CodeGenerationSandbox : GenerationSandbox {
         
         if try !blueprintLoader.blueprintExists() {
             let pInfo = ParsedInfo.dummyForAppState(with: context)
-            throw EvaluationError.invalidInput("There is no blueprint called \(blueprintLoader.blueprintName)", pInfo)
+            throw EvaluationError.blueprintDoesNotExist(blueprintLoader.blueprintName, pInfo)
         }
         
         guard let container = model.container(named: container) else {
@@ -95,7 +95,7 @@ public class CodeGenerationSandbox : GenerationSandbox {
         return try templateSoup.renderTemplate(string: templateString, data: data, with: pInfo)
     }
     
-    public init(model: AppModel, config: PipelineConfig) {
+    public init(model: AppModel, config: OutputConfig) {
         self.context = GenerationContext(model: model, config: config)
         self.lineParser  = LineParserDuringGeneration(identifier: "-", with: context)
         

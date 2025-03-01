@@ -75,7 +75,7 @@ public class RenderTemplateFileStmt: LineTemplateStmt, CallStackable, CustomDebu
         filename = try ContentHandler.eval(line: filename, pInfo: pInfo) ?? filename
 
         ctx.debugLog.generatingFile(filename, with: fromTemplate)
-        if let file = try context.fileGenerator.generateFile(filename, template: fromTemplate, with: pInfo) {
+        if let _ = try context.fileGenerator.generateFile(filename, template: fromTemplate, with: pInfo) {
             //file generated successfully
         } else {
             ctx.debugLog.fileNotGenerated(filename, with: fromTemplate)

@@ -17,7 +17,7 @@ public struct GenerateCodePass : RenderingPass {
         return true
     }
     
-    public func runIn(_ sandbox: Sandbox, phase: RenderPhase) async throws -> Bool {
+    public func runIn(_ sandbox: GenerationSandbox, phase: RenderPhase) async throws -> Bool {
         
         var templatesRepo: Blueprint
         
@@ -39,7 +39,7 @@ public struct GenerateCodePass : RenderingPass {
     }
     
     @discardableResult
-    public func generateCodebase(container: String, usingBlueprintsFrom blueprintLoader: Blueprint, sandbox: Sandbox) throws -> String? {
+    public func generateCodebase(container: String, usingBlueprintsFrom blueprintLoader: Blueprint, sandbox: GenerationSandbox) throws -> String? {
         var mutableSandbox = sandbox
         let output = sandbox.config.output
         

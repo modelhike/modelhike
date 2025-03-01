@@ -13,7 +13,7 @@ public class LoadContext : Context {
     public private(set) var objManager = ObjectAttributeManager()
 
     public var currentState = ContextState()
-    public private(set) var config : PipelineConfig
+    public private(set) var config : OutputConfig
     
     //Expression Evaluation
     public private(set) var evaluator = ExpressionEvaluator()
@@ -22,19 +22,21 @@ public class LoadContext : Context {
     /// E.g For loop variable has a inner scope and will have a separate context
     /// If `pushSnapshot` is called, it saves a snapshot of the current context state to a stack
     /// When `popSnapshot` is called, it discards any  changes after the last snapshot, by restoring latst snapshot
-    public var snapshotStack : [ContextState] = []
+    public private(set) var snapshotStack = SnapshotStack()
     
-    public init(config: PipelineConfig) {
+    public init(config: OutputConfig) {
         self.config = config
+        self.debugLog.flags = config.flags
         self.model = AppModel()
     }
     
-    public init(model: AppModel, config: PipelineConfig) {
+    public init(model: AppModel, config: OutputConfig) {
         self.config = config
+        self.debugLog.flags = config.flags
         self.model = model
     }
     
-    public convenience init(model: AppModel, config: PipelineConfig, data: StringDictionary) {
+    public convenience init(model: AppModel, config: OutputConfig, data: StringDictionary) {
         self.init(model: model, config: config)
         self.replace(variables: data)
     }

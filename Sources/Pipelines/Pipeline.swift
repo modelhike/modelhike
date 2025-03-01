@@ -20,10 +20,10 @@ public class Pipeline {
     
     public internal(set) var generationSandboxes: [GenerationSandbox] = []
     
-    public var config: PipelineConfig { ws.config }
+    public var config: OutputConfig { ws.config }
         
     @discardableResult
-    public func run(using config: PipelineConfig) async throws -> Bool {
+    public func run(using config: OutputConfig) async throws -> Bool {
         do {
             ws.config = config
             

@@ -7,14 +7,14 @@
 fileprivate let working_dir_var : String = "working_dir"
 
 public protocol Context : AnyObject {
-    var config : PipelineConfig {get}
+    var config : OutputConfig {get}
     var debugLog: ContextDebugLog {get}
     var events: CodeGenerationEvents {get}
     var currentState: ContextState {get set}
     var variables: WorkingMemory {get}
     var symbols: ContextSymbols {get}
-    var templateFunctions: [String: TemplateFunctionContainer] {get set}
-    var snapshotStack : [ContextState] {get set}
+    var templateFunctions: TemplateFunctionMap {get}
+    var snapshotStack : SnapshotStack {get}
     var objManager: ObjectAttributeManager {get}
     var evaluator: ExpressionEvaluator {get}
 
@@ -32,13 +32,12 @@ public extension Context {
         set { currentState.debugInfo = newValue }
     }
     
-    var templateFunctions: [String: TemplateFunctionContainer]  {
+    var templateFunctions: TemplateFunctionMap  {
         get { currentState.templateFunctions }
-        set { currentState.templateFunctions = newValue }
     }
     
-    var loopIsFirst: Bool { variables["__first"] as? Bool ?? false}
-    var loopIsLast: Bool { variables["__last"] as? Bool ?? false}
+    var loopIsFirst: Bool { variables["@loop.first"] as? Bool ?? false}
+    var loopIsLast: Bool { variables["@loop.last"] as? Bool ?? false}
     
     var workingDirectoryString: String { variables[working_dir_var] as? String ?? "" }
     var workingDirectory: LocalPath { config.output.path / workingDirectoryString }

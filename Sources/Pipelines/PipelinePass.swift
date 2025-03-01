@@ -30,7 +30,7 @@ public protocol TransformationPass : PipelinePass {
 }
 
 public protocol RenderingPass : PipelinePass {
-    func runIn(_ sandbox: Sandbox, phase: RenderPhase) async throws -> Bool
+    func runIn(_ sandbox: GenerationSandbox, phase: RenderPhase) async throws -> Bool
     func canRunIn(phase: RenderPhase) throws -> Bool
 }
 

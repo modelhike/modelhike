@@ -63,7 +63,7 @@ public class FillAndCopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible
             let fileName = fromFile
             
             ctx.debugLog.generatingFile(fileName)
-            if let file = try context.fileGenerator.fillPlaceholdersAndCopyFile(fileName, with: pInfo) {
+            if let _ = try context.fileGenerator.fillPlaceholdersAndCopyFile(fileName, with: pInfo) {
                 //file generated successfully
             } else {
                 ctx.debugLog.fileNotGenerated(fileName)
@@ -73,7 +73,7 @@ public class FillAndCopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible
                                                                         else { return nil }
             
             ctx.debugLog.generatingFile(toFile)
-            if let file = try context.fileGenerator.fillPlaceholdersAndCopyFile(fromFile, to: toFile, with: pInfo) {
+            if let _ = try context.fileGenerator.fillPlaceholdersAndCopyFile(fromFile, to: toFile, with: pInfo) {
                 //file generated successfully
             } else {
                 ctx.debugLog.fileNotGenerated(toFile)

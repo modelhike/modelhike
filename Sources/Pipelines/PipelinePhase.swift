@@ -138,7 +138,7 @@ public struct RenderPhase : PipelinePhase {
 
 public struct PersistPhase : PipelinePhase {
     public private(set) var context : LoadContext
-    public var config: PipelineConfig { context.config }
+    public var config: OutputConfig { context.config }
     public var passes: [PersistancePass] = []
     public var lastRunResult: Bool = true
 

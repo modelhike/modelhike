@@ -11,7 +11,7 @@ public typealias DebugDictionary = [String: TemplateSoupExpressionDebugInfo]
 public struct ContextState {
     public internal(set) var variables = WorkingMemory()
     public internal(set) var debugInfo: DebugDictionary = [:]
-    public internal(set) var templateFunctions: [String: TemplateFunctionContainer] = [:]
+    public internal(set) var templateFunctions = TemplateFunctionMap()
 }
 
 public struct ContextSymbols {

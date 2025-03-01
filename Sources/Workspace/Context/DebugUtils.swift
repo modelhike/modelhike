@@ -250,22 +250,23 @@ public struct ContextDebugLog {
         }
     }
     
-    public struct ContextDebugFlags {
-        public var printParsedTree = false
-        
-        public var lineByLineParsing = false
-        public var blockByBlockParsing = false
-        public var controlFlow = false
-        
-        public var excludedFiles = false
-        public var renderingStoppedInFiles = false
-        public var errorThrownInFiles = false
-        
-        public var changesInWorkingDirectory = false
-        public var fileGeneration = false
-        
-        public var onSkipLines = false
-        public var onIncrementLines = false
-        public var onCommentedLines = false
-    }
+}
+
+public struct ContextDebugFlags {
+    public var printParsedTree = false
+    
+    public var lineByLineParsing = false
+    public var blockByBlockParsing = false
+    public var controlFlow = false
+    
+    public var excludedFiles = false
+    public var renderingStoppedInFiles = false
+    public var errorThrownInFiles = false
+    
+    public var changesInWorkingDirectory = false
+    public var fileGeneration = false
+    
+    public var onSkipLines = false
+    public var onIncrementLines = false
+    public var onCommentedLines = false
 }

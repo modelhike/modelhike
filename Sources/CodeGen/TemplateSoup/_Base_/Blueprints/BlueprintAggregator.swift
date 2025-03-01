@@ -14,7 +14,7 @@ public class BlueprintAggregator {
             }
         }
         
-        throw EvaluationError.invalidInput("There is no blueprint called \(name)", pInfo)
+        throw EvaluationError.blueprintDoesNotExist(name, pInfo)
     }
     
     @discardableResult

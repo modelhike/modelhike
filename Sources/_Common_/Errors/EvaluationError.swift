@@ -14,6 +14,7 @@ public enum EvaluationError: ErrorWithMessageAndParsedInfo {
     case failedWriteOperation(String, ParsedInfo)
     case workingDirectoryNotSet(ParsedInfo, ErrorWithMessage)
     case templateDoesNotExist(ParsedInfo, ErrorWithMessage)
+    case blueprintDoesNotExist(String, ParsedInfo)
     case readingError(ParsedInfo, ErrorWithMessage)
     case templateRenderingError(ParsedInfo, ErrorWithMessage)
 
@@ -27,6 +28,8 @@ public enum EvaluationError: ErrorWithMessageAndParsedInfo {
         case .failedWriteOperation(let msg, _): return msg
         case .workingDirectoryNotSet(_, let err) : return err.info
         case .templateDoesNotExist(_, let err) : return err.info
+        case .blueprintDoesNotExist(let blueprint, _) :
+            return "There is no blueprint called \(blueprint)"
         case .readingError(_, let err) : return err.info
         case .templateRenderingError(_, let err) : return err.info
         }
@@ -41,6 +44,7 @@ public enum EvaluationError: ErrorWithMessageAndParsedInfo {
         case .failedWriteOperation(_, let pInfo): pInfo
         case .workingDirectoryNotSet(let pInfo, _) : pInfo
         case .templateDoesNotExist(let pInfo, _) : pInfo
+        case .blueprintDoesNotExist(_, let pInfo) : pInfo
         case .readingError(let pInfo, _) : pInfo
         case .templateRenderingError(let pInfo, _) : pInfo
         }
