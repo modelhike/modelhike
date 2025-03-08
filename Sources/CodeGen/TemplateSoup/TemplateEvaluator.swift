@@ -34,6 +34,7 @@ public struct TemplateEvaluator: TemplateSoupEvaluator {
                 ctx.debugLog.printParsedTree(for: containers)
                 
                 ctx.debugLog.templateExecutionStarting()
+                try ctx.events.onBeforeExecuteTemplate?(lineParser.identifier, ctx)
 
                 if let body = try containers.execute(with: ctx) {
                     return body

@@ -27,37 +27,6 @@ public class Pipeline {
         do {
             ws.config = config
             
-            //ws.debugLog.flags.fileGeneration = true
-            
-    //        ws.context.events.onBeforeRenderFile = { filename, context in
-    //            if filename.lowercased() == "MonitoredLiveAirport".lowercased() {
-    //                print("rendering \(filename)")
-    //            }
-    //
-    //            return true
-    //        }
-            
-    //        ws.context.events.onBeforeParseTemplate = { templatename, context in
-    //            if templatename.lowercased() == "entity.validator.teso".lowercased() {
-    //                print("rendering \(templatename)")
-    //            }
-    //        }
-    //
-    //        ws.context.events.onBeforeExecuteTemplate = { templatename, context in
-    //            if templatename.lowercased() == "entity.validator.teso".lowercased() {
-    //                print("rendering \(templatename)")
-    //            }
-    //        }
-            
-    //        ws.context.events.onStartParseObject = { objname, parser, context in
-    //            print(objname)
-    //            if objname.lowercased() == "airport".lowercased() {
-    //                context.debugLog.flags.lineByLineParsing = true
-    //            } else {
-    //                context.debugLog.flags.lineByLineParsing = false
-    //            }
-    //        }
-                        
             return try await runPhases()
         } catch let err {
             printError(err)

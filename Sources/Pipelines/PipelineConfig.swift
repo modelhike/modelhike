@@ -20,6 +20,7 @@ public struct PipelineConfig : OutputConfig {
 
     public var modelLoaderType : ModelLoaderType = .localFileSystem
     
+    public var events = CodeGenerationEvents()
     public var flags = ContextDebugFlags()
     public var errorOutput = ErrorOutputOptions()
     
@@ -68,6 +69,7 @@ public protocol OutputConfig {
 
     var modelLoaderType : ModelLoaderType {get set}
     
+    var events : CodeGenerationEvents {get set}
     var flags: ContextDebugFlags {get set}
     var errorOutput: ErrorOutputOptions {get set}
     

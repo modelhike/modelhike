@@ -65,6 +65,7 @@ public class GenerationContext: Context {
 
     public init(model: AppModel, config: OutputConfig) {
         self.config = config
+        self.events = config.events
         self.debugLog.flags = config.flags
         self.model = model
     }

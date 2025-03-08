@@ -11,6 +11,7 @@ open class Workspace {
     public internal(set) var config: OutputConfig {
         didSet {
             self.context.config = config
+            self.context.events = config.events
         }
     }
     

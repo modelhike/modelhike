@@ -8,7 +8,7 @@ fileprivate let working_dir_var : String = "working_dir"
 
 public protocol Context : AnyObject {
     var config : OutputConfig {get}
-    var debugLog: ContextDebugLog {get}
+    var debugLog: ContextDebugLog {get set}
     var events: CodeGenerationEvents {get}
     var currentState: ContextState {get set}
     var variables: WorkingMemory {get}
