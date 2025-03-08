@@ -60,7 +60,7 @@ public class GenericLineParser<T> : LineParser where T: Context {
             if isCurrentLineEmpty() { skipEmptyLine() ; continue }
             if isCurrentLineCommented() { skipCommentedLine(); continue }
             
-            //the currentLine() returns a trummed string, which removes prefixed space for content;
+            //the currentLine() returns a trimmed string, which removes prefixed space for content;
             //so, another method, that does not trim prefix, is used for content
             guard let pInfo = self.currentParsedInfo(level: level) else { self.skipLine(); continue }
 
@@ -71,7 +71,9 @@ public class GenericLineParser<T> : LineParser where T: Context {
                let secondWord = secondWord {
                     
                     if let endKeyWord = endKeyWord {
-                        if secondWord == endKeyWord {
+                        //E.g. consider a block as ending, when either of the foll are encountered:
+                        //"end-<block keyword>" or "end"
+                        if secondWord == endKeyWord || secondWord == TemplateConstants.templateEndKeyword {
                             ctx.debugLog.line(curLine, pInfo: pInfo)
                             ctx.debugLog.parseLines(ended: endKeyWord, pInfo: pInfo)
                             

@@ -158,7 +158,7 @@ public class SetStrVarStmt: BlockOrLineTemplateStmt, CustomDebugStringConvertibl
         super.init(startKeyword: Self.START_KEYWORD, endKeyword: endKeyWord, pInfo: pInfo)
     }
     
-    static var register = BlockOrLineTemplateStmtConfig(keyword: START_KEYWORD, endKeyword: "endset") { endKeyWord, pInfo in
+    static var register = BlockOrLineTemplateStmtConfig(keyword: START_KEYWORD, endKeyword: "end-set") { endKeyWord, pInfo in
         SetStrVarStmt(parseTill: endKeyWord, pInfo: pInfo)
     }
 }

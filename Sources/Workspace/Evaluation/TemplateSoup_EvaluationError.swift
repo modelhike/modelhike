@@ -20,18 +20,19 @@ public enum TemplateSoup_EvaluationError: ErrorWithMessageAndParsedInfo {
         case .templateDoesNotExist(let templateName, _) : return "Template '\(templateName)' not found!!!"
         case .templateReadingError(let templateName, _) : return "Template '\(templateName)' reading error!!!"
         case .objectNotFound(let obj, _) :  return "object: \(obj) not found"
-            case .unIdentifiedStmt(let pInfo) :
-            var str = "unidentified stmt-  \(pInfo.line)"
+        
+        case .unIdentifiedStmt(let pInfo) :
+            var str = "unidentified stmt >>  \(pInfo.line)"
 
             var modifiedLine = pInfo.line.trim()
             
-            if modifiedLine.starts(with: ":") {
+            if modifiedLine.starts(with: TemplateConstants.stmtKeyWord) {
                 modifiedLine = String(modifiedLine.dropFirst())
                 modifiedLine = modifiedLine.trim()
                 
-                if modifiedLine.starts(with: "end") {
-                    let keyword = modifiedLine.remainingLine(after: "end")
-                    let msg = "MAYBE the corresp \(keyword) stmt was not detected!!!"
+                if modifiedLine.starts(with: TemplateConstants.templateEndKeyword) {
+                    let keyword = modifiedLine.remainingLine(after: TemplateConstants.templateEndKeywordWithHyphen)
+                    let msg = "MAYBE the corresp '\(keyword)' stmt was not detected!!!"
                     str += .newLine + msg
                 }
             }

@@ -99,7 +99,7 @@ public struct BlockOrLineTemplateStmtConfig<T>: FileTemplateStmtConfig, Template
     public init(keyword: String, initialiser: @escaping (String, ParsedInfo) -> T)  {
         self.keyword = keyword
         self.initialiser = initialiser
-        self.endKeyword = "end" + keyword
+        self.endKeyword = TemplateConstants.templateEndKeywordWithHyphen + keyword
     }
     
     public init(keyword: String, endKeyword: String, initialiser: @escaping (String, ParsedInfo) -> T)  {

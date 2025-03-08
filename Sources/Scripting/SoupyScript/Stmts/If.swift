@@ -9,13 +9,13 @@ import RegexBuilder
 
 public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
     static let START_KEYWORD = "if"
+    static let ELSE_IF_KEYWORD = "else-if"
+    static let ELSE_KEYWORD = "else"
 
     public private(set) var IFCondition: String = ""
     public private(set) var elseIfBlocks : [ElseIfBlock] = []
     public private(set) var elseBlock : PartOfMultiBlockContainer? = nil
 
-    let ELSE_KEYWORD = "else"
-    
     let ifRegex = Regex {
         START_KEYWORD
         OneOrMore(.whitespace)
@@ -28,7 +28,7 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
     }
     
     let elseIfRegex = Regex {
-        "else if"
+        ELSE_IF_KEYWORD
         OneOrMore(.whitespace)
         Capture {
             CommonRegEx.anything
@@ -42,10 +42,9 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
     override func checkIfSupportedAndGetBlock(blockLime: UnIdentifiedStmt) throws -> PartOfMultiBlockContainer? {
         
         let keyWord = blockLime.pInfo.line.secondWord()
-        
-        if keyWord == ELSE_KEYWORD {
+        let line = blockLime.pInfo.line.lineWithoutStmtKeyword()
 
-            let line = blockLime.pInfo.line.lineWithoutStmtKeyword()
+        if keyWord == Self.ELSE_IF_KEYWORD {
             
             //check for 'Else if" stmt
             if let match = line.wholeMatch(of: elseIfRegex ) {
@@ -56,21 +55,23 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
                 self.elseIfBlocks.append(block)
                 return block
             }
-        
+        }
+        else if keyWord == Self.ELSE_KEYWORD {
+            
             //check for 'Else" stmt
             let actualStmt = line.stmtPartOnly()
-            let elseMatches = actualStmt == ELSE_KEYWORD
+            let elseMatches = actualStmt == Self.ELSE_KEYWORD
             if elseMatches {
-                let block = PartOfMultiBlockContainer(firstWord: ELSE_KEYWORD, pInfo: blockLime.pInfo)
+                let block = PartOfMultiBlockContainer(firstWord: Self.ELSE_KEYWORD, pInfo: blockLime.pInfo)
                 
                 self.elseBlock = block
                 return block
             }
-            
+        } else {
             //nothing matches the syntax
             throw TemplateSoup_ParsingError.invalidMultiBlockStmt(blockLime.pInfo)
         }
-        
+            
         return nil
     }
     
