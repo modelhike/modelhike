@@ -1,5 +1,5 @@
 import XCTest
-@testable import DiagSoup
+@testable import ModelHike
 
 final class ExpressionParsing_Tests: XCTestCase {
     var arr:[DynamicTestObj] = []

@@ -1,5 +1,5 @@
 import XCTest
-@testable import DiagSoup
+@testable import ModelHike
 
 final class TemplateSoup_String_Tests: XCTestCase {
     var arr:[DynamicTestObj] = []
