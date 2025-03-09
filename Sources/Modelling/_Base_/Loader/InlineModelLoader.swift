@@ -1,7 +1,7 @@
 //
-// InlineModelLoader.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  InlineModelLoader.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

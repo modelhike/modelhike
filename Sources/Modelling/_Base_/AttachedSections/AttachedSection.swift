@@ -1,7 +1,7 @@
 //
-// AttachedSection.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  AttachedSection.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

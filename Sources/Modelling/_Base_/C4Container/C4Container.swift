@@ -1,7 +1,7 @@
 //
-// C4Container.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  C4Container.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

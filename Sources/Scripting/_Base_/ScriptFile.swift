@@ -1,16 +1,15 @@
 //
-// ScriptFile.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  ScriptFile.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation
 
 public protocol Script: StringConvertible {
-    var name: String {get}
+    var name: String { get }
 }
 
-
 public protocol ScriptFile: Script {
-    
+
 }

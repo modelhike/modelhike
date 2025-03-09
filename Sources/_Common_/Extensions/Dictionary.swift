@@ -1,23 +1,23 @@
 //
-// Dictionary.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  Dictionary.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation
 
-public extension Dictionary {
-    mutating func merge(contentsOf dictFrom: Dictionary) {
-        
+extension Dictionary {
+    public mutating func merge(contentsOf dictFrom: Dictionary) {
+
         dictFrom.forEach { (key, value) in
             self[key] = value
         }
     }
 }
 
-public extension StringDictionary {
-    func has(_ name: String) -> Bool {
-        if let _ = self[name] {
+extension StringDictionary {
+    public func has(_ name: String) -> Bool {
+        if self[name] != nil {
             return true
         } else {
             return false

@@ -1,21 +1,21 @@
 //
-// Render.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  Hydrate.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation
 
 public enum Hydrate {
-    
+
 }
 
-public extension Hydrate {
-    static func models() -> LoadingPass  {
+extension Hydrate {
+    public static func models() -> LoadingPass {
         HydrateModelsPass()
     }
-    
-    static func annotations() -> LoadingPass  {
+
+    public static func annotations() -> LoadingPass {
         PassDownAnnotationsPass()
     }
 }

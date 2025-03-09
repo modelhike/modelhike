@@ -1,7 +1,7 @@
 //
-// DtoObject.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  DtoObject.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

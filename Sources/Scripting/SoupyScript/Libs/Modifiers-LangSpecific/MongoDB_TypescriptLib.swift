@@ -1,7 +1,7 @@
 //
-// MongoDB_TypescriptLib.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  MongoDB_TypescriptLib.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

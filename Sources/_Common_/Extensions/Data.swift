@@ -1,14 +1,14 @@
 //
-// Data.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  Data.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation
 
-public extension Data {
+extension Data {
 
-    func toHex() -> String {
+    public func toHex() -> String {
         return map { String(format: "%02hhx", $0) }.joined()
     }
 

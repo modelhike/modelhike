@@ -1,12 +1,12 @@
 //
-// PluginsPass.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  PluginsPass.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation
 
-public struct PluginsPass : TransformationPass {
+public struct PluginsPass: TransformationPass {
     public func runIn(phase: TransformPhase) async -> Bool {
         return true
     }

@@ -1,7 +1,7 @@
 //
-// HydrateModels.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  HydrateModels.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 public struct HydrateModelsPass  : LoadingPass {

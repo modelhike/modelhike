@@ -1,7 +1,7 @@
 //
-// ModuleParser.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  ModuleParser.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

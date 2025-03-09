@@ -1,7 +1,7 @@
 //
-// ScriptParser.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  ScriptParser.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 public protocol ScriptParser : AnyObject, CustomDebugStringConvertible {

@@ -1,7 +1,7 @@
 //
-// UnIdentifiedStmt.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  UnIdentifiedStmt.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

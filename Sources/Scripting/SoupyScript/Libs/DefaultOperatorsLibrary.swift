@@ -1,7 +1,7 @@
 //
-// DefaultOperatorsLibrary.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  DefaultOperatorsLibrary.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

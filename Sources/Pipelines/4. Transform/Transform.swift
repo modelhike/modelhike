@@ -1,7 +1,7 @@
 //
-// Transform.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  Transform.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

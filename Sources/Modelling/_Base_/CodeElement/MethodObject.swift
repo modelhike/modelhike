@@ -1,70 +1,70 @@
 //
-// Method.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  MethodObject.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation
 
-public class MethodObject : CodeMember {
+public class MethodObject: CodeMember {
     public let pInfo: ParsedInfo
     public var attribs = Attributes()
     public var tags = Tags()
 
     public var name: String
     public var givenname: String
-    public var returnType : TypeInfo
+    public var returnType: TypeInfo
     public var parameters: [MethodParameter] = []
-    
-    public var body : StringTemplate
-    
+
+    public var body: StringTemplate
+
     public var comment: String?
-    
+
     public static func parse(pInfo: ParsedInfo, skipLine: Bool = true) throws -> MethodObject? {
         let originalLine = pInfo.line
         let firstWord = pInfo.firstWord
-        
-        let line = originalLine.remainingLine(after: firstWord) //remove first word
-        
-        guard let match = line.wholeMatch(of: ModelRegEx.method_Capturing)                                                    else { return nil }
-        
-        let (_, methodName, arguments , returnType, tagString) = match.output
-        
+
+        let line = originalLine.remainingLine(after: firstWord)  //remove first word
+
+        guard let match = line.wholeMatch(of: ModelRegEx.method_Capturing) else { return nil }
+
+        let (_, methodName, arguments, returnType, tagString) = match.output
+
         let givenName = methodName.trim()
-        
+
         let method = MethodObject(givenName, pInfo: pInfo)
-        
+
         let matches = arguments.matches(of: CommonRegEx.namedParameters_Capturing)
-        
-        matches.forEach( { match in
+
+        matches.forEach({ match in
             let (_, name, typeName) = match.output
             let type = TypeInfo.parse(typeName)
-            method.parameters.append( MethodParameter(name: name, type: type) )
+            method.parameters.append(MethodParameter(name: name, type: type))
         })
-        
+
         if let returnType = returnType {
             method.returnType = TypeInfo.parse(returnType)
         }
-        
+
         //check if has tags
         if let tagString = tagString {
             ParserUtil.populateTags(for: method, from: tagString)
         }
-        
+
         if skipLine {
             pInfo.parser.skipLine()
         }
-        
+
         return method
     }
-    
+
     public static func canParse(firstWord: String) -> Bool {
         switch firstWord {
-            case ModelConstants.Member_Method : return true
-            default : return false
+        case ModelConstants.Member_Method: return true
+        default: return false
         }
     }
-    
+
     public init(_ name: String, returnType: PropertyKind? = nil, pInfo: ParsedInfo) {
         self.givenname = name.trim()
         self.name = self.givenname.normalizeForVariableName()
@@ -72,8 +72,11 @@ public class MethodObject : CodeMember {
         self.body = StringTemplate("")
         self.pInfo = pInfo
     }
-    
-    public init(_ name: String, returnType: PropertyKind? = nil, pInfo: ParsedInfo, @StringConvertibleBuilder _ body: () -> [StringConvertible]) {
+
+    public init(
+        _ name: String, returnType: PropertyKind? = nil, pInfo: ParsedInfo,
+        @StringConvertibleBuilder _ body: () -> [StringConvertible]
+    ) {
         self.givenname = name.trim()
         self.name = self.givenname.normalizeForVariableName()
         self.returnType = TypeInfo(returnType)
@@ -85,14 +88,14 @@ public class MethodObject : CodeMember {
 public struct MethodParameter {
     let name: String
     let type: TypeInfo
-    
+
     public init(name: String, type: TypeInfo) {
         self.name = name
         self.type = type
     }
 }
 
-
 public enum ReturnType {
-    case void, int, double, bool, string, customType(String)
+    case void, int, double, bool, string
+    case customType(String)
 }

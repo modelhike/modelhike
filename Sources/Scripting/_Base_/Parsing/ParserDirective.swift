@@ -1,7 +1,7 @@
 //
-// ParserDirectives.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  ParserDirectives.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

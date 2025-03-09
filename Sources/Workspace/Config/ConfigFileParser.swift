@@ -1,7 +1,7 @@
 //
-// ConfigFileParser.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  ConfigFileParser.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

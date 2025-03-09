@@ -1,7 +1,7 @@
 //
-// MockData_Generator.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  MockData_Generator.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

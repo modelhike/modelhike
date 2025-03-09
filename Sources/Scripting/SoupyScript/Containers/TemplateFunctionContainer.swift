@@ -1,92 +1,94 @@
 //
-// TemplateFunctionContainer.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  TemplateFunctionContainer.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation
 
-public class TemplateFunctionContainer : SoupyScriptStmtContainer {
-    let container : GenericStmtsContainer
-    
+public class TemplateFunctionContainer: SoupyScriptStmtContainer {
+    let container: GenericStmtsContainer
+
     let params: [String]
     let name: String
     let pInfo: ParsedInfo
-    
-    public func execute(args: [ArgumentDeclaration], pInfo: ParsedInfo, with ctx: Context) throws -> String? {
+
+    public func execute(args: [ArgumentDeclaration], pInfo: ParsedInfo, with ctx: Context) throws
+        -> String?
+    {
         var rendering = ""
 
-        //IMPORTANT : ctx push/pop should not be used here as 
+        //IMPORTANT : ctx push/pop should not be used here as
         //any variable modification
         //that is done inside the template fn body should be persisted
         //only the template fn args are to be removed after execution
         //so, the template fn args are removed manually
-        
+
         //ctx.pushSnapshot()
-        
+
         //backup any variables clashing with the arguments
-        var oldArgValues : StringDictionary = [:]
+        var oldArgValues: StringDictionary = [:]
         for arg in args {
             if ctx.variables.has(arg.name) {
                 oldArgValues[arg.name] = ctx.variables[arg.name]
             }
         }
-        
+
         //set the macro function arguments into context
         for arg in args {
-            if let eval = try? ctx.evaluate(value: "\(arg.value)", with: pInfo ) {
+            if let eval = try? ctx.evaluate(value: "\(arg.value)", with: pInfo) {
                 ctx.variables[arg.name] = eval
             } else {
-                throw TemplateSoup_ParsingError.invalidExpression_VariableOrObjPropNotFound(arg.value, pInfo)
+                throw TemplateSoup_ParsingError.invalidExpression_VariableOrObjPropNotFound(
+                    arg.value, pInfo)
             }
         }
 
-        
         if let body = try container.execute(with: ctx) {
             rendering += body
         }
-        
+
         //remove the arvs from affecting rest of the context
         for arg in args {
             ctx.variables.removeValue(forKey: arg.name)
         }
-        
+
         //restore any variables clashing with the arguments
         for (key, _) in oldArgValues {
             ctx.variables[key] = oldArgValues[key]
         }
-        
+
         //ctx.popSnapshot()
-        
+
         return rendering.isNotEmpty ? rendering : nil
     }
-    
+
     public func next() -> TemplateItem? {
         return container.next()
     }
-    
+
     public func append(_ item: TemplateItem) {
         container.append(item)
     }
-    
+
     public var debugDescription: String {
-        var str =  """
-        container: Macro Function Defn - \(container.items.count) items
-        - macro name: \(self.name)
-        - params: \(self.params)
-        
-        """
-        
+        var str = """
+            container: Macro Function Defn - \(container.items.count) items
+            - macro name: \(self.name)
+            - params: \(self.params)
+
+            """
+
         str += container.debugStringForChildren()
-        
+
         return str
     }
-    
+
     public init(name: String, params: [String], pInfo: ParsedInfo) {
         self.params = params
         self.name = name
         self.pInfo = pInfo
-        
+
         container = GenericStmtsContainer(.macro, name: name)
     }
 }

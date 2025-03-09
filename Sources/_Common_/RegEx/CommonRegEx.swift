@@ -1,7 +1,7 @@
 //
-// CommonRegEx.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  CommonRegEx.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

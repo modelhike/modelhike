@@ -1,7 +1,7 @@
 //
-// PipelineErrorPrinter.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  PipelineErrorPrinter.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 public struct PipelineErrorPrinter {

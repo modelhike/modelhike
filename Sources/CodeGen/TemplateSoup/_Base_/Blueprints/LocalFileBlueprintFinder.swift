@@ -1,7 +1,7 @@
 //
-// LocalFileBlueprintFinder.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  LocalFileBlueprintFinder.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 public class LocalFileBlueprintFinder: BlueprintFinder {

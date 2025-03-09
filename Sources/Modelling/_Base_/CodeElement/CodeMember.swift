@@ -1,19 +1,19 @@
 //
-// CodeMember.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  CodeMember.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation
 
-public protocol CodeMember : HasAttributes, HasTags, CustomDebugStringConvertible {
-    var pInfo: ParsedInfo {get}
-    var name: String {get}
-    var givenname : String {get}
+public protocol CodeMember: HasAttributes, HasTags, CustomDebugStringConvertible {
+    var pInfo: ParsedInfo { get }
+    var name: String { get }
+    var givenname: String { get }
 }
 
-public extension CodeMember {
-    var debugDescription: String {
+extension CodeMember {
+    public var debugDescription: String {
         return givenname
     }
 }

@@ -1,7 +1,7 @@
 //
-// StaticFolder.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  StaticFolder.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

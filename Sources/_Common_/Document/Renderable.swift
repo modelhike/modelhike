@@ -1,7 +1,7 @@
 //
-// Renderable.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  Renderable.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 public protocol Renderable {

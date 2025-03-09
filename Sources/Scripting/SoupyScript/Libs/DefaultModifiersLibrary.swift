@@ -1,7 +1,7 @@
 //
-// DefaultModifiersLibrary.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  DefaultModifiersLibrary.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

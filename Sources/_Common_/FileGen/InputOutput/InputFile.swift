@@ -1,7 +1,7 @@
 //
-// InputFile.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  InputFile.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

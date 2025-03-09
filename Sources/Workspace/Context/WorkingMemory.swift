@@ -1,7 +1,7 @@
 //
-// WorkingMemory.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  WorkingMemory.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 public class WorkingMemory: Sequence, IteratorProtocol {
@@ -11,11 +11,11 @@ public class WorkingMemory: Sequence, IteratorProtocol {
     public func replace(variables: StringDictionary) {
         self.items = variables
     }
-    
+
     public func replace(variables: WorkingMemory) {
         self.items = variables.items
     }
-    
+
     public init() {
         resetIterator()
     }
@@ -26,14 +26,14 @@ public class WorkingMemory: Sequence, IteratorProtocol {
 
     public func removeValue(forKey key: String) {
         items.removeValue(forKey: key)
-        resetIterator() // Reset iterator when data changes
+        resetIterator()  // Reset iterator when data changes
     }
 
     public subscript(key: String) -> Any? {
         get { items[key] }
         set {
             items[key] = newValue
-            resetIterator() // Reset iterator when data changes
+            resetIterator()  // Reset iterator when data changes
         }
     }
 

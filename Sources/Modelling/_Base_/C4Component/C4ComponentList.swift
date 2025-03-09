@@ -1,7 +1,7 @@
 //
-// C4ComponentList.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  C4ComponentList.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

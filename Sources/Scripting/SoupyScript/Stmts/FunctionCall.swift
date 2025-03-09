@@ -1,7 +1,7 @@
 //
-// FunctionCallStmt.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  FunctionCallStmt.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

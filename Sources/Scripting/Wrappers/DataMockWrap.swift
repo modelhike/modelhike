@@ -1,7 +1,7 @@
 //
-// Mocking_Wrap.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  Mocking_Wrap.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

@@ -1,10 +1,8 @@
 //
 //  SnapshotStack.swift
-//  DiagSoup
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
-//  Created by Hari on 01/03/25.
-//
-
 
 public class SnapshotStack : Sequence {
     private var stack: [ContextState] = []

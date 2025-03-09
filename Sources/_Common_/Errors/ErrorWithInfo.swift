@@ -1,7 +1,7 @@
 //
-// ErrorWithInfo.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  ErrorWithInfo.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 public protocol ErrorWithMessage : Error {

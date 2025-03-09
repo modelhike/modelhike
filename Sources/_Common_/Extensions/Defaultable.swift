@@ -1,7 +1,7 @@
 //
-// Defaultable.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  Defaultable.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

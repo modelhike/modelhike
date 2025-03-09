@@ -1,7 +1,7 @@
 //
-// ExpressionEvaluator.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  ExpressionEvaluator.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

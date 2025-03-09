@@ -1,7 +1,7 @@
 //
-// Context.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  Context.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 fileprivate let working_dir_var : String = "working_dir"

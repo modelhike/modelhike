@@ -1,7 +1,7 @@
 //
-// DynamicMemberLookup.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  DynamicMemberLookup.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

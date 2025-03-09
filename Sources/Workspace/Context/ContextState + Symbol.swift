@@ -1,7 +1,7 @@
 //
-// ContextState + Symbol.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  ContextState + Symbol.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

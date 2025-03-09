@@ -1,7 +1,7 @@
 //
-// RegexExpressionEvaluator.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  RegexExpressionEvaluator.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

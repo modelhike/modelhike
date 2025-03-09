@@ -1,7 +1,7 @@
 //
-// WebService_MonoRepo.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  WebService_MonoRepo.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

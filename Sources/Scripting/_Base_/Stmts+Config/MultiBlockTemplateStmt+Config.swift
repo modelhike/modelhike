@@ -1,7 +1,7 @@
 //
-// BlockTemplateStmt.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  BlockTemplateStmt.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

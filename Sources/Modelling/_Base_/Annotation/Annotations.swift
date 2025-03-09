@@ -1,37 +1,37 @@
 //
-// Annotations.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  Annotations.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation
 
 public protocol HasAnnotations {
-    var annotations: Annotations {get set}
+    var annotations: Annotations { get set }
 }
 
-public protocol Annotation : Hashable {
-    var name: String {get}
-    var pInfo: ParsedInfo {get}
+public protocol Annotation: Hashable {
+    var name: String { get }
+    var pInfo: ParsedInfo { get }
 }
 
-public class Annotations : ExpressibleByArrayLiteral, ExpressibleByDictionaryLiteral {
+public class Annotations: ExpressibleByArrayLiteral, ExpressibleByDictionaryLiteral {
     public typealias Key = String
     public typealias Value = any Annotation
-    
+
     private var items: [String: any Annotation] = [:]
-    
+
     public var isEmpty: Bool { items.isEmpty }
-    
+
     func has(_ name: String) -> Bool {
         let nameToCheck = name.lowercased()
-        if let _ = items[nameToCheck] {
+        if items[nameToCheck] != nil {
             return true
         } else {
             return false
         }
     }
-    
+
     public subscript(key: String) -> (any Annotation)? {
         get {
             let keyToFind = key.lowercased()
@@ -42,44 +42,43 @@ public class Annotations : ExpressibleByArrayLiteral, ExpressibleByDictionaryLit
             items[keyToFind] = newValue
         }
     }
-    
+
     public func append(_ item: any Annotation) {
         let keyToFind = item.name.lowercased()
         items[keyToFind] = item
     }
-    
+
     public func append(contentsOf annotations: Annotations) {
         for (key, value) in annotations.items {
             self[key] = value
         }
     }
 
-    
-    public var annotationsList : [any Annotation] {
-        var arr:[any Annotation] = []
-        
+    public var annotationsList: [any Annotation] {
+        var arr: [any Annotation] = []
+
         for value in items.values {
             arr.append(value)
         }
         return arr
     }
-    
+
     @discardableResult
     func removeValue(forKey name: String) -> Bool {
         let item = items.removeValue(forKey: name)
         return item != nil
     }
-    
-    public init() { }
-    
+
+    public init() {}
+
     required public init(arrayLiteral elements: any Annotation...) {
         for item in elements {
             items[item.name] = item
         }
     }
-    
+
     required public init(dictionaryLiteral elements: (String, any Annotation)...) {
-        for (key,value) in elements {
+        for (key, value) in elements {
             items[key] = value
         }
     }

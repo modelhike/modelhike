@@ -1,7 +1,7 @@
 //
-// PlaceHolderFile.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  PlaceHolderFile.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation

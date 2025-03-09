@@ -1,7 +1,7 @@
 //
-// LoadContext.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  LoadContext.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 public class LoadContext : Context {

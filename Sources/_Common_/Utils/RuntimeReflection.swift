@@ -1,7 +1,7 @@
 //
-// RuntimeReflection.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  RuntimeReflection.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 public struct RuntimeReflection {

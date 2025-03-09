@@ -1,13 +1,15 @@
 //
-// CreateOperator.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  CreateOperator.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation
 
 public struct CreateOperator {
-    public static func infix<A, B, T>(_ name: String, body: @escaping (A, B) -> T) -> InfixOperatorProtocol {
+    public static func infix<A, B, T>(_ name: String, body: @escaping (A, B) -> T)
+        -> InfixOperatorProtocol
+    {
         return InfixOperator(name: name, handler: body)
     }
 

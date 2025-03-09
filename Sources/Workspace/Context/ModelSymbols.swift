@@ -1,11 +1,11 @@
 //
-// ModelSymbols.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  ModelSymbols.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation
 
 public struct ModelSymbols {
-    
+
 }

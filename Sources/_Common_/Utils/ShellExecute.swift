@@ -1,12 +1,12 @@
 //
-// Shell.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  Shell.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation
 
-public enum Shell{
+public enum Shell {
     public static func execute(command cmd: String, options: Options? = nil) -> Result {
         let process = Process()
         process.launchPath = "/bin/bash"

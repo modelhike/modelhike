@@ -1,7 +1,7 @@
 //
-// TemplateSoup_ParsingError.swift
-// DiagSoup
-// https://www.github.com/diagsoup/diagsoup
+//  TemplateSoup_ParsingError.swift
+//  ModelHike
+//  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation
