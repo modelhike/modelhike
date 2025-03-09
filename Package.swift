@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "DiagSoup",
+    name: "ModelHike",
     platforms: [
         .macOS(.v13),
         .iOS(.v16),
@@ -10,12 +10,12 @@ let package = Package(
         .watchOS(.v6),
     ],
     products: [
-        .library(name: "DiagSoup", targets: ["DiagSoup"]),
+        .library(name: "ModelHike", targets: ["ModelHike"]),
         .executable(name: "DevTester", targets: ["DevTester"])
     ],
     targets: [
         .target(
-            name: "DiagSoup",
+            name: "ModelHike",
             path: "Sources",
             swiftSettings: [
                 //.unsafeFlags([
@@ -27,12 +27,12 @@ let package = Package(
         ),
         .executableTarget(
             name: "DevTester",
-            dependencies: ["DiagSoup"],
+            dependencies: ["ModelHike"],
             path: "DevTester"
         ),
         .testTarget(
-            name: "DiagSoupTests",
-            dependencies: ["DiagSoup"],
+            name: "ModelHikeTests",
+            dependencies: ["ModelHike"],
             path: "Tests"
         ),
     ]

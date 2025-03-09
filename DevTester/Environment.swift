@@ -1,4 +1,4 @@
-import DiagSoup
+import ModelHike
 
 enum Environment {
     static var debug: OutputConfig {
