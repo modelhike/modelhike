@@ -7,6 +7,7 @@
 import Foundation
 
 public typealias LoadTemplateHandler = (_ templateName: String,_ loader: Blueprint, _ pInfo: ParsedInfo) throws -> Template
+public typealias LoadScriptHandler = (_ scriptName: String,_ loader: Blueprint, _ pInfo: ParsedInfo) throws -> Script
 
 public class TemplateSoup : TemplateRenderer {
     let context: GenerationContext
@@ -20,8 +21,51 @@ public class TemplateSoup : TemplateRenderer {
         }
     }
     
+    public var onLoadScript : LoadScriptHandler = { (scriptName, loader, pInfo) throws -> Script in
+        do {
+            return try loader.loadScriptFile(fileName: scriptName, with: pInfo)
+        } catch {
+            throw TemplateSoup_EvaluationError.scriptFileDoesNotExist(scriptName, pInfo)
+        }
+    }
+    
+    public func loadScript(fileName: String, with pInfo: ParsedInfo) throws -> Script {
+        return try onLoadScript(fileName, repo, pInfo)
+    }
+    
     public func loadTemplate(fileName: String, with pInfo: ParsedInfo) throws -> Template {
         return try onLoadTemplate(fileName, repo, pInfo)
+    }
+    
+    public func startMainScript(data: StringDictionary = [:], with pInfo: ParsedInfo) throws -> String? {
+        let filename = TemplateConstants.MainScriptFile
+        return try runScript(fileName: filename, data: data, with: pInfo)
+    }
+    
+    public func runScript(fileName scriptFile: String, data: StringDictionary = [:], with pInfo: ParsedInfo) throws -> String? {
+        do {
+            let fileScript = try self.loadScript(fileName: scriptFile, with: pInfo)
+            
+            context.pushSnapshot()
+            context.append(variables: data)
+            
+            let scriptEval = ScriptFileExecutor()
+            let rendering = try scriptEval.execute(script: fileScript, with: context)
+            
+            context.popSnapshot()
+            
+            return rendering
+        } catch let err {
+            if let evalErr = err as? TemplateSoup_EvaluationError {
+                if case .scriptFileDoesNotExist(_, pInfo) = evalErr {
+                    throw EvaluationError.scriptFileDoesNotExist(pInfo, evalErr)
+                } else if case .scriptFileReadingError(_, pInfo) = evalErr {
+                    throw EvaluationError.readingError(pInfo, evalErr)
+                }
+            }
+            
+            throw err
+        }
     }
     
     //MARK: TemplateRenderer protocol implementation
@@ -100,7 +144,7 @@ public class TemplateSoup : TemplateRenderer {
     }
     
     public func frontMatter(in contents: String, identifier: String) throws -> FrontMatter? {
-        let lineParser = LineParserDuringGeneration(string: contents, identifier: identifier, with: context)
+        let lineParser = LineParserDuringGeneration(string: contents, identifier: identifier, isStatementsPrefixedWithKeyword: true, with: context)
         let curLine = lineParser.currentLine()
         
         if curLine.hasOnly(TemplateConstants.frontMatterIndicator) {

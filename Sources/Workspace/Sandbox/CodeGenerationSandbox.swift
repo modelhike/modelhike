@@ -70,7 +70,7 @@ public class CodeGenerationSandbox : GenerationSandbox {
             print("⚠️ Didn't find 'Root' folder in Blueprint !!!")
         }
         
-        return try templateSoup.renderTemplate(fileName: TemplateConstants.MainTemplateFile, with: pInfo)
+        return try templateSoup.startMainScript(with: pInfo)
     }
     
     
@@ -97,7 +97,7 @@ public class CodeGenerationSandbox : GenerationSandbox {
     
     public init(model: AppModel, config: OutputConfig) {
         self.context = GenerationContext(model: model, config: config)
-        self.lineParser  = LineParserDuringGeneration(identifier: "-", with: context)
+        self.lineParser  = LineParserDuringGeneration(identifier: "-", isStatementsPrefixedWithKeyword: true, with: context)
         
         self.templateSoup  = TemplateSoup(context: context)
 

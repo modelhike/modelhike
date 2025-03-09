@@ -10,7 +10,7 @@ public struct TemplateEvaluator: TemplateSoupEvaluator {
     
     public func execute(template: Template, with context: GenerationContext) throws -> String? {
         let contents = template.toString()
-        let lineparser = LineParserDuringGeneration(string: contents, identifier: template.name, with: context)
+        let lineparser = LineParserDuringGeneration(string: contents, identifier: template.name, isStatementsPrefixedWithKeyword: true, with: context)
 
         return try execute(lineParser: lineparser, with: context)
     }

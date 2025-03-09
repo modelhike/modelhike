@@ -10,6 +10,7 @@ public protocol Blueprint : InputFileRepository {
     var blueprintName: String {get}
     func blueprintExists() throws -> Bool
     func loadTemplate(fileName: String, with pInfo: ParsedInfo) throws -> Template
+    func loadScriptFile(fileName: String, with pInfo: ParsedInfo) throws -> Script
 }
 
 public protocol InputFileRepository {

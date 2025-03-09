@@ -14,12 +14,14 @@ public typealias DummyLineParserDuringGeneration = GenericLineParser<GenerationC
 public protocol LineParser : AnyObject {
     var ctx: Context {get}
     var identifier: String {get}
+    var isStatementsPrefixedWithKeyword: Bool {get}
+    
     var curLineNoForDisplay: Int {get}
     var curLevelForDisplay: Int {get}
     var linesRemaining: Bool {get}
     
     func parseLinesTill(lineHasOnly txt: String) -> [String]
-    func parse(till endKeyWord: String?, level: Int, lineHandler: ((_ pctx: ParsedInfo, _ secondWord: String?) throws -> ())) throws
+    func parse(till endKeyWord: String?, level: Int, lineHandler: ((_ pctx: ParsedInfo, _ stmtWord: String?) throws -> ())) throws
     
     func nextLine() -> String
     func currentLine() -> String
@@ -53,7 +55,9 @@ public class GenericLineParser<T> : LineParser where T: Context {
     public var curLineNoForDisplay: Int { _curLineNo + 1 }
     public var curLevelForDisplay: Int { _curLevel }
     
-    public func parse(till endKeyWord: String? = nil, level: Int, lineHandler: ((_ pctx: ParsedInfo, _ secondWord: String?) throws -> ())) throws {
+    public let isStatementsPrefixedWithKeyword: Bool
+    
+    public func parse(till endKeyWord: String? = nil, level: Int, lineHandler: ((_ pctx: ParsedInfo, _ stmtWord: String?) throws -> ())) throws {
         resetFlags()
         
         while linesRemaining {
@@ -65,39 +69,54 @@ public class GenericLineParser<T> : LineParser where T: Context {
             guard let pInfo = self.currentParsedInfo(level: level) else { self.skipLine(); continue }
 
             let curLine = pInfo.line
-            let (firstWord, secondWord) = curLine.firstAndsecondWord()
             
-            if let _ = firstWord,
-               let secondWord = secondWord {
+            var stmtWord = ""
                     
-                    if let endKeyWord = endKeyWord {
-                        //E.g. consider a block as ending, when either of the foll are encountered:
-                        //"end-<block keyword>" or "end"
-                        if secondWord == endKeyWord || secondWord == TemplateConstants.templateEndKeyword {
-                            ctx.debugLog.line(curLine, pInfo: pInfo)
-                            ctx.debugLog.parseLines(ended: endKeyWord, pInfo: pInfo)
-                            
-                            //skipLine()
-                            break
-                        }
-                    }
+            if isStatementsPrefixedWithKeyword {
+                guard let secondWord = pInfo.secondWord else {
+                    pInfo.firstWord = ""
+                    try lineHandler(pInfo, nil)
                     
-                    ctx.debugLog.line(curLine, pInfo: pInfo)
-                    
-                try lineHandler(pInfo, secondWord)
+                    if !miscLineReadHandling() {break}
+                    continue
+                }
+                
+                stmtWord = secondWord
             } else {
-                pInfo.firstWord = ""
-                try lineHandler(pInfo, secondWord)
+                stmtWord = pInfo.firstWord
             }
             
-            if _breakParsing {break}
-            
-            if autoIncrementLineNoForEveryLoop {
-                incrementLineNo()
+            if let endKeyWord = endKeyWord {
+                //E.g. consider a block as ending, when either of the foll are encountered:
+                //"end-<block keyword>" or "end"
+                if stmtWord == endKeyWord || stmtWord == TemplateConstants.templateEndKeyword {
+                    ctx.debugLog.line(curLine, pInfo: pInfo)
+                    ctx.debugLog.parseLines(ended: endKeyWord, pInfo: pInfo)
+                    
+                    //skipLine()
+                    break
+                }
             }
+            
+            ctx.debugLog.line(curLine, pInfo: pInfo)
+            
+            try lineHandler(pInfo, stmtWord)
+            
+            
+            if !miscLineReadHandling() {break}
         }
             
         resetFlags()
+    }
+    
+    private func miscLineReadHandling() -> Bool {
+        if _breakParsing {return false}
+        
+        if autoIncrementLineNoForEveryLoop {
+            incrementLineNo()
+        }
+        
+        return true
     }
     
     public func skipLine() {
@@ -207,7 +226,11 @@ public class GenericLineParser<T> : LineParser where T: Context {
     }
         
     public func currentLineWithoutStmtKeyword() -> String {
-        return String(currentLine().remainingLine(after: TemplateConstants.stmtKeyWord))
+        if isStatementsPrefixedWithKeyword {
+            return String(currentLine().remainingLine(after: TemplateConstants.stmtKeyWord))
+        } else {
+            return String(currentLine())
+        }
     }
     
     public func currentLine(after firstWord: String) -> String {
@@ -246,35 +269,41 @@ public class GenericLineParser<T> : LineParser where T: Context {
         }
     }
     
-    internal init(identifier: String, with context: T) {
+    internal init(identifier: String, isStatementsPrefixedWithKeyword: Bool, with context: T) {
         self.context = context
         self.identifier = identifier
         
         self._curLineNo = 0
         self.autoIncrementLineNoForEveryLoop = true
+        
+        self.isStatementsPrefixedWithKeyword = isStatementsPrefixedWithKeyword
     }
     
-    public init(string: String, identifier: String, with context: T) {
+    public init(string: String, identifier: String, isStatementsPrefixedWithKeyword: Bool, with context: T) {
         self.context = context
         self.identifier = identifier
         
         self._curLineNo = 0
         self.lines = string.splitIntoLines()
         self.autoIncrementLineNoForEveryLoop = true
+        
+        self.isStatementsPrefixedWithKeyword = isStatementsPrefixedWithKeyword
     }
     
-    public init(lines: [String], identifier: String, with context: T, autoIncrementLineNoForEveryLoop : Bool = true) {
+    public init(lines: [String], identifier: String, isStatementsPrefixedWithKeyword: Bool, with context: T, autoIncrementLineNoForEveryLoop : Bool = true) {
         self.context = context
         self.identifier = identifier
         
         self._curLineNo = 0
         self.lines = lines
         self.autoIncrementLineNoForEveryLoop = autoIncrementLineNoForEveryLoop
+        
+        self.isStatementsPrefixedWithKeyword = isStatementsPrefixedWithKeyword
     }
     
-    public convenience init?(file: LocalFile, with context: T) {
+    public convenience init?(file: LocalFile, isStatementsPrefixedWithKeyword: Bool, with context: T) {
         do {
-            self.init(identifier: file.name, with: context)
+            self.init(identifier: file.name, isStatementsPrefixedWithKeyword: isStatementsPrefixedWithKeyword, with: context)
             
             self.file = file
             self.lines = try file.readTextLines(ignoreEmptyLines: true)
@@ -283,8 +312,8 @@ public class GenericLineParser<T> : LineParser where T: Context {
         }
     }
     
-    public convenience init?(fileName: String, with context: T) {
-        self.init(file: LocalFile(path: fileName), with: context)
+    public convenience init?(fileName: String, isStatementsPrefixedWithKeyword: Bool, with context: T) {
+        self.init(file: LocalFile(path: fileName), isStatementsPrefixedWithKeyword: isStatementsPrefixedWithKeyword, with: context)
     }
 }
 

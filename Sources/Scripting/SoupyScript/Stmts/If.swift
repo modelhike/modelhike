@@ -41,7 +41,14 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
     
     override func checkIfSupportedAndGetBlock(blockLime: UnIdentifiedStmt) throws -> PartOfMultiBlockContainer? {
         
-        let keyWord = blockLime.pInfo.line.secondWord()
+        var keyWord = ""
+        
+        if blockLime.pInfo.parser.isStatementsPrefixedWithKeyword {
+            keyWord =  blockLime.pInfo.secondWord ?? ""
+        } else {
+            keyWord =  blockLime.pInfo.firstWord
+        }
+
         let line = blockLime.pInfo.line.lineWithoutStmtKeyword()
 
         if keyWord == Self.ELSE_IF_KEYWORD {

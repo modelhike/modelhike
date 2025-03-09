@@ -126,13 +126,25 @@ public struct ContextDebugLog {
     
     public func templateParsingStarting() {
         if flags.lineByLineParsing || flags.blockByBlockParsing {
-            print("PARSING START -------------\n\n")
+            print("TEMPLATE PARSING START -------------\n\n")
         }
     }
     
     public func templateExecutionStarting() {
         if flags.lineByLineParsing || flags.blockByBlockParsing {
-            print("\n\n\n\nEXECTION START -------------\n")
+            print("\n\n\n\nTEMPLATE EXECTION START -------------\n")
+        }
+    }
+    
+    public func scriptFileParsingStarting() {
+        if flags.lineByLineParsing || flags.blockByBlockParsing {
+            print("SCRIPT PARSING START -------------\n\n")
+        }
+    }
+    
+    public func scriptFileExecutionStarting() {
+        if flags.lineByLineParsing || flags.blockByBlockParsing {
+            print("\n\n\n\nSCRIPT TEMPLATE EXECTION START -------------\n")
         }
     }
     

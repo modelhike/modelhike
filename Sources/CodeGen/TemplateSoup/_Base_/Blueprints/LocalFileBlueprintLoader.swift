@@ -8,11 +8,39 @@ import Foundation
 
 public class LocalFileBlueprintLoader: Blueprint {
     private var templateCache : [String: Template] = [:]
+    private var scriptFileCache : [String: Script] = [:]
+
     public let blueprintPath: LocalPath
     public let rootPath: LocalPath
     public let context: GenerationContext
     public var paths: [LocalPath]
     public let blueprintName: String
+    
+    public func loadScriptFile(fileName: String, with pInfo: ParsedInfo) throws -> any Script {
+        for loadPath in paths {
+            if !loadPath.exists {
+                let pInfo = ParsedInfo.dummyForAppState(with: context)
+                throw EvaluationError.invalidAppState("Blueprint folder '\(loadPath.string)' not found!!!", pInfo)
+            }
+            
+            let scriptFileName = "\(fileName).\(TemplateConstants.ScriptExtension)"
+
+            let scriptFilePath = loadPath / scriptFileName
+
+            if !scriptFilePath.exists { continue } //check if found in next oath
+
+            let file = LocalFile(path: scriptFilePath )
+
+            if let script = LocalScriptFile(file: file) {
+                self.scriptFileCache[fileName] = script
+                return script
+            } else {
+                throw TemplateSoup_EvaluationError.scriptFileReadingError(fileName, pInfo)
+            }
+        }
+
+        throw TemplateSoup_EvaluationError.scriptFileDoesNotExist(fileName, pInfo)
+    }
     
     public func loadTemplate(fileName: String, with pInfo: ParsedInfo) throws -> Template {
         for loadPath in paths {

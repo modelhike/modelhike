@@ -11,6 +11,8 @@ public class ParsedInfo : Equatable {
     public internal(set) var lineNo: Int
     public internal(set) var level: Int
     public internal(set) var firstWord: String
+    public internal(set) var secondWord: String? = nil
+
     public internal(set) var identifier: String
     public internal(set) var parser: LineParser
     public var ctx: Context { parser.ctx }
@@ -66,12 +68,12 @@ public class ParsedInfo : Equatable {
     }
     
     public static func dummy(line: String, identifier: String, with ctx: GenerationContext) -> ParsedInfo {
-        let parser = DummyLineParserDuringGeneration(identifier: identifier, with: ctx)
+        let parser = DummyLineParserDuringGeneration(identifier: identifier, isStatementsPrefixedWithKeyword: true, with: ctx)
         return ParsedInfo(parser: parser, line: line, lineNo: -1, level: 0, firstWord: "")
     }
     
     public static func dummy(line: String, identifier: String, with ctx: LoadContext) -> ParsedInfo {
-        let parser = DummyLineParserDuringLoad(identifier: identifier, with: ctx)
+        let parser = DummyLineParserDuringLoad(identifier: identifier, isStatementsPrefixedWithKeyword: true, with: ctx)
         return ParsedInfo(parser: parser, line: line, lineNo: -1, level: 0, firstWord: "")
     }
     
@@ -121,8 +123,12 @@ public class ParsedInfo : Equatable {
         self.line = parser.currentLine_TrimTrailing()
         self.lineNo = parser.curLineNoForDisplay
         
-        guard let firstWord = line.firstWord() else { return nil }
+        let (firstWord, secondWord) = line.firstAndsecondWord()
+
+        guard let firstWord = firstWord else { return nil }
         self.firstWord = firstWord
+        self.secondWord = secondWord
+        
         self.parser = parser
         self.level = parser.curLevelForDisplay
         self.identifier = parser.identifier

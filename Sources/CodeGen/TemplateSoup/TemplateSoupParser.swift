@@ -22,10 +22,10 @@ public class TemplateSoupParser : ScriptParser {
             lineParser.incrementLineNo()
         }
         
-        try lineParser.parse(till: endKeyWord, level: level) {pInfo, secondWord in
+        try lineParser.parse(till: endKeyWord, level: level) {pInfo, stmtWord in
             
             guard pInfo.firstWord == TemplateConstants.stmtKeyWord,
-                  let stmtWord = secondWord, stmtWord.trim().isNotEmpty else {
+                  let stmtWord = stmtWord, stmtWord.trim().isNotEmpty else {
                 
                 try treatAsContent(pInfo, level: level, container: container)
                 return
@@ -36,12 +36,12 @@ public class TemplateSoupParser : ScriptParser {
     }
     
     public func parse(string: String, identifier: String = "") throws -> SoupyScriptStmtContainerList? {
-        self.lineParser = LineParserDuringGeneration(string: string, identifier: identifier, with: ctx)
+        self.lineParser = LineParserDuringGeneration(string: string, identifier: identifier, isStatementsPrefixedWithKeyword: true, with: ctx)
         return try parseContainers()
     }
     
     public func parse(file: LocalFile) throws -> SoupyScriptStmtContainerList? {
-        guard let lineParser = LineParserDuringGeneration(file: file, with: ctx) else {return nil}
+        guard let lineParser = LineParserDuringGeneration(file: file, isStatementsPrefixedWithKeyword: true, with: ctx) else {return nil}
         self.lineParser = lineParser
         return try parseContainers(containerName: file.pathString)
     }

@@ -8,6 +8,8 @@ import Foundation
 
 public class ResourceBlueprintLoader : Blueprint {
     private var templateCache : [String: Template] = [:]
+    private var scriptFileCache : [String: Script] = [:]
+
     public let context: GenerationContext
 
     public let blueprintName: String
@@ -15,6 +17,24 @@ public class ResourceBlueprintLoader : Blueprint {
     public var blueprintPath: String
     public var resourceRoot: String
 
+    public func loadScriptFile(fileName: String, with pInfo: ParsedInfo) throws -> any Script {
+        if let resourceURL = bundle.url(forResource: fileName,
+                                        withExtension: TemplateConstants.ScriptExtension,
+                                        subdirectory : blueprintPath ) {
+            do {
+                let content = try String(contentsOf: resourceURL)
+                let template = StringTemplate(contents: content, name: fileName)
+                self.scriptFileCache[fileName] = template
+                return template
+            } catch {
+                throw TemplateSoup_EvaluationError.scriptFileReadingError(fileName, pInfo)
+            }
+        } else {
+            throw TemplateSoup_EvaluationError.scriptFileDoesNotExist(fileName, pInfo)
+        }
+
+    }
+    
     public func loadTemplate(fileName: String, with pInfo: ParsedInfo) throws -> Template {
         if let resourceURL = bundle.url(forResource: fileName,
                                         withExtension: TemplateConstants.TemplateExtension,

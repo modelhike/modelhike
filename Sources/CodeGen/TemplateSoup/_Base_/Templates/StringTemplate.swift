@@ -6,7 +6,7 @@
 
 import Foundation
 
-public struct StringTemplate : Template, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {   
+public struct StringTemplate : Template, Script, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     public var name: String = "string"
     
     var items: [StringConvertible]

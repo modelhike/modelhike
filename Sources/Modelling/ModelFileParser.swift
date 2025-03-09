@@ -24,12 +24,12 @@ public class ModelFileParser {
     }
     
     public func parse(lines contents: [String], identifier: String) throws -> ModelSpace {
-        let lineParser = LineParserDuringLoad(lines: contents, identifier: identifier, with: ctx, autoIncrementLineNoForEveryLoop: false)
+        let lineParser = LineParserDuringLoad(lines: contents, identifier: identifier, isStatementsPrefixedWithKeyword: true, with: ctx, autoIncrementLineNoForEveryLoop: false)
         self.lineParser = lineParser
 
         do {
             
-            try lineParser.parse(level: 0) {pctx, secondWord in
+            try lineParser.parse(level: 0) {pctx, _ in
                 if lineParser.isCurrentLineEmptyOrCommented() { lineParser.skipLine(); return }
 
                 guard let pInfo = lineParser.currentParsedInfo(level : pctx.level) else { lineParser.skipLine(); return }
@@ -128,7 +128,7 @@ public class ModelFileParser {
     }
     
     public init(with context: LoadContext) {
-        lineParser = LineParserDuringLoad(identifier: "", with: context)
+        lineParser = LineParserDuringLoad(identifier: "", isStatementsPrefixedWithKeyword: true, with: context)
         self.ctx = context
     }
 }

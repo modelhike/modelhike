@@ -62,6 +62,7 @@ public struct GenerateCodePass : RenderingPass {
         
         return rendering
     }
+    
     fileprivate func printError(_ err: Error, workspace: Workspace) {
         let printer = PipelineErrorPrinter()
         printer.printError(err, workspace: workspace)

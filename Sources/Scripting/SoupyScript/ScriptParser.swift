@@ -29,7 +29,7 @@ public extension ScriptParser {
         }
         
         if stmtWord == TemplateConstants.templateFunction_start {
-            if try parseStartTemplateFunction(secondWord: stmtWord, pInfo: pInfo) {
+            if try parseStartTemplateFunction(stmtWord: stmtWord, pInfo: pInfo) {
                 return //continue after macro fn
             }
         }
@@ -39,22 +39,30 @@ public extension ScriptParser {
     
     func treatAsContent(_ pInfo: ParsedInfo, level: Int, container: any SoupyScriptStmtContainer) throws {
         let trimmedLine = pInfo.line.trim()
-        if trimmedLine == TemplateConstants.stmtKeyWord { //add empty line
-            let item = EmptyLine()
-            container.append(item)
-            return
+        if lineParser.isStatementsPrefixedWithKeyword {
+            if trimmedLine == TemplateConstants.stmtKeyWord { //add empty line
+                let item = EmptyLine()
+                container.append(item)
+                return
+            }
+        } else {
+            if trimmedLine.isEmpty { //add empty line
+                let item = EmptyLine()
+                container.append(item)
+                return
+            }
         }
         
         let item = try ContentLine(pInfo, level: level)
         container.append(item)
     }
     
-    func parseStmts(_ secondWord: String, pInfo: ParsedInfo, to container: any SoupyScriptStmtContainer, with ctx: Context) throws {
+    func parseStmts(_ stmtWord: String, pInfo: ParsedInfo, to container: any SoupyScriptStmtContainer, with ctx: Context) throws {
         
         var isStmtIdentified = false
 
         for config in ctx.symbols.template.statements {
-            if secondWord == config.keyword {
+            if stmtWord == config.keyword {
                 isStmtIdentified = true
                 
                 if config.kind == .block {
@@ -100,8 +108,8 @@ public extension ScriptParser {
         }
     }
     
-    func parseStartTemplateFunction(secondWord: String, pInfo: ParsedInfo) throws -> Bool {
-        let templateFnLine = lineParser.currentLine(after: secondWord)
+    func parseStartTemplateFunction(stmtWord: String, pInfo: ParsedInfo) throws -> Bool {
+        let templateFnLine = lineParser.currentLine(after: stmtWord)
         
         if let match = templateFnLine.wholeMatch(of: CommonRegEx.functionDeclaration_unNamedArgs_Capturing) {
             let (_, templateFnName, paramsString) = match.output

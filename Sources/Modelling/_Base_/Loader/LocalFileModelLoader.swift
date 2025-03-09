@@ -11,7 +11,7 @@ public class LocalFileModelLoader : ModelRepository {
     let ctx: LoadContext
     
     public var commonModelsFileName = "common." + ModelConstants.ModelFile_Extension
-    public let configFileName = TemplateConstants.MainTemplateFile + "." + ModelConstants.ConfigFile_Extension
+    public let configFileName = TemplateConstants.MainScriptFile + "." + ModelConstants.ConfigFile_Extension
 
     public func loadModel(to model: AppModel) throws {
         if !loadPath.exists {

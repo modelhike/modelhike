@@ -15,7 +15,7 @@ public class ConfigFileParser {
     }
     
     public func parse(string content: String, identifier: String) throws {
-        let lineParser = LineParserDuringLoad(string: content, identifier: identifier, with: ctx)
+        let lineParser = LineParserDuringLoad(string: content, identifier: identifier, isStatementsPrefixedWithKeyword: true, with: ctx)
         
         let curLine = lineParser.currentLine()
         

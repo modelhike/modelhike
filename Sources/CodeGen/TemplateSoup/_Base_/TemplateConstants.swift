@@ -8,7 +8,8 @@ import Foundation
 
 public enum TemplateConstants {
     public static var TemplateExtension = "teso"
-    public static var MainTemplateFile = "codegen"
+    public static var ScriptExtension = "ss"
+    public static var MainScriptFile = "main"
 
     public static var templateFunction_start = "func"
     public static var templateFunction_end = "end-func"
