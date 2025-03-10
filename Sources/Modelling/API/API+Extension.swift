@@ -226,13 +226,7 @@ public extension CodeObject {
     }
     
     func hasNoAPIs() -> Bool {
-        let apis = APIList()
-        
-        for item in attached {
-            if let api = item as? API {
-                apis.append(api)
-            }
-        }
+        let apis = getAPIs()
         
         return apis.count == 0
     }

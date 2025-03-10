@@ -53,8 +53,8 @@ public struct ModelLib {
             {
                 let apis = entity.getAPIs()
                 return apis.compactMap({ API_Wrap($0) })
-            } else if let entity = entity as? CodeObject_Wrap {
-                let apis = entity.item.getAPIs()
+            } else if let objWrap = entity as? CodeObject_Wrap {
+                let apis = objWrap.item.getAPIs()
                 return apis.compactMap({ API_Wrap($0) })
             } else {
                 return []

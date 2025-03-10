@@ -44,7 +44,7 @@ public class ParsedInfo : Equatable {
         if AnnotationParser.canParse(firstWord: self.firstWord) {
             if let annotation = try AnnotationParser.parse(pInfo: self) {
                 item.annotations[annotation.name] = annotation
-                try AnnotationProcessor.process(annotation, for: item)
+                //try AnnotationProcessor.process(annotation, for: item)
                 self.parser.skipLine()
                 return annotation
             } else {

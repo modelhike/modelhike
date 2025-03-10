@@ -24,7 +24,7 @@ public enum AttachedSectionParser {
         guard let match = line.wholeMatch(of: ModelRegEx.attachedSectionName_Capturing)                                                                                  else { return nil }
         
         let (_, sectionCode, attributeString, tagString) = match.output
-        let item = AttachedSection(code: sectionCode.trim())
+        let item = AttachedSection(code: sectionCode.trim(), for: obj)
         
         //check if has attributes
         if let attributeString = attributeString {

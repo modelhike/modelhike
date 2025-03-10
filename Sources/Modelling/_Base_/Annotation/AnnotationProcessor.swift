@@ -14,7 +14,18 @@ public enum AnnotationProcessor {
                     cls.appendAPI(.list)
                 }
             case AnnotationConstants.apisToGenerate:
-                if let cls = obj as? CodeObject,
+                var cls: CodeObject?
+                
+                if let objcls = obj as? CodeObject {
+                    cls = objcls
+                }
+
+                if let attachedSection = obj as? AttachedSection,
+                   let objcls = attachedSection.containingObject as? CodeObject {
+                        cls = objcls
+                }
+            
+                if let cls = cls,
                    let valuesAnnotation = annotation as? ValuesAnnotation {
                     for value in valuesAnnotation.values {
                         switch value.lowercased() {
@@ -23,8 +34,8 @@ public enum AnnotationProcessor {
                             case "delete": cls.appendAPI(.delete)
                             case "get-by-id": cls.appendAPI(.getById)
                             case "list": cls.appendAPI(.list)
-                            case "subscribe, push-data": cls.appendAPI(.pushData)
-                            case "subscribe-list, push-datalist": cls.appendAPI(.pushData)
+                            case "subscribe", "push-data": cls.appendAPI(.pushData)
+                            case "subscribe-list", "push-datalist": cls.appendAPI(.pushData)
                             case "crud":
                                 cls.appendAPI(.create)
                                 cls.appendAPI(.update)
