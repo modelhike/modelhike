@@ -56,15 +56,37 @@ public class TemplateSoup : TemplateRenderer {
             
             return rendering
         } catch let err {
-            if let evalErr = err as? TemplateSoup_EvaluationError {
+            if let parseErr = err as? TemplateSoup_ParsingError {
+                throw ParsingError.invalidLine(parseErr.pInfo, parseErr)
+            } else if let evalErr = err as? TemplateSoup_EvaluationError {
                 if case .scriptFileDoesNotExist(_, pInfo) = evalErr {
                     throw EvaluationError.scriptFileDoesNotExist(pInfo, evalErr)
                 } else if case .scriptFileReadingError(_, pInfo) = evalErr {
                     throw EvaluationError.readingError(pInfo, evalErr)
+                    
+                } else if case let .workingDirectoryNotSet(pInfo) = evalErr {
+                        throw EvaluationError.workingDirectoryNotSet(pInfo, evalErr)
+                } else if case let .unIdentifiedStmt(pInfo) = evalErr {
+                    throw EvaluationError.invalidLine(pInfo, evalErr)
+                } else {
+                    throw EvaluationError.invalidLine(evalErr.pInfo, evalErr)
                 }
+            } else if let directive = err as? ParserDirective {
+                if case let .excludeFile(filename) = directive {
+                    context.debugLog.excludingFile(filename)
+                    return nil  //nothing to generate from this excluded file
+                } else if case let .stopRenderingCurrentFile(filename, pInfo) = directive {
+                    context.debugLog.stopRenderingCurrentFile(filename, pInfo: pInfo)
+                    return nil  //nothing to generate from this rendering stopped file
+                } else if case let .throwErrorFromCurrentFile(filename, errMsg, pInfo) = directive {
+                    context.debugLog.throwErrorFromCurrentFile(filename, err: errMsg, pInfo: pInfo)
+                    throw EvaluationError.templateRenderingError(pInfo, directive)
+                }
+            } else {
+                throw err
             }
             
-            throw err
+            return nil
         }
     }
     
