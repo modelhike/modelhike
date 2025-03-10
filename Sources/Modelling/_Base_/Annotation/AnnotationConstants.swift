@@ -9,4 +9,5 @@ import Foundation
 public enum AnnotationConstants {
     public static let listApi = "list-api"
     public static let apisToGenerate = "apis"
+    public static let dontGenerateApis = "no-apis"
 }

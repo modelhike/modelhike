@@ -27,6 +27,10 @@ public enum AnnotationParser {
                 return try MappingAnnotation(annotationName, line: remainingLine, pInfo: pInfo)
             case AnnotationConstants.apisToGenerate:
                 return try ValuesAnnotation(annotationName, line: remainingLine, pInfo: pInfo)
+            case AnnotationConstants.dontGenerateApis:
+                //dont do anything here
+                //handled elsewhere in pipeline
+                return nil
             default:
                 throw Model_ParsingError.invalidAnnotationLine(pInfo)
             }
