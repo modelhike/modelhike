@@ -101,20 +101,19 @@ public class ResourceBlueprintLoader: Blueprint {
         }
     }
 
-    public func copyFiles(foldername: String, to outputFolder: LocalFolder, with pInfo: ParsedInfo)
+    public func copyFiles(foldername: String, to outputFolder: OutputFolder, with pInfo: ParsedInfo)
         throws
     {
         let folder = blueprintPath + foldername
         guard let resourceURL = bundle.resourceURL?.appendingPathComponent(folder) else { return }
 
-        try copyResourceFiles(from: resourceURL, to: outputFolder.path, pInfo: pInfo)
+        try copyResourceFiles(from: resourceURL, to: outputFolder, pInfo: pInfo)
     }
 
     fileprivate func copyResourceFiles(
-        from resUrl: URL, to outputPath: LocalPath, pInfo: ParsedInfo
+        from resUrl: URL, to outputFolder: OutputFolder, pInfo: ParsedInfo
     ) throws {
         let fm = FileManager.default
-        try outputPath.ensureExists()
 
         do {
             let resourcePaths = try fm.contentsOfDirectory(
@@ -123,15 +122,15 @@ public class ResourceBlueprintLoader: Blueprint {
                 let resourceName = resourcePath.lastPathComponent
 
                 if !resourcePath.hasDirectoryPath {  //resource file
-                    let contents = try String(contentsOf: resourcePath)
+                    let contents = try Data(contentsOf: resourcePath)
 
                     let filename = resourceName
-                    let outFile = LocalFile(path: outputPath / filename)
-                    try outFile.write(contents)
+                    let outFile = StaticFile(filename: filename, filePath: outputFolder.path, data: contents, pInfo: pInfo )
+                    outputFolder.add(outFile)
                 } else {  //resource folder
                     let newResUrl = resUrl.appendingPathComponent(resourceName)
                     try copyResourceFiles(
-                        from: newResUrl, to: outputPath / resourceName, pInfo: pInfo)
+                        from: newResUrl, to: outputFolder.subFolder(resourceName) , pInfo: pInfo)
                 }
             }
         } catch {
@@ -141,7 +140,7 @@ public class ResourceBlueprintLoader: Blueprint {
     }
 
     public func renderFiles(
-        foldername: String, to outputFolder: LocalFolder, using templateSoup: TemplateSoup,
+        foldername: String, to outputFolder: OutputFolder, using templateSoup: TemplateSoup,
         with pInfo: ParsedInfo
     ) throws {
         let folder = blueprintPath + foldername
@@ -152,7 +151,7 @@ public class ResourceBlueprintLoader: Blueprint {
     }
 
     fileprivate func renderResourceFiles(
-        from resUrl: URL, to outputFolder: LocalFolder, using templateSoup: TemplateSoup,
+        from resUrl: URL, to outputFolder: OutputFolder, using templateSoup: TemplateSoup,
         with pInfo: ParsedInfo
     ) throws {
         let fm = FileManager.default
@@ -160,6 +159,7 @@ public class ResourceBlueprintLoader: Blueprint {
         do {
             let resourcePaths = try fm.contentsOfDirectory(
                 at: resUrl, includingPropertiesForKeys: nil)
+            
             for resourcePath in resourcePaths {
                 var resourceName = resourcePath.lastPathComponent
 
@@ -181,7 +181,7 @@ public class ResourceBlueprintLoader: Blueprint {
 
                         let contents = try String(contentsOf: resourcePath)
 
-                        let renderClosure = { outputname, pInfo in
+                        let renderClosure = { (outputname: String, pInfo: ParsedInfo) in
                             if let renderedString = try templateSoup.renderTemplate(
                                 string: contents, identifier: resourceName, with: pInfo)
                             {
@@ -190,12 +190,12 @@ public class ResourceBlueprintLoader: Blueprint {
                                 try outputFolder.ensureExists()
 
                                 templateSoup.context.debugLog.generatingFileInFolder(
-                                    filename, with: resourceName, folder: outputFolder)
+                                    filename, with: resourceName, folder: outputFolder.folder)
 
                                 let ouputFilename: String =
                                     outputname.isNotEmpty ? outputname : filename
-                                let outFile = LocalFile(path: outputFolder.path / ouputFilename)
-                                try outFile.write(renderedString)
+                                let outFile = RenderedFile(filename: ouputFilename, filePath: outputFolder.path, contents: renderedString, pInfo: pInfo )
+                                outputFolder.add(outFile)
                             }
                         }
 
@@ -222,17 +222,15 @@ public class ResourceBlueprintLoader: Blueprint {
                         }
 
                     } else {  //not a template file
-                        //create the folder only if any file is copied
-                        try outputFolder.ensureExists()
 
                         let contents = try Data(contentsOf: resourcePath)
                         let filename = resourceName
 
                         templateSoup.context.debugLog.copyingFileInFolder(
-                            filename, folder: outputFolder)
+                            filename, folder: outputFolder.folder)
 
-                        let outFile = LocalFile(path: outputFolder.path / filename)
-                        try outFile.write(contents)
+                        let outFile = StaticFile(filename: filename, filePath: outputFolder.path, data: contents, pInfo: pInfo )
+                        outputFolder.add(outFile)
                     }
                 } else {  //resource folder
                     let subfoldername =
@@ -241,7 +239,7 @@ public class ResourceBlueprintLoader: Blueprint {
 
                     let newResUrl = resUrl.appendingPathComponent(subfoldername)
                     try renderResourceFiles(
-                        from: newResUrl, to: outputFolder / resourceName, using: templateSoup,
+                        from: newResUrl, to: outputFolder.subFolder(resourceName) , using: templateSoup,
                         with: pInfo)
                 }
             }

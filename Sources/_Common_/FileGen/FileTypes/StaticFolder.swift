@@ -9,11 +9,15 @@ import Foundation
 open class StaticFolder : PersistableFolder {
     private let repo: InputFileRepository
     public let foldername: String
-    public private(set) var outputFolder: LocalFolder
+    public private(set) var outputFolder: OutputFolder
     let pInfo: ParsedInfo
     
     public func persist() throws {
-        try copyFiles()
+        if let ctx = pInfo.ctx as? GenerationContext {
+            try outputFolder.persist(with: ctx)
+        } else {
+            fatalError(#function + ": ctx is not GenerationContext")
+        }
     }
     
     public func copyFiles() throws {
@@ -23,7 +27,7 @@ open class StaticFolder : PersistableFolder {
     public init(foldername: String, repo: InputFileRepository, to newFoldername:String, path outFilePath: LocalPath, pInfo: ParsedInfo) {
         self.repo = repo
         self.foldername = foldername
-        self.outputFolder = LocalFolder(path: outFilePath / newFoldername)
+        self.outputFolder = OutputFolder(outFilePath / newFoldername)
         self.pInfo = pInfo
     }
     

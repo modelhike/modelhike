@@ -13,10 +13,18 @@ open class PlaceHolderFile : OutputFile {
     public var outputPath: LocalPath!
     let renderer: TemplateRenderer
     let pInfo: ParsedInfo
-    public func persist() throws {
+    var contents: String? = nil
+    
+    public func render() throws {
         let data : [String: Any] = [:]
         
         if let contents = try renderer.renderTemplate(fileName: self.oldFilename, data: data, with: pInfo) {
+            self.contents = contents
+        }
+    }
+    
+    public func persist() throws {        
+        if let contents = contents {
             let outFile = LocalFile(path: outputPath / filename)
             try outFile.write(contents)
         }

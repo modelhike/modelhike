@@ -10,14 +10,48 @@ open class StaticFile : OutputFile {
     private let oldFilename: String
     public let filename: String
 
-    private let repo: InputFileRepository
+    private let repo: InputFileRepository?
     public var outputPath: LocalPath!
     let pInfo: ParsedInfo
-    public func persist() throws {
-        let contents = try repo.readTextContents(filename: self.oldFilename, with: pInfo)
+    var contents: String? = nil
+    var data: Data? = nil
 
-        let outFile = LocalFile(path: outputPath / filename)
-        try outFile.write(contents)
+    public func render() throws {
+        guard let repo = repo else { return }
+        
+        self.contents = try repo.readTextContents(filename: self.oldFilename, with: pInfo)
+    }
+    
+    public func persist() throws {
+        if let contents = contents {
+            let outFile = LocalFile(path: outputPath / filename)
+            try outFile.write(contents)
+        } else if let data = data {
+            let outFile = LocalFile(path: outputPath / filename)
+            try outFile.write(data)
+        }
+    }
+    
+    public init(filename: String, filePath: LocalPath, contents: String, pInfo: ParsedInfo) {
+        self.oldFilename = filename
+        self.filename = filename
+        self.outputPath = filePath
+        self.contents = contents
+        self.pInfo = pInfo
+        
+        self.data = nil
+        self.repo = nil
+    }
+    
+    public init(filename: String, filePath: LocalPath, data: Data, pInfo: ParsedInfo) {
+        self.oldFilename = filename
+        self.filename = filename
+        self.outputPath = filePath
+        self.contents = nil
+        self.data = data
+        self.pInfo = pInfo
+        
+        self.repo = nil
     }
     
     public init(filename: String, repo: InputFileRepository, to newFilename:String, path outFilePath: LocalPath, pInfo: ParsedInfo) {

@@ -9,9 +9,10 @@ import Foundation
 public struct GenerateOutputFoldersPass : PersistancePass {
     public func runIn(phase: PersistPhase, pipeline: Pipeline) async throws -> Bool {
         
+        try pipeline.config.output.deleteAllFilesAndFolders()
+
         var totalFilesGenerated: Int = 0
         var totalFoldersGenerated: Int = 0
-        try pipeline.config.output.deleteAllFilesAndFolders()
         
         for sandbox in pipeline.generationSandboxes {
             let output = sandbox.base_generation_dir

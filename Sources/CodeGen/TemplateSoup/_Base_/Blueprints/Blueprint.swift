@@ -14,8 +14,8 @@ public protocol Blueprint : InputFileRepository {
 }
 
 public protocol InputFileRepository {
-    func copyFiles(foldername: String, to folder: LocalFolder, with pInfo: ParsedInfo) throws
-    func renderFiles(foldername: String, to folder: LocalFolder, using templateSoup: TemplateSoup, with pInfo: ParsedInfo) throws
+    func copyFiles(foldername: String, to folder: OutputFolder, with pInfo: ParsedInfo) throws
+    func renderFiles(foldername: String, to folder: OutputFolder, using templateSoup: TemplateSoup, with pInfo: ParsedInfo) throws
 
     func readTextContents(filename: String, with pInfo: ParsedInfo) throws -> String
     func hasFolder(_ foldername: String) -> Bool

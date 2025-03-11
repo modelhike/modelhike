@@ -93,7 +93,7 @@ public class LocalFileBlueprintLoader: Blueprint {
         return inFolder.path.exists
     }
 
-    public func copyFiles(foldername: String, to outputFolder: LocalFolder, with pInfo: ParsedInfo)
+    public func copyFiles(foldername: String, to outputFolder: OutputFolder, with pInfo: ParsedInfo)
         throws
     {
         guard self.blueprintPath.exists else {
@@ -103,7 +103,18 @@ public class LocalFileBlueprintLoader: Blueprint {
 
         do {
             let inFolder = LocalFolder(path: self.blueprintPath / foldername)
-            try inFolder.copyFiles(to: outputFolder)
+            
+            for file in inFolder.files {
+                let copyFile = FileToCopy(file: file, toPath: outputFolder.path, pInfo: pInfo)
+                outputFolder.add(copyFile)
+            }
+            
+            //copy files from subfolders also
+            for subFolder in inFolder.subFolders {
+                let outputSubFolder = outputFolder.subFolder(subFolder.name)
+                try copyFiles(foldername: subFolder.name, to: outputSubFolder, with: pInfo)
+            }
+            
         } catch let err {
             if err as? ErrorWithMessageAndParsedInfo != nil {
                 throw err
@@ -116,7 +127,7 @@ public class LocalFileBlueprintLoader: Blueprint {
     }
 
     public func renderFiles(
-        foldername: String, to outputFolder: LocalFolder, using templateSoup: TemplateSoup,
+        foldername: String, to outputFolder: OutputFolder, using templateSoup: TemplateSoup,
         with pInfo: ParsedInfo
     ) throws {
         guard self.blueprintPath.exists else {
@@ -140,7 +151,7 @@ public class LocalFileBlueprintLoader: Blueprint {
     }
 
     private func renderLocalFiles(
-        from inFolder: LocalFolder, to outputFolder: LocalFolder, using templateSoup: TemplateSoup,
+        from inFolder: LocalFolder, to outputFolder: OutputFolder, using templateSoup: TemplateSoup,
         with pInfo: ParsedInfo
     ) throws {
 
@@ -162,20 +173,16 @@ public class LocalFileBlueprintLoader: Blueprint {
 
                 let contents = try file.readTextContents()
 
-                let renderClosure = { outputname, pInfo in
+                let renderClosure = { (outputname: String, pInfo: ParsedInfo) in
                     if let renderedString = try templateSoup.renderTemplate(
                         string: contents, identifier: actualFilename, with: pInfo)
                     {
-
-                        //create the folder only if any file is rendered
-                        try outputFolder.ensureExists()
-
                         templateSoup.context.debugLog.generatingFileInFolder(
-                            filename, with: actualFilename, folder: outputFolder)
+                            filename, with: actualFilename, folder: outputFolder.folder)
 
-                        let ouputFilename: String = outputname.isNotEmpty ? outputname : filename
-                        let outFile = LocalFile(path: outputFolder.path / ouputFilename)
-                        try outFile.write(renderedString)
+                        let outputFilename: String = outputname.isNotEmpty ? outputname : filename
+                        let outFile = RenderedFile(filename: outputFilename, filePath: outputFolder.path, contents: renderedString, pInfo: pInfo )
+                        outputFolder.add(outFile)
                     }
                 }
 
@@ -205,9 +212,10 @@ public class LocalFileBlueprintLoader: Blueprint {
                 //create the folder only if any file is copied
                 try outputFolder.ensureExists()
 
-                templateSoup.context.debugLog.copyingFileInFolder(file.name, folder: outputFolder)
+                templateSoup.context.debugLog.copyingFileInFolder(file.name, folder: outputFolder.folder)
 
-                try file.copy(to: outputFolder)
+                let copyFile = FileToCopy(file: file, toPath: outputFolder.path, pInfo: pInfo)
+                outputFolder.add(copyFile)
             }
         }
 
@@ -217,7 +225,7 @@ public class LocalFileBlueprintLoader: Blueprint {
                 try ContentHandler.eval(expression: subFolder.name, with: templateSoup.context)
                 ?? subFolder.name
 
-            let newFolder = outputFolder / subfoldername
+            let newFolder = outputFolder.subFolder(subfoldername)
             try renderLocalFiles(from: subFolder, to: newFolder, using: templateSoup, with: pInfo)
         }
 

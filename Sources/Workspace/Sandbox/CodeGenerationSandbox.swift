@@ -176,7 +176,7 @@ public class CodeGenerationSandbox : GenerationSandbox {
         
         let file = RenderedFile(filename: filename, filePath: generation_dir.path, template: template, renderer: self.templateSoup, pInfo: pInfo)
         
-        //try file.persist()
+        try file.render()
         generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
         return file
     }
@@ -188,7 +188,7 @@ public class CodeGenerationSandbox : GenerationSandbox {
         
         let file = RenderedFile(filename: filename, filePath: generation_dir.path, template: template, data: data, renderer: self.templateSoup, pInfo: pInfo)
         
-        //try file.persist()
+        try file.render()
         generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
         return file
     }
@@ -196,7 +196,7 @@ public class CodeGenerationSandbox : GenerationSandbox {
     public func copyFile(_ filename: String, with pInfo: ParsedInfo) throws -> StaticFile {
         let file = StaticFile(filename: filename, repo: templateSoup.repo, to: filename, path: generation_dir.path, pInfo: pInfo)
         
-        //try file.persist()
+        try file.render()
         generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
         return file
     }
@@ -204,7 +204,7 @@ public class CodeGenerationSandbox : GenerationSandbox {
     public func copyFile(_ filename: String, to newFilename: String, with pInfo: ParsedInfo) throws -> StaticFile {
         let file = StaticFile(filename: filename, repo: templateSoup.repo, to: newFilename, path: generation_dir.path, pInfo: pInfo)
         
-        //try file.persist()
+        try file.render()
         generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
         return file
     }
@@ -212,7 +212,7 @@ public class CodeGenerationSandbox : GenerationSandbox {
     public func copyFolder(_ foldername: String, with pInfo: ParsedInfo) throws -> StaticFolder {
         let folder = StaticFolder(foldername: foldername, repo: templateSoup.repo, to: foldername, path: generation_dir.path, pInfo: pInfo)
         
-        //try folder.copyFiles()
+        try folder.copyFiles()
         generation_dir.add(folder) //to be persisted in the Persist Pipeline Phase
         return folder
     }
@@ -220,7 +220,7 @@ public class CodeGenerationSandbox : GenerationSandbox {
     public func copyFolder(_ foldername: String, to newPath: String, with pInfo: ParsedInfo) throws -> StaticFolder {
         let folder = StaticFolder(foldername: foldername, repo: templateSoup.repo, to: newPath, path: generation_dir.path, pInfo: pInfo)
         
-        //try folder.copyFiles()
+        try folder.copyFiles()
         generation_dir.add(folder) //to be persisted in the Persist Pipeline Phase
         return folder
     }
@@ -230,7 +230,7 @@ public class CodeGenerationSandbox : GenerationSandbox {
         //This is possibleas onBeforeRenderFile is part of templateSoup
         let folder = RenderedFolder(foldername: foldername, templateSoup: templateSoup, to: newPath, path: generation_dir.path, pInfo: pInfo)
         
-        //try folder.renderFiles()
+        try folder.renderFiles()
         generation_dir.add(folder) //to be persisted in the Persist Pipeline Phase
         return folder
     }
@@ -242,7 +242,7 @@ public class CodeGenerationSandbox : GenerationSandbox {
         
         let file = PlaceHolderFile(filename: filename, repo: templateSoup.repo, to: filename, path: generation_dir.path, renderer: self.templateSoup, pInfo: pInfo)
         
-        //try file.persist()
+        try file.render()
         generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
         return file
     }
@@ -254,7 +254,7 @@ public class CodeGenerationSandbox : GenerationSandbox {
         
         let file = PlaceHolderFile(filename: filename, repo: templateSoup.repo, to: newFilename, path: generation_dir.path, renderer: self.templateSoup, pInfo: pInfo)
         
-        //try file.persist()
+        try file.render()
         generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
         return file
     }

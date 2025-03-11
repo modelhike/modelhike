@@ -21,8 +21,8 @@ public struct GenerateCodePass : RenderingPass {
         
         var templatesRepo: Blueprint
         
-        let blueprint = "api-nestjs-monorepo"
-        //let blueprint = "api-springboot-monorepo"
+        //let blueprint = "api-nestjs-monorepo"
+        let blueprint = "api-springboot-monorepo"
         
         if blueprint == "api-nestjs-monorepo" {
             try sandbox.loadSymbols([.typescript, .mongodb_typescript])

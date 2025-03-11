@@ -8,12 +8,12 @@ import Foundation
 
 public protocol PersistableFolder {
     var foldername: String { get }
-    var outputFolder: LocalFolder { get }
+    var outputFolder: OutputFolder { get }
     func persist() throws
 }
 
 public class OutputFolder {
-    private var folder: LocalFolder
+    internal private(set) var folder: LocalFolder
     public var subFolders: [OutputFolder] = []
     public private(set) var items: [OutputFile] = []
     public private(set) var folderItems: [PersistableFolder] = []
@@ -56,6 +56,11 @@ public class OutputFolder {
     }
 
     public func persist(with context: GenerationContext) throws {
+        guard items.count > 0 || folderItems.count > 0 || subFolders.count > 0 else {
+            return
+        }
+        
+        //create the folder only if any file or sub folder is persisted
         try self.ensureExists()
 
         for folder in subFolders {
@@ -65,7 +70,7 @@ public class OutputFolder {
 
         for folder in folderItems {
             try folder.persist()
-            context.addGenerated(folderPath: folder.outputFolder)
+            context.addGenerated(folderPath: folder.outputFolder.folder)
         }
 
         for item in items {

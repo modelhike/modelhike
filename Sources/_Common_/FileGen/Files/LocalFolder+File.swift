@@ -215,6 +215,7 @@ public struct LocalFolder : Folder, LocalFileSystemItem {
 
 public struct LocalFile : File, LocalFileSystemItem {
     public var path: LocalPath
+    public var filename: String { self.name }
     
     public func readTextContents() throws -> String {
         let filePath = pathString //.removingPrefix("/")
@@ -259,6 +260,12 @@ public struct LocalFile : File, LocalFileSystemItem {
         } catch {
             throw WriteError(path: path, reason: .writeFailed(error))
         }
+    }
+    
+    @discardableResult
+    public func copy(to path: LocalPath) throws -> Self {
+        let folder = LocalFolder(path: path)
+        return try self.copy(to: folder)
     }
     
     @discardableResult
