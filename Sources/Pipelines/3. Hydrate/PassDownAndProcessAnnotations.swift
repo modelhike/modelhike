@@ -1,13 +1,23 @@
 //
-//  PassDownAnnotationsPass.swift
+//  PassDownAndProcessAnnotationsPass.swift
 //  ModelHike
 //  https://www.github.com/modelhike/modelhike
 //
 
-public struct PassDownAnnotationsPass  : LoadingPass {
+public struct PassDownAndProcessAnnotationsPass  : LoadingPass {
     
     public func runIn(_ ws: Workspace, phase: LoadPhase) async throws -> Bool {
-        //process types
+        
+        //pass the annotations of the component to its child items
+        ws.model.containers.forEach { container in
+            
+            for type in container.types {
+                type.annotations.append(contentsOf: container.annotations)
+            }
+            
+        }
+        
+        //process annotation for types
         try ws.model.containers.forEach { container in
             
             for type in container.types {
@@ -20,14 +30,15 @@ public struct PassDownAnnotationsPass  : LoadingPass {
                 //if it is not marked with "@no-apis" annotation,
                 //add CRUD apis by default
                 if type.hasNoAPIs() && !type.annotations.has(AnnotationConstants.dontGenerateApis) {
-//                    type.appendAPI(.create)
-//                    type.appendAPI(.update)
-//                    type.appendAPI(.delete)
-//                    type.appendAPI(.getById)
-//                    type.appendAPI(.list)
+                    type.appendAPI(.create)
+                    type.appendAPI(.update)
+                    type.appendAPI(.delete)
+                    type.appendAPI(.getById)
+                    type.appendAPI(.list)
                 }
             }
         }
+        
         return true
     }
 }

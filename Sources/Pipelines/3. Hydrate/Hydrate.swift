@@ -16,6 +16,6 @@ extension Hydrate {
     }
 
     public static func annotations() -> LoadingPass {
-        PassDownAnnotationsPass()
+        PassDownAndProcessAnnotationsPass()
     }
 }
