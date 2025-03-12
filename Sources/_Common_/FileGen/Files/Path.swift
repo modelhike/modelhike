@@ -12,7 +12,7 @@ public protocol Path: StringWrapper {
     var name: String {get}
 }
 
-public struct LocalPath : Path {
+public struct LocalPath : Path, CustomDebugStringConvertible {
     public static let separator = "/"
     
     public var string: String { url.path(percentEncoded: false) }
@@ -102,6 +102,8 @@ public struct LocalPath : Path {
         let symlinkPath = LocalPath(symlinkDestination)
         return symlinkPath
     }
+    
+    public var debugDescription: String { string }
     
     public init(relativePath: String, basePath: String) {
         let baseURL = URL(filePath: basePath, directoryHint: .checkFileSystem)

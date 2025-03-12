@@ -196,6 +196,10 @@ public struct LocalFolder : Folder, LocalFileSystemItem {
         self.path = LocalPath(relativePath: relativePath, basePath: basePath)
     }
     
+    public init(relativePath: String, basePath: LocalPath) {
+        self.path = LocalPath(relativePath: relativePath, basePath: basePath)
+    }
+    
     public init(relativePath: String, basePath: LocalFolder) {
         self.path = LocalPath(relativePath: relativePath, basePath: basePath.path)
     }
@@ -311,7 +315,7 @@ public struct LocalFile : File, LocalFileSystemItem {
     }
 }
 
-public protocol LocalFileSystemItem : FileSystemItem where Pa == LocalPath, Fo == LocalFolder {
+public protocol LocalFileSystemItem : CustomDebugStringConvertible, FileSystemItem where Pa == LocalPath, Fo == LocalFolder {
     //associatedtype Fo
     var pathString: String { get }
     var url: URL { get }
@@ -320,6 +324,9 @@ public protocol LocalFileSystemItem : FileSystemItem where Pa == LocalPath, Fo =
 }
 
 public extension LocalFileSystemItem {
+    var debugDescription: String {
+        return pathString
+    }
     
     var parent: (LocalFolder)? {
         guard path.string != "/" else { return nil }
