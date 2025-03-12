@@ -10,7 +10,7 @@ open class PlaceHolderFile : OutputFile {
     private let oldFilename: String
     public let filename: String
     private let repo: InputFileRepository
-    public var outputPath: LocalPath!
+    public var outputPath: LocalPath?
     let renderer: TemplateRenderer
     let pInfo: ParsedInfo
     var contents: String? = nil
@@ -24,20 +24,41 @@ open class PlaceHolderFile : OutputFile {
     }
     
     public func persist() throws {        
-        if let contents = contents {
+        if let contents, let outputPath {
             let outFile = LocalFile(path: outputPath / filename)
             try outFile.write(contents)
+        } else {
+            fatalError(#function + ": output path not set!")
         }
     }
     
-    public init(filename: String, repo: InputFileRepository, to newFileName: String, path outFilePath: LocalPath, renderer: TemplateRenderer, pInfo: ParsedInfo) {
+    public var debugDescription: String {
+        if let outputPath {
+            let outFile = LocalFile(path: outputPath / filename)
+            return outFile.pathString
+        } else {
+            return "PlaceHolderFile: \(filename)"
+        }
+    }
+    
+    public init(filename: String, repo: InputFileRepository, to newFileName: String, renderer: TemplateRenderer, pInfo: ParsedInfo) {
         self.oldFilename = filename
         self.filename = newFileName
 
         self.repo = repo
-        self.outputPath = outFilePath
+        self.outputPath = nil
         self.renderer = renderer
         self.pInfo = pInfo
     }
+    
+//    public init(filename: String, repo: InputFileRepository, to newFileName: String, path outFilePath: LocalPath, renderer: TemplateRenderer, pInfo: ParsedInfo) {
+//        self.oldFilename = filename
+//        self.filename = newFileName
+//
+//        self.repo = repo
+//        self.outputPath = outFilePath
+//        self.renderer = renderer
+//        self.pInfo = pInfo
+//    }
     
 }

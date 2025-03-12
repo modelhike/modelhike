@@ -6,10 +6,10 @@
 
 import Foundation
 
-open class RenderedFile : RenderableFile {
+open class RenderedFile : OutputFile, RenderableFile {
     public let filename: String
     private let template: String?
-    public var outputPath: LocalPath!
+    public var outputPath: LocalPath?
     private let data: [String: Any]?
     private let renderer: TemplateRenderer?
     private let pInfo: ParsedInfo
@@ -31,17 +31,27 @@ open class RenderedFile : RenderableFile {
     }
     
     public func persist() throws {
-        let file = LocalFile(path: outputPath / filename)
                 
-        if let contents = contents {
+        if let contents, let outputPath {
+            let file = LocalFile(path: outputPath / filename)
             try file.write(contents)
+        } else {
+            fatalError(#function + ": output path not set!")
         }
-        
     }
     
-    public init(filename: String, filePath: LocalPath, contents: String, pInfo: ParsedInfo) {
+    public var debugDescription: String {
+        if let outputPath {
+            let outFile = LocalFile(path: outputPath / filename)
+            return outFile.pathString
+        } else {
+            return "RenderedFile: \(filename)"
+        }
+    }
+    
+    public init(filename: String, contents: String, pInfo: ParsedInfo) {
         self.filename = filename
-        self.outputPath = filePath
+        self.outputPath = nil
         self.contents = contents
         self.pInfo = pInfo
         
@@ -50,13 +60,33 @@ open class RenderedFile : RenderableFile {
         self.template = nil
     }
     
-    public init(filename: String, filePath: LocalPath, template: String, data: [String: Any]? = nil, renderer: TemplateRenderer, pInfo: ParsedInfo) {
-        self.filename = filename
-        self.template = template
-        self.data = data
-        self.renderer = renderer
-        self.outputPath = filePath
-        self.pInfo = pInfo
-    }
+//    public init(filename: String, filePath: LocalPath, contents: String, pInfo: ParsedInfo) {
+//        self.filename = filename
+//        self.outputPath = filePath
+//        self.contents = contents
+//        self.pInfo = pInfo
+//        
+//        self.data = nil
+//        self.renderer = nil
+//        self.template = nil
+//    }
+    
+        public init(filename: String, template: String, data: [String: Any]? = nil, renderer: TemplateRenderer, pInfo: ParsedInfo) {
+            self.filename = filename
+            self.template = template
+            self.data = data
+            self.renderer = renderer
+            self.outputPath = nil
+            self.pInfo = pInfo
+        }
+    
+//    public init(filename: String, filePath: LocalPath, template: String, data: [String: Any]? = nil, renderer: TemplateRenderer, pInfo: ParsedInfo) {
+//        self.filename = filename
+//        self.template = template
+//        self.data = data
+//        self.renderer = renderer
+//        self.outputPath = filePath
+//        self.pInfo = pInfo
+//    }
     
 }

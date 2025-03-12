@@ -9,26 +9,52 @@ import Foundation
 open class RenderedFolder : PersistableFolder {    
     private let templateSoup: TemplateSoup
     public let foldername: String
-    public private(set) var outputFolder: OutputFolder
+    public let newFoldername: String
+    public var outputFolder: OutputFolder?
     let pInfo: ParsedInfo
     
     public func persist() throws {
         if let ctx = pInfo.ctx as? GenerationContext {
-            try outputFolder.persist(with: ctx)
+            if let outputFolder {
+                try outputFolder.persist(with: ctx)
+            } else {
+                fatalError(#function + ": output path not set!")
+            }
         } else {
             fatalError(#function + ": ctx is not GenerationContext")
         }
     }
     
     public func renderFiles() throws {
-        try templateSoup.repo.renderFiles(foldername: foldername, to: outputFolder, using: templateSoup, with: pInfo)
+        if let outputFolder {
+            try templateSoup.repo.renderFiles(foldername: foldername, to: outputFolder, using: templateSoup, with: pInfo)
+        } else {
+            fatalError(#function + ": output path not set!")
+        }
     }
     
-    public init(foldername: String, templateSoup: TemplateSoup, to newFoldername:String, path outFilePath: LocalPath, pInfo: ParsedInfo) {
+    public var debugDescription: String {
+        if let outputFolder {
+            return outputFolder.debugDescription + " : \(foldername) -> \(newFoldername)"
+        } else {
+            return "RenderedFolder: \(foldername) -> \(newFoldername)"
+        }
+    }
+    
+    public init(foldername: String, templateSoup: TemplateSoup, to newFoldername: String, pInfo: ParsedInfo) {
         self.templateSoup = templateSoup
         self.foldername = foldername
+        self.newFoldername = newFoldername
         self.pInfo = pInfo
-        self.outputFolder = OutputFolder(outFilePath / newFoldername)
+        self.outputFolder = nil
     }
+    
+//    public init(foldername: String, templateSoup: TemplateSoup, to newFoldername:String, path outFilePath: LocalPath, pInfo: ParsedInfo) {
+//        self.templateSoup = templateSoup
+//        self.foldername = foldername
+//        self.newFoldername = newFoldername
+//        self.pInfo = pInfo
+//        self.outputFolder = OutputFolder(outFilePath / newFoldername)
+//    }
     
 }

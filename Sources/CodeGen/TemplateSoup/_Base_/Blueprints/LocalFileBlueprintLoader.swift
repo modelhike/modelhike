@@ -105,7 +105,7 @@ public class LocalFileBlueprintLoader: Blueprint {
             let inFolder = LocalFolder(path: self.blueprintPath / foldername)
             
             for file in inFolder.files {
-                let copyFile = FileToCopy(file: file, toPath: outputFolder.path, pInfo: pInfo)
+                let copyFile = FileToCopy(file: file, pInfo: pInfo)
                 outputFolder.add(copyFile)
             }
             
@@ -181,7 +181,7 @@ public class LocalFileBlueprintLoader: Blueprint {
                             filename, with: actualFilename, folder: outputFolder.folder)
 
                         let outputFilename: String = outputname.isNotEmpty ? outputname : filename
-                        let outFile = RenderedFile(filename: outputFilename, filePath: outputFolder.path, contents: renderedString, pInfo: pInfo )
+                        let outFile = RenderedFile(filename: outputFilename, contents: renderedString, pInfo: pInfo )
                         outputFolder.add(outFile)
                     }
                 }
@@ -214,7 +214,7 @@ public class LocalFileBlueprintLoader: Blueprint {
 
                 templateSoup.context.debugLog.copyingFileInFolder(file.name, folder: outputFolder.folder)
 
-                let copyFile = FileToCopy(file: file, toPath: outputFolder.path, pInfo: pInfo)
+                let copyFile = FileToCopy(file: file, pInfo: pInfo)
                 outputFolder.add(copyFile)
             }
         }

@@ -6,13 +6,14 @@
 
 import Foundation
 
-public protocol PersistableFolder {
+public protocol PersistableFolder : AnyObject, CustomDebugStringConvertible {
     var foldername: String { get }
-    var outputFolder: OutputFolder { get }
+    var newFoldername: String { get }
+    var outputFolder: OutputFolder? { get set }
     func persist() throws
 }
 
-public class OutputFolder {
+public class OutputFolder : CustomDebugStringConvertible {
     internal private(set) var folder: LocalFolder
     public var subFolders: [OutputFolder] = []
     public private(set) var items: [OutputFile] = []
@@ -27,12 +28,13 @@ public class OutputFolder {
         items.append(file)
     }
 
-    public func add(_ folder: PersistableFolder) {
-        self.folderItems.append(folder)
+    public func add(_ subFolder: PersistableFolder) {
+        subFolder.outputFolder = OutputFolder(self.folder / subFolder.newFoldername)
+        self.folderItems.append(subFolder)
     }
 
-    public func add(_ folder: OutputFolder) {
-        self.subFolders.append(folder)
+    public func add(_ subFolder: OutputFolder) {
+        self.subFolders.append(subFolder)
     }
 
     public func add(_ doc: Document) {
@@ -42,7 +44,9 @@ public class OutputFolder {
     }
 
     public func add(_ doc: Document, filename: String) {
-        items.append(OutputDocumentFile(doc, filename: filename))
+        let docFile = OutputDocumentFile(doc, filename: filename)
+        docFile.outputPath = self.folder.path
+        items.append(docFile)
     }
 
     public func add(_ doc: Document, to fileSetName: String) {
@@ -69,13 +73,17 @@ public class OutputFolder {
         }
 
         for folder in folderItems {
-            try folder.persist()
-            context.addGenerated(folderPath: folder.outputFolder.folder)
+            if let outputFolder = folder.outputFolder {
+                try folder.persist()
+                context.addGenerated(folderPath: outputFolder.folder)
+            }
         }
 
         for item in items {
-            try item.persist()
-            context.addGenerated(filePath: item.outputPath.string + item.filename)
+            if let outputPath = item.outputPath {
+                try item.persist()
+                context.addGenerated(filePath: outputPath.string + item.filename)
+            }
         }
     }
 
@@ -94,13 +102,35 @@ public class OutputFolder {
     public lazy var templates: OutputFolder = { subFolder("templates") }()
     public lazy var assets: OutputFolder = { subFolder("assets") }()
 
-    public func subFolder(_ itemName: String) -> OutputFolder {
+    public func relativeFolder(_ itemName: String) -> OutputFolder {
+        //if existing return that sub folder
         for folder in self.subFolders {
-            if folder.folder.name == itemName {
+            let lastPath = String(folder.folder.url.relativePath.suffix(itemName.count))
+            if lastPath.is(itemName) {
                 return folder
             }
         }
 
+        //else, create a new sub folder, with the relative path
+        return createNewRelativeSubFolder(relativePath: itemName)
+    }
+    
+    private func createNewRelativeSubFolder(relativePath: String) -> OutputFolder {
+        let folder = LocalFolder(relativePath: relativePath, basePath: self.folder)
+        let newSubFolder = OutputFolder(folder)
+        self.subFolders.append(newSubFolder)
+        return newSubFolder
+    }
+    
+    public func subFolder(_ itemName: String) -> OutputFolder {
+        //if existing return that sub folder
+        for folder in self.subFolders {
+            if folder.folder.name.is(itemName) {
+                return folder
+            }
+        }
+
+        //else, create a new sub folder
         return createNewSubFolder(name: itemName)
     }
 
@@ -110,6 +140,10 @@ public class OutputFolder {
         return newSubFolder
     }
 
+    public var debugDescription: String {
+        return folder.pathString
+    }
+    
     public init(_ name: String) {
         self.folder = LocalFolder(path: name)
     }

@@ -6,7 +6,7 @@
 
 import Foundation
 
-public protocol RenderableFile: OutputFile {
+public protocol RenderableFile {
     var filename: String {get}
     func render() throws
 }
@@ -16,11 +16,11 @@ public protocol PersistableFile {
     func persist() throws
 }
 
-public protocol OutputFile : AnyObject, PersistableFile {
-    var outputPath: LocalPath! {get set}
+public protocol OutputFile : AnyObject, PersistableFile, CustomDebugStringConvertible {
+    var outputPath: LocalPath? {get set}
 }
 
 public protocol CopyableFile : OutputFile {
-    var outputPath: LocalPath! {get set}
+    var outputPath: LocalPath? {get set}
 }
 

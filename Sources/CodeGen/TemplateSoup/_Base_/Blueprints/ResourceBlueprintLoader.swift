@@ -125,7 +125,7 @@ public class ResourceBlueprintLoader: Blueprint {
                     let contents = try Data(contentsOf: resourcePath)
 
                     let filename = resourceName
-                    let outFile = StaticFile(filename: filename, filePath: outputFolder.path, data: contents, pInfo: pInfo )
+                    let outFile = StaticFile(filename: filename, data: contents, pInfo: pInfo )
                     outputFolder.add(outFile)
                 } else {  //resource folder
                     let newResUrl = resUrl.appendingPathComponent(resourceName)
@@ -194,7 +194,7 @@ public class ResourceBlueprintLoader: Blueprint {
 
                                 let ouputFilename: String =
                                     outputname.isNotEmpty ? outputname : filename
-                                let outFile = RenderedFile(filename: ouputFilename, filePath: outputFolder.path, contents: renderedString, pInfo: pInfo )
+                                let outFile = RenderedFile(filename: ouputFilename, contents: renderedString, pInfo: pInfo )
                                 outputFolder.add(outFile)
                             }
                         }
@@ -229,7 +229,7 @@ public class ResourceBlueprintLoader: Blueprint {
                         templateSoup.context.debugLog.copyingFileInFolder(
                             filename, folder: outputFolder.folder)
 
-                        let outFile = StaticFile(filename: filename, filePath: outputFolder.path, data: contents, pInfo: pInfo )
+                        let outFile = StaticFile(filename: filename, data: contents, pInfo: pInfo )
                         outputFolder.add(outFile)
                     }
                 } else {  //resource folder

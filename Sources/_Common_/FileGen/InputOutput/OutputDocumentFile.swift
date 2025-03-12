@@ -6,7 +6,7 @@
 
 public class OutputDocumentFile : OutputFile {
     public let filename: String
-    public var outputPath: LocalPath!
+    public var outputPath: LocalPath?
     public let doc: Document
     public let fileType : InputFileType
     
@@ -16,6 +16,10 @@ public class OutputDocumentFile : OutputFile {
     
     public func persist() {
         //TODO: add code
+    }
+    
+    public var debugDescription: String {
+        return "OutputDocumentFile(\(filename))"
     }
     
     public init(_ doc: Document, filename: String, type: InputFileType = .generic) {

@@ -7,7 +7,7 @@
 import Foundation
 
 open class FileToCopy : CopyableFile {
-    public var outputPath: LocalPath!
+    public var outputPath: LocalPath?
     
     public var filename: String { outFile.filename }
     
@@ -16,15 +16,28 @@ open class FileToCopy : CopyableFile {
     let pInfo: ParsedInfo
     
     public func persist() throws {
-        try outFile.copy(to: outputPath)
+        if let outputPath {
+            try outFile.copy(to: outputPath)
+        } else {
+            fatalError(#function + ": output path not set!")
+        }
     }
     
-    public init(file: LocalFile, toPath: LocalPath, pInfo: ParsedInfo) {
+    public var debugDescription: String {
+        return outFile.pathString
+    }
+    
+    public init(file: LocalFile, pInfo: ParsedInfo) {
         self.outFile = file
 
-        self.outputPath = toPath
+        self.outputPath = nil
         self.pInfo = pInfo
     }
     
-    
+//    public init(file: LocalFile, toPath: LocalPath, pInfo: ParsedInfo) {
+//        self.outFile = file
+//
+//        self.outputPath = toPath
+//        self.pInfo = pInfo
+//    }
 }

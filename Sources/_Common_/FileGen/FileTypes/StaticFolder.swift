@@ -9,26 +9,52 @@ import Foundation
 open class StaticFolder : PersistableFolder {
     private let repo: InputFileRepository
     public let foldername: String
-    public private(set) var outputFolder: OutputFolder
+    public let newFoldername: String
+    public var outputFolder: OutputFolder?
     let pInfo: ParsedInfo
     
     public func persist() throws {
         if let ctx = pInfo.ctx as? GenerationContext {
-            try outputFolder.persist(with: ctx)
+            if let outputFolder {
+                try outputFolder.persist(with: ctx)
+            } else {
+                fatalError(#function + ": output path not set!")
+            }
         } else {
             fatalError(#function + ": ctx is not GenerationContext")
         }
     }
     
     public func copyFiles() throws {
-        try repo.copyFiles(foldername: foldername, to: outputFolder, with: pInfo)
+        if let outputFolder {
+            try repo.copyFiles(foldername: foldername, to: outputFolder, with: pInfo)
+        } else {
+            fatalError(#function + ": output path not set!")
+        }
     }
     
-    public init(foldername: String, repo: InputFileRepository, to newFoldername:String, path outFilePath: LocalPath, pInfo: ParsedInfo) {
+    public var debugDescription: String {
+        if let outputFolder {
+            return outputFolder.debugDescription + " : \(foldername) -> \(newFoldername)"
+        } else {
+            return "StaticFolder: \(foldername) -> \(newFoldername)"
+        }
+    }
+    
+    public init(foldername: String, repo: InputFileRepository, to newFoldername:String, pInfo: ParsedInfo) {
         self.repo = repo
         self.foldername = foldername
-        self.outputFolder = OutputFolder(outFilePath / newFoldername)
+        self.newFoldername = newFoldername
+        self.outputFolder = nil
         self.pInfo = pInfo
     }
+    
+//    public init(foldername: String, repo: InputFileRepository, to newFoldername:String, path outFilePath: LocalPath, pInfo: ParsedInfo) {
+//        self.repo = repo
+//        self.foldername = foldername
+//        self.newFoldername = newFoldername
+//        self.outputFolder = OutputFolder(outFilePath / newFoldername)
+//        self.pInfo = pInfo
+//    }
     
 }

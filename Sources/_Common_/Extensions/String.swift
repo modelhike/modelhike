@@ -11,6 +11,10 @@ public extension String {
 
     static var empty: String { "" }
     
+    func `is`(_ txt: String) -> Bool {
+        return self.lowercased() == txt.lowercased()
+    }
+    
     func isOnly(_ txt: String) -> Bool {
         return self.trim() == txt
     }
