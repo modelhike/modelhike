@@ -159,34 +159,35 @@ public class LocalFileBlueprintLoader: Blueprint {
 
         for file in files {
             if file.extension == TemplateConstants.TemplateExtension {  //template file
-                let actualFilename = file.nameExcludingExtension
+                let actualTemplateFilename = file.nameExcludingExtension
 
                 //render the filename if it has an expression within '{{' and '}}'
                 let filename =
-                    try ContentHandler.eval(expression: actualFilename, with: templateSoup.context)
-                    ?? actualFilename
-
-                //if handler returns false, dont render file
-                if try !context.events.canRender(filename: filename, with: pInfo) {
-                    continue
-                }
+                    try ContentHandler.eval(expression: actualTemplateFilename, with: templateSoup.context)
+                    ?? actualTemplateFilename
 
                 let contents = try file.readTextContents()
 
-                let renderClosure = { (outputname: String, pInfo: ParsedInfo) in
+                let renderClosure = { [self] (outputname: String, pInfo: ParsedInfo) in
                     if let renderedString = try templateSoup.renderTemplate(
-                        string: contents, identifier: actualFilename, with: pInfo)
+                        string: contents, identifier: actualTemplateFilename, with: pInfo)
                     {
-                        templateSoup.context.debugLog.generatingFileInFolder(
-                            filename, with: actualFilename, folder: outputFolder.folder)
-
                         let outputFilename: String = outputname.isNotEmpty ? outputname : filename
+
+                        //if handler returns false, dont render file
+                        if try !self.context.events.canRender(filename: outputFilename, templatename: actualTemplateFilename, with: pInfo) {
+                            return
+                        }
+                        
+                        templateSoup.context.debugLog.generatingFileInFolder(
+                            filename, with: actualTemplateFilename, folder: outputFolder.folder)
+
                         let outFile = RenderedFile(filename: outputFilename, contents: renderedString, pInfo: pInfo )
                         outputFolder.add(outFile)
                     }
                 }
 
-                let parsingIdentifier = actualFilename
+                let parsingIdentifier = actualTemplateFilename
                 if let frontMatter = try templateSoup.frontMatter(
                     in: contents, identifier: parsingIdentifier),
                     let pInfo = frontMatter.hasDirective(ParserDirective.includeFor)

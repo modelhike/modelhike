@@ -69,6 +69,11 @@ public class RenderTemplateFileStmt: LineTemplateStmt, CallStackable, CustomDebu
             filename = toFile
         }
         
+        //if handler returns false, dont render file
+        if try !context.events.canRender(filename: filename, templatename: self.FromTemplate, with: pInfo) {
+            return nil
+        }
+        
         ctx.pushCallStack(self)
 
         //render the filename if it has an expression within '{{' and '}}'

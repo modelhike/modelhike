@@ -161,45 +161,42 @@ public class ResourceBlueprintLoader: Blueprint {
                 at: resUrl, includingPropertiesForKeys: nil)
             
             for resourcePath in resourcePaths {
-                var resourceName = resourcePath.lastPathComponent
+                let resourceName = resourcePath.lastPathComponent
 
                 if !resourcePath.hasDirectoryPath {  //resource file
                     if resourceName.fileExtension() == TemplateConstants.TemplateExtension {  //if tempalte file
 
-                        resourceName = resourceName.withoutFileExtension()
+                        let actualTemplateFilename = resourceName.withoutFileExtension()
 
                         //render the filename if it has an expression within '{{' and '}}'
                         let filename =
                             try ContentHandler.eval(
-                                expression: resourceName, with: templateSoup.context)
-                            ?? resourceName
-
-                        //if handler returns false, dont render file
-                        if try !context.events.canRender(filename: filename, with: pInfo) {
-                            continue
-                        }
+                                expression: actualTemplateFilename, with: templateSoup.context)
+                            ?? actualTemplateFilename
 
                         let contents = try String(contentsOf: resourcePath)
 
-                        let renderClosure = { (outputname: String, pInfo: ParsedInfo) in
+                        let renderClosure = { [self] (outputname: String, pInfo: ParsedInfo) in
                             if let renderedString = try templateSoup.renderTemplate(
-                                string: contents, identifier: resourceName, with: pInfo)
+                                string: contents, identifier: actualTemplateFilename, with: pInfo)
                             {
 
-                                //create the folder only if any file is rendered
-                                try outputFolder.ensureExists()
+                                let outputFilename: String = outputname.isNotEmpty ? outputname : filename
+
+                                //if handler returns false, dont render file
+                                if try !self.context.events.canRender(filename: outputFilename, templatename: actualTemplateFilename, with: pInfo) {
+                                    return
+                                }
 
                                 templateSoup.context.debugLog.generatingFileInFolder(
-                                    filename, with: resourceName, folder: outputFolder.folder)
+                                    filename, with: actualTemplateFilename, folder: outputFolder.folder)
 
-                                let ouputFilename: String =
-                                    outputname.isNotEmpty ? outputname : filename
-                                let outFile = RenderedFile(filename: ouputFilename, contents: renderedString, pInfo: pInfo )
+                                let outFile = RenderedFile(filename: outputFilename, contents: renderedString, pInfo: pInfo )
                                 outputFolder.add(outFile)
                             }
                         }
 
-                        let parsingIdentifier = resourceName
+                        let parsingIdentifier = actualTemplateFilename
                         if let frontMatter = try templateSoup.frontMatter(
                             in: contents, identifier: parsingIdentifier),
                             let pInfo = frontMatter.hasDirective(ParserDirective.includeFor)

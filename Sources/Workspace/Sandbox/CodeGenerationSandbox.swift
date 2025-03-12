@@ -175,7 +175,7 @@ public class CodeGenerationSandbox : GenerationSandbox {
     }
     
     public func generateFile(_ filename: String, template: String, with pInfo: ParsedInfo) throws -> RenderedFile? {
-        if try !context.events.canRender(filename: filename, with: pInfo) { //if handler returns false, dont render file
+        if try !context.events.canRender(filename: filename, templatename: template, with: pInfo) { //if handler returns false, dont render file
             return nil
         }
         
@@ -187,7 +187,7 @@ public class CodeGenerationSandbox : GenerationSandbox {
     }
     
     public func generateFileWithData(_ filename: String, template: String, data: [String: Any], with pInfo: ParsedInfo) throws -> RenderedFile? {
-        if try !context.events.canRender(filename: filename, with: pInfo) { //if handler returns false, dont render file
+        if try !context.events.canRender(filename: filename, templatename: template, with: pInfo) { //if handler returns false, dont render file
             return nil
         }
         

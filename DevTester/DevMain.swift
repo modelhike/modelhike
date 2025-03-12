@@ -33,6 +33,19 @@ struct Development {
         //for debugging
         //config.flags.fileGeneration = true
         
+//        config.events.onBeforeRenderTemplateFile = { filename, templateName, pInfo in
+//            //print(filename)
+//            
+//            if filename.is("user.java") {
+//                pInfo.ctx.debugLog.flags.lineByLineParsing = true
+//            } else {
+//                pInfo.ctx.debugLog.flags.lineByLineParsing = false
+//            }
+//            
+//            return true
+//        }
+        
+        
 //        config.events.onBeforeRenderFile = { filename, context in
 //            if filename.lowercased() == "MonitoredLiveAirport".lowercased() {
 //                print("rendering \(filename)")
