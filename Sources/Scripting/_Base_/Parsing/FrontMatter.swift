@@ -67,12 +67,12 @@ public struct FrontMatter {
         
         switch directiveName {
             case ParserDirective.includeIf :
-            if let pInfo = parser.currentParsedInfo(level: 0) {
+            //if let pInfo = parser.currentParsedInfo(level: 0) {
                 let result = try ctx.evaluateCondition(expression: rhs, with: pInfo)
                 if !result {
                     throw ParserDirective.excludeFile(parser.identifier)
                 }
-            }
+            //}
                 
             case ParserDirective.includeFor:
                 //handled elsewhere
@@ -125,5 +125,27 @@ public struct FrontMatter {
         lineParser.skipLine()
         
         self.pInfo = ParsedInfo.dummy(line: "FrontMatter", identifier: lineParser.identifier, with: context)
+    }
+    
+    @discardableResult
+    public init?(in contents: String, filename: String, with context: GenerationContext) throws {
+        let lineParser = LineParserDuringGeneration(
+            string: contents, identifier: filename, isStatementsPrefixedWithKeyword: true,
+            with: context)
+        
+        parser = lineParser
+        ctx = context
+        
+        let curLine = lineParser.currentLine()
+
+        if curLine.hasOnly(TemplateConstants.frontMatterIndicator) {
+            lineParser.skipLine()
+            self.lines = lineParser.parseLinesTill(lineHasOnly: TemplateConstants.frontMatterIndicator)
+            lineParser.skipLine()
+            
+            self.pInfo = ParsedInfo.dummy(line: "FrontMatter", identifier: lineParser.identifier, with: context)
+        } else {
+            return nil
+        }
     }
 }

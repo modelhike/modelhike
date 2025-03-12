@@ -177,22 +177,46 @@ public class ResourceBlueprintLoader: Blueprint {
                         let contents = try String(contentsOf: resourcePath)
 
                         let renderClosure = { [self] (outputname: String, pInfo: ParsedInfo) in
+                            do {
+                            let outputFilename: String = outputname.isNotEmpty ? outputname : filename
+
+                            //if handler returns false, dont render file
+                            if try !self.context.events.canRender(filename: outputFilename, templatename: actualTemplateFilename, with: pInfo) {
+                                return
+                            }
+                            
+                            //check if parser directives to exclude file
+                            if let ctx = pInfo.ctx as? GenerationContext {
+                                if let frontMatter = try FrontMatter(in: contents, filename: filename, with: ctx) {
+                                    try frontMatter.processVariables()
+                                }
+                            }
+                            
                             if let renderedString = try templateSoup.renderTemplate(
                                 string: contents, identifier: actualTemplateFilename, with: pInfo)
                             {
-
-                                let outputFilename: String = outputname.isNotEmpty ? outputname : filename
-
-                                //if handler returns false, dont render file
-                                if try !self.context.events.canRender(filename: outputFilename, templatename: actualTemplateFilename, with: pInfo) {
-                                    return
-                                }
 
                                 templateSoup.context.debugLog.generatingFileInFolder(
                                     filename, with: actualTemplateFilename, folder: outputFolder.folder)
 
                                 let outFile = RenderedFile(filename: outputFilename, contents: renderedString, pInfo: pInfo )
                                 outputFolder.add(outFile)
+                            }
+                            } catch let err {
+                                if let directive = err as? ParserDirective {
+                                    if case let .excludeFile(filename) = directive {
+                                        pInfo.ctx.debugLog.excludingFile(filename)
+                                        return  //nothing to generate from this excluded file
+                                    } else if case let .stopRenderingCurrentFile(filename, pInfo) = directive {
+                                        pInfo.ctx.debugLog.stopRenderingCurrentFile(filename, pInfo: pInfo)
+                                        return  //nothing to generate from this rendering stopped file
+                                    } else if case let .throwErrorFromCurrentFile(filename, errMsg, pInfo) = directive {
+                                        pInfo.ctx.debugLog.throwErrorFromCurrentFile(filename, err: errMsg, pInfo: pInfo)
+                                        throw EvaluationError.templateRenderingError(pInfo, directive)
+                                    }
+                                } else {
+                                    throw err
+                                }
                             }
                         }
 
