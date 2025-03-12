@@ -14,7 +14,7 @@ open class ResourceBlueprintFinder: BlueprintFinder {
     public lazy var blueprintsAvailable: [String] = getListOfblueprintsAvailable()
     
     open func getListOfblueprintsAvailable() -> [String] {
-        fatalError("This method must be overridden")
+        fatalError(#function + ": This method must be overridden")
     }
     
     public func hasBlueprint(named name: String) -> Bool {
@@ -25,7 +25,7 @@ open class ResourceBlueprintFinder: BlueprintFinder {
         if let ctx = pInfo.ctx as? GenerationContext {
             return ResourceBlueprintLoader(blueprint: name, blueprintsRoot: blueprintsRoot, resourceRoot: resourceRoot, bundle: bundle, with: ctx)
         } else {
-            fatalError("unknown context passed")
+            fatalError(#function + ": unknown context passed")
         }
     }
     

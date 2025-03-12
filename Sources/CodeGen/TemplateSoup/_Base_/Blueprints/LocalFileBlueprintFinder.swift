@@ -16,7 +16,7 @@ public class LocalFileBlueprintFinder: BlueprintFinder {
         if let ctx = pInfo.ctx as? GenerationContext {
             return LocalFileBlueprintLoader(blueprint: name, path: rootPath, with: ctx)
         } else {
-            fatalError("unknown context passed")
+            fatalError(#function + ": unknown context passed")
         }
     }
     

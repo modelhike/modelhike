@@ -17,7 +17,7 @@ public class BlockOrLineTemplateStmt: FileTemplateStatement {
     var isBlockVariant: Bool = false
 
     public func execute(with ctx: Context) throws -> String? {
-        fatalError("This method must be overridden")
+        fatalError(#function + ": This method must be overridden")
     }
 
     private func parseStmtLine_BlockVariant(line: String, lineParser: LineParser) throws {
@@ -37,15 +37,15 @@ public class BlockOrLineTemplateStmt: FileTemplateStatement {
     }
 
     func checkIfLineVariant(line: String) -> Bool {
-        fatalError("This method must be overridden")
+        fatalError(#function + ": This method must be overridden")
     }
 
     func matchLine_BlockVariant(line: String) throws -> Bool {
-        fatalError("This method must be overridden")
+        fatalError(#function + ": This method must be overridden")
     }
 
     func matchLine_LineVariant(line: String) throws -> Bool {
-        fatalError("This method must be overridden")
+        fatalError(#function + ": This method must be overridden")
     }
 
     func appendText(_ item: ContentLine) {

@@ -14,7 +14,7 @@ public extension ChoiceOf where RegexOutput == Substring {
         let exps = components.map { AlternationBuilder.buildExpression($0) }
         
         guard !exps.isEmpty else {
-            fatalError("Empty choice!")
+            fatalError(#function + ": Empty choice!")
         }
         
         self = exps.dropFirst().reduce(AlternationBuilder.buildPartialBlock(first: exps[0])) { acc, next in

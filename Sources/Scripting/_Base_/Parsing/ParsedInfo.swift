@@ -83,7 +83,7 @@ public class ParsedInfo : Equatable {
         } else if let genctx = ctx as? GenerationContext {
             return dummy(line: line, identifier: identifier, with: genctx)
         } else {
-            fatalError("unknown Context passes")
+            fatalError(#function + ": unknown Context passes")
         }
     }
     
@@ -93,7 +93,7 @@ public class ParsedInfo : Equatable {
         } else if let genctx = ctx as? GenerationContext {
             return dummy(line: "Front-Matter", identifier: identifier, with: genctx)
         } else {
-            fatalError("unknown Context passes")
+            fatalError(#function + ": unknown Context passes")
         }
     }
     
@@ -103,7 +103,7 @@ public class ParsedInfo : Equatable {
         } else if let genctx = ctx as? GenerationContext {
             return dummy(line: "Main-File", identifier: "Main-File", with: genctx)
         } else {
-            fatalError("unknown Context passes")
+            fatalError(#function + ": unknown Context passes")
         }
     }
     
@@ -113,7 +113,7 @@ public class ParsedInfo : Equatable {
         } else if let genctx = ctx as? GenerationContext {
             return dummy(line: "App-State", identifier: "App-State", with: genctx)
         } else {
-            fatalError("unknown Context passes")
+            fatalError(#function + ": unknown Context passes")
         }
     }
     

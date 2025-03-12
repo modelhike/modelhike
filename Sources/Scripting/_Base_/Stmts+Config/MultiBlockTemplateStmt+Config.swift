@@ -18,7 +18,7 @@ public class MultiBlockTemplateStmt : FileTemplateStatement {
     var isEmpty: Bool { children.isEmpty }
 
     public func execute(with ctx: Context) throws -> String? {
-        fatalError("This method must be overridden")
+        fatalError(#function + ": This method must be overridden")
     }
     
     private func parseStmtLine(lineParser: LineParser) throws {
@@ -31,7 +31,7 @@ public class MultiBlockTemplateStmt : FileTemplateStatement {
     }
     
     func matchLine(line: String) throws -> Bool {
-        fatalError("This method must be overridden")
+        fatalError(#function + ": This method must be overridden")
     }
     
     func checkIfSupportedAndGetBlock(blockLime: UnIdentifiedStmt) throws -> PartOfMultiBlockContainer? { return nil }
