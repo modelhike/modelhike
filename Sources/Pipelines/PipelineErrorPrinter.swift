@@ -85,6 +85,7 @@ public struct PipelineErrorPrinter {
             //print(Thread.callStackSymbols)
         } else {
             print("❌❌ UNKNOWN INTERNAL ERROR ❌❌")
+            print(err)
         }
         
     }

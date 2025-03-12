@@ -52,11 +52,17 @@ public class Pipeline {
         var lastRunResult = true
         
         for phase in phases {
-            let success = try await phase.runIn(pipeline: self)
-            if !success { lastRunResult = false; break }
+            do {
+                let success = try await phase.runIn(pipeline: self)
+                if !success { lastRunResult = false; break }
+            } catch let err {
+                print("❌❌ ERROR OCCURRED IN \(phase.name) Phase ❌❌")
+                throw err
+            }
         }
         
         return lastRunResult
+
     }
     
     public init(@PipelineBuilder _ builder: () -> [PipelinePass]) {

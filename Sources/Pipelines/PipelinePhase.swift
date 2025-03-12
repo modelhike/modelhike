@@ -7,6 +7,7 @@
 import Foundation
 
 public struct DiscoverPhase: PipelinePhase {
+    public let name: String = "Discover"
     public private(set) var context: LoadContext
     public var config: OutputConfig { context.config }
 
@@ -33,6 +34,7 @@ public struct DiscoverPhase: PipelinePhase {
 }
 
 public struct LoadPhase: PipelinePhase {
+    public let name: String = "Load"
     public private(set) var context: LoadContext
     public var config: OutputConfig { context.config }
 
@@ -60,6 +62,7 @@ public struct LoadPhase: PipelinePhase {
 }
 
 public struct HydratePhase: PipelinePhase {
+    public let name: String = "Hydrate"
     public private(set) var context: LoadContext
     public var config: OutputConfig { context.config }
 
@@ -86,6 +89,7 @@ public struct HydratePhase: PipelinePhase {
 }
 
 public struct TransformPhase: PipelinePhase {
+    public let name: String = "Transform"
     public private(set) var context: LoadContext
     public var config: OutputConfig { context.config }
 
@@ -117,6 +121,7 @@ public struct TransformPhase: PipelinePhase {
 }
 
 public struct RenderPhase: PipelinePhase {
+    public let name: String = "Render"
     public private(set) var context: LoadContext
     public var config: OutputConfig { context.config }
 
@@ -146,6 +151,7 @@ public struct RenderPhase: PipelinePhase {
 }
 
 public struct PersistPhase: PipelinePhase {
+    public let name: String = "Persist"
     public private(set) var context: LoadContext
     public var config: OutputConfig { context.config }
 
@@ -173,6 +179,8 @@ public struct PersistPhase: PipelinePhase {
 
 public protocol PipelinePhase {
     associatedtype Pass
+    
+    var name: String { get }
     var context: LoadContext { get }
     var config: OutputConfig { get }
 
