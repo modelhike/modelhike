@@ -24,9 +24,11 @@ open class PlaceHolderFile : OutputFile {
     }
     
     public func persist() throws {        
-        if let contents, let outputPath {
-            let outFile = LocalFile(path: outputPath / filename)
-            try outFile.write(contents)
+        if let outputPath {
+            if let contents { //save only if there is a content
+                let outFile = LocalFile(path: outputPath / filename)
+                try outFile.write(contents)
+            }
         } else {
             fatalError(#function + ": output path not set!")
         }

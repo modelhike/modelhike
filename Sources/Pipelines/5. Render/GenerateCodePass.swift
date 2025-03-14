@@ -21,8 +21,8 @@ public struct GenerateCodePass : RenderingPass {
         
         var templatesRepo: Blueprint
         
-        //let blueprint = "api-nestjs-monorepo"
-        let blueprint = "api-springboot-monorepo"
+        let blueprint = "api-nestjs-monorepo"
+        //let blueprint = "api-springboot-monorepo"
         
         if blueprint == "api-nestjs-monorepo" {
             try sandbox.loadSymbols([.typescript, .mongodb_typescript])
@@ -33,7 +33,7 @@ public struct GenerateCodePass : RenderingPass {
         let pInfo = ParsedInfo.dummyForAppState(with: sandbox.context)
         templatesRepo = try sandbox.config.blueprint(named: blueprint, with: pInfo)
         
-        if phase.config.outputIten == .container {
+        if phase.config.outputItemType == .container {
             //if there is only one container in the model, generate for that container
             if sandbox.model.containers.count == 1, let container = sandbox.model.containers.first {
                 let containerName = container.name

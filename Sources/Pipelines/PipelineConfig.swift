@@ -11,7 +11,7 @@ public struct PipelineConfig : OutputConfig {
         }
     }
     
-    public var outputIten : OutputArtifactType = .container
+    public var outputItemType : OutputArtifactType = .container
     public var containersToOutput: [String] = []
     public var containerGroupsToOutput: [String] = []
     public var systemViewsToOutput: [String] = []
@@ -60,7 +60,7 @@ public enum OutputArtifactType {
 public protocol OutputConfig {
     var basePath: LocalPath {get set}
     
-    var outputIten : OutputArtifactType {get set}
+    var outputItemType : OutputArtifactType {get set}
     var containersToOutput: [String] {get set}
     var containerGroupsToOutput: [String] {get set}
     var systemViewsToOutput: [String] {get set}
