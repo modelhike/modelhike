@@ -32,9 +32,11 @@ open class RenderedFile : OutputFile, RenderableFile {
     
     public func persist() throws {
                 
-        if let contents, let outputPath {
-            let file = LocalFile(path: outputPath / filename)
-            try file.write(contents)
+        if let outputPath {
+            if let contents { //save only if there is a content
+                let file = LocalFile(path: outputPath / filename)
+                try file.write(contents)
+            }
         } else {
             fatalError(#function + ": output path not set!")
         }
