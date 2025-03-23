@@ -31,7 +31,7 @@ public class LocalFileBlueprintFinder: BlueprintFinder {
         return names
     }()
 
-    internal init(path: LocalPath) {
+    public init(path: LocalPath) {
         self.paths = [path]
         self.rootPath = path
     }

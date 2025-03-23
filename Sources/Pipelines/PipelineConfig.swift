@@ -43,6 +43,8 @@ public struct PipelineConfig : OutputConfig {
 
 public struct ErrorOutputOptions {
     public var includeMemoryVariablesDump: Bool = false
+    
+    public init() {}
 }
 
 public enum BluePrintType {

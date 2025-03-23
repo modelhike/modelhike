@@ -281,4 +281,6 @@ public struct ContextDebugFlags {
     public var onSkipLines = false
     public var onIncrementLines = false
     public var onCommentedLines = false
+    
+    public init() {}
 }
