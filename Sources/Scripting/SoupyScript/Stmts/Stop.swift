@@ -14,7 +14,7 @@ public class StopRenderingCurrentTemplateStmt: LineTemplateStmt, CustomDebugStri
     
     let stmtRegex = Regex {
         START_KEYWORD
-        OneOrMore(.whitespace)
+        ZeroOrMore(.whitespace)
         
         CommonRegEx.comments
     }

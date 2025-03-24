@@ -44,7 +44,7 @@ public class OutputFolder : CustomDebugStringConvertible {
     }
 
     public func add(_ doc: Document, filename: String, renderConfig: RenderConfig, type: OutputDocumentFile.InputFileType = .generic) -> OutputDocumentFile {
-        let docFile = OutputDocumentFile(doc, filename: filename, renderConfig: renderConfig)
+        let docFile = OutputDocumentFile(doc, filename: filename, renderConfig: renderConfig, type: type)
         docFile.outputPath = self.folder.path
         items.append(docFile)
         
@@ -56,9 +56,9 @@ public class OutputFolder : CustomDebugStringConvertible {
         return folder.add(doc, renderConfig: renderConfig)
     }
 
-    public func add(_ doc: Document, filename: String, to fileSetName: String, renderConfig: RenderConfig) -> OutputDocumentFile {
+    public func add(_ doc: Document, filename: String, to fileSetName: String, renderConfig: RenderConfig, type: OutputDocumentFile.InputFileType = .generic) -> OutputDocumentFile {
         let folder = subFolder(fileSetName)
-        return folder.add(doc, filename: filename, renderConfig: renderConfig)
+        return folder.add(doc, filename: filename, renderConfig: renderConfig, type: type)
     }
 
     public func persist(with context: GenerationContext) throws {
