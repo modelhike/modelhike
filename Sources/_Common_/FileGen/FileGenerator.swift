@@ -10,8 +10,8 @@ public protocol FileGeneratorProtocol {
     var base_generation_dir: OutputFolder {get}
     mutating func setRelativePath(_ path: String) throws
     
-    func generateFile(_ filename: String, template: String, with pInfo: ParsedInfo) throws -> RenderedFile?
-    func generateFileWithData(_ filename: String, template: String, data: [String: Any], with pInfo: ParsedInfo) throws -> RenderedFile?
+    func generateFile(_ filename: String, template: String, with pInfo: ParsedInfo) throws -> TemplateRenderedFile?
+    func generateFileWithData(_ filename: String, template: String, data: [String: Any], with pInfo: ParsedInfo) throws -> TemplateRenderedFile?
     func copyFile(_ filename: String, with pInfo: ParsedInfo) throws -> StaticFile
     func copyFile(_ filename: String, to newFilename: String, with pInfo: ParsedInfo) throws -> StaticFile
     

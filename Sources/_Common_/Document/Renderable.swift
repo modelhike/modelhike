@@ -9,6 +9,7 @@ public protocol Renderable {
 }
 
 public protocol RenderableRoot : Renderable {
+    @discardableResult
     func render(_ config: RenderConfig) -> String
 }
 

@@ -199,7 +199,7 @@ public class ResourceBlueprintLoader: Blueprint {
                                 templateSoup.context.debugLog.generatingFileInFolder(
                                     filename, with: actualTemplateFilename, folder: outputFolder.folder)
 
-                                let outFile = RenderedFile(filename: outputFilename, contents: renderedString, pInfo: pInfo )
+                                let outFile = TemplateRenderedFile(filename: outputFilename, contents: renderedString, pInfo: pInfo )
                                 outputFolder.add(outFile)
                             }
                             } catch let err {

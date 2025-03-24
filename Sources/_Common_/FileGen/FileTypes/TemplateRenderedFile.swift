@@ -1,12 +1,12 @@
 //
-//  RenderedFile.swift
+//  TemplateRenderedFile.swift
 //  ModelHike
 //  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation
 
-open class RenderedFile : OutputFile, RenderableFile {
+open class TemplateRenderedFile : OutputFile, RenderableFile {
     public let filename: String
     private let template: String?
     public var outputPath: LocalPath?
@@ -47,7 +47,7 @@ open class RenderedFile : OutputFile, RenderableFile {
             let outFile = LocalFile(path: outputPath / filename)
             return outFile.pathString
         } else {
-            return "RenderedFile: \(filename)"
+            return "Template RenderedFile: \(filename)"
         }
     }
     

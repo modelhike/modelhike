@@ -174,24 +174,24 @@ public class CodeGenerationSandbox : GenerationSandbox {
         }
     }
     
-    public func generateFile(_ filename: String, template: String, with pInfo: ParsedInfo) throws -> RenderedFile? {
+    public func generateFile(_ filename: String, template: String, with pInfo: ParsedInfo) throws -> TemplateRenderedFile? {
         if try !context.events.canRender(filename: filename, templatename: template, with: pInfo) { //if handler returns false, dont render file
             return nil
         }
         
-        let file = RenderedFile(filename: filename, template: template, renderer: self.templateSoup, pInfo: pInfo)
+        let file = TemplateRenderedFile(filename: filename, template: template, renderer: self.templateSoup, pInfo: pInfo)
         
         generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
         try file.render()
         return file
     }
     
-    public func generateFileWithData(_ filename: String, template: String, data: [String: Any], with pInfo: ParsedInfo) throws -> RenderedFile? {
+    public func generateFileWithData(_ filename: String, template: String, data: [String: Any], with pInfo: ParsedInfo) throws -> TemplateRenderedFile? {
         if try !context.events.canRender(filename: filename, templatename: template, with: pInfo) { //if handler returns false, dont render file
             return nil
         }
         
-        let file = RenderedFile(filename: filename, template: template, data: data, renderer: self.templateSoup, pInfo: pInfo)
+        let file = TemplateRenderedFile(filename: filename, template: template, data: data, renderer: self.templateSoup, pInfo: pInfo)
         
         generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
         try file.render()
