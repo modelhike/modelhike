@@ -92,8 +92,7 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
     }
     
     public override func execute(with ctx: Context) throws -> String? {
-        guard IFCondition.isNotEmpty,
-              children.count != 0 else { return nil }
+        guard IFCondition.isNotEmpty else { return nil }
         
         var rendering = ""
         
