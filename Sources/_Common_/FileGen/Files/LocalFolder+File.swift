@@ -174,6 +174,8 @@ public struct LocalFolder : Folder, LocalFileSystemItem {
     }
     
     public func deleteAllFilesAndFolders() throws {
+        if !self.exists { return } //nothing to delete; folder does not exists
+        
         let fileManager = FileManager.default
         let items = try fileManager.contentsOfDirectory(at: url, includingPropertiesForKeys: nil)
         
