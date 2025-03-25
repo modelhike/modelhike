@@ -5,18 +5,18 @@
 //
 
 public struct PipelineConfig : OutputConfig {
-    public var basePath: LocalPath = SystemFolder.desktop.path {
+    public var basePath: LocalPath = SystemFolder.documents.path {
         didSet {
-            self.output = LocalFolder(path: basePath / "output")
+            self.output = LocalFolder(path: basePath / "modelhike-output")
         }
     }
     
+    public var output : LocalFolder = SystemFolder.documents / "modelhike-output"
     public var outputItemType : OutputArtifactType = .container
+    
     public var containersToOutput: [String] = []
     public var containerGroupsToOutput: [String] = []
     public var systemViewsToOutput: [String] = []
-
-    public var output : LocalFolder = SystemFolder.documents / "diagsoup-output"
 
     public var modelLoaderType : ModelLoaderType = .localFileSystem
     
