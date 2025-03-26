@@ -1,7 +1,8 @@
-# DiagSoup
+# ModelHike
 
 
 
 # Architecture Design Records
-- all list-wrappers are classes, as they need to be reference-types, so that their state and mutations are maintained as they be passed to other methods
-- most classes and props are left open-ended and public, as the intention is to not have unnecessary restriction for the developers to use this library and it is too early to decide on which usage is allowed and which is not
+- Swift-UI compatible syntax is used for two reasons:
+    1. iOS Devs can start using this Framework, by creating SwiftUI views and then, convert the view into a Webpage, by just changing the 'import SwiftUI' to 'import HtmlTail' 
+    2. With advent of GenAI, as LLMS excel in generating code for known frameworks, we are piggybacking on their ability to generate SwiftUI code, to make them generate code for this HtmlTail framwork
