@@ -127,6 +127,9 @@ public struct LocalPath : Path, CustomDebugStringConvertible {
 }
 
 public struct WebPath : Path {
+    public static let root: WebPath = .init("/")
+    public static let unknown: WebPath = .init("?")
+
     public var string: String
     public var url: URL
     
@@ -141,7 +144,12 @@ public struct WebPath : Path {
         self.string = string
     }
     
-    public init(_ url: URL) {
+    public init(string: String) {
+        self.url = URL(string: string)!
+        self.string = string
+    }
+    
+    public init(url: URL) {
         self.url = url
         self.string = url.path(percentEncoded: false)
     }
@@ -173,6 +181,36 @@ public extension LocalPath {
         } else {
             let url = lhs.url.appending(path: rhsString)
             return LocalPath(url)
+        }
+    }
+}
+
+public extension WebPath {
+    @inlinable
+    static func +(lhs: WebPath, rhs: WebPath) -> WebPath {
+        let url = lhs.url.appending(path: rhs.string)
+        return WebPath(url: url)
+    }
+
+    @inlinable
+    static func +(lhs: WebPath, rhs: any StringProtocol) -> WebPath {
+        let rhsString = String(rhs)
+        if rhs.isEmpty || rhsString == "/" {
+            return lhs
+        } else {
+            let url = lhs.url.appending(path: rhsString)
+            return WebPath(url: url)
+        }
+    }
+    
+    @inlinable
+    static func /<S>(lhs: WebPath, rhs: S) -> WebPath where S: StringProtocol {
+        let rhsString = String(rhs)
+        if rhs.isEmpty || rhsString == "/" {
+            return lhs
+        } else {
+            let url = lhs.url.appending(path: rhsString)
+            return WebPath(url: url)
         }
     }
 }
