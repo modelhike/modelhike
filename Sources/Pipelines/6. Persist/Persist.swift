@@ -11,7 +11,7 @@ public enum Persist {
 }
 
 public extension Persist {
-    static func toOutput() -> PipelinePass {
+    static func toOutputFolder() -> PipelinePass {
         GenerateOutputFoldersPass()
     }
     

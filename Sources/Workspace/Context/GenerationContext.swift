@@ -35,27 +35,31 @@ public class GenerationContext: Context {
         self.generatedFiles.append(filePath)
     }
 
-    public func addGenerated(folderPath: LocalPath) {
-        return addGenerated(folderPath: LocalFolder(path: folderPath))
+    public func addGenerated(folderPath: LocalPath, addFileCount: Bool = true) {
+        return addGenerated(folderPath: LocalFolder(path: folderPath), addFileCount: addFileCount)
     }
     
-    public func addGenerated(folderPath: LocalFolder) {
+    public func addGenerated(folderPath: LocalFolder, addFileCount: Bool = true) {
         self.generatedFolders.append(folderPath.pathString)
         
         let files = folderPath.files
 
-        for file in files {
-            self.generatedFiles.append(file.pathString)
+        if addFileCount {
+            for file in files {
+                self.generatedFiles.append(file.pathString)
+            }
         }
-
+        
         //add files in subfolder also
         for folder in folderPath.subFolders {
             self.generatedFolders.append(folder.pathString)
 
-            let files = folder.files
-
-            for file in files {
-                self.generatedFiles.append(file.pathString)
+            if addFileCount {
+                let files = folder.files
+                
+                for file in files {
+                    self.generatedFiles.append(file.pathString)
+                }
             }
         }
     }

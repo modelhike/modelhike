@@ -71,7 +71,7 @@ public class OutputFolder : CustomDebugStringConvertible {
 
         for folder in subFolders {
             try folder.persist(with: context)
-            context.addGenerated(folderPath: folder.path)
+            context.addGenerated(folderPath: folder.path, addFileCount: false)
         }
 
         for folder in folderItems {
