@@ -8,7 +8,7 @@ import Foundation
 
 open class OutputDocumentFile : OutputFile, RenderableFile {
     public let filename: String
-    private let doc: Document
+    private let doc: RenderableDocument
     private let renderConfig: RenderConfig
 
     public var outputPath: LocalPath?
@@ -17,7 +17,7 @@ open class OutputDocumentFile : OutputFile, RenderableFile {
     public let fileType : InputFileType
 
     public func render() throws {
-        self.contents = try doc.render(renderConfig)
+        self.contents = doc.render(renderConfig)
     }
     
     public func persist() throws {
@@ -41,7 +41,7 @@ open class OutputDocumentFile : OutputFile, RenderableFile {
         }
     }
     
-    public init(_ doc: Document, filename: String, renderConfig: RenderConfig, type: InputFileType = .generic) {
+    public init(_ doc: RenderableDocument, filename: String, renderConfig: RenderConfig, type: InputFileType = .generic) {
         self.filename = filename
         self.doc = doc
         self.outputPath = nil

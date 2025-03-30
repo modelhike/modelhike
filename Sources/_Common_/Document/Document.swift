@@ -6,7 +6,11 @@
 
 import Foundation
 
-public protocol Document : RenderableRoot {
+public protocol Document {
+    
+}
+
+public protocol RenderableDocument : RenderableRoot {
     
 }
 
