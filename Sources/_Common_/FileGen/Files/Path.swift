@@ -126,11 +126,11 @@ public struct LocalPath : Path, CustomDebugStringConvertible {
     }
 }
 
-public struct WebPath : Path {
+public struct WebPath : Path, CustomDebugStringConvertible {
     public static let root: WebPath = .init("/")
     public static let unknown: WebPath = .init("?")
 
-    public var string: String
+    public var string: String { url.path(percentEncoded: false) }
     public var url: URL
     
     public var name: String { url.lastPathComponent }
@@ -139,19 +139,32 @@ public struct WebPath : Path {
         return string.lowercased().hasPrefix("http://") || string.lowercased().hasPrefix("https://")
     }
     
+    public func path(relativeTo basePath: WebPath) -> WebPath {
+        let relativePath = url.path.replacingOccurrences(of: basePath.url.path, with: "")
+        return WebPath(relativePath: relativePath, basePath: basePath)
+    }
+    
+    public var debugDescription: String { string }
+
+    public init(relativePath: String, basePath: WebPath) {
+        let baseURL = basePath.url
+        let combinedURL = baseURL.appendingPathComponent(relativePath)
+        self.url = combinedURL.standardized
+    }
+    
     public init(_ string: String) {
         self.url = URL(string: string)!
-        self.string = string
+        //self.string = string
     }
     
     public init(string: String) {
         self.url = URL(string: string)!
-        self.string = string
+        //self.string = string
     }
     
     public init(url: URL) {
         self.url = url
-        self.string = url.path(percentEncoded: false)
+        //self.string = url.path(percentEncoded: false)
     }
 }
 
