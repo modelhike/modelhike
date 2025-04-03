@@ -6,16 +6,16 @@
 
 import Foundation
 
-public class ParsedInfo : Equatable {
-    public internal(set) var line: String
-    public internal(set) var lineNo: Int
-    public internal(set) var level: Int
-    public internal(set) var firstWord: String
-    public internal(set) var secondWord: String? = nil
+public struct ParsedInfo : SendableEquatable {
+    public private(set) var line: String
+    public private(set) var lineNo: Int
+    public private(set) var level: Int
+    public private(set) var firstWord: String
+    public private(set) var secondWord: String? = nil
 
-    public internal(set) var identifier: String
-    public internal(set) var parser: LineParser
-    public var ctx: Context { parser.ctx }
+    public private(set) var identifier: String
+    public private(set) var parser: LineParser
+    public private(set) var ctx: Context
     
     public func parseAttachedItems(for obj: ArtifactHolder, with section: AttachedSection) throws -> [Artifact] {
         if let cls = obj as? CodeObject {
@@ -27,9 +27,9 @@ public class ParsedInfo : Equatable {
         return []
     }
     
-    public func tryParseAttachedSections(with item: ArtifactHolderWithAttachedSections) throws -> Bool {
+    public func tryParseAttachedSections(with item: ArtifactHolderWithAttachedSections) async throws -> Bool {
         if AttachedSectionParser.canParse(firstWord: self.firstWord) {
-            if let section = try AttachedSectionParser.parse(for: item, with: self) {
+            if let section = try await AttachedSectionParser.parse(for: item, with: self) {
                 item.attachedSections[section.name] = section
                 return true
             } else {
@@ -40,12 +40,12 @@ public class ParsedInfo : Equatable {
         return false
     }
     
-    public func parseAnnotation(with item: HasAnnotations) throws -> (any Annotation)? {
+    public func parseAnnotation(with item: HasAnnotations) async throws -> (any Annotation)? {
         if AnnotationParser.canParse(firstWord: self.firstWord) {
             if let annotation = try AnnotationParser.parse(pInfo: self) {
                 item.annotations[annotation.name] = annotation
                 //try AnnotationProcessor.process(annotation, for: item)
-                self.parser.skipLine()
+                await self.parser.skipLine()
                 return annotation
             } else {
                 throw Model_ParsingError.invalidAnnotationLine(self)
@@ -55,8 +55,8 @@ public class ParsedInfo : Equatable {
         return nil
     }
     
-    public func tryParseAnnotations(with item: HasAnnotations) throws -> Bool {
-        if let _ = try parseAnnotation(with: item) {
+    public func tryParseAnnotations(with item: HasAnnotations) async throws -> Bool {
+        if let _ = try await parseAnnotation(with: item) {
             return true
         } else {
             return false
@@ -67,14 +67,14 @@ public class ParsedInfo : Equatable {
         return (lhs.line == rhs.line) && (lhs.lineNo == rhs.lineNo)
     }
     
-    public static func dummy(line: String, identifier: String, with ctx: GenerationContext) -> ParsedInfo {
+    public static func dummy(line: String, identifier: String, with ctx: GenerationContext) async -> ParsedInfo {
         let parser = DummyLineParserDuringGeneration(identifier: identifier, isStatementsPrefixedWithKeyword: true, with: ctx)
-        return ParsedInfo(parser: parser, line: line, lineNo: -1, level: 0, firstWord: "")
+        return await ParsedInfo(parser: parser, line: line, lineNo: -1, level: 0, firstWord: "")
     }
     
-    public static func dummy(line: String, identifier: String, with ctx: LoadContext) -> ParsedInfo {
+    public static func dummy(line: String, identifier: String, with ctx: LoadContext) async -> ParsedInfo {
         let parser = DummyLineParserDuringLoad(identifier: identifier, isStatementsPrefixedWithKeyword: true, with: ctx)
-        return ParsedInfo(parser: parser, line: line, lineNo: -1, level: 0, firstWord: "")
+        return await ParsedInfo(parser: parser, line: line, lineNo: -1, level: 0, firstWord: "")
     }
     
     public static func dummy(line: String, identifier: String, with ctx: Context) -> ParsedInfo {
@@ -117,11 +117,20 @@ public class ParsedInfo : Equatable {
         }
     }
     
-    public init?(parser: LineParser) {
+    public mutating func setFirstWord(_ firstWord: String) {
+        self.firstWord = firstWord
+    }
+    
+    public mutating func setLineInfo(line: String, lineNo: Int) {
+        self.line = line
+        self.lineNo = lineNo
+    }
+    
+    public init?(parser: LineParser) async {
         //the currentLine() returns a trummed string, which removes prefixed space for content;
         //so, another method, that does not trim prefix, is used
-        self.line = parser.currentLine_TrimTrailing()
-        self.lineNo = parser.curLineNoForDisplay
+        self.line = await parser.currentLine_TrimTrailing()
+        self.lineNo = await parser.curLineNoForDisplay
         
         let (firstWord, secondWord) = line.firstAndsecondWord()
 
@@ -130,18 +139,22 @@ public class ParsedInfo : Equatable {
         self.secondWord = secondWord
         
         self.parser = parser
-        self.level = parser.curLevelForDisplay
-        self.identifier = parser.identifier
+        self.level = await parser.curLevelForDisplay
+        self.identifier = await parser.identifier
+        
+        self.ctx = await parser.ctx
     }
     
-    public init(parser: LineParser, line: String, lineNo: Int, level: Int, firstWord: String) {
+    public init(parser: LineParser, line: String, lineNo: Int, level: Int, firstWord: String) async {
         self.line = line
         self.lineNo = lineNo
 
         self.firstWord = firstWord
         self.parser = parser
         self.level = level
-        self.identifier = parser.identifier
+        self.identifier = await parser.identifier
+        
+        self.ctx = await parser.ctx
     }
 }
 

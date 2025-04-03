@@ -4,7 +4,7 @@
 //  https://www.github.com/modelhike/modelhike
 //
 
-public class LoadContext : Context {
+public actor LoadContext : Context {
     public private(set) var model: AppModel
     public var debugLog = ContextDebugLog()
     public var events = CodeGenerationEvents()
@@ -38,6 +38,6 @@ public class LoadContext : Context {
     
     public convenience init(model: AppModel, config: OutputConfig, data: StringDictionary) {
         self.init(model: model, config: config)
-        self.replace(variables: data)
+        self.currentState.variables.replace(variables: variables)
     }
 }

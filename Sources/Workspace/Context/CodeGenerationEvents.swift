@@ -6,20 +6,20 @@
 
 import Foundation
 
-public typealias BeforeRenderFileHandler = (_ fileName: String, _ pInfo: ParsedInfo) throws -> Bool
+public typealias BeforeRenderFileHandler = @Sendable (_ fileName: String, _ pInfo: ParsedInfo) throws -> Bool
 public typealias BeforeRenderTemplateFileHandler = (_ fileName: String, _ templateName: String, _ pInfo: ParsedInfo) throws -> Bool
-public typealias StartParseObjectHandler = (_ objectName: String, _ pInfo: ParsedInfo) throws ->
+public typealias StartParseObjectHandler = @Sendable (_ objectName: String, _ pInfo: ParsedInfo) throws ->
     Void
-public typealias BeforeParseTemplateHandler = (_ templateName: String, _ ctx: GenerationContext)
+public typealias BeforeParseTemplateHandler = @Sendable (_ templateName: String, _ ctx: GenerationContext)
     throws -> Void
-public typealias BeforeExecuteTemplateHandler = (_ templateName: String, _ ctx: GenerationContext)
+public typealias BeforeExecuteTemplateHandler = @Sendable (_ templateName: String, _ ctx: GenerationContext)
     throws -> Void
-public typealias BeforeParseScriptFileHandler = (_ templateName: String, _ ctx: GenerationContext)
+public typealias BeforeParseScriptFileHandler = @Sendable (_ templateName: String, _ ctx: GenerationContext)
     throws -> Void
-public typealias BeforeExecuteScriptFileHandler = (_ templateName: String, _ ctx: GenerationContext)
+public typealias BeforeExecuteScriptFileHandler = @Sendable (_ templateName: String, _ ctx: GenerationContext)
     throws -> Void
 
-public class CodeGenerationEvents {
+public actor CodeGenerationEvents: Sendable {
     public var onBeforeRenderFile: BeforeRenderFileHandler?
     public var onBeforeRenderTemplateFile: BeforeRenderTemplateFileHandler?
 

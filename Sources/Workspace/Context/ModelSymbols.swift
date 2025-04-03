@@ -6,6 +6,6 @@
 
 import Foundation
 
-public struct ModelSymbols {
+public struct ModelSymbols: Sendable {
 
 }

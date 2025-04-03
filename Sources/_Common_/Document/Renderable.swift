@@ -4,7 +4,7 @@
 //  https://www.github.com/modelhike/modelhike
 //
 
-public protocol Renderable {
+public protocol Renderable : Sendable {
     
 }
 
@@ -23,7 +23,7 @@ public protocol RenderableNode : Renderable {
     func render(_ config: RenderConfig, level: Int) -> String
 }
 
-public struct RenderConfig {
+public struct RenderConfig : Sendable {
     public let minify: Bool
     public let indentationCount: Int
     public let newline: String

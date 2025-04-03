@@ -16,7 +16,7 @@ open class PlaceHolderFile : OutputFile {
     var contents: String? = nil
     
     public func render() throws {
-        let data : [String: Any] = [:]
+        let data : [String: Sendable] = [:]
         
         if let contents = try renderer.renderTemplate(fileName: self.oldFilename, data: data, with: pInfo) {
             self.contents = contents

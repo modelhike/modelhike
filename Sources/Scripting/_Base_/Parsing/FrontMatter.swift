@@ -10,13 +10,13 @@ public struct FrontMatter {
     private let lines: [String]
     private let parser: LineParser
     private let ctx: Context
-    private let pInfo: ParsedInfo
+    private var pInfo: ParsedInfo
     
-    public func hasDirective(_ directive: String) -> ParsedInfo? {
+    public mutating func hasDirective(_ directive: String) async  -> ParsedInfo? {
         do {
             let directiveString = "/\(directive)"
             if let rhs = try self.rhs(for: directiveString) {
-                return ParsedInfo(parser: parser, line: rhs, lineNo: -1, level: 0, firstWord: directiveString)
+                return await ParsedInfo(parser: parser, line: rhs, lineNo: -1, level: 0, firstWord: directiveString)
             }
             
             return nil
@@ -26,7 +26,7 @@ public struct FrontMatter {
         
     }
     
-    public func evalDirective(_ directive: String, pInfo: ParsedInfo) throws -> Any? {
+    public mutating func evalDirective(_ directive: String, pInfo: ParsedInfo) throws -> Any? {
         let directiveString = "/\(directive)"
         if let rhs = try self.rhs(for: directiveString) {
             return try ContentHandler.eval(line: rhs, pInfo: pInfo)
@@ -34,13 +34,11 @@ public struct FrontMatter {
         return nil
     }
     
-    public func processVariables() throws {
-        let curPInfo = pInfo
+    public mutating func processVariables() async throws {
         var index = 1 // front matter starts after the separator (---) line
 
         for line in lines {
-            curPInfo.line = line
-            curPInfo.lineNo = index
+            pInfo.setLineInfo(line: line, lineNo: index)
             
             let split = line.split(separator: TemplateConstants.frontMatterSplit, maxSplits: 1, omittingEmptySubsequences: true)
             if split.count == 2 {
@@ -49,12 +47,12 @@ public struct FrontMatter {
 
                 if let firstChar = lhs.first {
                     switch firstChar {
-                    case "/" : try processCondition(lhs: lhs, rhs: rhs, pInfo: curPInfo)
-                    default: setVariablesToMemory(lhs: lhs, rhs: rhs)
+                    case "/" : try await processCondition(lhs: lhs, rhs: rhs, pInfo: pInfo)
+                    default: await setVariablesToMemory(lhs: lhs, rhs: rhs)
                     }
                 }
             } else {
-                throw TemplateSoup_ParsingError.invalidFrontMatter(line, curPInfo)
+                throw TemplateSoup_ParsingError.invalidFrontMatter(line, pInfo)
             }
             
             index += 1
@@ -62,15 +60,15 @@ public struct FrontMatter {
         
     }
     
-    private func processCondition(lhs: String, rhs: String, pInfo: ParsedInfo) throws {
+    private func processCondition(lhs: String, rhs: String, pInfo: ParsedInfo) async throws {
         let directiveName = lhs.dropFirst().lowercased()
         
         switch directiveName {
             case ParserDirective.includeIf :
             //if let pInfo = parser.currentParsedInfo(level: 0) {
-                let result = try ctx.evaluateCondition(expression: rhs, with: pInfo)
+                let result = try await ctx.evaluateCondition(expression: rhs, with: pInfo)
                 if !result {
-                    throw ParserDirective.excludeFile(parser.identifier)
+                    throw ParserDirective.excludeFile(await parser.identifier)
                 }
             //}
                 
@@ -85,17 +83,15 @@ public struct FrontMatter {
         }
     }
     
-    private func setVariablesToMemory(lhs: String, rhs: String) {
-        ctx.variables[lhs] = rhs
+    private func setVariablesToMemory(lhs: String, rhs: String) async {
+        await ctx.variables[lhs] = rhs
     }
     
-    public func rhs(for lhsValueToCheck: String) throws -> String? {
-        let curPInfo = pInfo
+    public mutating func rhs(for lhsValueToCheck: String) throws -> String? {
         var index = 1 // front matter starts after the separator (---) line
         
         for line in lines {
-            curPInfo.line = line
-            curPInfo.lineNo = index
+            pInfo.setLineInfo(line: line, lineNo: index)
             
             let split = line.split(separator: TemplateConstants.frontMatterSplit, maxSplits: 1, omittingEmptySubsequences: true)
             if split.count == 2 {
@@ -106,7 +102,7 @@ public struct FrontMatter {
                     return rhs
                 }
             } else {
-                throw TemplateSoup_ParsingError.invalidFrontMatter(line, curPInfo)
+                throw TemplateSoup_ParsingError.invalidFrontMatter(line, pInfo)
             }
             
             index += 1
@@ -116,19 +112,19 @@ public struct FrontMatter {
     }
     
     @discardableResult
-    public init(lineParser: LineParser, with context: Context) throws {
+    public init(lineParser: LineParser, with context: Context) async throws {
         parser = lineParser
         ctx = context
         
-        lineParser.skipLine()
-        self.lines = lineParser.parseLinesTill(lineHasOnly: TemplateConstants.frontMatterIndicator)
-        lineParser.skipLine()
+        await lineParser.skipLine()
+        self.lines = await lineParser.parseLinesTill(lineHasOnly: TemplateConstants.frontMatterIndicator)
+        await lineParser.skipLine()
         
-        self.pInfo = ParsedInfo.dummy(line: "FrontMatter", identifier: lineParser.identifier, with: context)
+        self.pInfo = await ParsedInfo.dummy(line: "FrontMatter", identifier: lineParser.identifier, with: context)
     }
     
     @discardableResult
-    public init?(in contents: String, filename: String, with context: GenerationContext) throws {
+    public init?(in contents: String, filename: String, with context: GenerationContext) async throws {
         let lineParser = LineParserDuringGeneration(
             string: contents, identifier: filename, isStatementsPrefixedWithKeyword: true,
             with: context)
@@ -136,14 +132,14 @@ public struct FrontMatter {
         parser = lineParser
         ctx = context
         
-        let curLine = lineParser.currentLine()
+        let curLine = await lineParser.currentLine()
 
         if curLine.hasOnly(TemplateConstants.frontMatterIndicator) {
-            lineParser.skipLine()
-            self.lines = lineParser.parseLinesTill(lineHasOnly: TemplateConstants.frontMatterIndicator)
-            lineParser.skipLine()
+            await lineParser.skipLine()
+            self.lines = await lineParser.parseLinesTill(lineHasOnly: TemplateConstants.frontMatterIndicator)
+            await lineParser.skipLine()
             
-            self.pInfo = ParsedInfo.dummy(line: "FrontMatter", identifier: lineParser.identifier, with: context)
+            self.pInfo = await ParsedInfo.dummy(line: "FrontMatter", identifier: await lineParser.identifier, with: context)
         } else {
             return nil
         }

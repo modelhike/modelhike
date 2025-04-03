@@ -4,7 +4,7 @@
 //  https://www.github.com/modelhike/modelhike
 //
 
-public protocol CallStackable {
+public protocol CallStackable : Sendable {
     var callStackItem: CallStackItem { get }
 }
 
@@ -16,7 +16,7 @@ public struct SpecialActivityCallStackItem : CallStackable {
     }
 }
 
-public struct CallStackItem {
+public struct CallStackItem : Sendable {
     public let item : FileTemplateStatement?
     public let pInfo : ParsedInfo?
     public let specialActivityName: String?
@@ -44,7 +44,7 @@ public struct CallStackItem {
     }
 }
 
-public class CallStack : Sequence {
+public actor CallStack : @preconcurrency Sequence {
     private var stack: [CallStackable] = []
     
     public func push(_ info: CallStackable) {

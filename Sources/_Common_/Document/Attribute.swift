@@ -10,10 +10,16 @@ public protocol HasAttributes {
     var attribs: Attributes { get set }
 }
 
-public struct Attribute: Hashable {
+public protocol SendableEquatable : Sendable, Equatable {
+    
+}
+
+//public typealias Attribute = SendableAttribute<AnySendable>
+
+public struct Attribute: Hashable, Sendable {
     public let key: String
     public let givenKey: String
-    public var value: Optional<Any>
+    public fileprivate(set) var value: Optional<Sendable>
 
     public var name: String { givenKey }
 
@@ -25,20 +31,20 @@ public struct Attribute: Hashable {
         return lhs.key == rhs.key
     }
 
-    public init(key: String, givenKey: String, value: Any) {
+    public init(key: String, givenKey: String, value: Optional<Sendable>) {
         self.key = key
         self.givenKey = givenKey
         self.value = value
     }
 
-    public init(_ key: String, value: Any) {
+    public init(_ key: String, value: Optional<Sendable>) {
         self.key = key
         self.givenKey = key
         self.value = value
     }
 }
 
-public class Attributes: ExpressibleByDictionaryLiteral, CustomDebugStringConvertible {
+public actor Attributes: SendableDebugStringConvertible, Sendable {
     public typealias Key = String
     public typealias Value = Any?
 
@@ -70,10 +76,10 @@ public class Attributes: ExpressibleByDictionaryLiteral, CustomDebugStringConver
         }
     }
 
-    public subscript(key: String) -> Any? {
+    public subscript(key: String) -> Sendable? {
         get {
             let keyToFind = key.lowercased()
-            return items.first(where: { $0.key == keyToFind })?.value as Any
+            return items.first(where: { $0.key == keyToFind })?.value
         }
         set {
             let keyToFind = key.lowercased()
@@ -81,7 +87,7 @@ public class Attributes: ExpressibleByDictionaryLiteral, CustomDebugStringConver
                 item.value = newValue
                 items.update(with: item)
             } else {  // new attr
-                items.insert(Attribute(key: keyToFind, givenKey: key, value: newValue as Any))
+                items.insert(Attribute(key: keyToFind, givenKey: key, value: newValue))
             }
 
         }
@@ -115,29 +121,25 @@ public class Attributes: ExpressibleByDictionaryLiteral, CustomDebugStringConver
         }
     }
 
-    public var debugDescription: String {
-        var str = """
-            Attributes \(self.items.count) items:
-            """
-        str += .newLine
-
-        for item in items {
-            str += item.key + .newLine
-
+    public nonisolated var debugDescription: String {
+        get async {
+            var str = """
+                    Attributes \(await items.count) items:
+                    """
+            str += .newLine
+            
+            for item in await items {
+                str += item.key + .newLine
+                
+            }
+            
+            return str
         }
-
-        return str
     }
 
     public init() {}
-
-    required public init(dictionaryLiteral elements: (String, Any?)...) {
-        for (key, value) in elements {
-            items.insert(Attribute(key, value: value as Any))
-        }
-    }
 }
 
-public enum AttributeNamePresets: String {
+public enum AttributeNamePresets: String, Sendable {
     case validValues = "oneof"  //oneOf
 }

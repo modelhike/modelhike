@@ -7,21 +7,21 @@
 import Foundation
 
 public enum TemplateConstants {
-    public static var TemplateExtension = "teso"
-    public static var ScriptExtension = "ss"
-    public static var MainScriptFile = "main"
+    public static let TemplateExtension = "teso"
+    public static let ScriptExtension = "ss"
+    public static let MainScriptFile = "main"
 
-    public static var templateFunction_start = "func"
-    public static var templateFunction_end = "end-func"
-    public static var templateEndKeywordWithHyphen = "end-"
-    public static var templateEndKeyword = "end"
+    public static let templateFunction_start = "func"
+    public static let templateFunction_end = "end-func"
+    public static let templateEndKeywordWithHyphen = "end-"
+    public static let templateEndKeyword = "end"
 
-    public static var comments = "//"
-    public static var stmtKeyWord = ":"
-    public static var modifierSplitInExpression = "|"
-    public static var multiModifierSplit = "+"
+    public static let comments = "//"
+    public static let stmtKeyWord = ":"
+    public static let modifierSplitInExpression = "|"
+    public static let multiModifierSplit = "+"
 
-    public static var frontMatterIndicator = "-"
-    public static var frontMatterSplit = ":"
+    public static let frontMatterIndicator = "-"
+    public static let frontMatterSplit = ":"
 
 }

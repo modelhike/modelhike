@@ -20,7 +20,7 @@ public class MethodObject: CodeMember {
 
     public var comment: String?
 
-    public static func parse(pInfo: ParsedInfo, skipLine: Bool = true) throws -> MethodObject? {
+    public static func parse(pInfo: ParsedInfo, skipLine: Bool = true) async throws -> MethodObject? {
         let originalLine = pInfo.line
         let firstWord = pInfo.firstWord
 
@@ -52,7 +52,7 @@ public class MethodObject: CodeMember {
         }
 
         if skipLine {
-            pInfo.parser.skipLine()
+            await pInfo.parser.skipLine()
         }
 
         return method

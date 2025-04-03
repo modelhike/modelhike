@@ -12,6 +12,7 @@ internal final class PluralKit {
     private var uncountables: [String] = []
     private var rules: [(rule: String, template: String)] = []
 
+    nonisolated(unsafe)
     public static let shared: PluralKit = PluralKit()
 
     public init() {

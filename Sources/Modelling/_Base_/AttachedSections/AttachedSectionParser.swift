@@ -19,7 +19,7 @@ public enum AttachedSectionParser {
         return false
     }
     
-    public static func parse(for obj: ArtifactHolderWithAttachedSections, with pctx: ParsedInfo) throws -> AttachedSection? {
+    public static func parse(for obj: ArtifactHolderWithAttachedSections, with pctx: ParsedInfo) async throws -> AttachedSection? {
         let line = pctx.line.dropFirstWord()
         guard let match = line.wholeMatch(of: ModelRegEx.attachedSectionName_Capturing)                                                                                  else { return nil }
         
@@ -37,14 +37,14 @@ public enum AttachedSectionParser {
         }
         
         let parser = pctx.parser
-        parser.skipLine()//skip attached section name
+        await parser.skipLine()//skip attached section name
          
-        while parser.linesRemaining {
-            if parser.isCurrentLineEmptyOrCommented() { parser.skipLine(); continue }
+        while await parser.linesRemaining {
+            if await parser.isCurrentLineEmptyOrCommented() { await parser.skipLine(); continue }
             
-            guard let pctx = parser.currentParsedInfo(level: pctx.level) else { parser.skipLine(); continue }
+            guard let pctx = await parser.currentParsedInfo(level: pctx.level) else { await parser.skipLine(); continue }
             
-            if try pctx.tryParseAnnotations(with: item) {
+            if try await pctx.tryParseAnnotations(with: item) {
                 continue
             }
             
@@ -59,7 +59,7 @@ public enum AttachedSectionParser {
                 // having only '#' in the line
                 
                 if pctx.line.secondWord() == nil { //marks end of attached section
-                    parser.skipLine()
+                    await parser.skipLine()
                 }
                 
                 break
