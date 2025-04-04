@@ -10,6 +10,10 @@ public protocol HasAttributes {
     var attribs: Attributes { get set }
 }
 
+public protocol HasAttributes_Actor: Actor {
+    var attribs: Attributes { get set }
+}
+
 public protocol SendableEquatable : Sendable, Equatable {
     
 }

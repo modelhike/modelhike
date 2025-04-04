@@ -6,7 +6,7 @@
 
 import Foundation
 
-public protocol Artifact : HasAttributes, HasAnnotations, HasTags {
+public protocol Artifact : HasAttributes_Actor, HasAnnotations_Actor, HasTags_Actor, SendableDebugStringConvertible, Actor {
     var givenname: String {get}
     var name: String {get}
     var dataType: ArtifactKind {get}
@@ -23,6 +23,6 @@ public protocol ArtifactHolderWithAttachedSections : ArtifactHolder, HasAttached
 typealias ArtifactHolderBuilder = ResultBuilder<ArtifactHolder>
 
 
-public enum ArtifactKind {
+public enum ArtifactKind: Sendable {
     case unKnown, entity, embeddedType, valueType, dto, api, apiInput, cache, workflow, event, agent, data, ui, uxFlow, container, attachedSection, custom
 }

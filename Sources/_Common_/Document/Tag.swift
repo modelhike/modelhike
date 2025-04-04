@@ -10,7 +10,11 @@ public protocol HasTags {
     var tags: Tags {get set}
 }
 
-public class Tags {
+public protocol HasTags_Actor: Actor {
+    var tags: Tags {get set}
+}
+
+public actor Tags {
     private var items: Set<Tag> = Set()
 
     public func processEach(by process: (Tag) throws -> Tag?) throws {
@@ -67,7 +71,7 @@ public class Tags {
     }
 }
 
-public struct Tag : Hashable {
+public struct Tag : Hashable, Sendable {
     public let name: String
     public let givenname: String
     public var args: [String] = []

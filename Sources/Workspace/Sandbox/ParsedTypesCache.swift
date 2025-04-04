@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class ParsedTypesCache : CustomDebugStringConvertible {
+public final class ParsedTypesCache : CustomDebugStringConvertible, Sendable {
     public private(set) var items: [CodeObject] = []
     
     public func getLastPropInRecursive(_ propName: String, inObj objectName: String) -> Property? {

@@ -6,7 +6,7 @@
 
 import Foundation
 
-public protocol CodeObject: ArtifactHolderWithAttachedSections, CustomDebugStringConvertible {
+public protocol CodeObject: ArtifactHolderWithAttachedSections, CustomDebugStringConvertible, Sendable {
     var dataType: ArtifactKind { get set }
     var properties: [Property] { get }
 

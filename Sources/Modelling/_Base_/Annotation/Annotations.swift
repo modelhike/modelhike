@@ -10,12 +10,16 @@ public protocol HasAnnotations {
     var annotations: Annotations { get set }
 }
 
+public protocol HasAnnotations_Actor: Actor {
+    var annotations: Annotations { get set }
+}
+
 public protocol Annotation: Hashable {
     var name: String { get }
     var pInfo: ParsedInfo { get }
 }
 
-public class Annotations: ExpressibleByArrayLiteral, ExpressibleByDictionaryLiteral {
+public actor Annotations: ExpressibleByArrayLiteral, ExpressibleByDictionaryLiteral {
     public typealias Key = String
     public typealias Value = any Annotation
 

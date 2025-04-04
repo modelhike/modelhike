@@ -6,39 +6,74 @@
 
 import Foundation
 
-public class C4Component_Wrap : ObjectWrapper {
-    public private(set) var item: C4Component
-    var model : AppModel
+public actor C4Component_Wrap : ObjectWrapper {
+    public let item: C4Component
+    let model : AppModel
     
     public var attribs: Attributes {
-        get { item.attribs }
-        set { item.attribs = newValue }
+        get async { await item.attribs }
     }
 
-    public lazy var types : [CodeObject_Wrap] = { item.types.compactMap({ CodeObject_Wrap($0)})
-    }()
+    public var types: [CodeObject_Wrap] { get async {
+        await item.types.compactMap({ CodeObject_Wrap($0)})
+    }}
     
-    public lazy var embeddedTypes : [CodeObject_Wrap] = { item.types.compactMap({
-        if $0.dataType == .embeddedType {CodeObject_Wrap($0)} else {nil}})
-    }()
+    public var embeddedTypes: [CodeObject_Wrap] { get async {
+        var result: [CodeObject_Wrap] = []
+        
+        for type in await item.types {
+            if await type.dataType == .embeddedType {
+                result.append(CodeObject_Wrap(type))
+            }
+        }
+        
+        return result
+    }}
     
-    public lazy var entities : [CodeObject_Wrap] = { item.types.compactMap({
-        if $0.dataType == .entity {CodeObject_Wrap($0)} else {nil}})
-    }()
+    public var entities: [CodeObject_Wrap] { get async {
+        var result: [CodeObject_Wrap] = []
+        
+        for type in await item.types {
+            if await type.dataType == .entity {
+                result.append(CodeObject_Wrap(type))
+            }
+        }
+        
+        return result
+    }}
     
-    public lazy var dtos : [CodeObject_Wrap] = { item.types.compactMap({
-        if $0.dataType == .dto, let dto = $0 as? DtoObject {CodeObject_Wrap(dto)} else {nil}})
-    }()
+    public var dtos: [CodeObject_Wrap] {
+        get async {
+            var result: [CodeObject_Wrap] = []
+            
+            for type in await item.types {
+                if await type.dataType == .dto, let dto = type as? DtoObject {
+                    result.append(CodeObject_Wrap(dto))
+                }
+            }
+            
+            return result
+        }
+    }
     
-    public lazy var entitiesAndDtos : [CodeObject_Wrap] = {
-        var list = entities
-        list.append(contentsOf: dtos)
+    public var entitiesAndDtos : [CodeObject_Wrap] { get async {
+        var list = await entities
+        await list.append(contentsOf: dtos)
         return list
-    }()
+    }}
     
-    public lazy var apis : [API_Wrap] = { item.types.flatMap({
-        $0.getAPIs().compactMap({ API_Wrap($0) })
-    }) }()
+    public var apis: [API_Wrap] {
+        get async {
+            var result: [API_Wrap] = []
+            
+            for type in await item.types {
+                let apis = await type.getAPIs()
+                result.append(contentsOf: apis.compactMap { API_Wrap($0) })
+            }
+            
+            return result
+        }
+    }
     
     public lazy var pushDataApis : [API_Wrap] = { self.apis.compactMap({
         if ($0.item.type == .pushData ||
@@ -60,8 +95,8 @@ public class C4Component_Wrap : ObjectWrapper {
             $0.item.type == .listByCustomProperties 
         ) { return $0 } else {return nil}    }) }()
     
-    public func getValueOf(property propname: String, with pInfo: ParsedInfo) throws -> Any {
-        let value: Any = switch propname {
+    public func getValueOf(property propname: String, with pInfo: ParsedInfo) async throws -> Sendable {
+        let value: Sendable = switch propname {
             case "name": item.name
             case "types" : types
             case "embedded-types" : embeddedTypes
@@ -80,8 +115,9 @@ public class C4Component_Wrap : ObjectWrapper {
             case "has-any-apis" : apis.count != 0
            default:
             //nothing found; so check in module attributes
-            if item.attribs.has(propname) {
-                item.attribs[propname] as Any
+            let attribs = item.attribs  // Capture the actor reference
+            if await attribs.has(propname) {
+                await attribs[propname]
             } else {
                 throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
             }

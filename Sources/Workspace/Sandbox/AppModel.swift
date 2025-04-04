@@ -6,7 +6,7 @@
 
 import Foundation
 
-open class AppModel {
+public final class AppModel: Sendable {
     var types = ParsedTypesCache()
     public internal(set) var commonModel = C4ComponentList()
     private var modules = C4ComponentList()
