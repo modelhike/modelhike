@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class C4ContainerList: ArtifactHolder, IteratorProtocol, Sequence {
+public actor C4ContainerList: ArtifactHolder, _CollectionAsyncSequence {
     public var attribs = Attributes()
     public var tags = Tags()
     public var annotations = Annotations()
@@ -24,16 +24,15 @@ public class C4ContainerList: ArtifactHolder, IteratorProtocol, Sequence {
         }
     }
 
-    public func forEach(_ transform: (inout C4Container) throws -> Void) rethrows {
-        _ = try containers.map { el in
+    public func forEach(_ transform: (inout C4Container) async throws -> Void) async rethrows {
+        for el in containers {
             var el = el
-            try transform(&el)
-            return el
+            try await transform(&el)
         }
     }
 
     public func forEachComponent(_ transform: (inout C4Component) throws -> Void) rethrows {
-        _ = try containers.map { container in
+        for container in containers {
             try container.components.forEach { el in
                 try transform(&el)
             }
@@ -54,17 +53,6 @@ public class C4ContainerList: ArtifactHolder, IteratorProtocol, Sequence {
         return containers.flatMap({ $0.types })
     }
 
-    public func next() -> C4Container? {
-        if currentIndex <= containers.count - 1 {
-            let compo = containers[currentIndex]
-            currentIndex += 1
-            return compo
-        } else {
-            currentIndex = 0  //reset index
-            return nil
-        }
-    }
-
     public var first: C4Container? { containers.first }
 
     public func append(_ item: C4Container) {
@@ -81,20 +69,25 @@ public class C4ContainerList: ArtifactHolder, IteratorProtocol, Sequence {
 
     public var count: Int { containers.count }
 
-    public var debugDescription: String {
+    public func snapshot() -> [C4Container] {
+        return containers
+    }
+    
+    public var debugDescription: String { get async {
         var str = """
             \(self.name)
             containers \(self.containers.count):
             """
         str += .newLine
-
+        
         for item in containers {
-            str += item.givenname + .newLine
-
+            let givenname = await item.givenname
+            str += givenname + .newLine
+            
         }
-
+        
         return str
-    }
+    }}
 
     public init(name: String = "", _ items: C4Container...) {
         self.name = name

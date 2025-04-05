@@ -6,7 +6,7 @@
 
 import Foundation
 
-public protocol CodeMember: HasAttributes, HasTags, CustomDebugStringConvertible {
+public protocol CodeMember: HasAttributes_Actor, HasTags_Actor, CustomDebugStringConvertible, Actor {
     var pInfo: ParsedInfo { get }
     var name: String { get }
     var givenname: String { get }

@@ -7,11 +7,15 @@
 import Foundation
 
 public protocol HasAttributes {
-    var attribs: Attributes { get set }
+    var attribs: Attributes { get }
+}
+
+public protocol HasAsyncAttributes {
+    var attribs: Attributes { get async }
 }
 
 public protocol HasAttributes_Actor: Actor {
-    var attribs: Attributes { get set }
+    var attribs: Attributes { get }
 }
 
 public protocol SendableEquatable : Sendable, Equatable {
@@ -56,11 +60,11 @@ public actor Attributes: SendableDebugStringConvertible, Sendable {
 
     public var isEmpty: Bool { items.isEmpty }
 
-    public func processEach(by process: (Attribute) throws -> Attribute?) throws {
+    public func processEach(by process: (Attribute) async throws -> Attribute?) async throws {
         var itemsToRemove: [Attribute] = []
 
         for item in items {
-            if try process(item) == nil {
+            if try await process(item) == nil {
                 itemsToRemove.append(item)
             }
         }
@@ -80,21 +84,19 @@ public actor Attributes: SendableDebugStringConvertible, Sendable {
         }
     }
 
-    public subscript(key: String) -> Sendable? {
-        get {
-            let keyToFind = key.lowercased()
-            return items.first(where: { $0.key == keyToFind })?.value
+    public func set(_ key: String, value newValue: Sendable?) {
+        let keyToFind = key.lowercased()
+        if var item = items.first(where: { $0.key == keyToFind }) {
+            item.value = newValue
+            items.update(with: item)
+        } else {  // new attr
+            items.insert(Attribute(key: keyToFind, givenKey: key, value: newValue))
         }
-        set {
-            let keyToFind = key.lowercased()
-            if var item = items.first(where: { $0.key == keyToFind }) {
-                item.value = newValue
-                items.update(with: item)
-            } else {  // new attr
-                items.insert(Attribute(key: keyToFind, givenKey: key, value: newValue))
-            }
+    }
 
-        }
+    public func get(_ key: String) -> Sendable? {
+        let keyToFind = key.lowercased()
+        return items.first(where: { $0.key == keyToFind })?.value
     }
 
     public func getString(_ key: String) -> String? {

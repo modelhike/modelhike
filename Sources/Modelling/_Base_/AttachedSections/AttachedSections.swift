@@ -10,7 +10,7 @@ public protocol HasAttachedSections : HasAttachedItems {
     var attachedSections : AttachedSections {get set}
 }
 
-public protocol HasAttachedItems : AnyObject {
+public protocol HasAttachedItems : AnyObject, Actor {
     var attached : [Artifact] {get set}
     @discardableResult func appendAttached(_ item: Artifact) -> Self
 }

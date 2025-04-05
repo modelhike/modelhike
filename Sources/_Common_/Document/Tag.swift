@@ -7,17 +7,17 @@
 import Foundation
 
 public protocol HasTags {
-    var tags: Tags {get set}
+    var tags: Tags {get}
 }
 
 public protocol HasTags_Actor: Actor {
-    var tags: Tags {get set}
+    var tags: Tags {get}
 }
 
 public actor Tags {
     private var items: Set<Tag> = Set()
 
-    public func processEach(by process: (Tag) throws -> Tag?) throws {
+    public func processEach(by process: (Tag) async throws -> Tag?) throws {
         var itemsToRemove: [Tag] = []
         
         for item in items {

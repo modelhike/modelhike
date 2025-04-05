@@ -30,7 +30,7 @@ public struct ParsedInfo : SendableEquatable {
     public func tryParseAttachedSections(with item: ArtifactHolderWithAttachedSections) async throws -> Bool {
         if AttachedSectionParser.canParse(firstWord: self.firstWord) {
             if let section = try await AttachedSectionParser.parse(for: item, with: self) {
-                item.attachedSections[section.name] = section
+                await item.attachedSections[section.name] = section
                 return true
             } else {
                 throw Model_ParsingError.invalidAttachedSection(self)
@@ -40,7 +40,7 @@ public struct ParsedInfo : SendableEquatable {
         return false
     }
     
-    public func parseAnnotation(with item: HasAnnotations) async throws -> (any Annotation)? {
+    public func parseAnnotation(with item: HasAnnotations_Actor) async throws -> (any Annotation)? {
         if AnnotationParser.canParse(firstWord: self.firstWord) {
             if let annotation = try AnnotationParser.parse(pInfo: self) {
                 item.annotations[annotation.name] = annotation
@@ -55,7 +55,7 @@ public struct ParsedInfo : SendableEquatable {
         return nil
     }
     
-    public func tryParseAnnotations(with item: HasAnnotations) async throws -> Bool {
+    public func tryParseAnnotations(with item: HasAnnotations_Actor) async throws -> Bool {
         if let _ = try await parseAnnotation(with: item) {
             return true
         } else {

@@ -6,6 +6,12 @@
 
 import Foundation
 
+public protocol Artifact_NonActor : HasAttributes, HasAnnotations, HasTags, CustomDebugStringConvertible, Sendable {
+    var givenname: String {get}
+    var name: String {get}
+    var dataType: ArtifactKind {get}
+}
+
 public protocol Artifact : HasAttributes_Actor, HasAnnotations_Actor, HasTags_Actor, SendableDebugStringConvertible, Actor {
     var givenname: String {get}
     var name: String {get}

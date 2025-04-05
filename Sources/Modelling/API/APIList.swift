@@ -19,7 +19,7 @@ public actor APIList : _CollectionAsyncSequence, SendableDebugStringConvertible 
         }
     }
     
-    public func snapshot() async -> [any Sendable] {
+    public func snapshot() async -> [API] {
         items
     }
     

@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class C4Container : ArtifactHolder {
+public actor C4Container : ArtifactHolder {
     public var attribs = Attributes()
     public var tags = Tags()
     public var annotations = Annotations()
@@ -17,7 +17,7 @@ public class C4Container : ArtifactHolder {
 
     public var containerType: ContainerKind
 
-    public internal(set) var components = C4ComponentList()
+    public let components = C4ComponentList()
     public internal(set) var unresolvedMembers: [ContainerModuleMember] = []
     public internal(set) var methods: [MethodObject] = []
     

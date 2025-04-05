@@ -7,21 +7,19 @@
 import Foundation
 
 public protocol HasAnnotations {
-    var annotations: Annotations { get set }
+    var annotations: Annotations { get }
 }
 
 public protocol HasAnnotations_Actor: Actor {
-    var annotations: Annotations { get set }
+    var annotations: Annotations { get }
 }
 
-public protocol Annotation: Hashable {
+public protocol Annotation: Hashable, Sendable {
     var name: String { get }
     var pInfo: ParsedInfo { get }
 }
 
-public actor Annotations: ExpressibleByArrayLiteral, ExpressibleByDictionaryLiteral {
-    public typealias Key = String
-    public typealias Value = any Annotation
+public actor Annotations {
 
     private var items: [String: any Annotation] = [:]
 
@@ -52,8 +50,9 @@ public actor Annotations: ExpressibleByArrayLiteral, ExpressibleByDictionaryLite
         items[keyToFind] = item
     }
 
-    public func append(contentsOf annotations: Annotations) {
-        for (key, value) in annotations.items {
+    public func append(contentsOf annotations: Annotations) async  {
+        let items = await annotations.items
+        for (key, value) in items {
             self[key] = value
         }
     }
@@ -75,15 +74,4 @@ public actor Annotations: ExpressibleByArrayLiteral, ExpressibleByDictionaryLite
 
     public init() {}
 
-    required public init(arrayLiteral elements: any Annotation...) {
-        for item in elements {
-            items[item.name] = item
-        }
-    }
-
-    required public init(dictionaryLiteral elements: (String, any Annotation)...) {
-        for (key, value) in elements {
-            items[key] = value
-        }
-    }
 }

@@ -6,7 +6,7 @@
 
 import Foundation
 
-public protocol CodeObject: ArtifactHolderWithAttachedSections, CustomDebugStringConvertible, Sendable {
+public protocol CodeObject: ArtifactHolderWithAttachedSections, SendableDebugStringConvertible {
     var dataType: ArtifactKind { get set }
     var properties: [Property] { get }
 
@@ -22,71 +22,96 @@ public protocol CodeObject: ArtifactHolderWithAttachedSections, CustomDebugStrin
 
     var attached: [Artifact] { get set }
     var mixins: [CodeObject] { get set }
-
+    func append(mixin: CodeObject)
 }
 
 typealias CodeObjectBuilder = ResultBuilder<CodeObject>
 
 extension CodeObject {
-
-    public func hasProp(_ name: String, isCaseSensitive: Bool = false) -> Bool {
-        if isCaseSensitive {
-            return properties.contains(where: { $0.name == name || $0.givenname == name })
+    public func append(mixin: CodeObject) {
+        mixins.append(mixin)
+    }
+    
+    public func hasProp(_ name: String, isCaseSensitive: Bool = false) async -> Bool {
+        if let _ = await getProp(name, isCaseSensitive: isCaseSensitive) {
+            return true
         } else {
-            return properties.contains(where: {
-                $0.name.lowercased() == name.lowercased()
-                    || $0.givenname.lowercased() == name.lowercased()
-            })
+            return false
         }
     }
 
-    public func hasMethod(_ name: String) -> Bool {
-        return methods.contains(where: { $0.name == name || $0.givenname == name })
-    }
-
-    public func getProp(_ name: String, isCaseSensitive: Bool = false) -> Property? {
-        if isCaseSensitive {
-            return properties.first(where: { $0.name == name || $0.givenname == name })
+    public func hasMethod(_ name: String, isCaseSensitive: Bool = false) async -> Bool {
+        if let _ = await getMethod(name, isCaseSensitive: isCaseSensitive) {
+            return true
         } else {
-            return properties.first(where: {
-                $0.name.lowercased() == name.lowercased()
-                    || $0.givenname.lowercased() == name.lowercased()
-            })
+            return false
         }
     }
 
-    public func getLastPropInRecursive(_ name: String, appModel: ParsedTypesCache) -> Property? {
+    public func getMethod(_ name: String, isCaseSensitive: Bool = false) async -> MethodObject? {
+        for item in methods {
+            let item_givenname = await isCaseSensitive ? item.givenname : item.givenname.lowercased()
+            let item_name = await isCaseSensitive ? item.name : item.name.lowercased()
+            
+            let nameToCompare = isCaseSensitive ? name : name.lowercased()
+            
+            if item_givenname == nameToCompare ||
+                item_name == nameToCompare {
+                return item
+            }
+        }
+        
+        return nil
+    }
+    
+    public func getProp(_ name: String, isCaseSensitive: Bool = false) async -> Property? {
+        for item in properties {
+            let item_givenname = await isCaseSensitive ? item.givenname : item.givenname.lowercased()
+            let item_name = await isCaseSensitive ? item.name : item.name.lowercased()
+            
+            let nameToCompare = isCaseSensitive ? name : name.lowercased()
+            
+            if item_givenname == nameToCompare ||
+                item_name == nameToCompare {
+                return item
+            }
+        }
+        
+        return nil
+    }
+
+    public func getLastPropInRecursive(_ name: String, appModel: ParsedTypesCache) async -> Property? {
         if let index = name.firstIndex(of: ".") {
             let propName = String(name.prefix(upTo: index))
-            guard let prop = getProp(propName) else { return nil }
+            guard let prop = await getProp(propName) else { return nil }
             if !prop.type.isObject() { return prop }
             //dump(appmodel)
-            guard let entity = appModel.get(for: prop.type.objectString()) else { return nil }
+            guard let entity = await appModel.get(for: prop.type.objectString()) else { return nil }
             let remainingName = String(name.suffix(from: name.index(after: index)))
-            return entity.getLastPropInRecursive(remainingName, appModel: appModel)
+            return await entity.getLastPropInRecursive(remainingName, appModel: appModel)
 
         } else {  // not recursive
-            return getProp(name)
+            return await getProp(name)
         }
 
     }
 
-    public func getArrayPropInRecursive(_ name: String, appModel: ParsedTypesCache) -> Property? {
+    public func getArrayPropInRecursive(_ name: String, appModel: ParsedTypesCache) async -> Property? {
         if let index = name.firstIndex(of: ".") {
             let propName = String(name.prefix(upTo: index))
-            guard let prop = getProp(propName) else { return nil }
+            guard let prop = await getProp(propName) else { return nil }
             if !prop.type.isObject() { return nil }
 
             if prop.type.isArray {
                 return prop
             }
 
-            guard let entity = appModel.get(for: prop.type.objectString()) else { return nil }
+            guard let entity = await appModel.get(for: prop.type.objectString()) else { return nil }
             let remainingName = String(name.suffix(from: name.index(after: index)))
-            return entity.getArrayPropInRecursive(remainingName, appModel: appModel)
+            return await entity.getArrayPropInRecursive(remainingName, appModel: appModel)
 
         } else {  // not recursive
-            if let prop = getProp(name) {
+            if let prop = await getProp(name) {
                 if prop.type.isArray {
                     return prop
                 }
@@ -96,8 +121,8 @@ extension CodeObject {
 
     }
 
-    public func isSameAs(_ CodeObject: CodeObject) -> Bool {
-        return self.givenname == CodeObject.givenname
+    public func isSameAs(_ codeObject: CodeObject) async -> Bool {
+        return await self.givenname == codeObject.givenname
     }
 
     @discardableResult

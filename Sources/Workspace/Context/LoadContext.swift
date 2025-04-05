@@ -5,7 +5,7 @@
 //
 
 public actor LoadContext : Context {
-    public private(set) var model: AppModel
+    public let model: AppModel
     public var debugLog = ContextDebugLog()
     public var events = CodeGenerationEvents()
     
@@ -36,8 +36,8 @@ public actor LoadContext : Context {
         self.model = model
     }
     
-    public convenience init(model: AppModel, config: OutputConfig, data: StringDictionary) {
+    public init(model: AppModel, config: OutputConfig, data: StringDictionary) async {
         self.init(model: model, config: config)
-        self.currentState.variables.replace(variables: variables)
+        await self.currentState.variables.replace(variables: variables)
     }
 }

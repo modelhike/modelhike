@@ -6,8 +6,8 @@
 
 import Foundation
 
-public protocol DynamicMemberLookup: Any {
-    func getValueOf(property propname: String, with pInfo: ParsedInfo) async throws -> Any
+public protocol DynamicMemberLookup {
+    func getValueOf(property propname: String, with pInfo: ParsedInfo) async throws -> Sendable
     func hasSettable(property propname: String) async -> Bool
     //func setValueOf(property propname: String, value: Any, with pInfo: ParsedInfo) throws -> Bool
 }
@@ -23,6 +23,6 @@ public extension DynamicMemberLookup {
     }
 }
 
-public protocol ObjectWrapper : DynamicMemberLookup, HasAttributes_Actor, SendableDebugStringConvertible, Actor {
+public protocol ObjectWrapper : DynamicMemberLookup, HasAsyncAttributes, SendableDebugStringConvertible, Actor {
     
 }
