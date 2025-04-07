@@ -11,7 +11,7 @@ public protocol HasAnnotations {
 }
 
 public protocol HasAnnotations_Actor: Actor {
-    var annotations: Annotations { get }
+    var annotations: Annotations { get async }
 }
 
 public protocol Annotation: Hashable, Sendable {

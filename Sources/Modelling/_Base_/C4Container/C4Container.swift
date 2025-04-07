@@ -44,18 +44,19 @@ public actor C4Container : ArtifactHolder {
         methods.append(item)
     }
     
-    public func append(_ item: C4Component) {
-        components.append(item)
+    public func append(_ item: C4Component) async {
+        await components.append(item)
     }
     
-    public var isEmpty: Bool { components.count == 0 }
-
-    public var first : C4Component? { components.first }
-
-    public var count: Int { components.count }
+    public var isEmpty: Bool { get async { await components.count == 0 } }
     
-    public func removeAll() {
-        components.removeAll()
+    public var first : C4Component? { get async { await components.first } }
+
+
+    public var count: Int { get async { await components.count } }
+    
+    public func removeAll() async {
+        await components.removeAll()
     }
     
     public var debugDescription: String {

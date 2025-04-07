@@ -17,9 +17,10 @@ public struct ParsedInfo : SendableEquatable {
     public private(set) var parser: LineParser
     public private(set) var ctx: Context
     
-    public func parseAttachedItems(for obj: ArtifactHolder, with section: AttachedSection) throws -> [Artifact] {
+    public func parseAttachedItems(for obj: ArtifactHolder, with section: AttachedSection) async throws -> [Artifact] {
         if let cls = obj as? CodeObject {
-            if section.name.lowercased() == "apis" {
+            let name = await section.name.lowercased()
+            if name == "apis" {
                 return try APISectionParser.parse(for: cls, lineParser: self.parser)
             }
         }

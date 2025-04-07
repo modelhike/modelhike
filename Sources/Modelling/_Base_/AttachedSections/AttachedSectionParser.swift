@@ -28,12 +28,12 @@ public enum AttachedSectionParser {
         
         //check if has attributes
         if let attributeString = attributeString {
-            ParserUtil.populateAttributes(for: item, from: attributeString)
+            await ParserUtil.populateAttributes(for: item, from: attributeString)
         }
         
         //check if has tags
         if let tagString = tagString {
-            ParserUtil.populateTags(for: item, from: tagString)
+            await ParserUtil.populateTags(for: item, from: tagString)
         }
         
         let parser = pctx.parser
@@ -48,9 +48,9 @@ public enum AttachedSectionParser {
                 continue
             }
             
-            let attachedItems = try pctx.parseAttachedItems(for: obj, with: item)
+            let attachedItems = try await pctx.parseAttachedItems(for: obj, with: item)
             for attachedItem in attachedItems {
-                obj.appendAttached(attachedItem)
+                await obj.appendAttached(attachedItem)
             }
             
             if pctx.firstWord == ModelConstants.AttachedSection {
