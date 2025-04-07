@@ -21,7 +21,7 @@ public class InlineModelLoader : ModelRepository {
         }
         
         //common models
-        let commons = try ModelFileParser( with: ctx)
+        let commons = try await ModelFileParser( with: ctx)
                         .parse(string: commonsString, identifier: "InlineCommons")
         
         await model.appendToCommonModel(contentsOf: commons)
@@ -29,7 +29,7 @@ public class InlineModelLoader : ModelRepository {
         //parse rest of the models
         for item in items {
             if let modelItem = item as? InlineModel {
-                let modelSpace = try ModelFileParser(with: ctx)
+                let modelSpace = try await ModelFileParser(with: ctx)
                     .parse(string: modelItem.string, identifier: "InlineDomain")
                 
                 await model.append(contentsOf: modelSpace)

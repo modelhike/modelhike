@@ -11,17 +11,17 @@ public protocol HasTags {
 }
 
 public protocol HasTags_Actor: Actor {
-    var tags: Tags {get}
+    var tags: Tags { get async }
 }
 
 public actor Tags {
     private var items: Set<Tag> = Set()
 
-    public func processEach(by process: (Tag) async throws -> Tag?) throws {
+    public func processEach(by process: (Tag) async throws -> Tag?) async throws{
         var itemsToRemove: [Tag] = []
         
         for item in items {
-            if try process(item) == nil {
+            if try await process(item) == nil {
                 itemsToRemove.append(item)
             }
         }

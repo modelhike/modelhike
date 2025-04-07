@@ -22,6 +22,11 @@ public protocol ArtifactHolder : Artifact {
 
 }
 
+public protocol ArtifactHolder_NonActor : Artifact_NonActor {
+    
+}
+
+
 public protocol ArtifactHolderWithAttachedSections : ArtifactHolder, HasAttachedSections {
 
 }
