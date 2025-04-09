@@ -22,14 +22,21 @@ public actor C4Container : ArtifactHolder {
     public internal(set) var methods: [MethodObject] = []
     
     public var types : [CodeObject] {
-        return components.types
+        get async {
+            return await components.types
+        }
     }
     
-    func components(_ items: C4ComponentList, appModel: AppModel) -> [C4Component_Wrap]  { return items.compactMap({ C4Component_Wrap($0, model: appModel)})
+    func components(_ items: C4ComponentList, appModel: AppModel) async throws -> [C4Component_Wrap] {
+        return try await items.compactMap({ C4Component_Wrap($0, model: appModel)})
     }
     
-    func getFirstModule(appModel: AppModel) -> C4Component_Wrap? {
-        return (self.components.first != nil) ? C4Component_Wrap(self.components.first!, model: appModel) : nil
+    func getFirstModule(appModel: AppModel) async -> C4Component_Wrap? {
+        if let first = await components.first {
+            return C4Component_Wrap(first, model: appModel)
+        } else {
+            return nil
+        }
     }
     
     public func append(unResolved item: ContainerModuleMember) {

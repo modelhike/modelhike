@@ -15,7 +15,7 @@ public protocol HasAttachedItems : AnyObject, Actor {
     @discardableResult func appendAttached(_ item: Artifact) -> Self
 }
 
-public class AttachedSections : ExpressibleByArrayLiteral, ExpressibleByDictionaryLiteral {
+public actor AttachedSections {
     public typealias Key = String
     public typealias Value = AttachedSection
     
@@ -32,15 +32,14 @@ public class AttachedSections : ExpressibleByArrayLiteral, ExpressibleByDictiona
         }
     }
     
-    public subscript(key: String) -> AttachedSection? {
-        get {
-            let keyToFind = key.lowercased()
-            return items[keyToFind]
-        }
-        set {
-            let keyToFind = key.lowercased()
-            items[keyToFind] = newValue
-        }
+    public func get(_ key: String) -> AttachedSection? {
+        let keyToFind = key.lowercased()
+        return items[keyToFind]
+    }
+    
+    public func set(_ key: String, value newValue: AttachedSection)  {
+        let keyToFind = key.lowercased()
+        items[keyToFind] = newValue
     }
     
     public var annotationsList : [AttachedSection] {
@@ -60,15 +59,19 @@ public class AttachedSections : ExpressibleByArrayLiteral, ExpressibleByDictiona
     
     public init() { }
     
-    required public init(arrayLiteral elements: AttachedSection...) {
+    public init(_  elements: AttachedSection...) async {
         for item in elements {
-            items[item.name] = item
+            let itemName = await item.name
+            items[itemName] = item
         }
     }
     
-    required public init(dictionaryLiteral elements: (String, AttachedSection)...) {
-        for (key,value) in elements {
-            items[key] = value
-        }
-    }
+    
+//     public init(_ elements: (String, AttachedSection)...) {
+//        for (key,value) in elements {
+//            items[key] = value
+//        }
+//    }
+//    
+//    
 }
