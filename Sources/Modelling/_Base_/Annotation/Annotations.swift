@@ -34,15 +34,14 @@ public actor Annotations {
         }
     }
 
-    public subscript(key: String) -> (any Annotation)? {
-        get {
-            let keyToFind = key.lowercased()
-            return items[keyToFind]
-        }
-        set {
-            let keyToFind = key.lowercased()
-            items[keyToFind] = newValue
-        }
+    public func get(_ key: String) -> (any Annotation)? {
+        let keyToFind = key.lowercased()
+        return items[keyToFind]
+    }
+    
+    public func set(_ key: String, value newValue: (any Annotation)?) {
+        let keyToFind = key.lowercased()
+        items[keyToFind] = newValue
     }
 
     public func append(_ item: any Annotation) {
@@ -53,7 +52,7 @@ public actor Annotations {
     public func append(contentsOf annotations: Annotations) async  {
         let items = await annotations.items
         for (key, value) in items {
-            self[key] = value
+            self.set(key, value: value)
         }
     }
 

@@ -18,41 +18,48 @@ public actor C4ContainerList: ArtifactHolder, _CollectionAsyncSequence {
     public internal(set) var containers: [C4Container] = []
     private var currentIndex = 0
 
-    public func addTypesTo(model appModel: ParsedTypesCache) {
+    public func addTypesTo(model appModel: ParsedTypesCache) async {
         for container in containers {
-            container.components.addTypesTo(model: appModel)
+          await  container.components.addTypesTo(model: appModel)
         }
     }
 
-    public func forEach(_ transform: (inout C4Container) async throws -> Void) async rethrows {
+    public func forEach(_ transform: @Sendable (inout C4Container) async throws -> Void) async rethrows {
         for el in containers {
             var el = el
             try await transform(&el)
         }
     }
 
-    public func forEachComponent(_ transform: (inout C4Component) throws -> Void) rethrows {
+    public func forEachComponent(_ transform: @Sendable (inout C4Component) async throws -> Void) async throws {
         for container in containers {
-            try container.components.forEach { el in
-                try transform(&el)
+            try await container.components.forEach { el in
+                try await transform(&el)
             }
         }
     }
 
-    public func forEachType(_ transform: (inout CodeObject, inout C4Component) throws -> Void)
-        rethrows
+    public func forEachType(_ transform: @Sendable (inout CodeObject, inout C4Component) async throws -> Void)
+       async throws
     {
-        _ = try containers.map { container in
-            try container.components.forEachType { entity, component in
-                try transform(&entity, &component)
-            }
-        }
+//        for container in containers {
+//            try await container.components.forEachType { entity, component in
+//                try await transform(&entity, &component)
+//            }
+//        }
     }
 
     public var types: [CodeObject] {
-        return containers.flatMap({ $0.types })
+//        get async {
+//            var result: [CodeObject] = []
+//            for container in containers {
+//                let t = await container.types
+//                result.append(contentsOf: t)
+//            }
+//            return result
+//        }
     }
-
+    
     public var first: C4Container? { containers.first }
 
     public func append(_ item: C4Container) {

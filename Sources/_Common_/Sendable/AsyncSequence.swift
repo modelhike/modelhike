@@ -88,3 +88,31 @@ public struct _CollectionIterator<Parent: _CollectionSequence>: IteratorProtocol
         return iterator?.next()
     }
 }
+
+extension AsyncSequence {
+    public func compactMap<T>(
+        _ transform: @Sendable @escaping (Element) async -> T?
+    ) async throws -> [T] {
+        var result: [T] = []
+        for try await element in self {
+            if let transformed = await transform(element) {
+                result.append(transformed)
+            }
+        }
+        return result
+    }
+    
+    public func map<T>(
+        _ transform: @Sendable @escaping (Element) async -> T?
+    ) async throws -> [T?] {
+        var result: [T?] = []
+        for try await element in self {
+            let transformed = await transform(element)
+            result.append(transformed)
+        }
+        return result
+    }
+    
+}
+
+

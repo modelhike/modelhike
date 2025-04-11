@@ -13,7 +13,7 @@ public actor Property : CodeMember {
     
     public var name: String
     public var givenname : String
-    public let type: TypeInfo
+    public var type: TypeInfo
     public var isUnique: Bool = false
     public var isObjectID: Bool = false
     public var isSearchable: Bool = false
@@ -40,20 +40,22 @@ public actor Property : CodeMember {
             await ParserUtil.populateAttributes(for: prop, from: attributeString)
         }
         
-        prop.type.kind = PropertyKind.parse(typeName)
+        await prop.typeKind(from: typeName)
         
         //check if has multiplicity
         if let multiplicity = typeMultiplicity {
-            await prop.type.isArray = true
+            await prop.isArray(true)
 
             if multiplicity.trim() == "*" {
-                prop.arrayMultiplicity = .noBounds
+              await  prop.arrayMultiplicity(.noBounds)
             } else {
                 let boundSplit = multiplicity.components(separatedBy: "..")
                 if boundSplit.count == 2 && boundSplit.last! != "*" {
-                    prop.arrayMultiplicity = .bounded(Int(boundSplit.first!)!, Int(boundSplit.last!)!)
+                    let value: MultiplicityKind = .bounded(Int(boundSplit.first!)!, Int(boundSplit.last!)!)
+                    await prop.arrayMultiplicity(value)
                 } else {
-                    prop.arrayMultiplicity = .lowerBound(Int(boundSplit.first!)!)
+                    let value: MultiplicityKind = .lowerBound(Int(boundSplit.first!)!)
+                    await prop.arrayMultiplicity(value)
                 }
             }
         }
@@ -64,13 +66,14 @@ public actor Property : CodeMember {
         }
         
         switch firstWord {
-            case ModelConstants.Member_Mandatory : prop.required = .yes
-            case ModelConstants.Member_Optional, ModelConstants.Member_Optional2 : prop.required = .no
+        case ModelConstants.Member_Mandatory : await prop.required(.yes)
+            case ModelConstants.Member_Optional, ModelConstants.Member_Optional2 :
+            await prop.required(.no)
            default :
             if firstWord.starts(with: ModelConstants.Member_Conditional) {
-                prop.required = .conditional
+                await prop.required(.conditional)
             } else {
-                prop.required = .no
+                await prop.required(.no)
             }
         }
         
@@ -78,6 +81,23 @@ public actor Property : CodeMember {
 
         return prop
     }
+    
+    public func typeKind(from typeName: String) {
+        type.kind = PropertyKind.parse(typeName)
+    }
+    
+    func isArray(_ value: Bool) {
+        type.isArray = value
+    }
+    
+    func arrayMultiplicity(_ kind: MultiplicityKind) {
+        self.arrayMultiplicity = kind
+    }
+    
+    func required(_ value: RequiredKind) {
+        self.required = value
+    }
+    
     
     public static func canParse(firstWord: String) -> Bool {
         switch firstWord {
@@ -182,10 +202,10 @@ public enum PropertyKind : Equatable, Sendable {
     }
 }
 
-public enum MultiplicityKind {
+public enum MultiplicityKind: Sendable {
     case noBounds, lowerBound(Int), bounded(Int,Int)
 }
 
-public enum RequiredKind {
+public enum RequiredKind: Sendable {
     case no, yes, conditional
 }

@@ -43,7 +43,7 @@ public actor MethodObject: CodeMember {
         }
 
         if let returnType = returnType {
-            method.returnType = TypeInfo.parse(returnType)
+            await method.returnType(from: returnType)
         }
 
         //check if has tags
@@ -58,6 +58,11 @@ public actor MethodObject: CodeMember {
         return method
     }
 
+    public func returnType(from typeName: String) {
+        self.returnType = TypeInfo.parse(typeName)
+    }
+    
+    
     public func append(parameter: MethodParameter) async {
         parameters.append(parameter)
     }

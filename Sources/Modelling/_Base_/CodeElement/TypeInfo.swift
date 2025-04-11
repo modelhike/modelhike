@@ -7,8 +7,8 @@
 import Foundation
 
 public struct TypeInfo: Sendable {
-    public let kind: PropertyKind
-    public let isArray: Bool
+    public var kind: PropertyKind
+    public var isArray: Bool
     
     static func parse(_ str: String) -> TypeInfo {
         if str.hasSuffix("[]") {
