@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class Property : CodeMember {
+public actor Property : CodeMember {
     public let pInfo: ParsedInfo
     public var attribs = Attributes()
     public var tags = Tags()
@@ -21,7 +21,7 @@ public class Property : CodeMember {
     public var arrayMultiplicity: MultiplicityKind = .noBounds
     public var comment: String?
     
-    public static func parse(pInfo: ParsedInfo) throws -> Property? {
+    public static func parse(pInfo: ParsedInfo) async throws -> Property? {
         let originalLine = pInfo.line
         let firstWord = pInfo.firstWord
         
@@ -37,47 +37,67 @@ public class Property : CodeMember {
         
         //check if has attributes
         if let attributeString = attributeString {
-            ParserUtil.populateAttributes(for: prop, from: attributeString)
+            await ParserUtil.populateAttributes(for: prop, from: attributeString)
         }
         
-        prop.type.kind = PropertyKind.parse(typeName)
+        await prop.typeKind(from: typeName)
         
         //check if has multiplicity
         if let multiplicity = typeMultiplicity {
-            prop.type.isArray = true
+            await prop.isArray(true)
 
             if multiplicity.trim() == "*" {
-                prop.arrayMultiplicity = .noBounds
+              await  prop.arrayMultiplicity(.noBounds)
             } else {
                 let boundSplit = multiplicity.components(separatedBy: "..")
                 if boundSplit.count == 2 && boundSplit.last! != "*" {
-                    prop.arrayMultiplicity = .bounded(Int(boundSplit.first!)!, Int(boundSplit.last!)!)
+                    let value: MultiplicityKind = .bounded(Int(boundSplit.first!)!, Int(boundSplit.last!)!)
+                    await prop.arrayMultiplicity(value)
                 } else {
-                    prop.arrayMultiplicity = .lowerBound(Int(boundSplit.first!)!)
+                    let value: MultiplicityKind = .lowerBound(Int(boundSplit.first!)!)
+                    await prop.arrayMultiplicity(value)
                 }
             }
         }
         
         //check if has tags
         if let tagString = tagString {
-            ParserUtil.populateTags(for: prop, from: tagString)
+            await ParserUtil.populateTags(for: prop, from: tagString)
         }
         
         switch firstWord {
-            case ModelConstants.Member_Mandatory : prop.required = .yes
-            case ModelConstants.Member_Optional, ModelConstants.Member_Optional2 : prop.required = .no
+        case ModelConstants.Member_Mandatory : await prop.required(.yes)
+            case ModelConstants.Member_Optional, ModelConstants.Member_Optional2 :
+            await prop.required(.no)
            default :
             if firstWord.starts(with: ModelConstants.Member_Conditional) {
-                prop.required = .conditional
+                await prop.required(.conditional)
             } else {
-                prop.required = .no
+                await prop.required(.no)
             }
         }
         
-        pInfo.parser.skipLine()
+        await pInfo.parser.skipLine()
 
         return prop
     }
+    
+    public func typeKind(from typeName: String) {
+        type.kind = PropertyKind.parse(typeName)
+    }
+    
+    func isArray(_ value: Bool) {
+        type.isArray = value
+    }
+    
+    func arrayMultiplicity(_ kind: MultiplicityKind) {
+        self.arrayMultiplicity = kind
+    }
+    
+    func required(_ value: RequiredKind) {
+        self.required = value
+    }
+    
     
     public static func canParse(firstWord: String) -> Bool {
         switch firstWord {
@@ -92,12 +112,12 @@ public class Property : CodeMember {
         }
     }
     
-    public func hasAttrib(_ name: String) -> Bool {
-        return attribs.has(name)
+    public func hasAttrib(_ name: String) async -> Bool {
+        return await attribs.has(name)
     }
     
-    public func hasAttrib(_ name: AttributeNamePresets) -> Bool {
-        return hasAttrib(name.rawValue)
+    public func hasAttrib(_ name: AttributeNamePresets) async -> Bool {
+        return await hasAttrib(name.rawValue)
     }
     
     public init(_ givenName: String, pInfo: ParsedInfo) {
@@ -138,7 +158,7 @@ public class Property : CodeMember {
 }
 
 
-public enum PropertyKind : Equatable {
+public enum PropertyKind : Equatable, Sendable {
     case unKnown, int, double, float, bool, string, date, datetime, buffer, id, any, reference(String), multiReference([String]), extendedReference(String), multiExtendedReference([String]), codedValue(String), customType(String)
     
     static func parse(_ str: String) -> PropertyKind {
@@ -182,10 +202,10 @@ public enum PropertyKind : Equatable {
     }
 }
 
-public enum MultiplicityKind {
+public enum MultiplicityKind: Sendable {
     case noBounds, lowerBound(Int), bounded(Int,Int)
 }
 
-public enum RequiredKind {
+public enum RequiredKind: Sendable {
     case no, yes, conditional
 }

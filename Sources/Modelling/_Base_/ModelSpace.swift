@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class ModelSpace {
+public actor ModelSpace {
     public var name: String = ""
     
     public internal(set) var containers = C4ContainerList()

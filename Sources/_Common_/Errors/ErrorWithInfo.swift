@@ -4,7 +4,7 @@
 //  https://www.github.com/modelhike/modelhike
 //
 
-public protocol ErrorWithMessage : Error {
+public protocol ErrorWithMessage : Error, Sendable {
     var info: String {get}
 }
 

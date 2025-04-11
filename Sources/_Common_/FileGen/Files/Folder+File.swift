@@ -31,7 +31,7 @@ public protocol File: FileSystemItem {
     func write(_ string: String, encoding: String.Encoding) throws
 }
 
-public protocol FileSystemItem: Equatable, CustomStringConvertible {
+public protocol FileSystemItem: Equatable, CustomStringConvertible, Sendable {
     associatedtype Fo
     associatedtype Pa: Path
 

@@ -6,13 +6,13 @@
 
 import Foundation
 
-public class API : Artifact, CustomDebugStringConvertible {
-    public var attribs = Attributes()
-    public var tags = Tags()
-    public var annotations = Annotations()
+public actor API : Artifact {
+    public let attribs = Attributes()
+    public let tags = Tags()
+    public let annotations = Annotations()
 
-    public var name: String = ""
-    public var givenname: String = ""
+    public let name: String = ""
+    public let givenname: String = ""
     public let dataType: ArtifactKind = .api
 
     public let entity : CodeObject
@@ -23,83 +23,83 @@ public class API : Artifact, CustomDebugStringConvertible {
     public var version: Int
     public private(set) var queryParams: [APIQueryParamWrapper] = []
     
-    public subscript(key: String) -> String? {
-        get {
-            return queryParams.first(where: {$0.queryParam.name == key})?.propMaping.givenString
-        }
-        set {
-            let wrapped = APIQueryParamWrapper(queryParam: QueryParam_KeyMapping(key), propMaping: QueryParam_PropertyNameMapping(newValue), entity: entity)
-            queryParams.append(wrapped)
-        }
+    public func get(_ key: String) -> String? {
+        return queryParams.first(where: {$0.queryParam.name == key})?.propMaping.givenString
     }
     
-    public var debugDescription: String {
+    public func set(_ key: String, value newValue: String) {
+        let wrapped = APIQueryParamWrapper(queryParam: QueryParam_KeyMapping(key), propMaping: QueryParam_PropertyNameMapping(newValue), entity: entity)
+        queryParams.append(wrapped)
+    }
+    
+    public var debugDescription: String { get async {
         var str =  """
                     \(self.name)
                     """
         str += .newLine
         
         return str
-    }
+    }}
     
-    public init(entity: CodeObject, type: APIType, version: Int = 1) {
-        self.entity = entity
+    public init(entity item: CodeObject, type: APIType, version: Int = 1) async {
+        let entityname = await item.name
+        self.entity = item
         self.type = type
-        self.baseUrl = entity.name.slugify()
+        self.baseUrl = entityname.slugify()
         self.version = version
         
         switch type {
         case .getById:
             self.path = ":id"
-            self.name = "get\(entity.name)ById"
+            self.name = "get\(entityname)ById"
         case .delete:
             self.path = ":id"
-            self.name = "delete\(entity.name)"
+            self.name = "delete\(entityname)"
         case .list:
             self.path = ""
-            let plural = entity.name.pluralized()
+            let plural = entityname.pluralized()
             self.name = "list\(plural)"
         case .associate: //will be create for the association
             self.path = ""
-            self.name = "associate\(entity.name)"
+            self.name = "associate\(entityname)"
         case .deassosiate: //will be delete for the association
             self.path = ""
-            self.name = "deassosiate\(entity.name)"
+            self.name = "deassosiate\(entityname)"
         case .activate:
             self.path = "activate"
-            self.name = "activate\(entity.name)"
+            self.name = "activate\(entityname)"
         case .deactivate:
             self.path = "deactivate"
-            self.name = "deactivate\(entity.name)"
+            self.name = "deactivate\(entityname)"
         case .create:
             self.path = ""
-            self.name = "add\(entity.name)"
+            self.name = "add\(entityname)"
         case .update:
             self.path = ""
-            self.name = "update\(entity.name)"
+            self.name = "update\(entityname)"
         case .getByCustomProperties:
             self.path = ""
-            self.name = "get\(entity.name)ByCustomProps"
+            self.name = "get\(entityname)ByCustomProps"
         case .listByCustomProperties:
             self.path = ""
-            let plural = entity.name.pluralized()
+            let plural = entityname.pluralized()
             self.name = "list\(plural)ByCustomProps"
         case .getByUsingCustomLogic:
             self.path = ""
-            self.name = "get\(entity.name)ByCustomLogic"
+            self.name = "get\(entityname)ByCustomLogic"
         case .listByUsingCustomLogic:
             self.path = ""
-            self.name = "list\(entity.name)ByCustomLogic"
+            self.name = "list\(entityname)ByCustomLogic"
         case .mutationUsingCustomLogic:
             self.path = ""
-            self.name = "mutation\(entity.name)ByCustomLogic"
+            self.name = "mutation\(entityname)ByCustomLogic"
         case .pushData:
             self.path = ""
-            let plural = entity.name.pluralized()
+            let plural = entityname.pluralized()
             self.name = "\(plural)Subscription"
         case .pushDataList:
             self.path = ""
-            let plural = entity.name.pluralized()
+            let plural = entityname.pluralized()
             self.name = "\(plural)Subscription"
         }
         
@@ -107,8 +107,8 @@ public class API : Artifact, CustomDebugStringConvertible {
     }
 }
 
-public enum APIType {
-    case create, update, delete, 
+public enum APIType: Sendable {
+    case create, update, delete,
          getById, getByCustomProperties, 
          mutationUsingCustomLogic, getByUsingCustomLogic, listByUsingCustomLogic,
          list, listByCustomProperties,
@@ -116,11 +116,43 @@ public enum APIType {
          associate, deassosiate, activate, deactivate
 }
 
-public enum QueryParamKind {
+public enum QueryParamKind: Sendable {
     case unKnown, int, string, date
 }
 
-public struct APIQueryParamWrapper {
+actor QueryParamStore {
+    private var storage: [String: String] = [:]
+
+    func set(_ key: String, value: String) {
+        storage[key] = value
+    }
+
+    func get(_ key: String) -> String? {
+        return storage[key]
+    }
+}
+
+public actor APIQueryParamStore {
+    private var params: [APIQueryParamWrapper]
+
+    init() {
+        self.params = []
+    }
+    
+    init(params: [APIQueryParamWrapper]) {
+        self.params = params
+    }
+
+    public func getParams() -> [APIQueryParamWrapper] {
+        return params
+    }
+
+    public func append(_ param: APIQueryParamWrapper) {
+        params.append(param)
+    }
+}
+
+public struct APIQueryParamWrapper: Sendable {
     public var queryParam: QueryParam_KeyMapping
     public var propMaping : QueryParam_PropertyNameMapping
     public var entity: CodeObject
@@ -132,7 +164,7 @@ public struct APIQueryParamWrapper {
     }
 }
 
-public struct QueryParam_KeyMapping : Hashable {
+public struct QueryParam_KeyMapping : Hashable, Sendable {
     public var name: String
     public var SecondName: String
     public var canHaveMultipleValues: Bool = false
@@ -169,7 +201,7 @@ public struct QueryParam_KeyMapping : Hashable {
     }
 }
 
-public struct QueryParam_PropertyNameMapping {
+public struct QueryParam_PropertyNameMapping: Sendable {
     public private(set) var givenString: String
     public var split: [String]
     
@@ -197,27 +229,28 @@ public struct QueryParam_PropertyNameMapping {
 }
 
 public extension CodeObject {
-    func getAPIs() -> APIList {
+    func getAPIs() async -> APIList {
+        let attached = self.attached
         let apis = APIList()
         
         for item in attached {
             if let api = item as? API {
-                apis.append(api)
+                await apis.append(api)
             }
         }
         return apis
     }
     
     @discardableResult
-    func appendAPI(_ type : APIType) -> API {
-        let api = API(entity: self, type: type)
+    func appendAPI(_ type : APIType) async -> API {
+        let api = await API(entity: self, type: type)
         attached.append(api)
         
         if type == .list {
-            if let getAllAnnotation = self.annotations[AnnotationConstants.listApi] {
+            if let getAllAnnotation = await self.annotations[AnnotationConstants.listApi] {
                 if let mapping = getAllAnnotation as? MappingAnnotation {
                     for item in mapping.mappings {
-                        api[item.key] = item.value
+                        await api.set(item.key, value: item.value)
                     }
                 }
             }
@@ -225,9 +258,9 @@ public extension CodeObject {
         return api
     }
     
-    func hasNoAPIs() -> Bool {
-        let apis = getAPIs()
+    func hasNoAPIs() async -> Bool {
+        let apis = await getAPIs()
         
-        return apis.count == 0
+        return await apis.count == 0
     }
 }

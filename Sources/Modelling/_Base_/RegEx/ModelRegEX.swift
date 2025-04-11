@@ -9,11 +9,16 @@ import RegexBuilder
 
 public enum ModelRegEx {
     
+    nonisolated(unsafe)
     public static let whitespace: ZeroOrMore<Substring> = CommonRegEx.whitespace
     
+    nonisolated(unsafe)
     public static let variable: Regex<Substring> = CommonRegEx.variable
+    
+    nonisolated(unsafe)
     public static let nameWithWhitespace: Regex<Substring> = CommonRegEx.nameWithWhitespace
 
+    nonisolated(unsafe)
     public static let variableValue: Regex<Substring> = Regex {
         ChoiceOf {
             CommonRegEx.objectPropertyPattern
@@ -21,8 +26,10 @@ public enum ModelRegEx {
         }
     }
 
+    nonisolated(unsafe)
     public static let integer: Regex<Substring> = CommonRegEx.integerPattern
 
+    nonisolated(unsafe)
     public static let tags: Regex<Substring> = Regex {
         OneOrMore {
             "#"
@@ -39,6 +46,7 @@ public enum ModelRegEx {
         }
     }
     
+    nonisolated(unsafe)
     public static let tags_Capturing: Regex<(Substring, String, Optional<String>)> = Regex {
         OneOrMore {
             "#"
@@ -61,6 +69,7 @@ public enum ModelRegEx {
         }
     }
     
+    nonisolated(unsafe)
     public static let property_Type: Regex<Substring> = Regex {
         CharacterClass(
             ("A"..."Z"),
@@ -76,6 +85,7 @@ public enum ModelRegEx {
         }
     }
     
+    nonisolated(unsafe)
     public static let property_ValidValueSet: Regex<(Substring, String)> = Regex {
         "{"
         Capture {
@@ -87,7 +97,7 @@ public enum ModelRegEx {
         "}"
     }
 
-
+    nonisolated(unsafe)
     public static let property_Type_Multiplicity: Regex<(Substring, String)> = Regex {
         "["
         Capture {
@@ -100,6 +110,7 @@ public enum ModelRegEx {
         "]"
     }
     
+    nonisolated(unsafe)
     static let attribute: Regex<Substring> = Regex {
         variable
         ZeroOrMore(.whitespace)
@@ -111,6 +122,7 @@ public enum ModelRegEx {
         }
     }
     
+    nonisolated(unsafe)
     static let attributes: Regex<(Substring, String)> = Regex {
         whitespace
         "("
@@ -127,6 +139,7 @@ public enum ModelRegEx {
         whitespace
     }
     
+    nonisolated(unsafe)
     static let atribute_Capturing: Regex<(Substring, String, Optional<String>)> = Regex {
         Capture {
             nameWithWhitespace
@@ -143,6 +156,7 @@ public enum ModelRegEx {
         }
     }
     
+    nonisolated(unsafe)
     static let attributes_Capturing: Regex<(Substring, String, Optional<String>)> = Regex {
         whitespace
         atribute_Capturing
@@ -151,6 +165,7 @@ public enum ModelRegEx {
         whitespace
     }
     
+    nonisolated(unsafe)
     public static let property_Capturing: Regex<(Substring, String, String, Optional<String>, Optional<String>, Optional<String>, Optional<String>)> = Regex {
         Capture {
             nameWithWhitespace
@@ -186,6 +201,7 @@ public enum ModelRegEx {
         CommonRegEx.comments
     }
     
+    nonisolated(unsafe)
     public static let derivedProperty_Capturing: Regex<(Substring, String, Optional<String>, Optional<String>)> = Regex {
         Capture {
             nameWithWhitespace
@@ -204,6 +220,7 @@ public enum ModelRegEx {
         CommonRegEx.comments
     }
     
+    nonisolated(unsafe)
     public static let method_Capturing: Regex<(Substring, String, String, Optional<String>, Optional<String>)> = Regex {
         Capture {
             CommonRegEx.functionName
@@ -239,6 +256,7 @@ public enum ModelRegEx {
         CommonRegEx.comments
     }
     
+    nonisolated(unsafe)
     static let methodArgument_Capturing: Regex<(Substring, String, String)> = Regex {
         Capture {
             variable
@@ -252,6 +270,7 @@ public enum ModelRegEx {
         } transform: { String($0) }
     }
     
+    nonisolated(unsafe)
     public static let methodArguments_Capturing: Regex<(Substring, String, String)> = Regex {
         whitespace
         methodArgument_Capturing
@@ -260,6 +279,7 @@ public enum ModelRegEx {
         whitespace
     }
     
+    nonisolated(unsafe)
     public static let container_Member_Capturing: Regex<(Substring, String, Optional<String>, Optional<String>)> = Regex {
         Capture {
             nameWithWhitespace
@@ -278,13 +298,18 @@ public enum ModelRegEx {
         CommonRegEx.comments
     }
     
+    nonisolated(unsafe)
     public static let moduleName_Capturing: Regex<(Substring, String, Optional<String>, Optional<String>)> = container_Member_Capturing
     
+    nonisolated(unsafe)
     public static let containerName_Capturing: Regex<(Substring, String, Optional<String>, Optional<String>)> = container_Member_Capturing
     
+    nonisolated(unsafe)
     public static let className_Capturing: Regex<(Substring, String, Optional<String>, Optional<String>)> = container_Member_Capturing
     
+    nonisolated(unsafe)
     public static let uiviewName_Capturing: Regex<(Substring, String, Optional<String>, Optional<String>)> = container_Member_Capturing
     
+    nonisolated(unsafe)
     public static let attachedSectionName_Capturing: Regex<(Substring, String, Optional<String>, Optional<String>)> = container_Member_Capturing
 }

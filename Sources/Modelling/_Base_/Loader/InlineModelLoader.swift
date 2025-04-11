@@ -10,7 +10,7 @@ public class InlineModelLoader : ModelRepository {
     let ctx: LoadContext
     public var items : [InlineModelProtocol] = []
     
-    public func loadModel(to model: AppModel) throws {
+    public func loadModel(to model: AppModel) async throws {
         //first parse the common types
         var commonsString = ""
         
@@ -21,22 +21,22 @@ public class InlineModelLoader : ModelRepository {
         }
         
         //common models
-        let commons = try ModelFileParser( with: ctx)
+        let commons = try await ModelFileParser( with: ctx)
                         .parse(string: commonsString, identifier: "InlineCommons")
         
-        model.appendToCommonModel(contentsOf: commons)
+        await model.appendToCommonModel(contentsOf: commons)
         
         //parse rest of the models
         for item in items {
             if let modelItem = item as? InlineModel {
-                let modelSpace = try ModelFileParser(with: ctx)
+                let modelSpace = try await ModelFileParser(with: ctx)
                     .parse(string: modelItem.string, identifier: "InlineDomain")
                 
-                model.append(contentsOf: modelSpace)
+                await model.append(contentsOf: modelSpace)
             }
         }
         
-        try model.resolveAndLinkItems(with: ctx)
+        try await model.resolveAndLinkItems(with: ctx)
     }
     
     public func probeForModelFiles() -> Bool {
@@ -69,10 +69,10 @@ public class InlineModelLoader : ModelRepository {
         return false
     }
     
-    public func loadGenerationConfigIfAny() throws {
+    public func loadGenerationConfigIfAny() async throws {
         for item in items {
             if let modelConfig = item as? InlineConfig {
-                try ConfigFileParser(with: ctx)
+                try await ConfigFileParser(with: ctx)
                     .parse(string: modelConfig.string, identifier: "config")
                 
             }

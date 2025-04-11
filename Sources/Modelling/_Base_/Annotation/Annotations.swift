@@ -7,17 +7,19 @@
 import Foundation
 
 public protocol HasAnnotations {
-    var annotations: Annotations { get set }
+    var annotations: Annotations { get }
 }
 
-public protocol Annotation: Hashable {
+public protocol HasAnnotations_Actor: Actor {
+    var annotations: Annotations { get async }
+}
+
+public protocol Annotation: Hashable, Sendable {
     var name: String { get }
     var pInfo: ParsedInfo { get }
 }
 
-public class Annotations: ExpressibleByArrayLiteral, ExpressibleByDictionaryLiteral {
-    public typealias Key = String
-    public typealias Value = any Annotation
+public actor Annotations {
 
     private var items: [String: any Annotation] = [:]
 
@@ -32,15 +34,14 @@ public class Annotations: ExpressibleByArrayLiteral, ExpressibleByDictionaryLite
         }
     }
 
-    public subscript(key: String) -> (any Annotation)? {
-        get {
-            let keyToFind = key.lowercased()
-            return items[keyToFind]
-        }
-        set {
-            let keyToFind = key.lowercased()
-            items[keyToFind] = newValue
-        }
+    public func get(_ key: String) -> (any Annotation)? {
+        let keyToFind = key.lowercased()
+        return items[keyToFind]
+    }
+    
+    public func set(_ key: String, value newValue: (any Annotation)?) {
+        let keyToFind = key.lowercased()
+        items[keyToFind] = newValue
     }
 
     public func append(_ item: any Annotation) {
@@ -48,9 +49,10 @@ public class Annotations: ExpressibleByArrayLiteral, ExpressibleByDictionaryLite
         items[keyToFind] = item
     }
 
-    public func append(contentsOf annotations: Annotations) {
-        for (key, value) in annotations.items {
-            self[key] = value
+    public func append(contentsOf annotations: Annotations) async  {
+        let items = await annotations.items
+        for (key, value) in items {
+            self.set(key, value: value)
         }
     }
 
@@ -71,15 +73,4 @@ public class Annotations: ExpressibleByArrayLiteral, ExpressibleByDictionaryLite
 
     public init() {}
 
-    required public init(arrayLiteral elements: any Annotation...) {
-        for item in elements {
-            items[item.name] = item
-        }
-    }
-
-    required public init(dictionaryLiteral elements: (String, any Annotation)...) {
-        for (key, value) in elements {
-            items[key] = value
-        }
-    }
 }

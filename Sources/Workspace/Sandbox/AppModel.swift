@@ -6,27 +6,27 @@
 
 import Foundation
 
-open class AppModel {
-    var types = ParsedTypesCache()
+public actor AppModel {
+    let types = ParsedTypesCache()
     public internal(set) var commonModel = C4ComponentList()
     private var modules = C4ComponentList()
     public internal(set) var containers = C4ContainerList()
     public internal(set) var isModelsLoaded = false
 
-    public func resolveAndLinkItems(with ctx: LoadContext) throws {
+    public func resolveAndLinkItems(with ctx: LoadContext) async throws {
 
         //resolve modules
-        containers.forEach { container in
-            for unresolvedMember in container.unresolvedMembers {
-                if let module = module(named: unresolvedMember.name) {
-                    container.append(module)
-                    container.remove(unResolved: unresolvedMember)
+        await containers.forEach { container in
+            for unresolvedMember in await container.unresolvedMembers {
+                if let module = await module(named: unresolvedMember.name) {
+                    await container.append(module)
+                    await container.remove(unResolved: unresolvedMember)
                 }
             }
         }
         
         commonModel.addTypesTo(model: types)
-        containers.addTypesTo(model: types)
+        await containers.addTypesTo(model: types)
         
         //process types
         try containers.forEach { container in
@@ -53,26 +53,41 @@ open class AppModel {
         }
     }
     
-    public func container(named name: String) -> C4Container? {
-        return containers.first(where: {$0.name == name})
+    public func container(named name: String) async -> C4Container? {
+        for container in containers {
+            if await container.name == name {
+                return container
+            }
+        }
+        return nil
     }
     
-    public func module(named name: String) -> C4Component? {
-        return modules.first(where: {$0.name == name})
+    public func module(named name: String) async -> C4Component? {
+        for module in modules {
+            if await module.name == name {
+                return module
+            }
+        }
+        return nil
     }
     
-    public func appendToCommonModel(contentsOf items: ModelSpace) {
-        for container in items.containers {
+    public func appendToCommonModel(contentsOf items: ModelSpace) async {
+        let itemContainers = await items.containers
+        
+        for container in itemContainers {
             commonModel.append(contentsOf: container)
         }
     }
     
-    public func append(contentsOf modelSpace: ModelSpace) {
-        for item in modelSpace.containers {
+    public func append(contentsOf modelSpace: ModelSpace) async {
+        let modelContainers = await modelSpace.containers
+        let modelModules = await modelSpace.modules
+
+        for item in modelContainers {
             containers.append(item)
         }
         
-        for item in modelSpace.modules {
+        for item in modelModules {
             modules.append(item)
         }
     }

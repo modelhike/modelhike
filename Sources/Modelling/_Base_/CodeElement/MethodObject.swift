@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class MethodObject: CodeMember {
+public actor MethodObject: CodeMember {
     public let pInfo: ParsedInfo
     public var attribs = Attributes()
     public var tags = Tags()
@@ -20,7 +20,7 @@ public class MethodObject: CodeMember {
 
     public var comment: String?
 
-    public static func parse(pInfo: ParsedInfo, skipLine: Bool = true) throws -> MethodObject? {
+    public static func parse(pInfo: ParsedInfo, skipLine: Bool = true) async throws -> MethodObject? {
         let originalLine = pInfo.line
         let firstWord = pInfo.firstWord
 
@@ -36,28 +36,37 @@ public class MethodObject: CodeMember {
 
         let matches = arguments.matches(of: CommonRegEx.namedParameters_Capturing)
 
-        matches.forEach({ match in
+        for match in matches {
             let (_, name, typeName) = match.output
             let type = TypeInfo.parse(typeName)
-            method.parameters.append(MethodParameter(name: name, type: type))
-        })
+            await method.append(parameter: MethodParameter(name: name, type: type))
+        }
 
         if let returnType = returnType {
-            method.returnType = TypeInfo.parse(returnType)
+            await method.returnType(from: returnType)
         }
 
         //check if has tags
         if let tagString = tagString {
-            ParserUtil.populateTags(for: method, from: tagString)
+            await ParserUtil.populateTags(for: method, from: tagString)
         }
 
         if skipLine {
-            pInfo.parser.skipLine()
+            await pInfo.parser.skipLine()
         }
 
         return method
     }
 
+    public func returnType(from typeName: String) {
+        self.returnType = TypeInfo.parse(typeName)
+    }
+    
+    
+    public func append(parameter: MethodParameter) async {
+        parameters.append(parameter)
+    }
+    
     public static func canParse(firstWord: String) -> Bool {
         switch firstWord {
         case ModelConstants.Member_Method: return true
@@ -85,7 +94,7 @@ public class MethodObject: CodeMember {
     }
 }
 
-public struct MethodParameter {
+public struct MethodParameter: Sendable {
     let name: String
     let type: TypeInfo
 
@@ -95,7 +104,7 @@ public struct MethodParameter {
     }
 }
 
-public enum ReturnType {
+public enum ReturnType: Sendable {
     case void, int, double, bool, string
     case customType(String)
 }

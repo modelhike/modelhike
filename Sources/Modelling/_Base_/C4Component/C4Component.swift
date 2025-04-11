@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class C4Component : ArtifactHolder {
+public actor C4Component : ArtifactHolder {
     public var attribs = Attributes()
     public var tags = Tags()
     public var annotations = Annotations()
@@ -18,9 +18,9 @@ public class C4Component : ArtifactHolder {
     public internal(set) var items : [Artifact] = []
     public internal(set) var types : [CodeObject] = []
     
-    public func forEachEntity(by process: (CodeObject) throws -> Void) throws {
+    public func forEachEntity(by process: (CodeObject) throws -> Void) async throws {
         for item in types {
-            if item.dataType == .entity { try process(item) }
+            if await item.dataType == .entity { try process(item) }
         }
      }
     
@@ -39,19 +39,25 @@ public class C4Component : ArtifactHolder {
     
     public var isEmpty: Bool { items.count == 0 }
     
-    public var debugDescription: String {
-        var str =  """
-                    \(self.name)
-                    | items \(self.items.count):
-                    """
-        str += .newLine
-
-        for item in items {
-            str += "| " + item.givenname + .newLine
+    public nonisolated var debugDescription: String {
+        get async {
+            let name = await self.name
+            let count = await self.items.count
             
+            var str =  """
+                    \(name)
+                    | items \(count):
+                    """
+            str += .newLine
+            
+            for item in await items {
+                let givenname = await item.givenname
+                str += "| " + givenname + .newLine
+                
+            }
+            
+            return str
         }
-        
-        return str
     }
     
     public init(name: String = "", @ArtifactHolderBuilder _ builder: () -> [ArtifactHolder]) {

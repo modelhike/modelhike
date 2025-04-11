@@ -46,9 +46,9 @@ public extension LiteralNode {
 
 public extension Node {
     @discardableResult
-    mutating func attributeIf(_ key: String, value: String?, condition: Bool) -> Self {
+    mutating func attributeIf(_ key: String, value: String?, condition: Bool) async -> Self {
         if condition, let value = value {
-            attributes[key] = value
+            await attributes.set(key, value: value)
         }
         
         return self

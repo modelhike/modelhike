@@ -6,7 +6,7 @@
 
 import Foundation
 
-public struct TemplateSoupSymbols {
+public struct TemplateSoupSymbols: Sendable {
     public private(set) var modifiers: [String: Modifier] = [:]
     public private(set) var statements: [any FileTemplateStmtConfig] = []
     public private(set) var infixOperators: [InfixOperatorProtocol] = []
