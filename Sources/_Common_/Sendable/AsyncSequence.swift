@@ -113,6 +113,53 @@ extension AsyncSequence {
         return result
     }
     
+    public func flatMap<T>(
+        _ transform: @Sendable (Element) async -> [T]
+    ) async throws -> [T] {
+        var result: [T] = []
+        for try await element in self {
+            let transformed = await transform(element)
+            result.append(contentsOf: transformed)
+        }
+        return result
+    }
+}
+
+extension Array {
+    
+    public func compactMap<T>(
+        _ transform: @Sendable @escaping (Element)  async throws -> T?
+    ) async throws  -> [T] {
+        var result: [T] = []
+        for element in self {
+            if let transformed = try await transform(element) {
+                result.append(transformed)
+            }
+        }
+        return result
+    }
+    
+    public func map<T>(
+        _ transform: @Sendable @escaping (Element) async throws -> T?
+    ) async throws -> [T?] {
+        var result: [T?] = []
+        for element in self {
+            let transformed = try await transform(element)
+            result.append(transformed)
+        }
+        return result
+    }
+    
+    public func flatMap<T>(
+        _ transform: @Sendable (Element) async -> [T]
+    ) async -> [T] {
+        var result: [T] = []
+        for element in self {
+            let transformed = await transform(element)
+            result.append(contentsOf: transformed)
+        }
+        return result
+    }
 }
 
 

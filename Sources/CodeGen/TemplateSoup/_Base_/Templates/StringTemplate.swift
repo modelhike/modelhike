@@ -9,12 +9,13 @@ import Foundation
 public struct StringTemplate : Template, Script, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     public var name: String = "string"
     
-    var items: [StringConvertible]
+    let items: [StringConvertible]
     
     @discardableResult
     mutating func append(_ item: StringConvertible) -> Self {
-        items.append(item)
-        return self
+        var newItems = items
+        newItems.append(item)
+        return StringTemplate(contentsOf: newItems)
     }
     
     public func toString() -> String {
@@ -37,6 +38,10 @@ public struct StringTemplate : Template, Script, ExpressibleByStringLiteral, Exp
     
     public init(_ value: String) {
         items = [value]
+    }
+    
+    public init(contentsOf value: [StringConvertible]) {
+        items = value
     }
     
     public init(contents: String, name: String) {

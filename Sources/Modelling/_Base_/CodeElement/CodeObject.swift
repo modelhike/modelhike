@@ -84,7 +84,7 @@ extension CodeObject {
         if let index = name.firstIndex(of: ".") {
             let propName = String(name.prefix(upTo: index))
             guard let prop = await getProp(propName) else { return nil }
-            if !prop.type.isObject() { return prop }
+            if await !prop.type.isObject() { return prop }
             //dump(appmodel)
             guard let entity = await appModel.get(for: prop.type.objectString()) else { return nil }
             let remainingName = String(name.suffix(from: name.index(after: index)))
@@ -100,9 +100,9 @@ extension CodeObject {
         if let index = name.firstIndex(of: ".") {
             let propName = String(name.prefix(upTo: index))
             guard let prop = await getProp(propName) else { return nil }
-            if !prop.type.isObject() { return nil }
+            if await !prop.type.isObject() { return nil }
 
-            if prop.type.isArray {
+            if await prop.type.isArray {
                 return prop
             }
 
@@ -112,7 +112,7 @@ extension CodeObject {
 
         } else {  // not recursive
             if let prop = await getProp(name) {
-                if prop.type.isArray {
+                if await prop.type.isArray {
                     return prop
                 }
             }

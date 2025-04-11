@@ -31,7 +31,7 @@ public actor C4ContainerList: ArtifactHolder, _CollectionAsyncSequence {
         }
     }
 
-    public func forEachComponent(_ transform: @Sendable (inout C4Component) async throws -> Void) async throws {
+    public func forEachComponent(_ transform: @escaping @Sendable (inout C4Component) async throws -> Void) async throws {
         for container in containers {
             try await container.components.forEach { el in
                 try await transform(&el)
@@ -42,22 +42,17 @@ public actor C4ContainerList: ArtifactHolder, _CollectionAsyncSequence {
     public func forEachType(_ transform: @Sendable (inout CodeObject, inout C4Component) async throws -> Void)
        async throws
     {
-//        for container in containers {
-//            try await container.components.forEachType { entity, component in
-//                try await transform(&entity, &component)
-//            }
-//        }
+        for container in containers {
+            try await container.components.forEachType { entity, component in
+                try await transform(&entity, &component)
+            }
+        }
     }
 
     public var types: [CodeObject] {
-//        get async {
-//            var result: [CodeObject] = []
-//            for container in containers {
-//                let t = await container.types
-//                result.append(contentsOf: t)
-//            }
-//            return result
-//        }
+        get async {
+            return  await containers.flatMap({ await $0.types })
+        }
     }
     
     public var first: C4Container? { containers.first }

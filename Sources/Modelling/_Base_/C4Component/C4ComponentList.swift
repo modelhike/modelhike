@@ -32,9 +32,9 @@ public actor C4ComponentList : ArtifactHolder, _CollectionAsyncSequence {
         return components
     }
     
-    public func forEach(by transform: @Sendable (inout C4Component) async throws -> Void) async rethrows {
+    public func forEach(by transform: @escaping @Sendable (inout C4Component) async throws -> Void) async throws {
         
-        _ = try components.map { el in
+        _ = try await components.map { el in
             var el = el
             try await transform(&el)
         }
