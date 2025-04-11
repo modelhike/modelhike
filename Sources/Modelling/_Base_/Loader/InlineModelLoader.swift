@@ -69,10 +69,10 @@ public class InlineModelLoader : ModelRepository {
         return false
     }
     
-    public func loadGenerationConfigIfAny() throws {
+    public func loadGenerationConfigIfAny() async throws {
         for item in items {
             if let modelConfig = item as? InlineConfig {
-                try ConfigFileParser(with: ctx)
+                try await ConfigFileParser(with: ctx)
                     .parse(string: modelConfig.string, identifier: "config")
                 
             }

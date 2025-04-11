@@ -70,11 +70,11 @@ public class LocalFileModelLoader : ModelRepository {
         }
     }
     
-    public func loadGenerationConfigIfAny() throws {
+    public func loadGenerationConfigIfAny() async throws {
         let file = LocalFile(path: loadPath.path / configFileName)
         
         if file.exists { //config file found
-            try ConfigFileParser(with: ctx)
+            try await ConfigFileParser(with: ctx)
                 .parse(file: file)
         }
     }

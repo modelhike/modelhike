@@ -17,7 +17,7 @@ public actor C4Container : ArtifactHolder {
 
     public var containerType: ContainerKind
 
-    public let components = C4ComponentList()
+    public var components = C4ComponentList()
     public internal(set) var unresolvedMembers: [ContainerModuleMember] = []
     public internal(set) var methods: [MethodObject] = []
     
@@ -66,32 +66,34 @@ public actor C4Container : ArtifactHolder {
         await components.removeAll()
     }
     
-    public var debugDescription: String {
-        var str =  """
-                    \(self.name)
-                    | components \(self.components.count):
+    public nonisolated var debugDescription: String {
+        get async {
+            var str =  """
+                    \(await self.name)
+                    | components \(await self.components.count):
                     """
-        str += .newLine
-
-        for item in components {
-            str += "| " + item.givenname + .newLine
+            str += .newLine
+            
+            for item in await components.snapshot() {
+                await str += "| " + item.givenname + .newLine
+            }
+            
+            return str
         }
-        
-        return str
     }
     
-    public init(name: String, type: ContainerKind = .unKnown, items: C4Component...) {
+    public init(name: String, type: ContainerKind = .unKnown, items: C4Component...) async {
         self.givenname = name.trim()
         self.name = self.givenname.normalizeForVariableName()
         self.containerType = type
-        self.components.append(contentsOf: items)
+       await self.components.append(contentsOf: items)
     }
     
-    public init(name: String, type: ContainerKind = .unKnown, items: [C4Component]) {
+    public init(name: String, type: ContainerKind = .unKnown, items: [C4Component]) async {
         self.givenname = name.trim()
         self.name = self.givenname.normalizeForVariableName()
         self.containerType = type
-        self.components.append(contentsOf: items)
+       await self.components.append(contentsOf: items)
     }
     
     public init(name: String, type: ContainerKind = .unKnown, items: C4ComponentList) {
