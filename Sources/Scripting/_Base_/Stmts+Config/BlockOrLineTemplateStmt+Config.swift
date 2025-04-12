@@ -6,16 +6,16 @@
 
 import Foundation
 
-public class BlockOrLineTemplateStmt: FileTemplateStatement {
+public final class BlockOrLineTemplateStmt: FileTemplateStatement {
     let keyword: String
     let endKeyword: String
-    public private(set) var pInfo: ParsedInfo
+    public let pInfo: ParsedInfo
     public var lineNo: Int { return pInfo.lineNo }
 
-    var children = GenericStmtsContainer()
-    var isEmpty: Bool { children.isEmpty }
-    var isBlockVariant: Bool = false
-
+    let children = GenericStmtsContainer()
+    var isEmpty: Bool  { get async { await children.isEmpty } }
+    var isBlockVariant: Bool { get async { await state.isBlockVariant }}
+    let state = BlockOrLineTemplateState()
     public func execute(with ctx: Context) throws -> String? {
         fatalError(#function + ": This method must be overridden")
     }
@@ -48,35 +48,35 @@ public class BlockOrLineTemplateStmt: FileTemplateStatement {
         fatalError(#function + ": This method must be overridden")
     }
 
-    func appendText(_ item: ContentLine) {
-        children.append(item)
+    func appendText(_ item: ContentLine) async {
+        await children.append(item)
     }
 
-    private func parseStmtLineAndChildren(line: String, scriptParser: any ScriptParser) throws {
+    private func parseStmtLineAndChildren(line: String, scriptParser: any ScriptParser) async throws {
 
         try parseStmtLine_BlockVariant(line: line, lineParser: pInfo.parser)
 
-        try scriptParser.parseLines(
+        try await scriptParser.parseLines(
             startingFrom: keyword, till: endKeyword, to: self.children, level: pInfo.level + 1,
             with: pInfo.ctx)
     }
 
-    func parseAsPerVariant(scriptParser: any ScriptParser) throws {
-        let line = pInfo.parser.currentLineWithoutStmtKeyword()
+    func parseAsPerVariant(scriptParser: any ScriptParser) async throws {
+        let line = await pInfo.parser.currentLineWithoutStmtKeyword()
 
         if checkIfLineVariant(line: line) {
-            isBlockVariant = false
+            await state.isBlockVariant(false)
             try parseStmtLine_LineVariant(line: line, lineParser: pInfo.parser)
         } else {
-            isBlockVariant = true
-            try parseStmtLineAndChildren(line: line, scriptParser: scriptParser)
+            await state.isBlockVariant(true)
+            try await parseStmtLineAndChildren(line: line, scriptParser: scriptParser)
         }
     }
 
-    internal func debugStringForChildren() -> String {
+    internal func debugStringForChildren() async -> String {
         var str = ""
 
-        for item in children {
+        for item in await children.snapshot() {
             if let debug = item as? CustomDebugStringConvertible {
                 str += " -- " + debug.debugDescription + "\n"
             }
@@ -96,17 +96,17 @@ public struct BlockOrLineTemplateStmtConfig<T>: FileTemplateStmtConfig, Template
 where T: BlockOrLineTemplateStmt {
     public let keyword: String
     private let endKeyword: String
-    public let initialiser: (String, ParsedInfo) -> T
+    public let initialiser: @Sendable (String, ParsedInfo) -> T
     public var kind: TemplateStmtKind { .blockOrLine }
 
-    public init(keyword: String, initialiser: @escaping (String, ParsedInfo) -> T) {
+    public init(keyword: String, initialiser: @Sendable @escaping (String, ParsedInfo) -> T) {
         self.keyword = keyword
         self.initialiser = initialiser
         self.endKeyword = TemplateConstants.templateEndKeywordWithHyphen + keyword
     }
 
     public init(
-        keyword: String, endKeyword: String, initialiser: @escaping (String, ParsedInfo) -> T
+        keyword: String, endKeyword: String, initialiser: @Sendable @escaping (String, ParsedInfo) -> T
     ) {
         self.keyword = keyword
         self.initialiser = initialiser
@@ -115,5 +115,12 @@ where T: BlockOrLineTemplateStmt {
 
     public func getNewObject(_ pInfo: ParsedInfo) -> T {
         return initialiser(self.endKeyword, pInfo)
+    }
+}
+
+actor BlockOrLineTemplateState {
+    var isBlockVariant: Bool = false
+    func isBlockVariant(_ value: Bool ){
+        isBlockVariant = value
     }
 }

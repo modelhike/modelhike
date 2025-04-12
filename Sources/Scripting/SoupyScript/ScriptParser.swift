@@ -4,7 +4,7 @@
 //  https://www.github.com/modelhike/modelhike
 //
 
-public protocol ScriptParser : AnyObject, CustomDebugStringConvertible {
+public protocol ScriptParser : Actor, SendableDebugStringConvertible {
     var context : Context {get}
     var containers : SoupyScriptStmtContainerList {get set}
     var lineParser: LineParser {get}
@@ -22,79 +22,79 @@ public extension ScriptParser {
         return try parseLines(startingFrom: nil, till: nil, to: container, level: level, with: ctx)
     }
     
-    func handleParsedLine(stmtWord : String, pInfo: ParsedInfo, container: any SoupyScriptStmtContainer) throws {
+    func handleParsedLine(stmtWord : String, pInfo: ParsedInfo, container: any SoupyScriptStmtContainer) async throws {
         //visual separators; just ignore
         if stmtWord.hasPrefix("---") || stmtWord.hasPrefix("***") {
             return
         }
         
         if stmtWord == TemplateConstants.templateFunction_start {
-            if try parseStartTemplateFunction(stmtWord: stmtWord, pInfo: pInfo) {
+            if try await parseStartTemplateFunction(stmtWord: stmtWord, pInfo: pInfo) {
                 return //continue after macro fn
             }
         }
         
-        try parseStmts(stmtWord, pInfo: pInfo, to: container, with : pInfo.ctx)
+        try await parseStmts(stmtWord, pInfo: pInfo, to: container, with : pInfo.ctx)
     }
     
-    func treatAsContent(_ pInfo: ParsedInfo, level: Int, container: any SoupyScriptStmtContainer) throws {
+    func treatAsContent(_ pInfo: ParsedInfo, level: Int, container: any SoupyScriptStmtContainer) async throws {
         let trimmedLine = pInfo.line.trim()
-        if lineParser.isStatementsPrefixedWithKeyword {
+        if await lineParser.isStatementsPrefixedWithKeyword {
             if trimmedLine == TemplateConstants.stmtKeyWord { //add empty line
                 let item = EmptyLine()
-                container.append(item)
+                await container.append(item)
                 return
             }
         } else {
             if trimmedLine.isEmpty { //add empty line
                 let item = EmptyLine()
-                container.append(item)
+                await container.append(item)
                 return
             }
         }
         
         let item = try ContentLine(pInfo, level: level)
-        container.append(item)
+        await container.append(item)
     }
     
-    func parseStmts(_ stmtWord: String, pInfo: ParsedInfo, to container: any SoupyScriptStmtContainer, with ctx: Context) throws {
+    func parseStmts(_ stmtWord: String, pInfo: ParsedInfo, to container: any SoupyScriptStmtContainer, with ctx: Context) async throws {
         
         var isStmtIdentified = false
-
-        for config in ctx.symbols.template.statements {
+        
+        for config in await ctx.symbols.template.statements {
             if stmtWord == config.keyword {
                 isStmtIdentified = true
                 
                 if config.kind == .block {
-                    ctx.debugLog.stmtDetected(keyWord: config.keyword, pInfo: pInfo)
+                    await ctx.debugLog.stmtDetected(keyWord: config.keyword, pInfo: pInfo)
                     
                     let stmt = config.getNewObject(pInfo) as! BlockTemplateStmt
                     try stmt.parseStmtLineAndChildren(scriptParser: self, pInfo: pInfo)
-                    container.append(stmt)
+                    await container.append(stmt)
                     break
                     
                 } else if config.kind == .line {
-                    ctx.debugLog.stmtDetected(keyWord: config.keyword, pInfo: pInfo)
+                    await ctx.debugLog.stmtDetected(keyWord: config.keyword, pInfo: pInfo)
                     
                     let stmt = config.getNewObject(pInfo) as! LineTemplateStmt
-                    try stmt.parseStmtLine()
-                    container.append(stmt)
+                    try await stmt.parseStmtLine()
+                    await container.append(stmt)
                     break
                     
                 } else if config.kind == .blockOrLine {
-                    ctx.debugLog.stmtDetected(keyWord: config.keyword, pInfo: pInfo)
+                    await ctx.debugLog.stmtDetected(keyWord: config.keyword, pInfo: pInfo)
                     
                     let stmt = config.getNewObject(pInfo) as! BlockOrLineTemplateStmt
-                    try stmt.parseAsPerVariant(scriptParser: self)
-                    container.append(stmt)
+                    try await stmt.parseAsPerVariant(scriptParser: self)
+                    await container.append(stmt)
                     break
                     
                 } else if config.kind == .multiBlock {
-                    ctx.debugLog.stmtDetected(keyWord: config.keyword, pInfo: pInfo)
+                    await ctx.debugLog.stmtDetected(keyWord: config.keyword, pInfo: pInfo)
                     
                     let stmt = config.getNewObject(pInfo) as! MultiBlockTemplateStmt
                     try stmt.parseStmtLineAndBlocks(scriptParser: self)
-                    container.append(stmt)
+                    await container.append(stmt)
                     break
                 }
             }
@@ -104,20 +104,20 @@ public extension ScriptParser {
             //most likely, this stmt maybe part of a multi block stmt
             //if so, this will be processed and identified by the multiblock stmt
             let stmt = UnIdentifiedStmt(pInfo: pInfo)
-            container.append(stmt)
+            await container.append(stmt)
         }
     }
     
-    func parseStartTemplateFunction(stmtWord: String, pInfo: ParsedInfo) throws -> Bool {
-        let templateFnLine = lineParser.currentLine(after: stmtWord)
+    func parseStartTemplateFunction(stmtWord: String, pInfo: ParsedInfo) async throws -> Bool {
+        let templateFnLine = await lineParser.currentLine(after: stmtWord)
         
         if let match = templateFnLine.wholeMatch(of: CommonRegEx.functionDeclaration_unNamedArgs_Capturing) {
             let (_, templateFnName, paramsString) = match.output
-            let params = paramsString.getArray_UsingUnNamedArgsPattern()
-
+            let params = await paramsString.getArray_UsingUnNamedArgsPattern()
+            
             let fnName = templateFnName.trim()
             let fnContainer  = TemplateFunctionContainer(name: fnName, params: params, pInfo: pInfo)
-            context.templateFunctions[fnName] = fnContainer
+            await context.templateFunctions.set(fnName,value: fnContainer)
             
             //templateParser.lineParser.skipLine()
             let topLevel = 0
@@ -131,15 +131,16 @@ public extension ScriptParser {
         }
     }
     
+    
     func parseContainers(containerName: String = "string") throws -> SoupyScriptStmtContainerList? {
-                
+        
         containers = SoupyScriptStmtContainerList(name: containerName, currentContainer)
         try self.parseAllLines(to: self.currentContainer, level: 0, with: context)
         
         return containers
     }
     
-    var debugDescription: String {
-        return containers.debugDescription
-    }
+    var debugDescription: String { get async {
+        return await containers.debugDescription
+    }}
 }

@@ -40,11 +40,11 @@ public protocol TemplateItemConfig: Sendable {
 public protocol TemplateInitialiserWithArg: Sendable {
     associatedtype T
     
-    var initialiser: (String, ParsedInfo) -> T {get}
+    var initialiser: @Sendable (String, ParsedInfo) -> T {get}
 }
 
 public protocol TemplateInitialiserWithNoArg: Sendable {
     associatedtype T
     
-    var initialiser: (ParsedInfo) -> T {get}
+    var initialiser: @Sendable (ParsedInfo) -> T {get}
 }
