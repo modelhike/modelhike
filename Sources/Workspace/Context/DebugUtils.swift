@@ -6,7 +6,7 @@
 
 import Foundation
 
-public struct ContextDebugLog: Sendable {
+public struct ContextDebugLog {
     public var stack = CallStack()
     public var flags = ContextDebugFlags()
     
@@ -264,7 +264,7 @@ public struct ContextDebugLog: Sendable {
     
 }
 
-public struct ContextDebugFlags: Sendable {
+public struct ContextDebugFlags {
     public var printParsedTree = false
     
     public var lineByLineParsing = false

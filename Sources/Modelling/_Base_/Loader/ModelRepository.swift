@@ -7,8 +7,8 @@
 import Foundation
 
 public protocol ModelRepository {
-    func loadModel(to model: AppModel) async throws
-    func loadGenerationConfigIfAny() async throws
+    func loadModel(to model: AppModel) throws
+    func loadGenerationConfigIfAny() throws
     
     func probeForModelFiles() -> Bool
     func probeForCommonModelFiles() -> Bool

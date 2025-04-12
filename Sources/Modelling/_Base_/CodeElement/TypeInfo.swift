@@ -6,9 +6,9 @@
 
 import Foundation
 
-public struct TypeInfo: Sendable {
+public struct TypeInfo {
     public var kind: PropertyKind
-    public var isArray: Bool
+    public var isArray: Bool = false
     
     static func parse(_ str: String) -> TypeInfo {
         if str.hasSuffix("[]") {
@@ -108,16 +108,13 @@ public struct TypeInfo: Sendable {
     
     public init(_ type: PropertyKind) {
         self.kind = type
-        self.isArray = false
     }
     
     public init(_ type: PropertyKind? = nil) {
         self.kind = type ?? .unKnown
-        self.isArray = false
-   }
+    }
     
     internal init() {
         self.kind = .unKnown
-        self.isArray = false
     }
 }

@@ -6,7 +6,7 @@
 
 import Foundation
 
-public actor C4ContainerList: ArtifactHolder, _CollectionAsyncSequence {
+public class C4ContainerList: ArtifactHolder, IteratorProtocol, Sequence {
     public var attribs = Attributes()
     public var tags = Tags()
     public var annotations = Annotations()
@@ -18,43 +18,53 @@ public actor C4ContainerList: ArtifactHolder, _CollectionAsyncSequence {
     public internal(set) var containers: [C4Container] = []
     private var currentIndex = 0
 
-    public func addTypesTo(model appModel: ParsedTypesCache) async {
+    public func addTypesTo(model appModel: ParsedTypesCache) {
         for container in containers {
-          await  container.components.addTypesTo(model: appModel)
+            container.components.addTypesTo(model: appModel)
         }
     }
 
-    public func forEach(_ transform: @Sendable (inout C4Container) async throws -> Void) async rethrows {
-        for el in containers {
+    public func forEach(_ transform: (inout C4Container) throws -> Void) rethrows {
+        _ = try containers.map { el in
             var el = el
-            try await transform(&el)
+            try transform(&el)
+            return el
         }
     }
 
-    public func forEachComponent(_ transform: @escaping @Sendable (inout C4Component) async throws -> Void) async throws {
-        for container in containers {
-            try await container.components.forEach { el in
-                try await transform(&el)
+    public func forEachComponent(_ transform: (inout C4Component) throws -> Void) rethrows {
+        _ = try containers.map { container in
+            try container.components.forEach { el in
+                try transform(&el)
             }
         }
     }
 
-    public func forEachType(_ transform: @Sendable (inout CodeObject, inout C4Component) async throws -> Void)
-       async throws
+    public func forEachType(_ transform: (inout CodeObject, inout C4Component) throws -> Void)
+        rethrows
     {
-        for container in containers {
-            try await container.components.forEachType { entity, component in
-                try await transform(&entity, &component)
+        _ = try containers.map { container in
+            try container.components.forEachType { entity, component in
+                try transform(&entity, &component)
             }
         }
     }
 
     public var types: [CodeObject] {
-        get async {
-            return  await containers.flatMap({ await $0.types })
+        return containers.flatMap({ $0.types })
+    }
+
+    public func next() -> C4Container? {
+        if currentIndex <= containers.count - 1 {
+            let compo = containers[currentIndex]
+            currentIndex += 1
+            return compo
+        } else {
+            currentIndex = 0  //reset index
+            return nil
         }
     }
-    
+
     public var first: C4Container? { containers.first }
 
     public func append(_ item: C4Container) {
@@ -71,25 +81,20 @@ public actor C4ContainerList: ArtifactHolder, _CollectionAsyncSequence {
 
     public var count: Int { containers.count }
 
-    public func snapshot() -> [C4Container] {
-        return containers
-    }
-    
-    public var debugDescription: String { get async {
+    public var debugDescription: String {
         var str = """
             \(self.name)
             containers \(self.containers.count):
             """
         str += .newLine
-        
+
         for item in containers {
-            let givenname = await item.givenname
-            str += givenname + .newLine
-            
+            str += item.givenname + .newLine
+
         }
-        
+
         return str
-    }}
+    }
 
     public init(name: String = "", _ items: C4Container...) {
         self.name = name

@@ -8,20 +8,16 @@ import Foundation
 import RegexBuilder
 
 public enum CommonRegEx {
-    nonisolated(unsafe)
     public static let whitespace: ZeroOrMore<Substring> = ZeroOrMore(.whitespace)
 
-    nonisolated(unsafe)
     public static let nonWhitespace: Regex<Substring> = Regex {
         OneOrMore(.whitespace.inverted, .eager)
     }
 
-    nonisolated(unsafe)
     public static let anything: Regex<Substring> = Regex {
         OneOrMore(.any, .reluctant)
     }
     
-    nonisolated(unsafe)
     public static let nameWithWhitespace: Regex<Substring> = Regex {
         CharacterClass(
             .anyOf("_"),
@@ -38,7 +34,6 @@ public enum CommonRegEx {
         }
     }
     
-    nonisolated(unsafe)
     public static let variable: Regex<Substring> = Regex {
         CharacterClass(
             .anyOf("_"),
@@ -55,7 +50,6 @@ public enum CommonRegEx {
         }
     }
 
-    nonisolated(unsafe)
     public static let objectPropertyPattern: Regex<Substring> = Regex {
         CharacterClass(
             .anyOf("@_"), //'@' is the prefix used for pre-defined variables
@@ -72,7 +66,6 @@ public enum CommonRegEx {
         }
     }
     
-    nonisolated(unsafe)
     public static let variableOrObjectProperty: Regex<Substring> = Regex {
         ChoiceOf {
             objectPropertyPattern
@@ -80,33 +73,28 @@ public enum CommonRegEx {
         }
     }
     
-    nonisolated(unsafe)
     public static let integerPattern: Regex<Substring> = Regex {
         OneOrMore(.digit)
     }
 
-    nonisolated(unsafe)
     public static let doublePattern: Regex<Substring> = Regex {
         OneOrMore(.digit)
         "."
         OneOrMore(.digit)
     }
 
-    nonisolated(unsafe)
     public static let doubleLiteralPattern_Capturing: Regex<(Substring, Optional<Double>)> = Regex {
         Capture {
             doublePattern
         } transform: { Double($0) }
     }
     
-    nonisolated(unsafe)
     public static let integerLiteralPattern_Capturing: Regex<(Substring, Optional<Int>)> = Regex {
         Capture {
             integerPattern
         } transform: { Int($0) }
     }
     
-    nonisolated(unsafe)
     public static let numberLiteralPattern_Capturing: Regex<(Substring, Optional<Optional<Double>>, Optional<Optional<Int>>)> = Regex {
         ChoiceOf {
             doubleLiteralPattern_Capturing
@@ -114,7 +102,6 @@ public enum CommonRegEx {
         }
     }
     
-    nonisolated(unsafe)
     public static let stringLiteralPattern: Regex<Substring> = Regex {
         ChoiceOf {
             singleQuotedSringLiteral
@@ -122,7 +109,6 @@ public enum CommonRegEx {
         }
     }
 
-    nonisolated(unsafe)
     static let singleQuotedSringLiteral: Regex<Substring> = Regex {
         "'"
         ZeroOrMore {
@@ -131,7 +117,6 @@ public enum CommonRegEx {
         "'"
     }
 
-    nonisolated(unsafe)
     static let doubleQuotedSringLiteral: Regex<Substring> = Regex {
         "\""
         ZeroOrMore {
@@ -140,7 +125,6 @@ public enum CommonRegEx {
         "\""
     }
 
-    nonisolated(unsafe)
     public static let stringLiteralPattern_Capturing: Regex<(Substring, Optional<String>, Optional<String>)> = Regex {
         ChoiceOf {
             singleQuotedSringLiteral_Capturing
@@ -148,7 +132,6 @@ public enum CommonRegEx {
         }
     }
 
-    nonisolated(unsafe)
     static let singleQuotedSringLiteral_Capturing: Regex<(Substring, String)> = Regex {
         "'"
         Capture {
@@ -159,7 +142,6 @@ public enum CommonRegEx {
         "'"
     }
 
-    nonisolated(unsafe)
     static let doubleQuotedSringLiteral_Capturing: Regex<(Substring, String)> = Regex {
         "\""
         Capture {
@@ -171,17 +153,14 @@ public enum CommonRegEx {
         "\""
     }
     
-    nonisolated(unsafe)
     public static let functionName: Regex<Substring> = nameWithWhitespace
 
-    nonisolated(unsafe)
     public static let functionName_Capturing: Regex<(Substring, String)> = Regex {
         Capture {
             functionName
         } transform: { String($0) }
     }
 
-    nonisolated(unsafe)
     public static let validValue: Regex<Substring> = Regex {
         ChoiceOf {
             doublePattern
@@ -193,7 +172,6 @@ public enum CommonRegEx {
         }
     }
     
-    nonisolated(unsafe)
     public static let validStringValue: Regex<Substring> = Regex {
         ChoiceOf {
             stringLiteralPattern
@@ -205,7 +183,6 @@ public enum CommonRegEx {
     
     //public static let validExpression = validValue
     
-    nonisolated(unsafe)
     static let namedParameter_Capturing: Regex<(Substring, String, String)> = Regex {
         Capture {
             variable
@@ -220,7 +197,6 @@ public enum CommonRegEx {
         } transform: { String($0) }
     }
     
-    nonisolated(unsafe)
     public static let namedParameters_Capturing: Regex<(Substring, String, String)> = Regex {
         whitespace
         namedParameter_Capturing
@@ -229,7 +205,6 @@ public enum CommonRegEx {
         whitespace
     }
     
-    nonisolated(unsafe)
     static let namedArgument_Capturing: Regex<(Substring, String, String)> = Regex {
         Capture {
             variable
@@ -243,7 +218,6 @@ public enum CommonRegEx {
         } transform: { String($0) }
     }
     
-    nonisolated(unsafe)
     public static let namedArguments_Capturing: Regex<(Substring, String, String)> = Regex {
         whitespace
         namedArgument_Capturing
@@ -252,14 +226,12 @@ public enum CommonRegEx {
         whitespace
     }
     
-    nonisolated(unsafe)
     static let unNamedArgument_Capturing: Regex<(Substring, String)> = Regex {
         Capture {
             validValue
         } transform: { String($0) }
     }
     
-    nonisolated(unsafe)
     public static let unNamedArguments_Capturing: Regex<(Substring, String)> = Regex {
         whitespace
         unNamedArgument_Capturing
@@ -268,7 +240,6 @@ public enum CommonRegEx {
         whitespace
     }
     
-    nonisolated(unsafe)
     static let namedArgument: Regex<Substring> = Regex {
         variable
         whitespace
@@ -277,7 +248,6 @@ public enum CommonRegEx {
         validValue
     }
     
-    nonisolated(unsafe)
     public static let namedArguments: Regex<Substring> = Regex {
         ZeroOrMore {
             whitespace
@@ -288,12 +258,10 @@ public enum CommonRegEx {
         }
     }
     
-    nonisolated(unsafe)
     static let unNamedArgument: Regex<Substring> = Regex {
         validValue
     }
     
-    nonisolated(unsafe)
     public static let unNamedArguments: Regex<Substring> = Regex {
         ZeroOrMore {
             whitespace
@@ -304,7 +272,6 @@ public enum CommonRegEx {
         }
     }
     
-    nonisolated(unsafe)
     public static let functionInvocation_Capturing: Regex<(Substring, String, String)> = Regex {
         Capture {
             functionName
@@ -319,7 +286,6 @@ public enum CommonRegEx {
         ")"
     }
     
-    nonisolated(unsafe)
     public static let functionInvocation_unNamedArgs_Capturing: Regex<(Substring, String, String)> = Regex {
         Capture {
             functionName
@@ -337,7 +303,6 @@ public enum CommonRegEx {
         comments
     }
     
-    nonisolated(unsafe)
     public static let functionInvocation_namedArgs_Capturing: Regex<(Substring, String, String)> = Regex {
         Capture {
             functionName
@@ -352,10 +317,8 @@ public enum CommonRegEx {
         ")"
     }
     
-    nonisolated(unsafe)
     public static let functionDeclaration_unNamedArgs_Capturing: Regex<(Substring, String, String)> = functionInvocation_unNamedArgs_Capturing
     
-    nonisolated(unsafe)
     public static let comments = Regex {
         whitespace
         Optionally {
@@ -364,7 +327,6 @@ public enum CommonRegEx {
         }
     }
     
-    nonisolated(unsafe)
     public static let modifiersForExpression_Capturing: Regex<(Substring, Optional<String>)> = Regex {
         whitespace
         Optionally {
@@ -374,7 +336,6 @@ public enum CommonRegEx {
         }
     }
     
-    nonisolated(unsafe)
     public static let anythingTillComments_Capturing: Regex<(Substring, String)> = Regex {
         Capture {
             OneOrMore {

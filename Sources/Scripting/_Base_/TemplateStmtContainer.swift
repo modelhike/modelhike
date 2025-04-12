@@ -6,12 +6,13 @@
 
 import Foundation
 
-public protocol SoupyScriptStmtContainer : _CollectionAsyncSequence, SendableDebugStringConvertible, Actor {
+public protocol SoupyScriptStmtContainer : IteratorProtocol, Sequence, CustomDebugStringConvertible {
     func append(_ item: TemplateItem)
 }
 
-public actor GenericStmtsContainer : SoupyScriptStmtContainer {
-    private let kind: TemplateStmtContainerKind
+public class GenericStmtsContainer : SoupyScriptStmtContainer {
+    
+    public var kind: TemplateStmtContainerKind = .global
     public var name: String?
     
     var items : [TemplateItem] = []
@@ -21,6 +22,17 @@ public actor GenericStmtsContainer : SoupyScriptStmtContainer {
 
     public func append(_ item: TemplateItem) {
         items.append(item)
+    }
+    
+    public func next() -> TemplateItem? {
+        if currentIndex <= items.count - 1 {
+            let compo = items[currentIndex]
+            currentIndex += 1
+            return compo
+        } else {
+            currentIndex = 0 //reset index
+            return nil
+        }
     }
     
     public func removeAll() {
@@ -38,11 +50,6 @@ public actor GenericStmtsContainer : SoupyScriptStmtContainer {
         }
         
         return str.isNotEmpty ? str : nil
-    }
-    
-    // Capture a snapshot of items (for safe async access)
-    public func snapshot() -> [Sendable] {
-        return items
     }
     
     public var debugDescription: String {
@@ -88,7 +95,7 @@ public actor GenericStmtsContainer : SoupyScriptStmtContainer {
     }
 }
 
-public enum TemplateStmtContainerKind: Sendable {
+public enum TemplateStmtContainerKind {
     case global, partOfMultiBlock, macro
 }
 

@@ -6,7 +6,7 @@
 
 import Foundation
 
-public protocol StringConvertible: Sendable {
+public protocol StringConvertible {
     func toString() -> String
 }
 

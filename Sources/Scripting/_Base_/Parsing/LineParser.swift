@@ -11,7 +11,7 @@ public typealias LineParserDuringGeneration = GenericLineParser<GenerationContex
 public typealias DummyLineParserDuringLoad = GenericLineParser<LoadContext>
 public typealias DummyLineParserDuringGeneration = GenericLineParser<GenerationContext>
 
-public protocol LineParser : AnyObject, Actor {
+public protocol LineParser : AnyObject {
     var ctx: Context {get}
     var identifier: String {get}
     var isStatementsPrefixedWithKeyword: Bool {get}
@@ -20,27 +20,27 @@ public protocol LineParser : AnyObject, Actor {
     var curLevelForDisplay: Int {get}
     var linesRemaining: Bool {get}
     
-    func parseLinesTill(lineHasOnly txt: String) async -> [String]
-    func parse(till endKeyWord: String?, level: Int, lineHandler: ((_ pctx: ParsedInfo, _ stmtWord: String?) throws -> ())) async throws
+    func parseLinesTill(lineHasOnly txt: String) -> [String]
+    func parse(till endKeyWord: String?, level: Int, lineHandler: ((_ pctx: ParsedInfo, _ stmtWord: String?) throws -> ())) throws
     
     func nextLine() -> String
     func currentLine() -> String
     func currentLine(after firstWord: String) -> String
-    func incrementLineNo() async
+    func incrementLineNo()
     func currentLineWithoutStmtKeyword() -> String
     func lookAheadLine(by lineCount: Int) -> String
     
     func isCurrentLineEmpty() -> Bool
     func isCurrentLineCommented() -> Bool
     
-    func currentParsedInfo(level: Int) async -> ParsedInfo?
+    func currentParsedInfo(level: Int) -> ParsedInfo?
     
     func currentLine_TrimTrailing() -> String
-    func skipLine() async
-    func skipLine(by times : Int) async
+    func skipLine()
+    func skipLine(by times : Int)
 }
 
-public actor GenericLineParser<T> : LineParser where T: Context {
+public class GenericLineParser<T> : LineParser where T: Context {
     private var lines: [String] = []
     private var _curLineNo: Int = 0
     private var _curLevel: Int = 0
@@ -57,16 +57,16 @@ public actor GenericLineParser<T> : LineParser where T: Context {
     
     public let isStatementsPrefixedWithKeyword: Bool
     
-    public func parse(till endKeyWord: String? = nil, level: Int, lineHandler: ((_ pctx: ParsedInfo, _ stmtWord: String?) throws -> ())) async throws {
+    public func parse(till endKeyWord: String? = nil, level: Int, lineHandler: ((_ pctx: ParsedInfo, _ stmtWord: String?) throws -> ())) throws {
         resetFlags()
         
         while linesRemaining {
-            if isCurrentLineEmpty() { await skipEmptyLine() ; continue }
-            if isCurrentLineCommented() { await skipCommentedLine(); continue }
+            if isCurrentLineEmpty() { skipEmptyLine() ; continue }
+            if isCurrentLineCommented() { skipCommentedLine(); continue }
             
             //the currentLine() returns a trimmed string, which removes prefixed space for content;
             //so, another method, that does not trim prefix, is used for content
-            guard var pInfo = await self.currentParsedInfo(level: level) else { await self.skipLine(); continue }
+            guard let pInfo = self.currentParsedInfo(level: level) else { self.skipLine(); continue }
 
             let curLine = pInfo.line
             
@@ -74,10 +74,10 @@ public actor GenericLineParser<T> : LineParser where T: Context {
                     
             if isStatementsPrefixedWithKeyword {
                 guard let secondWord = pInfo.secondWord else {
-                    pInfo.setFirstWord("")
+                    pInfo.firstWord = ""
                     try lineHandler(pInfo, nil)
                     
-                    if await !miscLineReadHandling() {break}
+                    if !miscLineReadHandling() {break}
                     continue
                 }
                 
@@ -90,76 +90,76 @@ public actor GenericLineParser<T> : LineParser where T: Context {
                 //E.g. consider a block as ending, when either of the foll are encountered:
                 //"end-<block keyword>" or "end"
                 if stmtWord == endKeyWord || stmtWord == TemplateConstants.templateEndKeyword {
-                    await ctx.debugLog.line(curLine, pInfo: pInfo)
-                    await ctx.debugLog.parseLines(ended: endKeyWord, pInfo: pInfo)
+                    ctx.debugLog.line(curLine, pInfo: pInfo)
+                    ctx.debugLog.parseLines(ended: endKeyWord, pInfo: pInfo)
                     
                     //skipLine()
                     break
                 }
             }
             
-            await ctx.debugLog.line(curLine, pInfo: pInfo)
+            ctx.debugLog.line(curLine, pInfo: pInfo)
             
             try lineHandler(pInfo, stmtWord)
             
             
-            if await !miscLineReadHandling() {break}
+            if !miscLineReadHandling() {break}
         }
             
         resetFlags()
     }
     
-    private func miscLineReadHandling() async -> Bool {
+    private func miscLineReadHandling() -> Bool {
         if _breakParsing {return false}
         
         if autoIncrementLineNoForEveryLoop {
-            await incrementLineNo()
+            incrementLineNo()
         }
         
         return true
     }
     
-    public func skipLine() async {
-        await ctx.debugLog.skipLine(lineNo: curLineNoForDisplay)
+    public func skipLine() {
+        ctx.debugLog.skipLine(lineNo: curLineNoForDisplay)
         
         _curLineNo += 1;
     }
     
-    public func skipEmptyLine() async {
-        await ctx.debugLog.skipEmptyLine(lineNo: curLineNoForDisplay)
+    public func skipEmptyLine() {
+        ctx.debugLog.skipEmptyLine(lineNo: curLineNoForDisplay)
         
         _curLineNo += 1;
     }
     
-    public func skipCommentedLine() async {
+    public func skipCommentedLine() {
         //here debug flag is used directly, as only is that comment flag is set
         //extra processing to print comments will be carried out
-        if await ctx.debugLog.flags.onCommentedLines {
+        if ctx.debugLog.flags.onCommentedLines {
             let line = (self.lines[self._curLineNo]).trim()
-            await ctx.debugLog.comment(line: line, lineNo: curLineNoForDisplay)
+            ctx.debugLog.comment(line: line, lineNo: curLineNoForDisplay)
         }
         
         _curLineNo += 1;
     }
     
-    public func skipLine(by times : Int) async {
-        await ctx.debugLog.skipLine(lineNo: curLineNoForDisplay)
+    public func skipLine(by times : Int) {
+        ctx.debugLog.skipLine(lineNo: curLineNoForDisplay)
 
         _curLineNo += times;
     }
     
-    public func incrementLineNo() async {
-        await ctx.debugLog.incrementLineNo(lineNo: curLineNoForDisplay)
+    public func incrementLineNo() {
+        ctx.debugLog.incrementLineNo(lineNo: curLineNoForDisplay)
         
         _curLineNo += 1;
     }
     
-    public func parseLinesTill(lineHasOnly txt: String) async -> [String] {
+    public func parseLinesTill(lineHasOnly txt: String) -> [String] {
         var newLines: [String] = []
     
         while linesRemaining {
-            if isCurrentLineEmpty() { await skipEmptyLine(); continue }
-            if isCurrentLineCommented() { await skipCommentedLine(); continue }
+            if isCurrentLineEmpty() { skipEmptyLine(); continue }
+            if isCurrentLineCommented() { skipCommentedLine(); continue }
 
             let line = currentLine()
             
@@ -168,23 +168,23 @@ public actor GenericLineParser<T> : LineParser where T: Context {
             }
             
             newLines.append(line)
-            await incrementLineNo()
+            incrementLineNo()
         }
         
         return newLines
     }
     
-    public func getRemainingLinesAsString() async -> String {
+    public func getRemainingLinesAsString() -> String {
         var newLines: [String] = []
     
         while linesRemaining {
-            if isCurrentLineEmpty() { await skipEmptyLine(); continue }
-            if isCurrentLineCommented() { await skipCommentedLine(); continue }
+            if isCurrentLineEmpty() { skipEmptyLine(); continue }
+            if isCurrentLineCommented() { skipCommentedLine(); continue }
 
             let line = currentLine()
             
             newLines.append(line)
-            await incrementLineNo()
+            incrementLineNo()
         }
         
         return newLines.joined(separator: .newLine)
@@ -214,12 +214,12 @@ public actor GenericLineParser<T> : LineParser where T: Context {
         return line.hasPrefix(TemplateConstants.comments)
     }
         
-    public func currentParsedInfo(level: Int) async -> ParsedInfo? {
+    public func currentParsedInfo(level: Int) -> ParsedInfo? {
         self._curLevel = level
-        guard let pInfo = await ParsedInfo(parser: self) else { return nil }
+        guard let pInfo = ParsedInfo(parser: self) else { return nil }
         
-        if await ctx.debugLog.flags.lineByLineParsing {
-            await ctx.debugLog.line(currentLine(), pInfo: pInfo)
+        if ctx.debugLog.flags.lineByLineParsing {
+            ctx.debugLog.line(currentLine(), pInfo: pInfo)
         }
         
         return pInfo
@@ -301,15 +301,9 @@ public actor GenericLineParser<T> : LineParser where T: Context {
         self.isStatementsPrefixedWithKeyword = isStatementsPrefixedWithKeyword
     }
     
-    public init?(file: LocalFile, isStatementsPrefixedWithKeyword: Bool, with context: T) {
+    public convenience init?(file: LocalFile, isStatementsPrefixedWithKeyword: Bool, with context: T) {
         do {
-            self.context = context
-            self.identifier = file.name
-            
-            self._curLineNo = 0
-            self.autoIncrementLineNoForEveryLoop = true
-            
-            self.isStatementsPrefixedWithKeyword = isStatementsPrefixedWithKeyword
+            self.init(identifier: file.name, isStatementsPrefixedWithKeyword: isStatementsPrefixedWithKeyword, with: context)
             
             self.file = file
             self.lines = try file.readTextLines(ignoreEmptyLines: true)
@@ -318,7 +312,7 @@ public actor GenericLineParser<T> : LineParser where T: Context {
         }
     }
     
-    public init?(fileName: String, isStatementsPrefixedWithKeyword: Bool, with context: T) {
+    public convenience init?(fileName: String, isStatementsPrefixedWithKeyword: Bool, with context: T) {
         self.init(file: LocalFile(path: fileName), isStatementsPrefixedWithKeyword: isStatementsPrefixedWithKeyword, with: context)
     }
 }
@@ -329,9 +323,9 @@ public extension LineParser {
         return isCurrentLineEmpty() || isCurrentLineCommented()
     }
 
-    func isCurrentLineHumaneComment(_ pctx: ParsedInfo) async -> Bool {
+    func isCurrentLineHumaneComment(_ pctx: ParsedInfo) -> Bool {
         if pctx.firstWord.isStartingWithAlphabet {
-            let nextLine = await pctx.parser.nextLine().trim()
+            let nextLine = pctx.parser.nextLine().trim()
             if nextLine.isEmpty {
                 return true
             }

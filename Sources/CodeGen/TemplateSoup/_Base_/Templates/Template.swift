@@ -6,30 +6,30 @@
 
 import Foundation
 
-public protocol Template: StringConvertible, Sendable {
+public protocol Template : StringConvertible { 
     var name: String {get}
 }
 
-public protocol PlaceHolderTemplate: Template { }
+public protocol PlaceHolderTemplate : Template{ }
 
-public protocol ScriptedTemplate: Template { }
+public protocol ScriptedTemplate :Template { }
 
-public protocol ProgrammedTemplate: Template { }
+public protocol ProgrammedTemplate : Template { }
 
-public enum TemplateStmtKind: Sendable {
+public enum TemplateStmtKind {
     case block, line, blockOrLine, multiBlock
 }
 
-public protocol TemplateItem: Sendable {
+public protocol TemplateItem {
     func execute(with ctx: Context) throws -> String?
 }
 
-public protocol TemplateItemWithParsedInfo: TemplateItem {
+public protocol TemplateItemWithParsedInfo : TemplateItem {
     var pInfo: ParsedInfo {get}
     func execute(with ctx: Context) throws -> String?
 }
 
-public protocol TemplateItemConfig: Sendable {
+public protocol TemplateItemConfig {
     associatedtype T
     
     var keyword : String {get}
@@ -37,13 +37,13 @@ public protocol TemplateItemConfig: Sendable {
     func getNewObject(_ pInfo: ParsedInfo) -> T
 }
 
-public protocol TemplateInitialiserWithArg: Sendable {
+public protocol TemplateInitialiserWithArg {
     associatedtype T
     
     var initialiser: (String, ParsedInfo) -> T {get}
 }
 
-public protocol TemplateInitialiserWithNoArg: Sendable {
+public protocol TemplateInitialiserWithNoArg {
     associatedtype T
     
     var initialiser: (ParsedInfo) -> T {get}

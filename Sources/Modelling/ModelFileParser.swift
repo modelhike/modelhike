@@ -6,7 +6,7 @@
 
 import Foundation
 
-public actor ModelFileParser {
+public class ModelFileParser {
     var modelSpace = ModelSpace()
     var component = C4Component()
     var subComponent : C4Component?

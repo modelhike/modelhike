@@ -6,13 +6,7 @@
 
 import Foundation
 
-public protocol Artifact_NonActor : HasAttributes, HasAnnotations, HasTags, CustomDebugStringConvertible, Sendable {
-    var givenname: String {get}
-    var name: String {get}
-    var dataType: ArtifactKind {get}
-}
-
-public protocol Artifact : HasAttributes_Actor, HasAnnotations_Actor, HasTags_Actor, SendableDebugStringConvertible, Actor {
+public protocol Artifact : HasAttributes, HasAnnotations, HasTags {
     var givenname: String {get}
     var name: String {get}
     var dataType: ArtifactKind {get}
@@ -22,11 +16,6 @@ public protocol ArtifactHolder : Artifact {
 
 }
 
-public protocol ArtifactHolder_NonActor : Artifact_NonActor {
-    
-}
-
-
 public protocol ArtifactHolderWithAttachedSections : ArtifactHolder, HasAttachedSections {
 
 }
@@ -34,6 +23,6 @@ public protocol ArtifactHolderWithAttachedSections : ArtifactHolder, HasAttached
 typealias ArtifactHolderBuilder = ResultBuilder<ArtifactHolder>
 
 
-public enum ArtifactKind: Sendable {
+public enum ArtifactKind {
     case unKnown, entity, embeddedType, valueType, dto, api, apiInput, cache, workflow, event, agent, data, ui, uxFlow, container, attachedSection, custom
 }

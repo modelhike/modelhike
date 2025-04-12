@@ -6,113 +6,108 @@
 
 import Foundation
 
-public actor API_Wrap : ObjectWrapper {
-    public let item: API
+public class API_Wrap : ObjectWrapper {
+    public private(set) var item: API
     
-    public var attribs: Attributes { item.attribs }
+    public var attribs: Attributes {
+        get { item.attribs }
+        set { item.attribs = newValue }
+    }
     
-    public var queryParams:  [APIParam_Wrap] { get async {
-        await item.queryParams.compactMap({ APIParam_Wrap($0) })
-    }}
+    public lazy var queryParams:  [APIParam_Wrap] = {
+        item.queryParams.compactMap({ APIParam_Wrap($0) })
+    }()
     
-    public var customProperties : [TypeProperty_Wrap] { get async {
+    public lazy var customProperties : [TypeProperty_Wrap] = {
         if let custom = item as? APIWithCustomProperties {
             custom.properties.compactMap({ TypeProperty_Wrap($0) })
         } else {
             []
         }
-    }}
+    }()
     
-    public var customProperties_and_condition : Bool { get async {
+    public lazy var customProperties_and_condition : Bool = {
         if let custom = item as? APIWithCustomProperties {
             custom.andCondition
         } else {
             false
         }
-    }}
+    }()
     
-    public var customParameters : [APICustomParameter_Wrap] { get async {
+    public lazy var customParameters : [APICustomParameter_Wrap] = {
         if let custom = item as? CustomLogicAPI {
             custom.parameters.compactMap({ APICustomParameter_Wrap($0) })
         } else {
             []
         }
-    }}
+    }()
     
-    public var returnType : Any { get async {
+    public lazy var returnType : Any = {
         if let custom = item as? CustomLogicAPI {
             custom.returnType as Any
         } else {
-            await item.entity.name
+            item.entity.name
         }
-    }}
+    }()
     
-    public func getValueOf(property propname: String, with pInfo: ParsedInfo) async throws -> Sendable {
+    public func getValueOf(property propname: String, with pInfo: ParsedInfo) throws -> Any {
         
-        let value: Sendable = switch propname {
-        case "entity": CodeObject_Wrap(item.entity)
-        case "return-type" : await deepUnwrap(returnType) ?? ""
-        case "input-type" : await item.entity.name
-        case "has-path" : await item.path.isNotEmpty
-        case "path" : await item.path
-        case "name" : item.name
-        case "type" : item.type
+        let value: Any = switch propname {
+            case "entity": CodeObject_Wrap(item.entity)
+            case "return-type" : deepUnwrap(returnType) ?? ""
+            case "input-type" : item.entity.name
+            case "has-path" : item.path.isNotEmpty
+            case "path" : item.path
+            case "name" : item.name
+            case "type" : item.type
 
-        case "givenname" : item.givenname
-        case "base-url" : await item.baseUrl
-        case "version" : await item.version
-        case "query-params" : await queryParams
-        
-        case "is-create" : item.type == .create
-        case "is-update" : item.type == .update
-        case "is-delete" : item.type == .delete
-        case "is-get-by-id" : item.type == .getById
-        case "is-get-by-custom-props" : item.type == .getByCustomProperties
-        case "is-list" :  item.type == .list
-        case "is-list-by-custom-props" :  item.type == .listByCustomProperties
-        case "is-push-data" :  item.type == .pushData
-        case "is-push-datalist" :  item.type == .pushDataList
-        case "is-get-by-custom-logic" : item.type == .getByUsingCustomLogic
-        case "is-list-by-custom-logic" : item.type == .listByUsingCustomLogic
-        case "is-mutation-by-custom-logic" : item.type == .mutationUsingCustomLogic
+            case "givenname" : item.givenname
+            case "base-url" : item.baseUrl
+            case "version" : item.version
+            case "query-params" : queryParams
             
-        case "properties-involved": await customProperties
-        case "is-and-condition-for-properties-involved": await customProperties_and_condition
-        case "custom-params" : await customParameters
+            case "is-create" : item.type == .create
+            case "is-update" : item.type == .update
+            case "is-delete" : item.type == .delete
+            case "is-get-by-id" : item.type == .getById
+            case "is-get-by-custom-props" : item.type == .getByCustomProperties
+            case "is-list" :  item.type == .list
+            case "is-list-by-custom-props" :  item.type == .listByCustomProperties
+            case "is-push-data" :  item.type == .pushData
+            case "is-push-datalist" :  item.type == .pushDataList
+            case "is-get-by-custom-logic" : item.type == .getByUsingCustomLogic
+            case "is-list-by-custom-logic" : item.type == .listByUsingCustomLogic
+            case "is-mutation-by-custom-logic" : item.type == .mutationUsingCustomLogic
             
-        default:
+            case "properties-involved": customProperties
+            case "is-and-condition-for-properties-involved": customProperties_and_condition
+            case "custom-params" : customParameters
+            
+            default:
             //nothing found; so check in module attributes
-            try await resolveFallbackProperty(propname: propname, pInfo: pInfo)
-
+            if item.attribs.has(propname) {
+                item.attribs[propname] as Any
+            } else {
+                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
+            }
         }
         
         return value
     }
 
-    private func resolveFallbackProperty(propname: String, pInfo: ParsedInfo) async throws -> Sendable {
-        let attribs = item.attribs
-        if await attribs.has(propname) {
-            return await attribs.get(propname)
-        } else {
-            throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
-        }
-    }
-    
-    public var debugDescription: String { get async {
-        await item.debugDescription
-    }}
+    public var debugDescription: String { item.debugDescription }
     
     public init(_ item: API) {
         self.item = item
     }
 }
 
-public struct APIParam_Wrap : DynamicMemberLookup, Sendable {
-    public let item: APIQueryParamWrapper
+public class APIParam_Wrap : DynamicMemberLookup {
+    public private(set) var item: APIQueryParamWrapper
     
-    public func getValueOf(property propname: String, with pInfo: ParsedInfo) throws -> Sendable {
+    public func getValueOf(property propname: String, with pInfo: ParsedInfo) throws -> Any {
 
-        let value: Sendable = switch propname {
+        let value: Any = switch propname {
             //case "query-param-obj" : item.queryParam
             case "prop-mapping-first" : item.propMaping.first
             case "param-name" : item.queryParam.name
@@ -131,12 +126,12 @@ public struct APIParam_Wrap : DynamicMemberLookup, Sendable {
     }
 }
 
-public struct APICustomParameter_Wrap : DynamicMemberLookup, Sendable {
-    public let item: MethodParameter
+public class APICustomParameter_Wrap : DynamicMemberLookup {
+    public private(set) var item: MethodParameter
     
-    public func getValueOf(property propname: String, with pInfo: ParsedInfo) throws -> Sendable {
+    public func getValueOf(property propname: String, with pInfo: ParsedInfo) throws -> Any {
         
-        let value: Sendable = switch propname {
+        let value: Any = switch propname {
         case "name" : item.name
         case "type" : item.type
         case "is-array" : item.type.isArray

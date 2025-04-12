@@ -10,7 +10,7 @@ public struct InfixOperator<A, B, T> : InfixOperatorProtocol {
     public var name : String
     private let lhsType: A.Type
     private let rhsType: B.Type
-    private let handler: @Sendable (A, B) -> T
+    private let handler: (A, B) -> T
     public var kind : OperatorKind { .infix }
 
     public func applyTo(lhs : Optional<Any>, rhs: Optional<Any>, pInfo: ParsedInfo) throws -> Any {
@@ -33,7 +33,7 @@ public struct InfixOperator<A, B, T> : InfixOperatorProtocol {
         return handler(typedLhs, typedRhs)
     }
     
-    public init(name: String, handler: @escaping @Sendable(A, B) -> T) {
+    public init(name: String, handler: @escaping (A, B) -> T) {
         self.name = name
         self.lhsType = A.self
         self.rhsType = B.self
@@ -44,11 +44,11 @@ public struct InfixOperator<A, B, T> : InfixOperatorProtocol {
 public struct SuffixOperator<A, T> : Operator {
     public var name : String
     public var callerType: A.Type
-    private var handler: @Sendable(A) -> T
+    private var handler: (A) -> T
     
     public var kind : OperatorKind { .infix }
 
-    public init(name: String, handler: @escaping @Sendable(A) -> T) {
+    public init(name: String, handler: @escaping (A) -> T) {
         self.name = name
         self.callerType = A.self
         self.handler = handler
@@ -58,11 +58,11 @@ public struct SuffixOperator<A, T> : Operator {
 public struct PrefixOperator<A, T> : Operator {
     public var name : String
     public var callerType: A.Type
-    private var handler: @Sendable(A) -> T
+    private var handler: (A) -> T
     
     public var kind : OperatorKind { .infix }
 
-    public init(name: String, handler: @escaping @Sendable(A) -> T) {
+    public init(name: String, handler: @escaping (A) -> T) {
         self.name = name
         self.callerType = A.self
         self.handler = handler
@@ -73,7 +73,7 @@ public protocol InfixOperatorProtocol : Operator {
     func applyTo(lhs : Optional<Any>, rhs: Optional<Any>, pInfo: ParsedInfo) throws -> Any
 }
 
-public protocol Operator: Sendable {
+public protocol Operator {
     var name : String {get set}
     var kind : OperatorKind {get}
 }

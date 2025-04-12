@@ -13,7 +13,7 @@ public class LocalFileModelLoader : ModelRepository {
     public var commonModelsFileName = "common." + ModelConstants.ModelFile_Extension
     public let configFileName = TemplateConstants.MainScriptFile + "." + ModelConstants.ConfigFile_Extension
 
-    public func loadModel(to model: AppModel) async throws {
+    public func loadModel(to model: AppModel) throws {
         if !loadPath.exists {
             let pInfo = ParsedInfo.dummyForAppState(with: ctx)
             throw EvaluationError.invalidAppState("Model folder '\(loadPath.path.string)' not found!!!", pInfo)
@@ -22,22 +22,22 @@ public class LocalFileModelLoader : ModelRepository {
         let file = LocalFile(path: loadPath.path / commonModelsFileName)
         
         if file.exists { //commons file found
-            let commons = try await ModelFileParser(with: ctx)
+            let commons = try ModelFileParser(with: ctx)
                                             .parse(file: file)
             
-            await model.appendToCommonModel(contentsOf: commons)
+            model.appendToCommonModel(contentsOf: commons)
         }
         
         for file in loadPath.files {
             if file.name != commonModelsFileName && file.extension == ModelConstants.ModelFile_Extension {
-                let modelSpace = try await ModelFileParser(with: ctx)
+                let modelSpace = try ModelFileParser(with: ctx)
                                                 .parse(file: file)
                 
-                await model.append(contentsOf: modelSpace)
+                model.append(contentsOf: modelSpace)
             }
         }
         
-        try await model.resolveAndLinkItems(with: ctx)
+        try model.resolveAndLinkItems(with: ctx)
     }
     
     public func probeForModelFiles() -> Bool {
@@ -70,11 +70,11 @@ public class LocalFileModelLoader : ModelRepository {
         }
     }
     
-    public func loadGenerationConfigIfAny() async throws {
+    public func loadGenerationConfigIfAny() throws {
         let file = LocalFile(path: loadPath.path / configFileName)
         
         if file.exists { //config file found
-            try await ConfigFileParser(with: ctx)
+            try ConfigFileParser(with: ctx)
                 .parse(file: file)
         }
     }

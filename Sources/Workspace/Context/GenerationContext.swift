@@ -6,9 +6,9 @@
 
 import Foundation
 
-public typealias StringDictionary = [String: Sendable]
+public typealias StringDictionary = [String: Any]
 
-public actor GenerationContext: Context {
+public class GenerationContext: Context {
     public var events = CodeGenerationEvents()
     public var debugLog = ContextDebugLog()
 

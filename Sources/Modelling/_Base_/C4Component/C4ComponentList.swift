@@ -6,7 +6,7 @@
 
 import Foundation
 
-public actor C4ComponentList : ArtifactHolder, _CollectionAsyncSequence {
+public class C4ComponentList : ArtifactHolder, IteratorProtocol, Sequence {
     public var attribs = Attributes()
     public var tags = Tags()
     public var annotations = Annotations()
@@ -14,45 +14,44 @@ public actor C4ComponentList : ArtifactHolder, _CollectionAsyncSequence {
     public var name: String = ""
     public var givenname: String = ""
     public let dataType: ArtifactKind = .container
-    
+
     public internal(set) var components : [C4Component] = []
-    
-    public func forEachType(by transform:  (inout CodeObject, inout C4Component) async throws -> Void) async throws {
-        
-        for itemIndex in components.indices {
-            var item  = components[itemIndex]
-            for typeIndex in await item.types.indices {
-                var type = await item.types[typeIndex]
-                try await transform(&type, &item)
-            }
+    private var currentIndex = 0
+
+    public func forEachType(by transform: (inout CodeObject, inout C4Component) throws -> Void) throws {
+        try components.forEach { item in
+            try item.types.forEach { e in try transform(&e, &item) }
         }
-    }
+     }
     
-    public func snapshot() -> [C4Component] {
-        return components
-    }
-    
-    public func forEach(by transform: @escaping @Sendable (inout C4Component) async throws -> Void) async throws {
-        
-        _ = try await components.map { el in
+    public func forEach(by transform: (inout C4Component) throws -> Void) rethrows {
+        _ = try components.map { el in
             var el = el
-            try await transform(&el)
+            try transform(&el)
+            return el
         }
     }
     
-    public func addTypesTo(model appModel: ParsedTypesCache) async {
+    public func next() -> C4Component? {
+        if currentIndex <= components.count - 1 {
+            let compo = components[currentIndex]
+            currentIndex += 1
+            return compo
+        } else {
+            currentIndex = 0 //reset index
+            return nil
+        }
+    }
+    
+    public func addTypesTo(model appModel: ParsedTypesCache) {
         for component in components {
-            await appModel.append(component.types)
+            appModel.append(component.types)
         }
     }
     
-    public var types : [CodeObject] { get async {
-        var list: [CodeObject] = []
-        for item in components {
-            await list.append(contentsOf: item.types)
-        }
-        return list
-    }}
+    public var types : [CodeObject] {
+        return components.flatMap({ $0.types })
+    }
     
     public func append(_ item: C4Component) {
         components.append(item)
@@ -62,9 +61,8 @@ public actor C4ComponentList : ArtifactHolder, _CollectionAsyncSequence {
         self.components.append(contentsOf: newItems)
     }
     
-    public func append(contentsOf item: C4Container) async {
-        let itemComponent = await item.components.snapshot()
-        self.components.append(contentsOf: itemComponent)
+    public func append(contentsOf item: C4Container) {
+        self.components.append(contentsOf: item.components)
     }
     
     public func removeAll() {
@@ -75,20 +73,20 @@ public actor C4ComponentList : ArtifactHolder, _CollectionAsyncSequence {
     
     public var count: Int { components.count }
     
-    public var debugDescription: String { get async {
+    public var debugDescription: String {
         var str =  """
                     \(self.name)
                     items \(self.components.count):
                     """
         str += .newLine
-        
+
         for item in components {
-            let givenname = await item.givenname
-            str += givenname + .newLine
+            str += item.givenname + .newLine
+            
         }
         
         return str
-    }}
+    }
     
     public init(name: String = "", _ items: C4Component...) {
         self.name = name

@@ -4,18 +4,20 @@
 //  https://www.github.com/modelhike/modelhike
 //
 
-public actor WorkingMemory: _DictionaryAsyncSequence {
-    private var items: [String: Sendable] = [:]
+public class WorkingMemory: Sequence, IteratorProtocol {
+    private var iterator: Dictionary<String, Any>.Iterator?
+    private var items: [String: Any] = [:]
 
-    public func replace(variables: [String: Sendable]) {
+    public func replace(variables: StringDictionary) {
         self.items = variables
     }
 
-    public func replace(variables: WorkingMemory) async {
-        self.items = await variables.snapshot()
+    public func replace(variables: WorkingMemory) {
+        self.items = variables.items
     }
 
     public init() {
+        resetIterator()
     }
 
     public func has(_ key: String) -> Bool {
@@ -24,18 +26,28 @@ public actor WorkingMemory: _DictionaryAsyncSequence {
 
     public func removeValue(forKey key: String) {
         items.removeValue(forKey: key)
+        resetIterator()  // Reset iterator when data changes
     }
 
-    public subscript(key: String) -> Sendable? {
+    public subscript(key: String) -> Any? {
         get { items[key] }
         set {
             items[key] = newValue
+            resetIterator()  // Reset iterator when data changes
         }
     }
 
-    // Capture a snapshot of items (for safe async access)
-    public func snapshot() -> [String: Sendable] {
-        return items
+    public func next() -> (key: String, value: Any)? {
+        return iterator?.next()
+    }
+
+    public func makeIterator() -> WorkingMemory {
+        resetIterator()
+        return self
+    }
+
+    // Reset the iterator to allow fresh iteration
+    private func resetIterator() {
+        iterator = items.makeIterator()
     }
 }
-

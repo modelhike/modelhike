@@ -6,7 +6,7 @@
 
 fileprivate let working_dir_var : String = "working_dir"
 
-public protocol Context : AnyObject, Actor {
+public protocol Context : AnyObject {
     var config : OutputConfig {get}
     var debugLog: ContextDebugLog {get set}
     var events: CodeGenerationEvents {get}

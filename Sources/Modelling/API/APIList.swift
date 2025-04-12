@@ -6,7 +6,7 @@
 
 import Foundation
 
-public actor APIList : _CollectionAsyncSequence, SendableDebugStringConvertible {
+public class APIList : IteratorProtocol, Sequence {
     public var name: String = ""
     public private(set) var items : [API] = []
     private var currentIndex = 0
@@ -19,8 +19,15 @@ public actor APIList : _CollectionAsyncSequence, SendableDebugStringConvertible 
         }
     }
     
-    public func snapshot() async -> [API] {
-        items
+    public func next() -> API? {
+        if currentIndex <= items.count - 1 {
+            let compo = items[currentIndex]
+            currentIndex += 1
+            return compo
+        } else {
+            currentIndex = 0 //reset index
+            return nil
+        }
     }
     
     public func append(_ item: API) {
@@ -37,12 +44,12 @@ public actor APIList : _CollectionAsyncSequence, SendableDebugStringConvertible 
     
     public var count: Int { items.count }
     
-    public var debugDescription: String { get async {
+    public var debugDescription: String {
         return """
         \(self.name)
         \(self.items.count) items
         """
-    }}
+    }
     
     public init(name: String = "", _ items: API...) {
         self.name = name

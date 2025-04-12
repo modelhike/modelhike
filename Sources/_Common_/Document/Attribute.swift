@@ -7,27 +7,13 @@
 import Foundation
 
 public protocol HasAttributes {
-    var attribs: Attributes { get }
+    var attribs: Attributes { get set }
 }
 
-public protocol HasAsyncAttributes {
-    var attribs: Attributes { get async }
-}
-
-public protocol HasAttributes_Actor: Actor {
-    var attribs: Attributes { get }
-}
-
-public protocol SendableEquatable : Sendable, Equatable {
-    
-}
-
-//public typealias Attribute = SendableAttribute<AnySendable>
-
-public struct Attribute: Hashable, Sendable {
+public struct Attribute: Hashable {
     public let key: String
     public let givenKey: String
-    public fileprivate(set) var value: Optional<Sendable>
+    public var value: Optional<Any>
 
     public var name: String { givenKey }
 
@@ -39,20 +25,20 @@ public struct Attribute: Hashable, Sendable {
         return lhs.key == rhs.key
     }
 
-    public init(key: String, givenKey: String, value: Optional<Sendable>) {
+    public init(key: String, givenKey: String, value: Any) {
         self.key = key
         self.givenKey = givenKey
         self.value = value
     }
 
-    public init(_ key: String, value: Optional<Sendable>) {
+    public init(_ key: String, value: Any) {
         self.key = key
         self.givenKey = key
         self.value = value
     }
 }
 
-public actor Attributes: SendableDebugStringConvertible, Sendable {
+public class Attributes: ExpressibleByDictionaryLiteral, CustomDebugStringConvertible {
     public typealias Key = String
     public typealias Value = Any?
 
@@ -60,11 +46,11 @@ public actor Attributes: SendableDebugStringConvertible, Sendable {
 
     public var isEmpty: Bool { items.isEmpty }
 
-    public func processEach(by process: (Attribute) async throws -> Attribute?) async throws {
+    public func processEach(by process: (Attribute) throws -> Attribute?) throws {
         var itemsToRemove: [Attribute] = []
 
         for item in items {
-            if try await process(item) == nil {
+            if try process(item) == nil {
                 itemsToRemove.append(item)
             }
         }
@@ -84,19 +70,21 @@ public actor Attributes: SendableDebugStringConvertible, Sendable {
         }
     }
 
-    public func set(_ key: String, value newValue: Sendable?) {
-        let keyToFind = key.lowercased()
-        if var item = items.first(where: { $0.key == keyToFind }) {
-            item.value = newValue
-            items.update(with: item)
-        } else {  // new attr
-            items.insert(Attribute(key: keyToFind, givenKey: key, value: newValue))
+    public subscript(key: String) -> Any? {
+        get {
+            let keyToFind = key.lowercased()
+            return items.first(where: { $0.key == keyToFind })?.value as Any
         }
-    }
+        set {
+            let keyToFind = key.lowercased()
+            if var item = items.first(where: { $0.key == keyToFind }) {
+                item.value = newValue
+                items.update(with: item)
+            } else {  // new attr
+                items.insert(Attribute(key: keyToFind, givenKey: key, value: newValue as Any))
+            }
 
-    public func get(_ key: String) -> Sendable? {
-        let keyToFind = key.lowercased()
-        return items.first(where: { $0.key == keyToFind })?.value
+        }
     }
 
     public func getString(_ key: String) -> String? {
@@ -127,25 +115,29 @@ public actor Attributes: SendableDebugStringConvertible, Sendable {
         }
     }
 
-    public nonisolated var debugDescription: String {
-        get async {
-            var str = """
-                    Attributes \(await items.count) items:
-                    """
-            str += .newLine
-            
-            for item in await items {
-                str += item.key + .newLine
-                
-            }
-            
-            return str
+    public var debugDescription: String {
+        var str = """
+            Attributes \(self.items.count) items:
+            """
+        str += .newLine
+
+        for item in items {
+            str += item.key + .newLine
+
         }
+
+        return str
     }
 
     public init() {}
+
+    required public init(dictionaryLiteral elements: (String, Any?)...) {
+        for (key, value) in elements {
+            items.insert(Attribute(key, value: value as Any))
+        }
+    }
 }
 
-public enum AttributeNamePresets: String, Sendable {
+public enum AttributeNamePresets: String {
     case validValues = "oneof"  //oneOf
 }
