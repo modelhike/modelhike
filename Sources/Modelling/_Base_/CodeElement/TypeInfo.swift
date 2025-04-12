@@ -38,7 +38,25 @@ public struct TypeInfo: Sendable {
         }
     }
     
-    public var isCustomType :  Bool {
+    public var isNumeric: Bool {
+        switch self.kind {
+        case .int, .double, .float:
+            return true
+        default:
+            return false
+        }
+    }
+    
+    public var isDate: Bool {
+        switch self.kind {
+        case .date, .datetime:
+            return true
+        default:
+            return false
+        }
+    }
+    
+    public var isCustomType : Bool {
         switch self.kind {
             case .customType(_):
                 return true

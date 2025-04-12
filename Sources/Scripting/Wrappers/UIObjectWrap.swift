@@ -6,33 +6,35 @@
 
 import Foundation
 
-public class UIObject_Wrap: ObjectWrapper {
-    public private(set) var item: UIObject
+public actor UIObject_Wrap: ObjectWrapper {
+    public let item: UIObject
 
-    public var attribs: Attributes {
-        get { item.attribs }
-        set { item.attribs = newValue }
-    }
+    public var attribs: Attributes { get async { await item.attribs }}
 
-    public func getValueOf(property propname: String, with pInfo: ParsedInfo) throws -> Any {
+    public func getValueOf(property propname: String, with pInfo: ParsedInfo) async throws -> Sendable? {
 
-        let value: Any =
+        let value: Sendable =
             switch propname {
-            case "name": item.name
-            case "given-name": item.givenname
+            case "name": await item.name
+            case "given-name": await item.givenname
             default:
                 //nothing found; so check in module attributes
-                if item.attribs.has(propname) {
-                    item.attribs[propname] as Any
-                } else {
-                    throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
-                }
+                try await resolveFallbackProperty(propname: propname, pInfo: pInfo)
             }
 
         return value
     }
 
-    public var debugDescription: String { item.debugDescription }
+    private func resolveFallbackProperty(propname: String, pInfo: ParsedInfo) async throws -> Sendable {
+        let attribs = await item.attribs
+        if await attribs.has(propname) {
+            return await attribs[propname]
+        } else {
+            throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
+        }
+    }
+    
+    public var debugDescription: String { get async { await item.debugDescription }}
 
     public init(_ item: UIObject) {
         self.item = item

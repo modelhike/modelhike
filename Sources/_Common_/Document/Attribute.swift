@@ -18,10 +18,6 @@ public protocol HasAttributes_Actor: Actor {
     var attribs: Attributes { get }
 }
 
-public protocol SendableEquatable : Sendable, Equatable {
-    
-}
-
 //public typealias Attribute = SendableAttribute<AnySendable>
 
 public struct Attribute: Hashable, Sendable {
@@ -94,7 +90,7 @@ public actor Attributes: SendableDebugStringConvertible, Sendable {
         }
     }
 
-    public func get(_ key: String) -> Sendable? {
+    public subscript(key: String) -> Sendable? {
         let keyToFind = key.lowercased()
         return items.first(where: { $0.key == keyToFind })?.value
     }

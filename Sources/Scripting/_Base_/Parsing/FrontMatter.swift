@@ -6,7 +6,7 @@
 
 import Foundation
 
-public struct FrontMatter {
+public struct FrontMatter: Sendable {
     private let lines: [String]
     private let parser: LineParser
     private let ctx: Context
@@ -84,7 +84,7 @@ public struct FrontMatter {
     }
     
     private func setVariablesToMemory(lhs: String, rhs: String) async {
-        await ctx.variables[lhs] = rhs
+        await ctx.variables.set(lhs, value: rhs)
     }
     
     public mutating func rhs(for lhsValueToCheck: String) throws -> String? {

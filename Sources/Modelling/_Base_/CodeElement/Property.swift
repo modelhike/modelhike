@@ -8,8 +8,8 @@ import Foundation
 
 public actor Property : CodeMember {
     public let pInfo: ParsedInfo
-    public var attribs = Attributes()
-    public var tags = Tags()
+    public let attribs = Attributes()
+    public let tags = Tags()
     
     public var name: String
     public var givenname : String
@@ -84,6 +84,10 @@ public actor Property : CodeMember {
     
     public func typeKind(from typeName: String) {
         type.kind = PropertyKind.parse(typeName)
+    }
+    
+    public func typeKind(_ kind: PropertyKind) {
+        type.kind = kind
     }
     
     func isArray(_ value: Bool) {

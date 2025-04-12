@@ -11,8 +11,8 @@ public actor API : Artifact {
     public let tags = Tags()
     public let annotations = Annotations()
 
-    public let name: String = ""
-    public let givenname: String = ""
+    public let name: String
+    public let givenname: String
     public let dataType: ArtifactKind = .api
 
     public let entity : CodeObject

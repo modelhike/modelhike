@@ -90,6 +90,7 @@ public struct _CollectionIterator<Parent: _CollectionSequence>: IteratorProtocol
 }
 
 extension AsyncSequence {
+    @inlinable
     public func compactMap<T>(
         _ transform: @Sendable @escaping (Element) async -> T?
     ) async throws -> [T] {
@@ -102,6 +103,7 @@ extension AsyncSequence {
         return result
     }
     
+    @inlinable
     public func map<T>(
         _ transform: @Sendable @escaping (Element) async -> T?
     ) async throws -> [T?] {
@@ -113,6 +115,7 @@ extension AsyncSequence {
         return result
     }
     
+    @inlinable
     public func flatMap<T>(
         _ transform: @Sendable (Element) async -> [T]
     ) async throws -> [T] {
@@ -123,33 +126,45 @@ extension AsyncSequence {
         }
         return result
     }
+    
+    @inlinable
+    public func first(where predicate: (Element) async throws -> Bool) async rethrows -> Element? {
+        for try await element in self {
+            if try await predicate(element) {
+                return element
+            }
+        }
+        return nil
+    }
 }
 
 extension Array {
-    
+    @inlinable
     public func compactMap<T>(
-        _ transform: @Sendable @escaping (Element)  async throws -> T?
-    ) async throws  -> [T] {
+        _ transform: @Sendable @escaping (Element)  async -> T?
+    ) async  -> [T] {
         var result: [T] = []
         for element in self {
-            if let transformed = try await transform(element) {
+            if let transformed = await transform(element) {
                 result.append(transformed)
             }
         }
         return result
     }
     
+    @inlinable
     public func map<T>(
-        _ transform: @Sendable @escaping (Element) async throws -> T?
-    ) async throws -> [T?] {
+        _ transform: @Sendable @escaping (Element) async -> T?
+    ) async -> [T?] {
         var result: [T?] = []
         for element in self {
-            let transformed = try await transform(element)
+            let transformed = await transform(element)
             result.append(transformed)
         }
         return result
     }
     
+    @inlinable
     public func flatMap<T>(
         _ transform: @Sendable (Element) async -> [T]
     ) async -> [T] {
@@ -159,6 +174,26 @@ extension Array {
             result.append(contentsOf: transformed)
         }
         return result
+    }
+    
+    @inlinable
+    public func first(where predicate: (Element) async -> Bool) async -> Element? {
+        for element in self {
+            if await predicate(element) {
+                return element
+            }
+        }
+        
+        return nil
+    }
+    
+    @inlinable
+    public func contains(where predicate: (Element) async -> Bool) async -> Bool {
+        if let _ = await first(where: predicate) {
+            return true
+        } else {
+            return false
+        }
     }
 }
 

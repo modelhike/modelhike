@@ -6,37 +6,37 @@
 
 import Foundation
 
-public struct ScriptFileExecutor: SoupyScriptExecutor {
+public actor ScriptFileExecutor: SoupyScriptExecutor {
     
-    public func execute(script scriptFile: Script, with context: GenerationContext) throws -> String? {
+    public func execute(script scriptFile: Script, with context: GenerationContext) async throws -> String? {
         let contents = scriptFile.toString()
         let lineparser = LineParserDuringGeneration(string: contents, identifier: scriptFile.name, isStatementsPrefixedWithKeyword: false, with: context)
 
-        return try execute(lineParser: lineparser, with: context)
+        return try await execute(lineParser: lineparser, with: context)
     }
     
-    public func execute(lineParser: LineParserDuringGeneration, with ctx: GenerationContext) throws -> String? {
+    public func execute(lineParser: LineParserDuringGeneration, with ctx: GenerationContext) async throws -> String? {
 
         let parser = SoupyScriptParser(lineParser: lineParser, context: ctx)
 
         do {
-            ctx.debugLog.scriptFileParsingStarting()
-            try ctx.events.onBeforeParseScriptFile?(lineParser.identifier, ctx)
+            await ctx.debugLog.scriptFileParsingStarting()
+            try await ctx.events.onBeforeParseScriptFile?(lineParser.identifier, ctx)
             
-            let curLine = lineParser.currentLine()
+            let curLine = await lineParser.currentLine()
             
             if curLine.hasOnly(TemplateConstants.frontMatterIndicator) {
-                let frontMatter = try FrontMatter (lineParser: lineParser, with: ctx)
-                try frontMatter.processVariables()
+                var frontMatter = try await FrontMatter (lineParser: lineParser, with: ctx)
+                try await frontMatter.processVariables()
             }
             
             if let containers = try parser.parseContainers() {
-                ctx.debugLog.printParsedTree(for: containers)
+                await ctx.debugLog.printParsedTree(for: containers)
                 
-                ctx.debugLog.scriptFileExecutionStarting()
-                try ctx.events.onBeforeExecuteScriptFile?(lineParser.identifier, ctx)
+                await ctx.debugLog.scriptFileExecutionStarting()
+                try await ctx.events.onBeforeExecuteScriptFile?(lineParser.identifier, ctx)
 
-                if let body = try containers.execute(with: ctx) {
+                if let body = try await containers.execute(with: ctx) {
                     return body
                 }
             }
@@ -72,6 +72,6 @@ public struct ScriptFileExecutor: SoupyScriptExecutor {
     
 }
  
-public protocol SoupyScriptExecutor {
-    func execute(script: Script, with ctx: GenerationContext) throws -> String?
+public protocol SoupyScriptExecutor: Actor {
+    func execute(script: Script, with ctx: GenerationContext) async throws -> String?
 }

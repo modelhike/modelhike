@@ -109,7 +109,8 @@ public struct MultiBlockTemplateStmtConfig<T>: FileTemplateStmtConfig, TemplateI
     }
 }
 
-public class PartOfMultiBlockContainer : GenericStmtsContainer {
+public actor PartOfMultiBlockContainer {
+    let container: GenericStmtsContainer
     public private(set) var pInfo: ParsedInfo
     public var lineNo: Int { return pInfo.lineNo }
     let firstWord: String
@@ -118,6 +119,6 @@ public class PartOfMultiBlockContainer : GenericStmtsContainer {
         self.firstWord = firstWord
         self.pInfo = pInfo
         
-        super.init(.partOfMultiBlock, name: firstWord)
+        container = .init(.partOfMultiBlock, name: firstWord)
     }
 }

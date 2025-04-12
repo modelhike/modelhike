@@ -17,7 +17,7 @@ public actor API_Wrap : ObjectWrapper {
     
     public var customProperties : [TypeProperty_Wrap] { get async {
         if let custom = item as? APIWithCustomProperties {
-            custom.properties.compactMap({ TypeProperty_Wrap($0) })
+            await custom.properties.compactMap({ TypeProperty_Wrap($0) })
         } else {
             []
         }
@@ -33,7 +33,7 @@ public actor API_Wrap : ObjectWrapper {
     
     public var customParameters : [APICustomParameter_Wrap] { get async {
         if let custom = item as? CustomLogicAPI {
-            custom.parameters.compactMap({ APICustomParameter_Wrap($0) })
+            await custom.parameters.compactMap({ APICustomParameter_Wrap($0) })
         } else {
             []
         }
@@ -47,7 +47,7 @@ public actor API_Wrap : ObjectWrapper {
         }
     }}
     
-    public func getValueOf(property propname: String, with pInfo: ParsedInfo) async throws -> Sendable {
+    public func getValueOf(property propname: String, with pInfo: ParsedInfo) async throws -> Sendable? {
         
         let value: Sendable = switch propname {
         case "entity": CodeObject_Wrap(item.entity)
@@ -92,7 +92,7 @@ public actor API_Wrap : ObjectWrapper {
     private func resolveFallbackProperty(propname: String, pInfo: ParsedInfo) async throws -> Sendable {
         let attribs = item.attribs
         if await attribs.has(propname) {
-            return await attribs.get(propname)
+            return await attribs[propname]
         } else {
             throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
         }
@@ -110,7 +110,7 @@ public actor API_Wrap : ObjectWrapper {
 public struct APIParam_Wrap : DynamicMemberLookup, Sendable {
     public let item: APIQueryParamWrapper
     
-    public func getValueOf(property propname: String, with pInfo: ParsedInfo) throws -> Sendable {
+    public func getValueOf(property propname: String, with pInfo: ParsedInfo) throws -> Sendable? {
 
         let value: Sendable = switch propname {
             //case "query-param-obj" : item.queryParam
@@ -134,7 +134,7 @@ public struct APIParam_Wrap : DynamicMemberLookup, Sendable {
 public struct APICustomParameter_Wrap : DynamicMemberLookup, Sendable {
     public let item: MethodParameter
     
-    public func getValueOf(property propname: String, with pInfo: ParsedInfo) throws -> Sendable {
+    public func getValueOf(property propname: String, with pInfo: ParsedInfo) throws -> Sendable? {
         
         let value: Sendable = switch propname {
         case "name" : item.name

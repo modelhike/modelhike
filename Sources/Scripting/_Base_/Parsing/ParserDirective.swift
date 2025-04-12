@@ -7,9 +7,9 @@
 import Foundation
 
 public enum ParserDirective: ErrorWithMessage {
-    static var includeIf = "include-if"
-    static var includeFor = "include-for"
-    static var outputFilename = "file-name"
+    static let includeIf = "include-if"
+    static let includeFor = "include-for"
+    static let outputFilename = "file-name"
 
     case excludeFile(String)
     case stopRenderingCurrentFile(String, ParsedInfo)

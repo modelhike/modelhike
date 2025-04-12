@@ -7,9 +7,9 @@
 import Foundation
 
 public actor C4Container : ArtifactHolder {
-    public var attribs = Attributes()
-    public var tags = Tags()
-    public var annotations = Annotations()
+    public let attribs = Attributes()
+    public let tags = Tags()
+    public let annotations = Annotations()
 
     public var name: String = ""
     public var givenname: String = ""
@@ -27,8 +27,8 @@ public actor C4Container : ArtifactHolder {
         }
     }
     
-    func components(_ items: C4ComponentList, appModel: AppModel) async throws -> [C4Component_Wrap] {
-        return try await items.compactMap({ C4Component_Wrap($0, model: appModel)})
+    func components(_ items: C4ComponentList, appModel: AppModel) async -> [C4Component_Wrap] {
+        return await items.snapshot().compactMap({ C4Component_Wrap($0, model: appModel)})
     }
     
     func getFirstModule(appModel: AppModel) async -> C4Component_Wrap? {

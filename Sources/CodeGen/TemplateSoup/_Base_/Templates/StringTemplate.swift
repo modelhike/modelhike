@@ -12,8 +12,8 @@ public struct StringTemplate : Template, Script, ExpressibleByStringLiteral, Exp
     let items: [StringConvertible]
     
     @discardableResult
-    mutating func append(_ item: StringConvertible) -> Self {
-        var newItems = items
+    static func append(_ obj: StringTemplate, with item: StringConvertible) -> Self {
+        var newItems = obj.items
         newItems.append(item)
         return StringTemplate(contentsOf: newItems)
     }
@@ -50,15 +50,12 @@ public struct StringTemplate : Template, Script, ExpressibleByStringLiteral, Exp
     }
     
     static func +(lhs: StringTemplate, rhs: any StringConvertible) -> StringTemplate {
-        var newLhs = lhs
-        newLhs.append(rhs)
-        return newLhs
+        return StringTemplate.append(lhs, with: rhs)
     }
     
     static func +(lhs: any StringConvertible, rhs: StringTemplate) -> StringTemplate {
-        var newRhs = rhs
-        newRhs.append(lhs)
-        return newRhs
+        return StringTemplate.append(rhs, with: lhs)
+
     }
 }
 
@@ -86,11 +83,11 @@ public struct TabChar : StringConvertible {
 }
 
 public extension String {
-    static func +=(lhs: inout StringTemplate, rhs: String) {
-        lhs.append(rhs)
+    static func +=(lhs: inout StringTemplate, rhs: String) -> StringTemplate {
+        return StringTemplate.append(lhs, with: rhs)
     }
     
-    static func +=(lhs: inout String, rhs: StringTemplate){
-        lhs += rhs.toString()
+    static func +=(lhs: inout String, rhs: StringTemplate) -> StringTemplate {
+        return StringTemplate.append(rhs, with: lhs)
     }
 }

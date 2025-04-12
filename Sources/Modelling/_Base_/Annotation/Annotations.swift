@@ -34,7 +34,7 @@ public actor Annotations {
         }
     }
 
-    public func get(_ key: String) -> (any Annotation)? {
+    public subscript(key: String) -> (any Annotation)? {
         let keyToFind = key.lowercased()
         return items[keyToFind]
     }

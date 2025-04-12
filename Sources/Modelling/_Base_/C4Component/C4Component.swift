@@ -7,9 +7,9 @@
 import Foundation
 
 public actor C4Component : ArtifactHolder {
-    public var attribs = Attributes()
-    public var tags = Tags()
-    public var annotations = Annotations()
+    public let attribs = Attributes()
+    public let tags = Tags()
+    public let annotations = Annotations()
 
     public var name: String = ""
     public var givenname: String = ""

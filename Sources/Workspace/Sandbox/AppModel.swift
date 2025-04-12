@@ -25,27 +25,27 @@ public actor AppModel {
             }
         }
         
-        commonModel.addTypesTo(model: types)
+        await commonModel.addTypesTo(model: types)
         await containers.addTypesTo(model: types)
         
         //process types
-        try containers.forEach { container in
+        try await containers.forEach { container in
             
-            for type in container.types {
-                try ParserUtil.extractMixins(for: type, with: ctx)
+            for type in await container.types {
+                try await ParserUtil.extractMixins(for: type, with: ctx)
                 
                 if let dto = type as? DtoObject {
                     try dto.populateDerivedProperties()
                 }
                 
                 //This should be done last, as the propeties for Dtos are populated only in the above steps
-                for prop in type.properties {
-                    if prop.type.isCustomType {
-                        if let obj = ctx.model.types.get(for: prop.type.objectString()) {
+                for prop in await type.properties {
+                    if await prop.type.isCustomType {
+                        if let obj = await ctx.model.types.get(for: prop.type.objectString()) {
                             //change the typename according to the retrieved object;
                             //this would correctly fix the type name, even if the given name
                             //has a diff character casing or had spaces
-                            prop.type.kind = .customType(obj.name)
+                            await prop.typeKind( .customType(obj.name))
                         }
                     }
                 }
@@ -54,41 +54,31 @@ public actor AppModel {
     }
     
     public func container(named name: String) async -> C4Container? {
-        for container in containers {
-            if await container.name == name {
-                return container
-            }
-        }
-        return nil
+        return await containers.first(where: {await $0.name == name})
     }
     
     public func module(named name: String) async -> C4Component? {
-        for module in modules {
-            if await module.name == name {
-                return module
-            }
-        }
-        return nil
+        return await modules.first(where: {await $0.name == name})
     }
     
     public func appendToCommonModel(contentsOf items: ModelSpace) async {
         let itemContainers = await items.containers
         
-        for container in itemContainers {
-            commonModel.append(contentsOf: container)
+        for await container in itemContainers {
+            await commonModel.append(contentsOf: container)
         }
     }
     
     public func append(contentsOf modelSpace: ModelSpace) async {
-        let modelContainers = await modelSpace.containers
-        let modelModules = await modelSpace.modules
+        let modelContainers = await modelSpace.containers.snapshot()
+        let modelModules = await modelSpace.modules.snapshot()
 
         for item in modelContainers {
-            containers.append(item)
+            await containers.append(item)
         }
         
         for item in modelModules {
-            modules.append(item)
+            await modules.append(item)
         }
     }
     

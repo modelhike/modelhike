@@ -10,51 +10,26 @@ public actor C4Component_Wrap : ObjectWrapper {
     public let item: C4Component
     let model : AppModel
     
-    public var attribs: Attributes { get async {
-        await item.attribs
-    }}
+    public var attribs: Attributes { item.attribs }
 
     public var types: [CodeObject_Wrap] { get async {
         await item.types.compactMap({ CodeObject_Wrap($0)})
     }}
     
     public var embeddedTypes: [CodeObject_Wrap] { get async {
-        var result: [CodeObject_Wrap] = []
-        
-        for type in await item.types {
-            if await type.dataType == .embeddedType {
-                result.append(CodeObject_Wrap(type))
-            }
-        }
-        
-        return result
+        await item.types.compactMap({
+            if await $0.dataType == .embeddedType {CodeObject_Wrap($0)} else {nil}})
     }}
     
     public var entities: [CodeObject_Wrap] { get async {
-        var result: [CodeObject_Wrap] = []
-        
-        for type in await item.types {
-            if await type.dataType == .entity {
-                result.append(CodeObject_Wrap(type))
-            }
-        }
-        
-        return result
+        await item.types.compactMap({
+            if await $0.dataType == .entity {CodeObject_Wrap($0)} else {nil}})
     }}
     
-    public var dtos: [CodeObject_Wrap] {
-        get async {
-            var result: [CodeObject_Wrap] = []
-            
-            for type in await item.types {
-                if await type.dataType == .dto, let dto = type as? DtoObject {
-                    result.append(CodeObject_Wrap(dto))
-                }
-            }
-            
-            return result
-        }
-    }
+    public var dtos: [CodeObject_Wrap] { get async {
+        await item.types.compactMap({
+            if await $0.dataType == .dto, let dto = $0 as? DtoObject {CodeObject_Wrap(dto)} else {nil}})
+    }}
     
     public var entitiesAndDtos : [CodeObject_Wrap] { get async {
         var list = await entities
@@ -67,8 +42,8 @@ public actor C4Component_Wrap : ObjectWrapper {
             var result: [API_Wrap] = []
             
             for type in await item.types {
-                let apis = await type.getAPIs()
-                let converted = apis.compactMap { API_Wrap($0) }
+                let apis = await type.getAPIs().snapshot()
+                let converted = await apis.compactMap { API_Wrap($0) }
                 result.append(contentsOf: converted)
             }
             
@@ -80,7 +55,8 @@ public actor C4Component_Wrap : ObjectWrapper {
         await self.apis.compactMap({
             if ($0.item.type == .pushData ||
                 $0.item.type == .pushDataList
-            ) { return $0 } else {return nil}    }) }}
+            ) { return $0 } else {return nil}    })
+    }}
     
     public var mutationApis : [API_Wrap] { get async {
         await self.apis.compactMap({
@@ -89,7 +65,8 @@ public actor C4Component_Wrap : ObjectWrapper {
                 $0.item.type == .delete ||
                 $0.item.type == .mutationUsingCustomLogic
             ) { return $0 } else {return nil}
-        }) }}
+        })
+    }}
     
     public var queryApis : [API_Wrap] { get async {
         await self.apis.compactMap({
@@ -97,9 +74,10 @@ public actor C4Component_Wrap : ObjectWrapper {
                 $0.item.type == .getByCustomProperties ||
                 $0.item.type == .list ||
                 $0.item.type == .listByCustomProperties
-            ) { return $0 } else {return nil}    }) }}
+            ) { return $0 } else {return nil}    })
+    }}
     
-    public func getValueOf(property propname: String, with pInfo: ParsedInfo) async throws -> Sendable {
+    public func getValueOf(property propname: String, with pInfo: ParsedInfo) async throws -> Sendable? {
         let value: Sendable = switch propname {
         case "name": await item.name
         case "types" : await types
@@ -126,9 +104,9 @@ public actor C4Component_Wrap : ObjectWrapper {
     }
     
     private func resolveFallbackProperty(propname: String, pInfo: ParsedInfo) async throws -> Sendable {
-        let attribs = await item.attribs
+        let attribs = item.attribs
         if await attribs.has(propname) {
-            return await attribs.get(propname)
+            return await attribs[propname]
         } else {
             throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
         }

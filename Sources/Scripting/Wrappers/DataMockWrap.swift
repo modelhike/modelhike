@@ -9,9 +9,9 @@ import Foundation
 public struct Mocking_Wrap : DynamicMemberLookup {
     public private(set) var item: MockData_Generator
     
-    public func getValueOf(property propname: String, with pInfo: ParsedInfo) throws -> Any {
+    public func getValueOf(property propname: String, with pInfo: ParsedInfo) async throws -> Sendable? {
 
-        let value: Any = switch propname {
+        let value: Sendable = switch propname {
             case "object-id": item.randomObjectId_MongoDb()
             default:
             throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)

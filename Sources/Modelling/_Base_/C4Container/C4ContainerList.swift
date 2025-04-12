@@ -39,7 +39,7 @@ public actor C4ContainerList: ArtifactHolder, _CollectionAsyncSequence {
         }
     }
 
-    public func forEachType(_ transform: @Sendable (inout CodeObject, inout C4Component) async throws -> Void)
+    public func forEachType(_ transform: @escaping @Sendable (inout CodeObject, inout C4Component) async throws -> Void)
        async throws
     {
         for container in containers {

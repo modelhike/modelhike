@@ -6,7 +6,7 @@
 
 import Foundation
 
-public struct ParsedInfo : SendableEquatable {
+public struct ParsedInfo : Sendable {
     public private(set) var line: String
     public private(set) var lineNo: Int
     public private(set) var level: Int

@@ -28,11 +28,12 @@ public actor WorkingMemory: _DictionaryAsyncSequence {
 
     public subscript(key: String) -> Sendable? {
         get { items[key] }
-        set {
-            items[key] = newValue
-        }
     }
 
+    public func set(_ key: String, value newValue: Sendable?) {
+        items[key] = newValue
+    }
+    
     // Capture a snapshot of items (for safe async access)
     public func snapshot() -> [String: Sendable] {
         return items
