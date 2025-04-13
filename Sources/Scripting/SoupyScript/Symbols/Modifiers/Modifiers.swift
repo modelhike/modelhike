@@ -7,7 +7,7 @@
 import Foundation
 
 public enum Modifiers  {
-    public static func apply<T>(to value: T, modifiers: [ModifierInstance], with pInfo: ParsedInfo) throws -> Optional<Any> {
+    public static func apply<T: Sendable>(to value: T, modifiers: [ModifierInstance], with pInfo: ParsedInfo) async throws -> Sendable? {
         var result : T = value
         for modifier in modifiers {
             if let resultValue = try modifier.applyTo(value: result, with: pInfo) as? T {
@@ -20,7 +20,7 @@ public enum Modifiers  {
         return result
     }
     
-    public static func parse(string: String?, pInfo: ParsedInfo) throws -> [ModifierInstance] {
+    public static func parse(string: String?, pInfo: ParsedInfo) async throws -> [ModifierInstance] {
         guard let string = string else { return [] }
         
         let components = string.trim().split(separator: TemplateConstants.multiModifierSplit).trim()
@@ -34,7 +34,7 @@ public enum Modifiers  {
             
             if str.isPattern(CommonRegEx.functionName) { //without any args
                 
-                if let modifierSymbol = context.symbols.template.modifiers[str] as? ModifierWithoutArgsProtocol {
+                if let modifierSymbol = await context.symbols.template.modifiers[str] as? ModifierWithoutArgsProtocol {
                     let instance = modifierSymbol.instance()
                     
                     result.append(instance)
@@ -46,9 +46,9 @@ public enum Modifiers  {
                 
                 let (_, fnName, argsString) = match.output
 
-                if let modifierSymbol = context.symbols.template.modifiers[fnName] as? ModifierWithUnNamedArgsProtocol {
+                if let modifierSymbol = await context.symbols.template.modifiers[fnName] as? ModifierWithUnNamedArgsProtocol {
                     
-                    let args = argsString.split(separator: ",").compactMap { 
+                    let args = await argsString.split(separator: ",").compactMap { 
                         $0.trim().isNotEmpty ? String($0) : nil }
                     
                     let instance = modifierSymbol.instance()

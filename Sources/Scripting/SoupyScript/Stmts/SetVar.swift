@@ -14,6 +14,8 @@ public class SetVarStmt: LineTemplateStmt, CustomDebugStringConvertible {
     public private(set) var ValueExpression: String = ""
     public private(set) var ModifiersList: [ModifierInstance] = []
 
+    let state = BlockOrLineTemplateState()
+    
     let setVarLineRegex = Regex {
         START_KEYWORD
         OneOrMore(.whitespace)

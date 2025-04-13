@@ -6,8 +6,8 @@
 
 import Foundation
 
-public struct ExpressionEvaluator {
-    public func evaluate(value valueStr: String, pInfo: ParsedInfo) throws -> Optional<Any> {
+public actor ExpressionEvaluator {
+    public func evaluate(value valueStr: String, pInfo: ParsedInfo) async throws -> Sendable? {
         let value = valueStr.trim()
         let ctx = pInfo.ctx
         
@@ -27,7 +27,7 @@ public struct ExpressionEvaluator {
         
         //check if variable or object property
         if let _ = value.wholeMatch(of: CommonRegEx.variableOrObjectProperty) {
-            if let value = try ctx.valueOf(variableOrObjProp: value, with: pInfo) {
+            if let value = try await ctx.valueOf(variableOrObjProp: value, with: pInfo) {
                 return value
             }
         }
@@ -39,15 +39,15 @@ public struct ExpressionEvaluator {
         return nil
     }
     
-    public func evaluate(expression: String, pInfo: ParsedInfo) throws -> Optional<Any> {
+    public func evaluate(expression: String, pInfo: ParsedInfo) async throws -> Sendable? {
         let expn = expression.trim()
         let ctx = pInfo.ctx
         
-        if ctx.variables.has(expn) {
-            return ctx.variables[expn]
+        if await ctx.variables.has(expn) {
+            return await ctx.variables[expn]
         }
         
-        if let result = try evaluate(value: expn, pInfo: pInfo) {
+        if let result = try await evaluate(value: expn, pInfo: pInfo) {
             return result
         }
         
@@ -57,11 +57,11 @@ public struct ExpressionEvaluator {
         //nested paranthesis is not supported;
         //but single-level of paranthesis is allowed
         var parser: RegularExpressionEvaluator = RegularExpressionEvaluator()
-        return try parser.evaluate(expression: expn, pInfo: pInfo)
+        return try await parser.evaluate(expression: expn, pInfo: pInfo)
     }
     
-    public func evaluateCondition(expression: String, pInfo: ParsedInfo) throws -> Bool {
-        if let result = try evaluate(expression: expression, pInfo: pInfo) {
+    public func evaluateCondition(expression: String, pInfo: ParsedInfo) async throws -> Bool {
+        if let result = try await evaluate(expression: expression, pInfo: pInfo) {
             return getEvaluatedBoolValueFor(result)
         } else {
             return false

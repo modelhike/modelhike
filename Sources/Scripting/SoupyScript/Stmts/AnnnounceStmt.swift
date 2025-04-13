@@ -7,12 +7,15 @@
 import Foundation
 import RegexBuilder
 
-public class AnnnounceStmt: LineTemplateStmt, CustomDebugStringConvertible {
+public struct AnnnounceStmt: LineTemplateStmt {
+    public var state: LineTemplateStmtState
+
     static let START_KEYWORD = "announce"
 
     public private(set) var Expression: String = ""
 
-    let stmtRegex = Regex {
+    nonisolated(unsafe)
+    private let stmtRegex = Regex {
         START_KEYWORD
         OneOrMore(.whitespace)
         Capture {
@@ -25,7 +28,7 @@ public class AnnnounceStmt: LineTemplateStmt, CustomDebugStringConvertible {
         CommonRegEx.comments
     }
 
-    override func matchLine(line: String) throws -> Bool {
+    public mutating func matchLine(line: String) throws -> Bool {
         guard let match = line.wholeMatch(of: stmtRegex) else { return false }
 
         let (_, expn) = match.output
@@ -35,11 +38,11 @@ public class AnnnounceStmt: LineTemplateStmt, CustomDebugStringConvertible {
         return true
     }
 
-    public override func execute(with ctx: Context) throws -> String? {
+    public func execute(with ctx: Context) async throws -> String? {
         guard Expression.isNotEmpty else { return nil }
 
         //see if it is an object
-        if let expn = try? ctx.evaluate(value: Expression, with: pInfo) {
+        if let expn = try? await ctx.evaluate(value: Expression, with: pInfo) {
             print("🔈 \(expn)")
         } else {
             print("🔈🎈[Line no: \(lineNo)] - nothing to announce")
@@ -48,21 +51,21 @@ public class AnnnounceStmt: LineTemplateStmt, CustomDebugStringConvertible {
         return nil
     }
 
-    public var debugDescription: String {
+    public var debugDescription: String { get async {
         let str = """
             ANNOUNCE stmt (level: \(pInfo.level))
             - expn: \(self.Expression)
-
+            
             """
-
+        
         return str
-    }
+    }}
 
     public init(_ pInfo: ParsedInfo) {
-        super.init(keyword: Self.START_KEYWORD, pInfo: pInfo)
+        state = LineTemplateStmtState(keyword: Self.START_KEYWORD, pInfo: pInfo)
     }
 
-    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) { pInfo in
+    static let register = LineTemplateStmtConfig(keyword: START_KEYWORD) { pInfo in
         AnnnounceStmt(pInfo)
     }
 }

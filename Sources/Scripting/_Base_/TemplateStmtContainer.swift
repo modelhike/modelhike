@@ -28,11 +28,11 @@ public actor GenericStmtsContainer : SoupyScriptStmtContainer {
         currentIndex = 0
     }
     
-    public func execute(with ctx: Context) throws -> String? {
+    public func execute(with ctx: Context) async throws -> String? {
         var str: String = ""
         
         for item in items {
-            if let result = try item.execute(with: ctx) {
+            if let result = try await item.execute(with: ctx) {
                 str += result
             }
         }

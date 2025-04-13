@@ -6,7 +6,7 @@
 
 import Foundation
 
-public protocol DynamicMemberLookup {
+public protocol DynamicMemberLookup: Actor {
     func getValueOf(property propname: String, with pInfo: ParsedInfo) async throws -> Sendable?
     func hasSettable(property propname: String) async -> Bool
     //func setValueOf(property propname: String, value: Any, with pInfo: ParsedInfo) throws -> Bool
@@ -17,7 +17,7 @@ public extension DynamicMemberLookup {
         return false
     }
     
-    mutating func setValueOf(property propname: String, value: Any?, with pInfo: ParsedInfo) async throws {
+    func setValueOf(property propname: String, value: Sendable?, with pInfo: ParsedInfo) async throws {
         throw ParsingError.featureNotImplementedYet(pInfo)
         //RuntimeReflection.setValue(value, forProperty: propname, in: &self)
     }

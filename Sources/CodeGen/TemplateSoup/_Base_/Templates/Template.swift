@@ -21,12 +21,11 @@ public enum TemplateStmtKind: Sendable {
 }
 
 public protocol TemplateItem: Sendable {
-    func execute(with ctx: Context) throws -> String?
+    func execute(with ctx: Context) async throws -> String?
 }
 
 public protocol TemplateItemWithParsedInfo: TemplateItem {
     var pInfo: ParsedInfo {get}
-    func execute(with ctx: Context) throws -> String?
 }
 
 public protocol TemplateItemConfig: Sendable {

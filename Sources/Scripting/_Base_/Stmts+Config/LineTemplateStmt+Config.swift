@@ -6,31 +6,24 @@
 
 import Foundation
 
-public final class LineTemplateStmt: FileTemplateStatement {
-    let keyword : String
-    public let pInfo: ParsedInfo
+public protocol LineTemplateStmt: FileTemplateStatement, SendableDebugStringConvertible {
+    var state: LineTemplateStmtState { get }
+    
+    func execute(with ctx: Context) async throws -> String?
+    mutating func matchLine(line: String) throws -> Bool
+}
+
+extension LineTemplateStmt {
     public var lineNo: Int { return pInfo.lineNo }
-    
-    public func execute(with ctx: Context) throws -> String? {
-        fatalError(#function + ": This method must be overridden")
-    }
-    
-    func parseStmtLine() async throws {
+    public var pInfo: ParsedInfo { state.pInfo }
+
+    mutating func parseStmtLine() async throws {
         let line = await pInfo.parser.currentLineWithoutStmtKeyword()
         let matched = try matchLine(line: line)
         
         if !matched {
             throw TemplateSoup_ParsingError.invalidStmt(pInfo)
         }
-    }
-    
-    func matchLine(line: String) throws -> Bool {
-        fatalError(#function + ": This method must be overridden")
-    }
-    
-    public init(keyword: String, pInfo: ParsedInfo) {
-        self.keyword = keyword
-        self.pInfo = pInfo
     }
 }
 
@@ -46,5 +39,15 @@ public struct LineTemplateStmtConfig<T>: FileTemplateStmtConfig, TemplateInitial
     
     public func getNewObject(_ pInfo: ParsedInfo) -> T {
         return initialiser(pInfo)
+    }
+}
+
+public actor LineTemplateStmtState {
+    let keyword: String
+    let pInfo: ParsedInfo
+    
+    public init(keyword: String, pInfo: ParsedInfo) {
+        self.keyword = keyword
+        self.pInfo = pInfo
     }
 }

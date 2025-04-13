@@ -6,20 +6,22 @@
 
 import Foundation
 
-public final class BlockTemplateStmt : FileTemplateStatement {
-    let keyword : String
-    let endKeyword : String
-    public let pInfo: ParsedInfo
-    public var lineNo: Int { return pInfo.lineNo }
-
-    let children = GenericStmtsContainer()
-    var isEmpty: Bool { get async { await children.isEmpty } }
-
-    public func execute(with ctx: Context) throws -> String? {
-        fatalError(#function + ": This method must be overridden")
-    }
+public protocol BlockTemplateStmt : FileTemplateStatement {
+    var state: BlockTemplateStmtState { get }
     
-    private func parseStmtLine(lineParser: LineParser) async throws {
+    func execute(with ctx: Context) async throws -> String?
+    mutating func matchLine(line: String) throws -> Bool
+}
+
+extension BlockTemplateStmt {
+    public var children: GenericStmtsContainer { state.children }
+    public var pInfo: ParsedInfo { state.pInfo }
+    public var keyword: String { state.keyword }
+    public var endKeyword: String { state.endKeyword }
+    public var isEmpty: Bool  { get async { await children.isEmpty } }
+    public var lineNo: Int { return pInfo.lineNo }
+    
+    private mutating func parseStmtLine(lineParser: LineParser) async throws {
         let line = await lineParser.currentLineWithoutStmtKeyword()
         let matched = try matchLine(line: line)
         
@@ -28,15 +30,11 @@ public final class BlockTemplateStmt : FileTemplateStatement {
         }
     }
     
-    func matchLine(line: String) throws -> Bool {
-        fatalError(#function + ": This method must be overridden")
-    }
-    
     func appendText(_ item: ContentLine) async {
         await children.append(item)
     }
     
-    func parseStmtLineAndChildren(scriptParser: any ScriptParser) async throws {
+    mutating func parseStmtLineAndChildren(scriptParser: any ScriptParser) async throws {
         
         try await parseStmtLine(lineParser: pInfo.parser)
                 
@@ -55,12 +53,6 @@ public final class BlockTemplateStmt : FileTemplateStatement {
         
         return str
     }
-    
-    public init(startKeyword: String, endKeyword: String, pInfo: ParsedInfo) {
-        self.keyword = startKeyword
-        self.endKeyword = endKeyword
-        self.pInfo = pInfo
-    }
 }
 
 public struct BlockTemplateStmtConfig<T>: FileTemplateStmtConfig, TemplateInitialiserWithArg where T: BlockTemplateStmt {
@@ -77,5 +69,21 @@ public struct BlockTemplateStmtConfig<T>: FileTemplateStmtConfig, TemplateInitia
     
     public func getNewObject(_ pInfo: ParsedInfo) -> T {
         return initialiser(self.endKeyword, pInfo)
+    }
+}
+
+public actor BlockTemplateStmtState {
+    let keyword: String
+    let endKeyword: String
+    public let pInfo: ParsedInfo
+    public var lineNo: Int { return pInfo.lineNo }
+
+    let children = GenericStmtsContainer()
+    var isEmpty: Bool  { get async { await children.isEmpty } }
+    
+    public init(keyword: String, endKeyword: String, pInfo: ParsedInfo) {
+        self.keyword = keyword
+        self.endKeyword = endKeyword
+        self.pInfo = pInfo
     }
 }
