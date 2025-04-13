@@ -20,7 +20,7 @@ public struct DiscoverPhase: PipelinePhase {
             if try pass.canRunIn(phase: phase) {
                 return try await pass.runIn(pipeline.ws, phase: phase)
             } else {
-                context.debugLog.pipelinePassCannotRun(pass)
+                await context.debugLog.pipelinePassCannotRun(pass)
                 return false
             }
         }
@@ -48,7 +48,7 @@ public struct LoadPhase: PipelinePhase {
             if try pass.canRunIn(phase: phase) {
                 return try await pass.runIn(pipeline.ws, phase: phase)
             } else {
-                context.debugLog.pipelinePassCannotRun(pass)
+                await context.debugLog.pipelinePassCannotRun(pass)
                 return false
             }
         }
@@ -75,7 +75,7 @@ public struct HydratePhase: PipelinePhase {
             if try pass.canRunIn(phase: phase) {
                 return try await pass.runIn(phase: phase)
             } else {
-                context.debugLog.pipelinePassCannotRun(pass)
+                await context.debugLog.pipelinePassCannotRun(pass)
                 return false
             }
         }
@@ -104,7 +104,7 @@ public struct TransformPhase: PipelinePhase {
             if try pass.canRunIn(phase: phase) {
                 return try await pass.runIn(phase: phase)
             } else {
-                context.debugLog.pipelinePassCannotRun(pass)
+                await context.debugLog.pipelinePassCannotRun(pass)
                 return false
             }
         }
@@ -137,7 +137,7 @@ public struct RenderPhase: PipelinePhase {
             if try pass.canRunIn(phase: phase) {
                 return try await pass.runIn(sandbox, phase: phase)
             } else {
-                context.debugLog.pipelinePassCannotRun(pass)
+                await context.debugLog.pipelinePassCannotRun(pass)
                 return false
             }
         }
@@ -164,7 +164,7 @@ public struct PersistPhase: PipelinePhase {
             if try pass.canRunIn(phase: phase, pipeline: pipeline) {
                 return try await pass.runIn(phase: phase, pipeline: pipeline)
             } else {
-                context.debugLog.pipelinePassCannotRun(pass)
+                await context.debugLog.pipelinePassCannotRun(pass)
                 return false
             }
         }
@@ -197,9 +197,9 @@ public protocol PipelinePhase {
 }
 
 extension PipelinePhase {
-    public func canRunIn(pipeline: Pipeline) -> Bool {
+    public func canRunIn(pipeline: Pipeline) async -> Bool {
         if !hasPasses {
-            pipeline.ws.context.debugLog.pipelinePhaseCannotRun(self, msg: "No passes to run")
+            await pipeline.ws.context.debugLog.pipelinePhaseCannotRun(self, msg: "No passes to run")
             return false
         } else {
             return true

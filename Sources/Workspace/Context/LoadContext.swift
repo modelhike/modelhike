@@ -13,7 +13,7 @@ public actor LoadContext : Context {
     public private(set) var objManager = ObjectAttributeManager()
 
     public var currentState = ContextState()
-    public internal(set) var config : OutputConfig
+    public let config : OutputConfig
     
     //Expression Evaluation
     public private(set) var evaluator = ExpressionEvaluator()

@@ -7,14 +7,14 @@
 import Foundation
 
 public struct CreateModifier {
-    public static func withoutParams<I, T>(_ name: String, body: @escaping (I, ParsedInfo) throws -> T?) -> Modifier {
+    public static func withoutParams<I, T: Sendable>(_ name: String, body: @Sendable @escaping (I, ParsedInfo) async throws -> T?) async -> Modifier {
         
-        return ModifierWithoutArgs(name: name , handler: body)
+        return  ModifierWithoutArgs(name: name , handler: body)
     }
 
-    public static func withParams<I, T>(_ name: String, body: @escaping (I, [Any], ParsedInfo) throws -> T?) -> Modifier {
+    public static func withParams<I, T: Sendable>(_ name: String, body: @Sendable @escaping (I, [Any], ParsedInfo)  async throws -> T?) async -> Modifier {
         
-        return ModifierWithUnNamedArgs(name: name, handler: body)
+        return  ModifierWithUnNamedArgs(name: name, handler: body)
     }
 
 }

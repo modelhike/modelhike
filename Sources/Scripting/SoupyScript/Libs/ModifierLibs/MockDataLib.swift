@@ -8,16 +8,16 @@ import Foundation
 
 public struct MockDataLib {
 
-    public static func functions(sandbox: Sandbox) -> [Modifier] {
-        return [
+    public static func functions(sandbox: Sandbox) async -> [Modifier] {
+        return await [
             sampleJson(sandbox: sandbox),
             sampleQueryString(sandbox: sandbox),
             sampleValue(sandbox: sandbox)
         ]
     }
     
-    private static func sampleJson(sandbox: Sandbox) -> Modifier {
-        return CreateModifier.withoutParams("sample-json") { (value: Any, pInfo: ParsedInfo) -> String? in
+    private static func sampleJson(sandbox: Sandbox) async -> Modifier {
+        return await CreateModifier.withoutParams("sample-json") { (value: Any, pInfo: ParsedInfo) -> String? in
             
           guard let wrapped = value as? CodeObject_Wrap else {
             return nil
@@ -29,8 +29,8 @@ public struct MockDataLib {
         }
     }
 
-    private static func sampleValue(sandbox: Sandbox) -> Modifier {
-        return CreateModifier.withoutParams("sample-value") { (value: Any, pInfo: ParsedInfo) -> String? in
+    private static func sampleValue(sandbox: Sandbox) async -> Modifier {
+        return await CreateModifier.withoutParams("sample-value") { (value: Any, pInfo: ParsedInfo) -> String? in
             
             var type = PropertyKind.unKnown
             var prefix = ""
@@ -38,7 +38,7 @@ public struct MockDataLib {
             var prop: Property?
             
             if let wrapped = value as? TypeProperty_Wrap {
-                type = wrapped.item.type.kind
+                type = await wrapped.item.type.kind
                 prop = wrapped.item
             } else if let kind = value as? PropertyKind {
                 type = kind
@@ -47,8 +47,8 @@ public struct MockDataLib {
             }
             
             if let prop = prop {
-                prefix = prop.type.isArray ? " [" : ""
-                suffix = prop.type.isArray ? "]" : ""
+                prefix = await prop.type.isArray ? " [" : ""
+                suffix = await prop.type.isArray ? "]" : ""
             }
             
             let num = Int.random(in: 0..<100)
@@ -60,7 +60,7 @@ public struct MockDataLib {
                 case .bool: return prefix + " true" + suffix
                 case .string: 
                     if let prop = prop { //used for a property
-                        return prefix + " \"\(prop.name) \(num)\"" + suffix
+                        return prefix + " \"\(await prop.name) \(num)\"" + suffix
                     } else {
                         return prefix + " \"string \(num)\"" + suffix
                     }
@@ -68,12 +68,12 @@ public struct MockDataLib {
                 case .date, .datetime: return prefix + " \"\(Date.now.ISO8601Format())\"" + suffix
                 case .customType(let typename):
                     if let prop = prop { //used for a property
-                        if let obj = sandbox.model.types.get(for: prop.type.objectString()) {
+                        if let obj = await sandbox.model.types.get(for: prop.type.objectString()) {
                             return SampleJson(entity: obj, typesModel: sandbox.model.types)
                                 .string(openCloseBraces: true, openCloseQuotesInNames: false)
                         } else { return "" }
                     } else {
-                        if let obj = sandbox.model.types.get(for: typename) {
+                        if let obj = await sandbox.model.types.get(for: typename) {
                             return SampleJson(entity: obj, typesModel: sandbox.model.types)
                                 .string(openCloseBraces: true, openCloseQuotesInNames: false)
                         } else { return "" }
@@ -86,7 +86,7 @@ public struct MockDataLib {
                     return "----ERROR-------"
                 default:
                     if let prop = prop { //used for a property
-                        if let obj = sandbox.model.types.get(for: prop.type.objectString()) {
+                        if let obj = await sandbox.model.types.get(for: prop.type.objectString()) {
                             return SampleJson(entity: obj, typesModel: sandbox.model.types)
                                 .string(openCloseBraces: true, openCloseQuotesInNames: false)
                         } else { return "" }
@@ -97,8 +97,8 @@ public struct MockDataLib {
         }
     }
         
-    private static func sampleQueryString(sandbox: Sandbox) -> Modifier {
-        return CreateModifier.withoutParams("sample-query") { (value: Any, pInfo: ParsedInfo) -> String? in
+    private static func sampleQueryString(sandbox: Sandbox) async -> Modifier {
+        return await CreateModifier.withoutParams("sample-query") { (value: Any, pInfo: ParsedInfo) -> String? in
             
           guard let wrapped = value as? API_Wrap else {
             return nil

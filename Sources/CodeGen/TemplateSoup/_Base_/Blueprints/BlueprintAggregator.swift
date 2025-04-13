@@ -4,7 +4,7 @@
 //  https://www.github.com/modelhike/modelhike
 //
 
-public class BlueprintAggregator {
+public actor BlueprintAggregator: Sendable {
     var blueprintFinders: [BlueprintFinder] = []
 
     public func blueprint(named name: String, with pInfo: ParsedInfo) throws -> any Blueprint {

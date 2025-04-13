@@ -10,7 +10,7 @@ public protocol GenerationSandbox : Sandbox, FileGeneratorProtocol {
     mutating func generateFilesFor(container: String, usingBlueprintsFrom templateLoader: Blueprint) throws -> String?
 }
 
-public protocol Sandbox {
+public protocol Sandbox: Sendable {
     var model: AppModel {get}
     var context: GenerationContext {get}
     var config: OutputConfig {get}

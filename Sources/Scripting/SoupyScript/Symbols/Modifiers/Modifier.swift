@@ -6,29 +6,29 @@
 
 import Foundation
 
-public struct ModifierWithoutArgs<I, T> : ModifierWithoutArgsProtocol {
+public struct ModifierWithoutArgs<I, T: Sendable> : ModifierWithoutArgsProtocol {
     public let name : String
-    private let handler: @Sendable (I, ParsedInfo) throws -> T?
+    private let handler: @Sendable (I, ParsedInfo) async throws -> T?
     
     public func instance() -> ModifierInstance {
         ModifierInstanceWithoutArgs(name: name, handler: handler)
     }
     
-    public init(name: String, handler: @escaping @Sendable (I, ParsedInfo) throws -> T?) {
+    public init(name: String, handler: @escaping @Sendable (I, ParsedInfo) async throws -> T?) {
         self.name = name
         self.handler = handler
     }
 }
 
-public struct ModifierWithUnNamedArgs<I, T> : ModifierWithUnNamedArgsProtocol {
+public struct ModifierWithUnNamedArgs<I, T: Sendable> : ModifierWithUnNamedArgsProtocol {
     public let name : String
-    private let handler: @Sendable (I, [Any], ParsedInfo) throws -> T?
+    private let handler: @Sendable (I, [Any], ParsedInfo) async throws -> T?
     
     public func instance() -> ModifierInstance {
         ModifierInstanceWithUnNamedArgs(name: name, handler: handler)
     }
     
-    public init(name: String, handler: @escaping @Sendable (I, [Any], ParsedInfo) throws -> T?) {
+    public init(name: String, handler: @escaping @Sendable (I, [Any], ParsedInfo) async throws -> T?) {
         self.name = name
         self.handler = handler
     }

@@ -12,7 +12,7 @@ public protocol Path: StringWrapper {
     var name: String {get}
 }
 
-public struct LocalPath : Path, CustomDebugStringConvertible {
+public struct LocalPath : Path, CustomDebugStringConvertible, Sendable {
     public static let separator = "/"
     
     public var string: String { url.path(percentEncoded: false) }
@@ -126,7 +126,7 @@ public struct LocalPath : Path, CustomDebugStringConvertible {
     }
 }
 
-public struct WebPath : Path, CustomDebugStringConvertible {
+public struct WebPath : Path, CustomDebugStringConvertible, Sendable {
     public static let root: WebPath = .init("/")
     public static let unknown: WebPath = .init("?")
 

@@ -21,10 +21,10 @@ open class Workspace {
         set { model.isModelsLoaded = newValue }
     }
     
-    public func newGenerationSandbox() -> GenerationSandbox {
-        let loadedVars = context.variables
+    public func newGenerationSandbox() async -> GenerationSandbox {
+        let loadedVars = await context.variables
         let sandbox = CodeGenerationSandbox(model: self.model, config: config)
-        sandbox.context.append(variables: loadedVars)
+        await sandbox.context.append(variables: loadedVars)
         
         return sandbox
     }
