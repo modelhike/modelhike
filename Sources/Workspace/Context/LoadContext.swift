@@ -5,6 +5,16 @@
 //
 
 public actor LoadContext : Context {
+    public func evaluate(expression: String, with pInfo: ParsedInfo) throws -> Optional<Any> {
+        return nil
+    }
+    
+    public func evaluateCondition(expression: String, with pInfo: ParsedInfo) throws -> Bool {
+        return false
+    }
+    
+    
+    
     public let model: AppModel
     public var debugLog = ContextDebugLog()
     public var events = CodeGenerationEvents()
@@ -13,7 +23,7 @@ public actor LoadContext : Context {
     public private(set) var objManager = ObjectAttributeManager()
 
     public var currentState = ContextState()
-    public internal(set) var config : OutputConfig
+    public let config : OutputConfig
     
     //Expression Evaluation
     public private(set) var evaluator = ExpressionEvaluator()

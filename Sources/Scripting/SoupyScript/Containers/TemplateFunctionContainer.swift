@@ -13,7 +13,7 @@ public class TemplateFunctionContainer: SoupyScriptStmtContainer {
     let name: String
     let pInfo: ParsedInfo
 
-    public func execute(args: [ArgumentDeclaration], pInfo: ParsedInfo, with ctx: Context) throws
+    public func execute(args: [ArgumentDeclaration], pInfo: ParsedInfo, with ctx: Context) async throws
         -> String?
     {
         var rendering = ""
@@ -29,14 +29,14 @@ public class TemplateFunctionContainer: SoupyScriptStmtContainer {
         //backup any variables clashing with the arguments
         var oldArgValues: StringDictionary = [:]
         for arg in args {
-            if ctx.variables.has(arg.name) {
-                oldArgValues[arg.name] = ctx.variables[arg.name]
+            if await ctx.variables.has(arg.name) {
+                oldArgValues[arg.name] = await ctx.variables[arg.name]
             }
         }
 
         //set the macro function arguments into context
         for arg in args {
-            if let eval = try? ctx.evaluate(value: "\(arg.value)", with: pInfo) {
+            if let eval = try? await ctx.evaluate(value: "\(arg.value)", with: pInfo) {
                 ctx.variables[arg.name] = eval
             } else {
                 throw TemplateSoup_ParsingError.invalidExpression_VariableOrObjPropNotFound(

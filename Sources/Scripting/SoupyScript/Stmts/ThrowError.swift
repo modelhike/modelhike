@@ -7,11 +7,14 @@
 import Foundation
 import RegexBuilder
 
-public class ThrowErrorStmt: LineTemplateStmt, CustomDebugStringConvertible {
+public struct ThrowErrorStmt: LineTemplateStmt, CustomDebugStringConvertible {
+    public var state: LineTemplateStmtState
+    
     static let START_KEYWORD = "fatal-error"
 
     public private(set) var Expression: String = ""
     
+    nonisolated(unsafe)
     let stmtRegex = Regex {
         START_KEYWORD
         OneOrMore(.whitespace)
@@ -23,7 +26,7 @@ public class ThrowErrorStmt: LineTemplateStmt, CustomDebugStringConvertible {
         CommonRegEx.comments
     }
     
-    override func matchLine(line: String) throws -> Bool {
+    public mutating func matchLine(line: String) throws -> Bool {
         guard let match = line.wholeMatch(of: stmtRegex ) else { return false }
         
         let (_, expn) = match.output
@@ -33,7 +36,7 @@ public class ThrowErrorStmt: LineTemplateStmt, CustomDebugStringConvertible {
         return true
     }
     
-    public override func execute(with ctx: Context) throws -> String? {
+    public  func execute(with ctx: Context) async throws -> String? {
         guard Expression.isNotEmpty else { return nil }
         
         //see if it is an expression
@@ -55,10 +58,10 @@ public class ThrowErrorStmt: LineTemplateStmt, CustomDebugStringConvertible {
     }
     
     public init(_ pInfo: ParsedInfo) {
-        super.init(keyword: Self.START_KEYWORD, pInfo: pInfo)
+        state = LineTemplateStmtState(keyword: Self.START_KEYWORD, pInfo: pInfo)
     }
     
-    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) {pInfo in ThrowErrorStmt(pInfo) }
+    static let register = LineTemplateStmtConfig(keyword: START_KEYWORD) {pInfo in ThrowErrorStmt(pInfo) }
 }
 
 

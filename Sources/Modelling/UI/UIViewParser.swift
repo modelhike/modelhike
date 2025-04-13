@@ -11,8 +11,8 @@ public enum UIViewParser {
     //
     // ui view name (attributes)
     // ~~~~~~~~~~~~~~
-    public static func canParse(parser lineParser: LineParser) -> Bool {
-        if let nextFirstWord = lineParser.nextLine().firstWord() {
+    public static func canParse(parser lineParser: LineParser) async -> Bool {
+        if let nextFirstWord = await lineParser.nextLine().firstWord() {
             if nextFirstWord.hasOnly(ModelConstants.UIViewUnderlineChar) {
                 return true
             }
@@ -21,8 +21,8 @@ public enum UIViewParser {
         return false
     }
 
-    public static func parse(parser: LineParser, with ctx: LoadContext) throws -> UIView? {
-        let line = parser.currentLine()
+    public static func parse(parser: LineParser, with ctx: LoadContext) async throws -> UIView? {
+        let line = await parser.currentLine()
 
         guard let match = line.wholeMatch(of: ModelRegEx.uiviewName_Capturing)                                                                                  else { return nil }
 
@@ -31,26 +31,26 @@ public enum UIViewParser {
 
         //check if has attributes
         if let attributeString = attributeString {
-            ParserUtil.populateAttributes(for: item, from: attributeString)
+            await ParserUtil.populateAttributes(for: item, from: attributeString)
         }
 
         //check if has tags
         if let tagString = tagString {
-            ParserUtil.populateTags(for: item, from: tagString)
+            await ParserUtil.populateTags(for: item, from: tagString)
         }
 
-        parser.skipLine(by: 2)//skip class name and underline
+        await parser.skipLine(by: 2)//skip class name and underline
 
-        while parser.linesRemaining {
-            if parser.isCurrentLineEmptyOrCommented() { parser.skipLine(); continue }
+        while await parser.linesRemaining {
+            if await parser.isCurrentLineEmptyOrCommented() { await parser.skipLine(); continue }
 
-            guard let pctx = parser.currentParsedInfo(level : 0) else { parser.skipLine(); continue }
+            guard let pctx = await parser.currentParsedInfo(level : 0) else { await parser.skipLine(); continue }
 
-            if try pctx.tryParseAnnotations(with: item) {
+            if try await pctx.tryParseAnnotations(with: item) {
                 continue
             }
 
-            if try pctx.tryParseAttachedSections(with: item) {
+            if try await pctx.tryParseAttachedSections(with: item) {
                 continue
             }
 

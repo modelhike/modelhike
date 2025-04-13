@@ -41,7 +41,7 @@ public struct PipelineConfig : OutputConfig {
     public init() {}
 }
 
-public struct ErrorOutputOptions {
+public struct ErrorOutputOptions : Sendable{
     public var includeMemoryVariablesDump: Bool = false
     
     public init() {}
@@ -51,15 +51,15 @@ public enum BluePrintType {
     case localFileSystem, resources
 }
 
-public enum ModelLoaderType {
+public enum ModelLoaderType : Sendable{
     case localFileSystem, inMemory
 }
 
-public enum OutputArtifactType {
+public enum OutputArtifactType : Sendable{
     case container, containerGroup, systemView
 }
 
-public protocol OutputConfig {
+public protocol OutputConfig: Sendable {
     var basePath: LocalPath {get set}
     
     var outputItemType : OutputArtifactType {get set}

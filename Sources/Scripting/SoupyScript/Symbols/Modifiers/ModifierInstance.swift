@@ -9,22 +9,22 @@ import Foundation
 public struct ModifierInstanceWithoutArgs<I, T: Sendable> : ModifierInstanceWithoutArgsProtocol {
     public let name : String
     private let callerType: Any.Type
-    private let handler: @Sendable (I, ParsedInfo) throws  -> T?
+    private let handler: @Sendable (I, ParsedInfo) async throws  -> T?
     
-    public func applyTo(value : Sendable, with pInfo: ParsedInfo) throws -> Sendable {
+    public func applyTo(value : Sendable, with pInfo: ParsedInfo) async throws -> Sendable {
         
         if let typedValue = value as? I {
             if type(of: typedValue) != self.callerType {
                 throw TemplateSoup_ParsingError.modifierCalledOnwrongType(self.name, String(describing: type(of: value)), pInfo)
             }
             
-            return try handler(typedValue, pInfo)
+            return try await handler(typedValue, pInfo)
         } else {
             throw TemplateSoup_ParsingError.modifierCalledOnwrongType(self.name, String(describing: type(of: value)), pInfo)
         }
     }
     
-    public init(name: String, handler: @escaping @Sendable (I, ParsedInfo) throws -> T?) {
+    public init(name: String, handler: @escaping @Sendable (I, ParsedInfo) async throws -> T?) {
         self.name = name
         self.callerType = I.self
         self.handler = handler
@@ -34,7 +34,7 @@ public struct ModifierInstanceWithoutArgs<I, T: Sendable> : ModifierInstanceWith
 public struct ModifierInstanceWithUnNamedArgs<I, T: Sendable> : ModifierInstanceWithUnNamedArgsProtocol {
     public var name : String
     public let callerType: Any.Type
-    private let handler: @Sendable (I, [Any], ParsedInfo) throws -> T?
+    private let handler: @Sendable (I, [Any], ParsedInfo) async throws -> T?
     private var arguments: [String] = []
     
     public mutating func setArgsGiven(arguments: [String]) {
@@ -59,13 +59,13 @@ public struct ModifierInstanceWithUnNamedArgs<I, T: Sendable> : ModifierInstance
                 }
             }
             
-            return try handler(typedValue, argumentValues, pInfo)
+            return try await handler(typedValue, argumentValues, pInfo)
         } else {
             throw TemplateSoup_ParsingError.modifierCalledOnwrongType(self.name, String(describing: type(of: value)), pInfo)
         }
     }
     
-    public init(name: String, handler: @escaping @Sendable (I, [Any], ParsedInfo) throws -> T?) {
+    public init(name: String, handler: @escaping @Sendable (I, [Any], ParsedInfo) async throws -> T?) {
         self.name = name
         self.callerType = I.self
         self.handler = handler
