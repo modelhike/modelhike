@@ -30,7 +30,7 @@ public actor ScriptFileExecutor: SoupyScriptExecutor {
                 try await frontMatter.processVariables()
             }
             
-            if let containers = try parser.parseContainers() {
+            if let containers = try await parser.parseContainers() {
                 await ctx.debugLog.printParsedTree(for: containers)
                 
                 await ctx.debugLog.scriptFileExecutionStarting()

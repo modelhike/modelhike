@@ -7,12 +7,12 @@
 import Foundation
 import RegexBuilder
 
-public class ContentLine: TemplateItem, CustomDebugStringConvertible {
+public struct ContentLine: TemplateItem, CustomDebugStringConvertible {
     public var items: [ContentLineItem] = []
     public let level: Int
     public let pInfo: ParsedInfo
 
-    fileprivate func parseLine(_ line: String) throws {
+    fileprivate mutating func parseLine(_ line: String) throws {
         self.items = try ContentHandler.parseLine(line, pInfo: pInfo, level: level)
     }
 
@@ -46,7 +46,7 @@ public class ContentLine: TemplateItem, CustomDebugStringConvertible {
     }
 }
 
-public protocol ContentLineItem : CustomDebugStringConvertible{
+public protocol ContentLineItem : Sendable, CustomDebugStringConvertible{
     var pInfo: ParsedInfo {get}
     func execute(with ctx: Context) throws -> String?
 }

@@ -69,7 +69,7 @@ public extension ScriptParser {
                     await ctx.debugLog.stmtDetected(keyWord: config.keyword, pInfo: pInfo)
                     
                     let stmt = config.getNewObject(pInfo) as! BlockTemplateStmt
-                    try stmt.parseStmtLineAndChildren(scriptParser: self, pInfo: pInfo)
+                    try await stmt.parseStmtLineAndChildren(scriptParser: self)
                     await container.append(stmt)
                     break
                     
@@ -93,7 +93,7 @@ public extension ScriptParser {
                     await ctx.debugLog.stmtDetected(keyWord: config.keyword, pInfo: pInfo)
                     
                     let stmt = config.getNewObject(pInfo) as! MultiBlockTemplateStmt
-                    try stmt.parseStmtLineAndBlocks(scriptParser: self)
+                    try await stmt.parseStmtLineAndBlocks(scriptParser: self)
                     await container.append(stmt)
                     break
                 }
