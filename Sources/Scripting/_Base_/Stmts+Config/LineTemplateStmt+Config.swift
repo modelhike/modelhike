@@ -6,17 +6,17 @@
 
 import Foundation
 
-public class LineTemplateStmt: FileTemplateStatement {
+public final class LineTemplateStmt: FileTemplateStatement {
     let keyword : String
-    public private(set) var pInfo: ParsedInfo
+    public let pInfo: ParsedInfo
     public var lineNo: Int { return pInfo.lineNo }
     
     public func execute(with ctx: Context) throws -> String? {
         fatalError(#function + ": This method must be overridden")
     }
     
-    func parseStmtLine() throws {
-        let line = pInfo.parser.currentLineWithoutStmtKeyword()
+    func parseStmtLine() async throws {
+        let line = await pInfo.parser.currentLineWithoutStmtKeyword()
         let matched = try matchLine(line: line)
         
         if !matched {
@@ -36,10 +36,10 @@ public class LineTemplateStmt: FileTemplateStatement {
 
 public struct LineTemplateStmtConfig<T>: FileTemplateStmtConfig, TemplateInitialiserWithNoArg where T: LineTemplateStmt {
     public let keyword : String
-    public let initialiser: (ParsedInfo) -> T
+    public let initialiser: @Sendable (ParsedInfo) -> T
     public var kind: TemplateStmtKind { .line }
     
-    public init(keyword: String, initialiser: @escaping (ParsedInfo) -> T) {
+    public init(keyword: String, initialiser: @escaping @Sendable (ParsedInfo) -> T) {
         self.keyword = keyword
         self.initialiser = initialiser
     }

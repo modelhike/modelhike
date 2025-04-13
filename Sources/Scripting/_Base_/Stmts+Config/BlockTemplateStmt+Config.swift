@@ -6,21 +6,21 @@
 
 import Foundation
 
-public class BlockTemplateStmt : FileTemplateStatement {
+public final class BlockTemplateStmt : FileTemplateStatement {
     let keyword : String
     let endKeyword : String
-    public private(set) var pInfo: ParsedInfo
+    public let pInfo: ParsedInfo
     public var lineNo: Int { return pInfo.lineNo }
 
-    var children = GenericStmtsContainer()
-    var isEmpty: Bool { children.isEmpty }
+    let children = GenericStmtsContainer()
+    var isEmpty: Bool { get async { await children.isEmpty } }
 
     public func execute(with ctx: Context) throws -> String? {
         fatalError(#function + ": This method must be overridden")
     }
     
-    private func parseStmtLine(lineParser: LineParser) throws {
-        let line = lineParser.currentLineWithoutStmtKeyword()
+    private func parseStmtLine(lineParser: LineParser) async throws {
+        let line = await lineParser.currentLineWithoutStmtKeyword()
         let matched = try matchLine(line: line)
         
         if !matched {
@@ -32,23 +32,22 @@ public class BlockTemplateStmt : FileTemplateStatement {
         fatalError(#function + ": This method must be overridden")
     }
     
-    func appendText(_ item: ContentLine) {
-        children.append(item)
+    func appendText(_ item: ContentLine) async {
+        await children.append(item)
     }
     
-    func parseStmtLineAndChildren(scriptParser: any ScriptParser, pInfo: ParsedInfo) throws {
-        self.pInfo = pInfo
+    func parseStmtLineAndChildren(scriptParser: any ScriptParser) async throws {
         
-        try parseStmtLine(lineParser: pInfo.parser)
+        try await parseStmtLine(lineParser: pInfo.parser)
                 
-        try scriptParser.parseLines(startingFrom: keyword, till: endKeyword, to: self.children, level: pInfo.level + 1, with: pInfo.ctx)
+        try await scriptParser.parseLines(startingFrom: keyword, till: endKeyword, to: self.children, level: pInfo.level + 1, with: pInfo.ctx)
         
     }
     
-    internal func debugStringForChildren() -> String {
+    internal func debugStringForChildren() async -> String {
         var str = ""
         
-        for item in children {
+        for item in await children.snapshot() {
             if let debug = item as? CustomDebugStringConvertible {
                 str += " -- " + debug.debugDescription + "\n"
             }
@@ -67,10 +66,10 @@ public class BlockTemplateStmt : FileTemplateStatement {
 public struct BlockTemplateStmtConfig<T>: FileTemplateStmtConfig, TemplateInitialiserWithArg where T: BlockTemplateStmt {
     public let keyword : String
     private let endKeyword : String
-    public let initialiser: (String, ParsedInfo) -> T
+    public let initialiser:@Sendable (String, ParsedInfo) -> T
     public var kind: TemplateStmtKind { .block }
 
-    public init(keyword: String, initialiser: @escaping (String, ParsedInfo) -> T)  {
+    public init(keyword: String, initialiser: @Sendable @escaping (String, ParsedInfo) -> T)  {
         self.keyword = keyword
         self.initialiser = initialiser
         self.endKeyword = TemplateConstants.templateEndKeywordWithHyphen + keyword

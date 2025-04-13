@@ -67,6 +67,11 @@ public actor SoupyScriptStmtContainerList : _CollectionAsyncSequence, SendableDe
         self.items = items
     }
     
+    public init(name: String, _ item: any SoupyScriptStmtContainer) {
+        self.name = name
+        self.items = [item]
+    }
+    
     public init(name: String) {
         self.name = name
     }

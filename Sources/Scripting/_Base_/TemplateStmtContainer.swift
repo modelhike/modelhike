@@ -41,7 +41,7 @@ public actor GenericStmtsContainer : SoupyScriptStmtContainer {
     }
     
     // Capture a snapshot of items (for safe async access)
-    public func snapshot() -> [Sendable] {
+    public func snapshot() -> [TemplateItem] {
         return items
     }
     
