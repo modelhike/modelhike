@@ -21,7 +21,7 @@ public struct ParsedInfo : Sendable {
         if let cls = obj as? CodeObject {
             let name = await section.name.lowercased()
             if name == "apis" {
-                return try APISectionParser.parse(for: cls, lineParser: self.parser)
+                return try await APISectionParser.parse(for: cls, lineParser: self.parser)
             }
         }
         
@@ -68,51 +68,51 @@ public struct ParsedInfo : Sendable {
         return (lhs.line == rhs.line) && (lhs.lineNo == rhs.lineNo)
     }
     
-    public static func dummy(line: String, identifier: String, with ctx: GenerationContext) async -> ParsedInfo {
+    public static func dummy(line: String, identifier: String, generationCtx ctx: GenerationContext) async -> ParsedInfo {
         let parser = DummyLineParserDuringGeneration(identifier: identifier, isStatementsPrefixedWithKeyword: true, with: ctx)
         return await ParsedInfo(parser: parser, line: line, lineNo: -1, level: 0, firstWord: "")
     }
     
-    public static func dummy(line: String, identifier: String, with ctx: LoadContext) async -> ParsedInfo {
+    public static func dummy(line: String, identifier: String, loadCtx ctx: LoadContext) async -> ParsedInfo {
         let parser = DummyLineParserDuringLoad(identifier: identifier, isStatementsPrefixedWithKeyword: true, with: ctx)
         return await ParsedInfo(parser: parser, line: line, lineNo: -1, level: 0, firstWord: "")
     }
     
-    public static func dummy(line: String, identifier: String, with ctx: Context) -> ParsedInfo {
+    public static func dummy(line: String, identifier: String, with ctx: Context) async -> ParsedInfo {
         if let loadctx = ctx as? LoadContext {
-            return dummy(line: line, identifier: identifier, with: loadctx)
+            return await dummy(line: line, identifier: identifier, loadCtx: loadctx)
         } else if let genctx = ctx as? GenerationContext {
-            return dummy(line: line, identifier: identifier, with: genctx)
+            return await dummy(line: line, identifier: identifier, generationCtx: genctx)
         } else {
             fatalError(#function + ": unknown Context passes")
         }
     }
     
-    public static func dummyForFrontMatterError(identifier: String, with ctx: Context) -> ParsedInfo {
+    public static func dummyForFrontMatterError(identifier: String, with ctx: Context) async -> ParsedInfo {
         if let loadctx = ctx as? LoadContext {
-            return dummy(line: "Front-Matter", identifier: identifier, with: loadctx)
+            return await dummy(line: "Front-Matter", identifier: identifier, with: loadctx)
         } else if let genctx = ctx as? GenerationContext {
-            return dummy(line: "Front-Matter", identifier: identifier, with: genctx)
+            return await dummy(line: "Front-Matter", identifier: identifier, with: genctx)
         } else {
             fatalError(#function + ": unknown Context passes")
         }
     }
     
-    public static func dummyForMainFile(with ctx: Context) -> ParsedInfo {
+    public static func dummyForMainFile(with ctx: Context) async -> ParsedInfo {
         if let loadctx = ctx as? LoadContext {
-            return dummy(line: "Main-File", identifier: "Main-File", with: loadctx)
+            return await dummy(line: "Main-File", identifier: "Main-File", with: loadctx)
         } else if let genctx = ctx as? GenerationContext {
-            return dummy(line: "Main-File", identifier: "Main-File", with: genctx)
+            return await dummy(line: "Main-File", identifier: "Main-File", with: genctx)
         } else {
             fatalError(#function + ": unknown Context passes")
         }
     }
     
-    public static func dummyForAppState(with ctx: Context) -> ParsedInfo {
+    public static func dummyForAppState(with ctx: Context) async -> ParsedInfo {
         if let loadctx = ctx as? LoadContext {
-            return dummy(line: "App-State", identifier: "App-State", with: loadctx)
+            return await dummy(line: "App-State", identifier: "App-State", with: loadctx)
         } else if let genctx = ctx as? GenerationContext {
-            return dummy(line: "App-State", identifier: "App-State", with: genctx)
+            return await dummy(line: "App-State", identifier: "App-State", with: genctx)
         } else {
             fatalError(#function + ": unknown Context passes")
         }
