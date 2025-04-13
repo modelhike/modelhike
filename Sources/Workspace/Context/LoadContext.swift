@@ -5,16 +5,6 @@
 //
 
 public actor LoadContext : Context {
-    public func evaluate(expression: String, with pInfo: ParsedInfo) throws -> Optional<Any> {
-        return nil
-    }
-    
-    public func evaluateCondition(expression: String, with pInfo: ParsedInfo) throws -> Bool {
-        return false
-    }
-    
-    
-    
     public let model: AppModel
     public var debugLog = ContextDebugLog()
     public var events = CodeGenerationEvents()
