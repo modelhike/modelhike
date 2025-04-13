@@ -14,9 +14,21 @@ public struct ContextState: Sendable {
     public internal(set) var templateFunctions = TemplateFunctionMap()
 }
 
-public struct ContextSymbols: Sendable {
+public actor ContextSymbols {
     public internal(set) var template = TemplateSoupSymbols()
     public internal(set) var models = ModelSymbols()
+    
+    public func addTemplate(modifiers modifiersList: [Modifier]) {
+        template.add(modifiers: modifiersList)
+    }
+    
+    public func addTemplate(stmts stmtsList: [any FileTemplateStmtConfig]) {
+        template.add(stmts: stmtsList)
+    }
+    
+    public func addTemplate(infixOperators operatorsList: [InfixOperatorProtocol]) {
+        template.add(infixOperators: operatorsList)
+    }
 }
 
 public struct TemplateSoupExpressionDebugInfo: Sendable {

@@ -6,13 +6,13 @@
 
 import Foundation
 
-public class CodeGenerationSandbox : GenerationSandbox {
+public actor CodeGenerationSandbox : GenerationSandbox {
     public private(set) var templateSoup: TemplateSoup
     private var generation_dir: OutputFolder
     public private(set) var base_generation_dir: OutputFolder
 
     public var model: AppModel { context.model }
-    public var config: OutputConfig { context.config }
+    public var config: OutputConfig { get async { await context.config }}
 
     public private(set) var context: GenerationContext
     private var modifiers: [Modifier] = []
@@ -28,43 +28,43 @@ public class CodeGenerationSandbox : GenerationSandbox {
     }
     
     //MARK: Generation code
-    public func generateFilesFor(container: String, usingBlueprintsFrom blueprintLoader: Blueprint) throws -> String? {
+    public func generateFilesFor(container: String, usingBlueprintsFrom blueprintLoader: Blueprint) async throws -> String? {
         
         if !isSymbolsLoaded {
-            try loadSymbols()
+            try await loadSymbols()
         }
         
         if try !blueprintLoader.blueprintExists() {
-            let pInfo = ParsedInfo.dummyForAppState(with: context)
+            let pInfo = await ParsedInfo.dummyForAppState(with: context)
             throw EvaluationError.blueprintDoesNotExist(blueprintLoader.blueprintName, pInfo)
         }
         
-        guard let container = model.container(named: container) else {
-            let pInfo = ParsedInfo.dummyForAppState(with: context)
+        guard let container = await model.container(named: container) else {
+            let pInfo = await ParsedInfo.dummyForAppState(with: context)
             throw EvaluationError.invalidInput("There is no container called \(container)", pInfo)
         }
                 
-        let variables : [String: Any] = [
+        let variables : [String: Sendable] = [
             "@container" : C4Container_Wrap(container, model: model),
             "@mock" : Mocking_Wrap()
         ]
         
-        self.context.append(variables: variables)
+        await self.context.append(variables: variables)
 
         self.templateSoup.repo = blueprintLoader
         
-        context.setWorkingDirectory("/")
+        await context.setWorkingDirectory("/")
         try self.setRelativePath("")
         
-        let pInfo = ParsedInfo.dummyForMainFile(with: context)
+        let pInfo = await ParsedInfo.dummyForMainFile(with: context)
         
         //handle special folders
         if blueprintLoader.hasFolder(SpecialFolderNames.root) {
             let specialActivity = SpecialActivityCallStackItem(activityName: "Rendering Root Folder")
-            context.pushCallStack(specialActivity)
+            await context.pushCallStack(specialActivity)
 
             try renderSpecialFolder(SpecialFolderNames.root, to: "/", pInfo: pInfo)
-            context.popCallStack()
+            await context.popCallStack()
 
         } else {
             print("⚠️ Didn't find 'Root' folder in Blueprint !!!")
@@ -75,27 +75,27 @@ public class CodeGenerationSandbox : GenerationSandbox {
     
     
     @discardableResult
-    private func renderSpecialFolder(_ fromFolder: String, to toFolder: String, msg: String = "", pInfo: ParsedInfo) throws -> RenderedFolder {
+    private func renderSpecialFolder(_ fromFolder: String, to toFolder: String, msg: String = "", pInfo: ParsedInfo) async throws -> RenderedFolder {
         if msg.isNotEmpty {
             print(msg)
         }
         
-        context.debugLog.renderingFolder(fromFolder, to: toFolder)
-        let folder = try context.fileGenerator.renderFolder(fromFolder, to: toFolder, with: pInfo)
+        await context.debugLog.renderingFolder(fromFolder, to: toFolder)
+        let folder = try await context.fileGenerator.renderFolder(fromFolder, to: toFolder, with: pInfo)
         return folder
     }
     
-    public func render(string templateString: String, data: [String : Any]) throws -> String? {
+    public func render(string templateString: String, data: [String : Sendable]) async throws -> String? {
         if !isSymbolsLoaded {
-            try loadSymbols()
+            try await loadSymbols()
         }
 
-        let pInfo = ParsedInfo.dummyForMainFile(with: context)
+        let pInfo = await ParsedInfo.dummyForMainFile(with: context)
 
         return try templateSoup.renderTemplate(string: templateString, data: data, with: pInfo)
     }
     
-    public init(model: AppModel, config: OutputConfig) {
+    public init(model: AppModel, config: OutputConfig) async {
         self.context = GenerationContext(model: model, config: config)
         self.lineParser  = LineParserDuringGeneration(identifier: "-", isStatementsPrefixedWithKeyword: true, with: context)
         
@@ -106,11 +106,11 @@ public class CodeGenerationSandbox : GenerationSandbox {
         
         context.fileGenerator = self
 
-        setupDefaultSymbols()
+        await setupDefaultSymbols()
     }
     
     //MARK: symbol loading
-    public func loadSymbols(_ sym : Set<PreDefinedSymbols>? = nil) throws {
+    public func loadSymbols(_ sym : Set<PreDefinedSymbols>? = nil) async throws {
         if let sym = sym {
             if let _ = sym.firstIndex(of: .typescript) {
                 self.add(modifiers: TypescriptLib.functions)
@@ -129,27 +129,27 @@ public class CodeGenerationSandbox : GenerationSandbox {
             
             if sym.firstIndex(of: .noMocking) == nil {
                 //"no mock" is not specified; so, load default mocking
-                self.add(modifiers: MockDataLib.functions(sandbox: self))
+                await self.add(modifiers: MockDataLib.functions(sandbox: self))
             }
             
         } else { //nothing provided; so, just load some common modifiers alsone
             
-            self.add(modifiers: MockDataLib.functions(sandbox: self))
+            await self.add(modifiers: MockDataLib.functions(sandbox: self))
         }
         
-        context.symbols.template.add(stmts: self.statements)
-        context.symbols.template.add(modifiers: self.modifiers)
+        await context.symbols.addTemplate(stmts: self.statements)
+        await context.symbols.addTemplate(modifiers: self.modifiers)
         
         isSymbolsLoaded = true
     }
     
-    fileprivate func setupDefaultSymbols() {
-        context.symbols.template.add(stmts: StatementsLibrary.statements)
-        context.symbols.template.add(modifiers: DefaultModifiersLibrary.modifiers)
-        context.symbols.template.add(infixOperators : DefaultOperatorsLibrary.infixOperators)
+    fileprivate func setupDefaultSymbols() async {
+        await context.symbols.addTemplate(stmts: StatementsLibrary.statements)
+        await context.symbols.addTemplate(modifiers: DefaultModifiersLibrary.modifiers())
+        await context.symbols.addTemplate(infixOperators : DefaultOperatorsLibrary.infixOperators)
         
-        context.symbols.template.add(modifiers: ModelLib.functions(sandbox: self))
-        context.symbols.template.add(modifiers: GenerationLib.functions)
+        await context.symbols.addTemplate(modifiers: ModelLib.functions(sandbox: self))
+        await context.symbols.addTemplate(modifiers: GenerationLib.functions())
     }
     
     public func add(modifiers modifiersList: [Modifier]...) {
@@ -174,8 +174,8 @@ public class CodeGenerationSandbox : GenerationSandbox {
         }
     }
     
-    public func generateFile(_ filename: String, template: String, with pInfo: ParsedInfo) throws -> TemplateRenderedFile? {
-        if try !context.events.canRender(filename: filename, templatename: template, with: pInfo) { //if handler returns false, dont render file
+    public func generateFile(_ filename: String, template: String, with pInfo: ParsedInfo) async throws -> TemplateRenderedFile? {
+        if try await !context.events.canRender(filename: filename, templatename: template, with: pInfo) { //if handler returns false, dont render file
             return nil
         }
         
@@ -186,8 +186,8 @@ public class CodeGenerationSandbox : GenerationSandbox {
         return file
     }
     
-    public func generateFileWithData(_ filename: String, template: String, data: [String: Any], with pInfo: ParsedInfo) throws -> TemplateRenderedFile? {
-        if try !context.events.canRender(filename: filename, templatename: template, with: pInfo) { //if handler returns false, dont render file
+    public func generateFileWithData(_ filename: String, template: String, data: [String: Sendable], with pInfo: ParsedInfo) async throws -> TemplateRenderedFile? {
+        if try await !context.events.canRender(filename: filename, templatename: template, with: pInfo) { //if handler returns false, dont render file
             return nil
         }
         
@@ -240,8 +240,8 @@ public class CodeGenerationSandbox : GenerationSandbox {
         return folder
     }
     
-    public func fillPlaceholdersAndCopyFile(_ filename: String, with pInfo: ParsedInfo) throws -> PlaceHolderFile? {
-        if try !context.events.canRender(filename: filename, with: pInfo) { //if handler returns false, dont render file
+    public func fillPlaceholdersAndCopyFile(_ filename: String, with pInfo: ParsedInfo) async throws -> PlaceHolderFile? {
+        if try await !context.events.canRender(filename: filename, with: pInfo) { //if handler returns false, dont render file
             return nil
         }
         
@@ -252,8 +252,8 @@ public class CodeGenerationSandbox : GenerationSandbox {
         return file
     }
 
-    public func fillPlaceholdersAndCopyFile(_ filename: String, to newFilename: String, with pInfo: ParsedInfo) throws -> PlaceHolderFile? {
-        if try !context.events.canRender(filename: filename, with: pInfo) { //if handler returns false, dont render file
+    public func fillPlaceholdersAndCopyFile(_ filename: String, to newFilename: String, with pInfo: ParsedInfo) async throws -> PlaceHolderFile? {
+        if try await !context.events.canRender(filename: filename, with: pInfo) { //if handler returns false, dont render file
             return nil
         }
         

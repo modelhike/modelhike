@@ -9,17 +9,17 @@ public protocol ScriptParser : Actor, SendableDebugStringConvertible {
     var containers : SoupyScriptStmtContainerList {get set}
     var lineParser: LineParser {get}
     var currentContainer: any SoupyScriptStmtContainer {get set}
-    func parse(file: LocalFile) throws -> SoupyScriptStmtContainerList?
-    func parseLines(startingFrom startKeyword : String?, till endKeyWord: String?, to container: any SoupyScriptStmtContainer, level: Int, with ctx: Context) throws
+    func parse(file: LocalFile) async throws -> SoupyScriptStmtContainerList?
+    func parseLines(startingFrom startKeyword : String?, till endKeyWord: String?, to container: any SoupyScriptStmtContainer, level: Int, with ctx: Context) async throws
 }
 
 public extension ScriptParser {
-    func parse(fileName: String) throws -> SoupyScriptStmtContainerList? {
-        return try self.parse(file: LocalFile(path: fileName))
+    func parse(fileName: String) async throws -> SoupyScriptStmtContainerList? {
+        return try await self.parse(file: LocalFile(path: fileName))
     }
     
-    func parseAllLines(to container: any SoupyScriptStmtContainer,  level: Int, with ctx: Context) throws {
-        return try parseLines(startingFrom: nil, till: nil, to: container, level: level, with: ctx)
+    func parseAllLines(to container: any SoupyScriptStmtContainer,  level: Int, with ctx: Context) async throws {
+        return try await parseLines(startingFrom: nil, till: nil, to: container, level: level, with: ctx)
     }
     
     func handleParsedLine(stmtWord : String, pInfo: ParsedInfo, container: any SoupyScriptStmtContainer) async throws {
@@ -68,7 +68,7 @@ public extension ScriptParser {
                 if config.kind == .block {
                     await ctx.debugLog.stmtDetected(keyWord: config.keyword, pInfo: pInfo)
                     
-                    let stmt = config.getNewObject(pInfo) as! BlockTemplateStmt
+                    var stmt = config.getNewObject(pInfo) as! BlockTemplateStmt
                     try await stmt.parseStmtLineAndChildren(scriptParser: self)
                     await container.append(stmt)
                     break
@@ -76,7 +76,7 @@ public extension ScriptParser {
                 } else if config.kind == .line {
                     await ctx.debugLog.stmtDetected(keyWord: config.keyword, pInfo: pInfo)
                     
-                    let stmt = config.getNewObject(pInfo) as! LineTemplateStmt
+                    var stmt = config.getNewObject(pInfo) as! LineTemplateStmt
                     try await stmt.parseStmtLine()
                     await container.append(stmt)
                     break
@@ -84,7 +84,7 @@ public extension ScriptParser {
                 } else if config.kind == .blockOrLine {
                     await ctx.debugLog.stmtDetected(keyWord: config.keyword, pInfo: pInfo)
                     
-                    let stmt = config.getNewObject(pInfo) as! BlockOrLineTemplateStmt
+                    var stmt = config.getNewObject(pInfo) as! BlockOrLineTemplateStmt
                     try await stmt.parseAsPerVariant(scriptParser: self)
                     await container.append(stmt)
                     break
@@ -92,7 +92,7 @@ public extension ScriptParser {
                 } else if config.kind == .multiBlock {
                     await ctx.debugLog.stmtDetected(keyWord: config.keyword, pInfo: pInfo)
                     
-                    let stmt = config.getNewObject(pInfo) as! MultiBlockTemplateStmt
+                    var stmt = config.getNewObject(pInfo) as! MultiBlockTemplateStmt
                     try await stmt.parseStmtLineAndBlocks(scriptParser: self)
                     await container.append(stmt)
                     break
@@ -113,7 +113,7 @@ public extension ScriptParser {
         
         if let match = templateFnLine.wholeMatch(of: CommonRegEx.functionDeclaration_unNamedArgs_Capturing) {
             let (_, templateFnName, paramsString) = match.output
-            let params = await paramsString.getArray_UsingUnNamedArgsPattern()
+            let params = paramsString.getArray_UsingUnNamedArgsPattern()
             
             let fnName = templateFnName.trim()
             let fnContainer  = TemplateFunctionContainer(name: fnName, params: params, pInfo: pInfo)
@@ -123,7 +123,7 @@ public extension ScriptParser {
             let topLevel = 0
             
             let startingFrom = "\(TemplateConstants.templateFunction_start) \(templateFnName)"
-            try self.parseLines(startingFrom: startingFrom, till: TemplateConstants.templateFunction_end, to: fnContainer.container, level:  topLevel + 1, with: pInfo.ctx)
+            try await self.parseLines(startingFrom: startingFrom, till: TemplateConstants.templateFunction_end, to: fnContainer.container, level:  topLevel + 1, with: pInfo.ctx)
             
             return true
         } else {
@@ -132,10 +132,10 @@ public extension ScriptParser {
     }
     
     
-    func parseContainers(containerName: String = "string") throws -> SoupyScriptStmtContainerList? {
+    func parseContainers(containerName: String = "string") async throws -> SoupyScriptStmtContainerList? {
         
         containers = SoupyScriptStmtContainerList(name: containerName, currentContainer)
-        try self.parseAllLines(to: self.currentContainer, level: 0, with: context)
+        try await self.parseAllLines(to: self.currentContainer, level: 0, with: context)
         
         return containers
     }

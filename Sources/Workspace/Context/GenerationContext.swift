@@ -31,6 +31,11 @@ public actor GenerationContext: Context {
     var generatedFiles: [String] = []
     var generatedFolders: [String] = []
 
+    public func config(_ value: OutputConfig) {
+        self.config = value
+        self.events = value.events
+    }
+    
     public func addGenerated(filePath: String) {
         self.generatedFiles.append(filePath)
     }

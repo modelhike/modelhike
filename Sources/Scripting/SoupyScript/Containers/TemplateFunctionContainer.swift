@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class TemplateFunctionContainer: SoupyScriptStmtContainer {
+public actor TemplateFunctionContainer: SoupyScriptStmtContainer {
     let container: GenericStmtsContainer
 
     let params: [String]
@@ -37,25 +37,25 @@ public class TemplateFunctionContainer: SoupyScriptStmtContainer {
         //set the macro function arguments into context
         for arg in args {
             if let eval = try? await ctx.evaluate(value: "\(arg.value)", with: pInfo) {
-                ctx.variables[arg.name] = eval
+                await ctx.variables.set(arg.name, value: eval)
             } else {
                 throw TemplateSoup_ParsingError.invalidExpression_VariableOrObjPropNotFound(
                     arg.value, pInfo)
             }
         }
 
-        if let body = try container.execute(with: ctx) {
+        if let body = try await container.execute(with: ctx) {
             rendering += body
         }
 
         //remove the arvs from affecting rest of the context
         for arg in args {
-            ctx.variables.removeValue(forKey: arg.name)
+            await ctx.variables.removeValue(forKey: arg.name)
         }
 
         //restore any variables clashing with the arguments
         for (key, _) in oldArgValues {
-            ctx.variables[key] = oldArgValues[key]
+            await ctx.variables.set(key, value: oldArgValues[key])
         }
 
         //ctx.popSnapshot()
@@ -63,26 +63,26 @@ public class TemplateFunctionContainer: SoupyScriptStmtContainer {
         return rendering.isNotEmpty ? rendering : nil
     }
 
-    public func next() -> TemplateItem? {
-        return container.next()
+    public func snapshot() async -> [TemplateItem] {
+        await container.items
     }
 
-    public func append(_ item: TemplateItem) {
-        container.append(item)
+    public func append(_ item: TemplateItem) async {
+        await container.append(item)
     }
 
-    public var debugDescription: String {
+    public var debugDescription: String { get async {
         var str = """
-            container: Macro Function Defn - \(container.items.count) items
+            container: Macro Function Defn - \(await container.items.count) items
             - macro name: \(self.name)
             - params: \(self.params)
-
+            
             """
-
-        str += container.debugStringForChildren()
-
+        
+        await str += container.debugStringForChildren()
+        
         return str
-    }
+    }}
 
     public init(name: String, params: [String], pInfo: ParsedInfo) {
         self.params = params

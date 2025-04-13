@@ -6,18 +6,20 @@
 
 import Foundation
 
-public struct DiscoverPhase: PipelinePhase {
+public actor DiscoverPhase: PipelinePhase {
     public let name: String = "Discover"
     public private(set) var context: LoadContext
     public var config: OutputConfig { context.config }
 
     public var passes: [DiscoveringPass] = []
-    public var lastRunResult: Bool = true
+    public private(set) var lastRunResult: Bool = true
 
     @discardableResult
     public func runIn(pipeline: Pipeline) async throws -> Bool {
-        return try await runIn(pipeline: pipeline, passes: passes) { pass, phase in
-            if try pass.canRunIn(phase: phase) {
+        return try await runIn(pipeline: pipeline, passes: passes) {[weak self] pass, phase in
+            guard let self = self else { return false }
+
+            if try await pass.canRunIn(phase: phase) {
                 return try await pass.runIn(pipeline.ws, phase: phase)
             } else {
                 await context.debugLog.pipelinePassCannotRun(pass)
@@ -26,26 +28,32 @@ public struct DiscoverPhase: PipelinePhase {
         }
     }
 
-    mutating public func append(passes phase: DiscoverPhase) {
-        passes.append(contentsOf: phase.passes)
+    public func append(passes phase: DiscoverPhase) async {
+        passes.append(contentsOf: await phase.passes)
     }
 
+    public func lastRunResult(_ value: Bool) {
+        self.lastRunResult = value
+    }
+    
     public init(context: LoadContext) { self.context = context }
 }
 
-public struct LoadPhase: PipelinePhase {
+public actor LoadPhase: PipelinePhase {
     public let name: String = "Load"
     public private(set) var context: LoadContext
     public var config: OutputConfig { context.config }
 
     public var passes: [LoadingPass] = []
-    public var lastRunResult: Bool = true
+    public private(set) var lastRunResult: Bool = true
     public var hasPasses: Bool { passes.count > 0 }
 
     @discardableResult
     public func runIn(pipeline: Pipeline) async throws -> Bool {
-        return try await runIn(pipeline: pipeline, passes: passes) { pass, phase in
-            if try pass.canRunIn(phase: phase) {
+        return try await runIn(pipeline: pipeline, passes: passes) {[weak self] pass, phase in
+            guard let self = self else { return false }
+
+            if try await pass.canRunIn(phase: phase) {
                 return try await pass.runIn(pipeline.ws, phase: phase)
             } else {
                 await context.debugLog.pipelinePassCannotRun(pass)
@@ -54,25 +62,31 @@ public struct LoadPhase: PipelinePhase {
         }
     }
 
-    mutating public func append(passes phase: LoadPhase) {
-        passes.append(contentsOf: phase.passes)
+    public func append(passes phase: LoadPhase) async {
+        passes.append(contentsOf: await phase.passes)
     }
 
+    public func lastRunResult(_ value: Bool) {
+        self.lastRunResult = value
+    }
+    
     public init(context: LoadContext) { self.context = context }
 }
 
-public struct HydratePhase: PipelinePhase {
+public actor HydratePhase: PipelinePhase {
     public let name: String = "Hydrate"
     public private(set) var context: LoadContext
     public var config: OutputConfig { context.config }
 
     public var passes: [HydrationPass] = []
-    public var lastRunResult: Bool = true
+    public private(set) var lastRunResult: Bool = true
 
     @discardableResult
     public func runIn(pipeline: Pipeline) async throws -> Bool {
-        return try await runIn(pipeline: pipeline, passes: passes) { pass, phase in
-            if try pass.canRunIn(phase: phase) {
+        return try await runIn(pipeline: pipeline, passes: passes) {[weak self] pass, phase in
+            guard let self = self else { return false }
+
+            if try await pass.canRunIn(phase: phase) {
                 return try await pass.runIn(phase: phase)
             } else {
                 await context.debugLog.pipelinePassCannotRun(pass)
@@ -81,27 +95,33 @@ public struct HydratePhase: PipelinePhase {
         }
     }
 
-    mutating public func append(passes phase: HydratePhase) {
-        passes.append(contentsOf: phase.passes)
+    public func append(passes phase: HydratePhase) async {
+        passes.append(contentsOf: await phase.passes)
     }
 
+    public func lastRunResult(_ value: Bool) {
+        self.lastRunResult = value
+    }
+    
     public init(context: LoadContext) { self.context = context }
 }
 
-public struct TransformPhase: PipelinePhase {
+public actor TransformPhase: PipelinePhase {
     public let name: String = "Transform"
     public private(set) var context: LoadContext
     public var config: OutputConfig { context.config }
 
     public var passes: [TransformationPass] = []
-    public var lastRunResult: Bool = true
+    public private(set) var lastRunResult: Bool = true
 
     let pluginsPass = PluginsPass()
 
     @discardableResult
     public func runIn(pipeline: Pipeline) async throws -> Bool {
-        return try await runIn(pipeline: pipeline, passes: passes) { pass, phase in
-            if try pass.canRunIn(phase: phase) {
+        return try await runIn(pipeline: pipeline, passes: passes) {[weak self] pass, phase in
+            guard let self = self else { return false }
+
+            if try await pass.canRunIn(phase: phase) {
                 return try await pass.runIn(phase: phase)
             } else {
                 await context.debugLog.pipelinePassCannotRun(pass)
@@ -110,31 +130,37 @@ public struct TransformPhase: PipelinePhase {
         }
     }
 
-    mutating public func append(passes phase: TransformPhase) {
-        passes.append(contentsOf: phase.passes)
+    public func append(passes phase: TransformPhase) async {
+        passes.append(contentsOf: await phase.passes)
     }
 
+    public func lastRunResult(_ value: Bool) {
+        self.lastRunResult = value
+    }
+    
     public init(context: LoadContext) {
         self.context = context
-        append(pass: pluginsPass)
+        passes.append(pluginsPass)
     }
 }
 
-public struct RenderPhase: PipelinePhase {
+public actor RenderPhase: PipelinePhase {
     public let name: String = "Render"
     public private(set) var context: LoadContext
     public var config: OutputConfig { context.config }
 
     public var passes: [RenderingPass] = []
-    public var lastRunResult: Bool = true
+    public private(set) var lastRunResult: Bool = true
 
     @discardableResult
     public func runIn(pipeline: Pipeline) async throws -> Bool {
-        let sandbox = pipeline.ws.newGenerationSandbox()
-        pipeline.generationSandboxes.append(sandbox)
+        let sandbox = await pipeline.ws.newGenerationSandbox()
+        await pipeline.append(sandbox: sandbox)
 
-        return try await runIn(pipeline: pipeline, passes: passes) { pass, phase in
-            if try pass.canRunIn(phase: phase) {
+        return try await runIn(pipeline: pipeline, passes: passes) {[weak self] pass, phase in
+            guard let self = self else { return false }
+
+            if try await pass.canRunIn(phase: phase) {
                 return try await pass.runIn(sandbox, phase: phase)
             } else {
                 await context.debugLog.pipelinePassCannotRun(pass)
@@ -143,25 +169,31 @@ public struct RenderPhase: PipelinePhase {
         }
     }
 
-    mutating public func append(passes phase: RenderPhase) {
-        passes.append(contentsOf: phase.passes)
+    public func append(passes phase: RenderPhase) async {
+        passes.append(contentsOf: await phase.passes)
     }
 
+    public func lastRunResult(_ value: Bool) {
+        self.lastRunResult = value
+    }
+    
     public init(context: LoadContext) { self.context = context }
 }
 
-public struct PersistPhase: PipelinePhase {
+public actor PersistPhase: PipelinePhase {
     public let name: String = "Persist"
     public private(set) var context: LoadContext
     public var config: OutputConfig { context.config }
 
     public var passes: [PersistancePass] = []
-    public var lastRunResult: Bool = true
+    public private(set) var lastRunResult: Bool = true
 
     @discardableResult
     public func runIn(pipeline: Pipeline) async throws -> Bool {
-        return try await runIn(pipeline: pipeline, passes: passes) { pass, phase in
-            if try pass.canRunIn(phase: phase, pipeline: pipeline) {
+        return try await runIn(pipeline: pipeline, passes: passes) {[weak self] pass, phase in
+            guard let self = self else { return false }
+
+            if try await pass.canRunIn(phase: phase, pipeline: pipeline) {
                 return try await pass.runIn(phase: phase, pipeline: pipeline)
             } else {
                 await context.debugLog.pipelinePassCannotRun(pass)
@@ -170,14 +202,18 @@ public struct PersistPhase: PipelinePhase {
         }
     }
 
-    mutating public func append(passes phase: PersistPhase) {
-        passes.append(contentsOf: phase.passes)
+    public func append(passes phase: PersistPhase) async {
+        passes.append(contentsOf: await phase.passes)
     }
 
+    public func lastRunResult(_ value: Bool) {
+        self.lastRunResult = value
+    }
+    
     public init(context: LoadContext) { self.context = context }
 }
 
-public protocol PipelinePhase {
+public protocol PipelinePhase: Actor {
     associatedtype Pass
     
     var name: String { get }
@@ -186,11 +222,12 @@ public protocol PipelinePhase {
 
     var passes: [Pass] { get set }
 
-    var lastRunResult: Bool { get set }
+    var lastRunResult: Bool { get }
+    func lastRunResult(_ value: Bool)
     var hasPasses: Bool { get }
 
-    mutating func append(pass: Pass)
-    mutating func append(passes phase: Self)
+    func append(pass: Pass) async
+    func append(passes phase: Self) async
 
     @discardableResult
     func runIn(pipeline: Pipeline) async throws -> Bool
@@ -206,7 +243,7 @@ extension PipelinePhase {
         }
     }
 
-    public mutating func append(pass: Pass) {
+    public func append(pass: Pass) async {
         passes.append(pass)
     }
 
@@ -216,17 +253,16 @@ extension PipelinePhase {
     public func runIn(
         pipeline: Pipeline, passes: [Pass], runPass: @escaping (Pass, Self) async throws -> Bool
     ) async throws -> Bool {
-        var mutableSelf = self
-        mutableSelf.lastRunResult = true
+        self.lastRunResult(true)
 
         for pass in passes {
-            let success = try await runPass(pass, mutableSelf)
+            let success = try await runPass(pass, self)
             if !success {
-                mutableSelf.lastRunResult = false
+                self.lastRunResult(false)
                 break
             }
         }
 
-        return mutableSelf.lastRunResult
+        return self.lastRunResult
     }
 }

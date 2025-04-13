@@ -6,7 +6,7 @@
 
 import Foundation
 
-public protocol PipelinePass {
+public protocol PipelinePass: Actor {
 }
 
 public protocol DiscoveringPass : PipelinePass {

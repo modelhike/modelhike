@@ -6,14 +6,14 @@
 
 import Foundation
 
-public protocol PersistableFolder : AnyObject, CustomDebugStringConvertible {
+public protocol PersistableFolder : AnyObject, SendableDebugStringConvertible, Sendable {
     var foldername: String { get }
     var newFoldername: String { get }
     var outputFolder: OutputFolder? { get set }
-    func persist() throws
+    func persist() async throws
 }
 
-public class OutputFolder : CustomDebugStringConvertible {
+public actor OutputFolder : CustomDebugStringConvertible {
     internal private(set) var folder: LocalFolder
     public var subFolders: [OutputFolder] = []
     public private(set) var items: [OutputFile] = []

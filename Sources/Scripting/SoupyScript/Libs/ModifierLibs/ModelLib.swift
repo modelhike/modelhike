@@ -16,7 +16,7 @@ public struct ModelLib {
     }
 
     public static func getObjectWithName(sandbox: Sandbox) async -> Modifier {
-        return CreateModifier.withoutParams("get-object") {
+        return await CreateModifier.withoutParams("get-object") {
             (objectName: String, pInfo: ParsedInfo) throws -> CodeObject_Wrap? in
 
             if let obj = await sandbox.model.types.get(for: objectName) {
@@ -52,10 +52,10 @@ public struct ModelLib {
                let entity = await sandbox.model.types.get(for: entityName)
             {
                 let apis = await entity.getAPIs()
-                return apis.compactMap({ API_Wrap($0) })
+                return await apis.snapshot().compactMap({ API_Wrap($0) })
             } else if let objWrap = entity as? CodeObject_Wrap {
                 let apis = await objWrap.item.getAPIs()
-                return apis.compactMap({ API_Wrap($0) })
+                return await apis.snapshot().compactMap({ API_Wrap($0) })
             } else {
                 return []
             }

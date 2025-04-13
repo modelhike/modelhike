@@ -21,7 +21,7 @@ public protocol LineParser : AnyObject, Actor {
     var linesRemaining: Bool {get}
     
     func parseLinesTill(lineHasOnly txt: String) async -> [String]
-    func parse(till endKeyWord: String?, level: Int, lineHandler: ((_ pctx: ParsedInfo, _ stmtWord: String?) throws -> ())) async throws
+    func parse(till endKeyWord: String?, level: Int, lineHandler: ((_ pctx: ParsedInfo, _ stmtWord: String?) async throws -> ())) async throws
     
     func nextLine() -> String
     func currentLine() -> String
@@ -74,7 +74,7 @@ public actor GenericLineParser<T> : LineParser where T: Context {
                     
             if isStatementsPrefixedWithKeyword {
                 guard let secondWord = pInfo.secondWord else {
-                    pInfo.setFirstWord("")
+                    pInfo.firstWord("")
                     try lineHandler(pInfo, nil)
                     
                     if await !miscLineReadHandling() {break}

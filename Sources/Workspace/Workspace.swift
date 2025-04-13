@@ -6,45 +6,44 @@
 
 import Foundation
 
-open class Workspace {
+public actor Workspace {
     public internal(set) var context: LoadContext
-    public internal(set) var config: OutputConfig {
-        didSet {
-            self.context.config = config
-            self.context.events = config.events
-        }
+    public var config: OutputConfig { get async { await self.context.config }}
+    
+    public func config(_ value: OutputConfig) async {
+        await self.context.config(value)
     }
     
     var model: AppModel { context.model }
     public internal(set) var isModelsLoaded: Bool {
-        get { model.isModelsLoaded }
+        get async { await model.isModelsLoaded }
         set { model.isModelsLoaded = newValue }
     }
     
     public func newGenerationSandbox() async -> GenerationSandbox {
         let loadedVars = await context.variables
-        let sandbox = CodeGenerationSandbox(model: self.model, config: config)
+        let sandbox = await CodeGenerationSandbox(model: self.model, config: config)
         await sandbox.context.append(variables: loadedVars)
         
         return sandbox
     }
     
-    public func newStringSandbox() -> Sandbox {
-        let sandbox = CodeGenerationSandbox(model: self.model, config: config)
+    public func newStringSandbox() async -> Sandbox {
+        let sandbox = await CodeGenerationSandbox(model: self.model, config: config)
         return sandbox
     }
     
-    public func render(string input: String, data: [String : Any]) throws -> String? {
-        let sandbox = newStringSandbox()
+    public func render(string input: String, data: [String : Sendable]) async throws -> String? {
+        let sandbox = await newStringSandbox()
 
         let rendering = try sandbox.render(string: input, data: data)
         return rendering?.trim()
     }
         
-    internal init() {
+    internal init() async {
         let config = PipelineConfig()
         
-        self.config = config
+        await self.config(config)
         self.context = LoadContext(config: config)
     }
 }

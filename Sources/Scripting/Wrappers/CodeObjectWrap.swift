@@ -70,7 +70,8 @@ public actor CodeObject_Wrap: ObjectWrapper {
             property: propname, in: item, with: pInfo)
         {
             //chk for the object property using reflection
-            return value
+            //handle whether it is Sendable here itself
+            return try CheckSendable(propname, value: value, pInfo: pInfo)
         } else {
             throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
         }

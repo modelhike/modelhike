@@ -9,32 +9,33 @@ public struct PassDownAndProcessAnnotationsPass  : LoadingPass {
     public func runIn(_ ws: Workspace, phase: LoadPhase) async throws -> Bool {
         
         //pass the annotations of the component to its child items
-        ws.model.containers.forEach { container in
+        await ws.model.containers.forEach { container in
             
-            for type in container.types {
-                type.annotations.append(contentsOf: container.annotations)
+            for type in await container.types {
+                await type.annotations.append(contentsOf: container.annotations)
             }
             
         }
         
         //process annotation for types
-        try ws.model.containers.forEach { container in
+        try await ws.model.containers.forEach { container in
             
-            for type in container.types {
+            for type in await container.types {
                 
-                for annotation in type.annotations.annotationsList {
-                    try AnnotationProcessor.process(annotation, for: type)
+                for annotation in await type.annotations.annotationsList {
+                    try await AnnotationProcessor.process(annotation, for: type)
                 }
                 
                 //after processing, if the type has not apis,
                 //if it is not marked with "@no-apis" annotation,
                 //add CRUD apis by default
-                if type.hasNoAPIs() && !type.annotations.has(AnnotationConstants.dontGenerateApis) {
-                    type.appendAPI(.create)
-                    type.appendAPI(.update)
-                    type.appendAPI(.delete)
-                    type.appendAPI(.getById)
-                    type.appendAPI(.list)
+                let dontGenerateAPIs = await type.annotations.has(AnnotationConstants.dontGenerateApis)
+                if await type.hasNoAPIs() && !dontGenerateAPIs {
+                    await type.appendAPI(.create)
+                    await type.appendAPI(.update)
+                    await type.appendAPI(.delete)
+                    await type.appendAPI(.getById)
+                    await type.appendAPI(.list)
                 }
             }
         }

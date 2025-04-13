@@ -6,17 +6,17 @@
 
 import Foundation
 
-open class RenderedFolder : PersistableFolder {    
+public actor RenderedFolder : PersistableFolder {    
     private let templateSoup: TemplateSoup
     public let foldername: String
     public let newFoldername: String
     public var outputFolder: OutputFolder?
     let pInfo: ParsedInfo
     
-    public func persist() throws {
+    public func persist() async throws {
         if let ctx = pInfo.ctx as? GenerationContext {
             if let outputFolder {
-                try outputFolder.persist(with: ctx)
+                try await outputFolder.persist(with: ctx)
             } else {
                 fatalError(#function + ": output path not set!")
             }
@@ -33,13 +33,13 @@ open class RenderedFolder : PersistableFolder {
         }
     }
     
-    public var debugDescription: String {
+    public var debugDescription: String { get async {
         if let outputFolder {
             return outputFolder.debugDescription + " : \(foldername) -> \(newFoldername)"
         } else {
             return "RenderedFolder: \(foldername) -> \(newFoldername)"
         }
-    }
+    }}
     
     public init(foldername: String, templateSoup: TemplateSoup, to newFoldername: String, pInfo: ParsedInfo) {
         self.templateSoup = templateSoup

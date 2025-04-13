@@ -13,7 +13,7 @@ public actor LoadContext : Context {
     public private(set) var objManager = ObjectAttributeManager()
 
     public var currentState = ContextState()
-    public let config : OutputConfig
+    public private(set) var config : OutputConfig
     
     //Expression Evaluation
     public private(set) var evaluator = ExpressionEvaluator()
@@ -23,6 +23,11 @@ public actor LoadContext : Context {
     /// If `pushSnapshot` is called, it saves a snapshot of the current context state to a stack
     /// When `popSnapshot` is called, it discards any  changes after the last snapshot, by restoring latst snapshot
     public private(set) var snapshotStack = SnapshotStack()
+    
+    public func config(_ value: OutputConfig) {
+        self.config = value
+        self.events = value.events
+    }
     
     public init(config: OutputConfig) {
         self.config = config

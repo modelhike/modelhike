@@ -18,6 +18,8 @@ public protocol Context : AnyObject, Actor {
     var objManager: ObjectAttributeManager {get}
     var evaluator: ExpressionEvaluator {get}
 
+    func config(_ value: OutputConfig)
+    
     func evaluate(expression: String, with pInfo: ParsedInfo) async throws -> Sendable?
     func evaluateCondition(expression: String, with pInfo: ParsedInfo) async throws -> Bool
 }

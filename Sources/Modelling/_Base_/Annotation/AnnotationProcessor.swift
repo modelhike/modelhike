@@ -7,7 +7,7 @@
 import Foundation
 
 public enum AnnotationProcessor {
-    public static func process(_ annotation: any Annotation, for obj: HasAnnotations) async throws {
+    public static func process(_ annotation: any Annotation, for obj: HasAttributes_Actor) async throws {
         switch annotation.name {
             case AnnotationConstants.listApi:
                 if let cls = obj as? CodeObject {

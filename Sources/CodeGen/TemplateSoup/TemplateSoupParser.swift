@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class TemplateSoupParser: ScriptParser {
+public actor TemplateSoupParser: ScriptParser {
     public var lineParser: any LineParser
     let ctx: GenerationContext
     public var context: Context { ctx }
@@ -17,46 +17,47 @@ public class TemplateSoupParser: ScriptParser {
     public func parseLines(
         startingFrom startKeyword: String?, till endKeyWord: String?,
         to container: any SoupyScriptStmtContainer, level: Int, with ctx: Context
-    ) throws {
+    ) async throws {
 
-        ctx.debugLog.parseLines(
+        await ctx.debugLog.parseLines(
             startingFrom: startKeyword, till: endKeyWord, line: lineParser.currentLine(),
             lineNo: lineParser.curLineNoForDisplay)
 
         if startKeyword != nil {  //parsing a block and not the full file
-            lineParser.incrementLineNo()
+            await lineParser.incrementLineNo()
         }
 
-        try lineParser.parse(till: endKeyWord, level: level) { pInfo, stmtWord in
+        try await lineParser.parse(till: endKeyWord, level: level) {[weak self] pInfo, stmtWord in
+            guard let self = self else { return }
 
             guard pInfo.firstWord == TemplateConstants.stmtKeyWord,
                 let stmtWord = stmtWord, stmtWord.trim().isNotEmpty
             else {
 
-                try treatAsContent(pInfo, level: level, container: container)
+                try await treatAsContent(pInfo, level: level, container: container)
                 return
             }
 
-            try handleParsedLine(stmtWord: stmtWord, pInfo: pInfo, container: container)
+            try await handleParsedLine(stmtWord: stmtWord, pInfo: pInfo, container: container)
         }
     }
 
-    public func parse(string: String, identifier: String = "") throws
+    public func parse(string: String, identifier: String = "") async throws
         -> SoupyScriptStmtContainerList?
     {
         self.lineParser = LineParserDuringGeneration(
             string: string, identifier: identifier, isStatementsPrefixedWithKeyword: true, with: ctx
         )
-        return try parseContainers()
+        return try await parseContainers()
     }
 
-    public func parse(file: LocalFile) throws -> SoupyScriptStmtContainerList? {
+    public func parse(file: LocalFile) async throws -> SoupyScriptStmtContainerList? {
         guard
             let lineParser = LineParserDuringGeneration(
                 file: file, isStatementsPrefixedWithKeyword: true, with: ctx)
         else { return nil }
         self.lineParser = lineParser
-        return try parseContainers(containerName: file.pathString)
+        return try await parseContainers(containerName: file.pathString)
     }
 
     public init(lineParser: LineParserDuringGeneration, context: GenerationContext) {

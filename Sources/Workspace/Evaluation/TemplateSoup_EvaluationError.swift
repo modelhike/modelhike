@@ -15,7 +15,8 @@ public enum TemplateSoup_EvaluationError: ErrorWithMessageAndParsedInfo {
     case templateReadingError(String, ParsedInfo)
     case scriptFileDoesNotExist(String, ParsedInfo)
     case scriptFileReadingError(String, ParsedInfo)
-    
+    case nonSendablePropertyValue(String, ParsedInfo)
+
     public var info: String {
         switch (self) {
         case .workingDirectoryNotSet(_) : return "Working Directory not set!!!"
@@ -25,6 +26,8 @@ public enum TemplateSoup_EvaluationError: ErrorWithMessageAndParsedInfo {
         case .scriptFileReadingError(let scriptName, _) : return "ScriptFile '\(scriptName)' reading error!!!"
         case .objectNotFound(let obj, _) :  return "object: \(obj) not found"
         
+        case .nonSendablePropertyValue(let propname, _) :  return "property: \(propname) has non-sendable value"
+
         case .unIdentifiedStmt(let pInfo) :
             var str = "unidentified stmt >>  \(pInfo.line)"
 
@@ -55,6 +58,7 @@ public enum TemplateSoup_EvaluationError: ErrorWithMessageAndParsedInfo {
         case .scriptFileReadingError(_, let pInfo) : pInfo
         case .objectNotFound(_, let pInfo) : pInfo
         case .unIdentifiedStmt(let pInfo) : pInfo
+        case .nonSendablePropertyValue(_, let pInfo) : pInfo
         case .errorInExpression(_, let pInfo) : pInfo
         }
     }

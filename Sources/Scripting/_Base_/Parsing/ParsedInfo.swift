@@ -118,8 +118,12 @@ public struct ParsedInfo : Sendable {
         }
     }
     
-    public mutating func setFirstWord(_ firstWord: String) {
+    public mutating func firstWord(_ firstWord: String) {
         self.firstWord = firstWord
+    }
+    
+    public mutating func removeLine(after word: String) {
+        self.line = line.remainingLine(after: word)
     }
     
     public mutating func setLineInfo(line: String, lineNo: Int) {
