@@ -6,7 +6,7 @@
 
 import Foundation
 
-open class OutputDocumentFile : OutputFile, RenderableFile {
+public struct OutputDocumentFile : OutputFile, RenderableFile {
     public let filename: String
     private let doc: RenderableDocument
     private let renderConfig: RenderConfig
@@ -16,7 +16,7 @@ open class OutputDocumentFile : OutputFile, RenderableFile {
     
     public let fileType : InputFileType
 
-    public func render() throws {
+    public mutating func render() throws {
         self.contents = doc.render(renderConfig)
     }
     
@@ -49,7 +49,7 @@ open class OutputDocumentFile : OutputFile, RenderableFile {
         self.fileType = type
     }
     
-    public enum InputFileType {
+    public enum InputFileType: Sendable {
         case generic, content, markup, asset
     }
 }

@@ -6,11 +6,11 @@
 
 import Foundation
 
-public actor RenderedFolder : PersistableFolder {    
+public actor RenderedFolder : PersistableFolder {
     private let templateSoup: TemplateSoup
     public let foldername: String
     public let newFoldername: String
-    public var outputFolder: OutputFolder?
+    public private(set) var outputFolder: OutputFolder?
     let pInfo: ParsedInfo
     
     public func persist() async throws {
@@ -33,9 +33,13 @@ public actor RenderedFolder : PersistableFolder {
         }
     }
     
+    public func outputFolder(baseFolder: LocalFolder) {
+        outputFolder = OutputFolder(baseFolder / self.newFoldername)
+    }
+    
     public var debugDescription: String { get async {
         if let outputFolder {
-            return outputFolder.debugDescription + " : \(foldername) -> \(newFoldername)"
+            return await outputFolder.debugDescription + " : \(foldername) -> \(newFoldername)"
         } else {
             return "RenderedFolder: \(foldername) -> \(newFoldername)"
         }

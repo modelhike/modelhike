@@ -8,8 +8,8 @@ import Foundation
 
 public actor ForLoop_Wrap : DynamicMemberLookup, SendableDebugStringConvertible {
     public private(set) var item: ForStmt
-    public var FIRST_IN_LOOP = false
-    public var LAST_IN_LOOP = false
+    public private(set) var FIRST_IN_LOOP = false
+    public private(set) var LAST_IN_LOOP = false
     
     public func getValueOf(property propname: String, with pInfo: ParsedInfo) async throws -> Sendable? {
         let value: Sendable = switch propname {
@@ -21,6 +21,14 @@ public actor ForLoop_Wrap : DynamicMemberLookup, SendableDebugStringConvertible 
         }
         
         return value
+    }
+    
+    public func FIRST_IN_LOOP(_ value: Bool) {
+        self.FIRST_IN_LOOP = value
+    }
+    
+    public func LAST_IN_LOOP(_ value: Bool) {
+        self.LAST_IN_LOOP = value
     }
     
     public var debugDescription: String { get async {

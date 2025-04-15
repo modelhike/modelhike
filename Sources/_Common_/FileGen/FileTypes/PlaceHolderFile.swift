@@ -6,7 +6,7 @@
 
 import Foundation
 
-open class PlaceHolderFile : OutputFile {
+public struct PlaceHolderFile : OutputFile {
     private let oldFilename: String
     public let filename: String
     private let repo: InputFileRepository
@@ -15,7 +15,7 @@ open class PlaceHolderFile : OutputFile {
     let pInfo: ParsedInfo
     var contents: String? = nil
     
-    public func render() throws {
+    public mutating func render() throws {
         let data : [String: Sendable] = [:]
         
         if let contents = try renderer.renderTemplate(fileName: self.oldFilename, data: data, with: pInfo) {

@@ -6,7 +6,7 @@
 
 import Foundation
 
-open class FileToCopy : CopyableFile {
+public struct FileToCopy : CopyableFile {
     public var outputPath: LocalPath?
     
     public var filename: String { outFile.filename }

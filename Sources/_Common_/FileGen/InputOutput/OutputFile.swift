@@ -8,7 +8,7 @@ import Foundation
 
 public protocol RenderableFile {
     var filename: String {get}
-    func render() throws
+    mutating func render() throws
 }
 
 public protocol PersistableFile {
@@ -16,7 +16,7 @@ public protocol PersistableFile {
     func persist() throws
 }
 
-public protocol OutputFile : AnyObject, PersistableFile, CustomDebugStringConvertible {
+public protocol OutputFile : Sendable, PersistableFile, CustomDebugStringConvertible { //AnyObject
     var outputPath: LocalPath? {get set}
 }
 

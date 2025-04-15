@@ -6,16 +6,16 @@
 
 import Foundation
 
-open class TemplateRenderedFile : OutputFile, RenderableFile {
+public struct TemplateRenderedFile : OutputFile, RenderableFile {
     public let filename: String
     private let template: String?
     public var outputPath: LocalPath?
-    private let data: [String: Any]?
+    private let data: [String: Sendable]?
     private let renderer: TemplateRenderer?
     private let pInfo: ParsedInfo
     var contents: String? = nil
 
-    public func render() throws {
+    public mutating func render() throws {
         guard let renderer = renderer, let template = template else { return }
         
         if let data = data {
@@ -73,7 +73,7 @@ open class TemplateRenderedFile : OutputFile, RenderableFile {
 //        self.template = nil
 //    }
     
-        public init(filename: String, template: String, data: [String: Any]? = nil, renderer: TemplateRenderer, pInfo: ParsedInfo) {
+    public init(filename: String, template: String, data: [String: Sendable]? = nil, renderer: TemplateRenderer, pInfo: ParsedInfo) {
             self.filename = filename
             self.template = template
             self.data = data

@@ -6,7 +6,7 @@
 
 import Foundation
 
-open class StaticFile : OutputFile {
+public struct StaticFile : OutputFile {
     private let oldFilename: String
     public let filename: String
 
@@ -16,7 +16,7 @@ open class StaticFile : OutputFile {
     var contents: String? = nil
     var data: Data? = nil
 
-    public func render() throws {
+    public mutating func render() throws {
         guard let repo = repo else { return }
         
         self.contents = try repo.readTextContents(filename: self.oldFilename, with: pInfo)

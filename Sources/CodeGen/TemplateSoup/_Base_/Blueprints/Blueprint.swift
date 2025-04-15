@@ -13,7 +13,7 @@ public protocol Blueprint : InputFileRepository {
     func loadScriptFile(fileName: String, with pInfo: ParsedInfo) throws -> Script
 }
 
-public protocol InputFileRepository {
+public protocol InputFileRepository: Sendable {
     func copyFiles(foldername: String, to folder: OutputFolder, with pInfo: ParsedInfo) throws
     func renderFiles(foldername: String, to folder: OutputFolder, using templateSoup: TemplateSoup, with pInfo: ParsedInfo) throws
 
