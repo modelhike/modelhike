@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class UnIdentifiedStmt: TemplateItem, CustomDebugStringConvertible {
+public struct UnIdentifiedStmt: TemplateItem, CustomDebugStringConvertible {
     public private(set) var pInfo: ParsedInfo
 
     public func execute(with ctx: Context) throws -> String? {

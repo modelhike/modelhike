@@ -7,12 +7,15 @@
 import Foundation
 import RegexBuilder
 
-public class CopyFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
+public struct CopyFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
+    public var state: LineTemplateStmtState
+    
     static let START_KEYWORD = "copy-folder"
 
     public private(set) var FromFolder: String = ""
     public private(set) var ToFolder: String = ""
     
+    nonisolated(unsafe)
     let stmtRegex = Regex {
         START_KEYWORD
         
@@ -33,7 +36,7 @@ public class CopyFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
         CommonRegEx.comments
     }
     
-    override func matchLine(line: String) throws -> Bool {
+    public mutating func matchLine(line: String) throws -> Bool {
         guard let match = line.wholeMatch(of: stmtRegex ) else { return false }
         
         let (_, fromValue, toValue) = match.output
@@ -44,33 +47,33 @@ public class CopyFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
         return true
     }
     
-    public override func execute(with ctx: Context) throws -> String? {
+    public func execute(with ctx: Context) async throws -> String? {
         guard let context = ctx as? GenerationContext else { return nil }
         guard FromFolder.isNotEmpty else { return nil }
         
-        if ctx.workingDirectoryString.isEmpty {
+        if await ctx.workingDirectoryString.isEmpty {
             throw TemplateSoup_EvaluationError.workingDirectoryNotSet(pInfo)
         }
         
-        guard let fromFolder = try? ctx.evaluate(value: FromFolder, with: pInfo) as? String
+        guard let fromFolder = try? await ctx.evaluate(value: FromFolder, with: pInfo) as? String
         else {
             throw TemplateSoup_ParsingError.invalidExpression_VariableOrObjPropNotFound(FromFolder, pInfo)
         }
         
-        try context.fileGenerator.setRelativePath(ctx.workingDirectoryString)
+        try await context.fileGenerator.setRelativePath(ctx.workingDirectoryString)
         
         if ToFolder.isEmpty {
             let folderName = fromFolder
 
-            ctx.debugLog.copyingFolder(folderName)
-            let _ = try context.fileGenerator.copyFolder(folderName, with: pInfo)
+            await ctx.debugLog.copyingFolder(folderName)
+            let _ = try await context.fileGenerator.copyFolder(folderName, with: pInfo)
             //folder copied successfully
         } else {
-            guard let toFolder = try? ctx.evaluate(value: ToFolder, with: pInfo) as? String
+            guard let toFolder = try? await ctx.evaluate(value: ToFolder, with: pInfo) as? String
                                                                         else { return nil }
             
-            ctx.debugLog.copyingFolder(fromFolder, to: toFolder)
-            let _ = try context.fileGenerator.copyFolder(fromFolder, to: toFolder, with: pInfo)
+            await ctx.debugLog.copyingFolder(fromFolder, to: toFolder)
+            let _ = try await context.fileGenerator.copyFolder(fromFolder, to: toFolder, with: pInfo)
             //folder copied successfully
         }
         
@@ -89,9 +92,9 @@ public class CopyFolderStmt: LineTemplateStmt, CustomDebugStringConvertible {
     }
     
     public init(_ pInfo: ParsedInfo) {
-        super.init(keyword: Self.START_KEYWORD, pInfo: pInfo)
+        state = LineTemplateStmtState(keyword: Self.START_KEYWORD, pInfo: pInfo)
     }
     
-    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) {pInfo in CopyFolderStmt(pInfo)}
+    static let register = LineTemplateStmtConfig(keyword: START_KEYWORD) {pInfo in CopyFolderStmt(pInfo)}
 }
 

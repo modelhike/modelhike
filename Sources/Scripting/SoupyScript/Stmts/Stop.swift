@@ -7,11 +7,14 @@
 import Foundation
 import RegexBuilder
 
-public class StopRenderingCurrentTemplateStmt: LineTemplateStmt, CustomDebugStringConvertible {
+public struct StopRenderingCurrentTemplateStmt: LineTemplateStmt, CustomDebugStringConvertible {
+    public var state: LineTemplateStmtState
+    
     static let START_KEYWORD = "stop-render"
 
     public private(set) var Expression: String = ""
     
+    nonisolated(unsafe)
     let stmtRegex = Regex {
         START_KEYWORD
         ZeroOrMore(.whitespace)
@@ -19,7 +22,7 @@ public class StopRenderingCurrentTemplateStmt: LineTemplateStmt, CustomDebugStri
         CommonRegEx.comments
     }
     
-    override func matchLine(line: String) throws -> Bool {
+    public mutating func matchLine(line: String) throws -> Bool {
         guard let match = line.wholeMatch(of: stmtRegex ) else { return false }
         
         let (_) = match.output
@@ -27,7 +30,7 @@ public class StopRenderingCurrentTemplateStmt: LineTemplateStmt, CustomDebugStri
         return true
     }
     
-    public override func execute(with ctx: Context) throws -> String? {
+    public func execute(with ctx: Context) throws -> String? {
         throw ParserDirective.stopRenderingCurrentFile(pInfo.identifier, pInfo)
     }
     
@@ -41,10 +44,10 @@ public class StopRenderingCurrentTemplateStmt: LineTemplateStmt, CustomDebugStri
     }
     
     public init(_ pInfo: ParsedInfo) {
-        super.init(keyword: Self.START_KEYWORD, pInfo: pInfo)
+        state=LineTemplateStmtState(keyword: Self.START_KEYWORD, pInfo: pInfo)
     }
     
-    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) {pInfo in StopRenderingCurrentTemplateStmt(pInfo) }
+    static let register = LineTemplateStmtConfig(keyword: START_KEYWORD) {pInfo in StopRenderingCurrentTemplateStmt(pInfo) }
 }
 
 
