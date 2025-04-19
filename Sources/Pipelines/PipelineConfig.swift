@@ -24,19 +24,7 @@ public struct PipelineConfig : OutputConfig {
     public var flags = ContextDebugFlags()
     public var errorOutput = ErrorOutputOptions()
     
-    
-    public var localBlueprintsPath: LocalPath? {
-        didSet {
-            if let path = self.localBlueprintsPath {
-                blueprints.add(LocalFileBlueprintFinder(path: path))
-            }
-        }
-    }
-    
-    public var blueprints = BlueprintAggregator()
-    public func blueprint(named name: String, with pInfo: ParsedInfo) throws -> any Blueprint {
-        return try blueprints.blueprint(named: name, with: pInfo)
-    }
+    public var localBlueprintsPath: LocalPath?
     
     public init() {}
 }
@@ -76,6 +64,4 @@ public protocol OutputConfig: Sendable {
     var errorOutput: ErrorOutputOptions {get set}
     
     var localBlueprintsPath: LocalPath? {get set}
-    var blueprints: BlueprintAggregator {get set}
-    func blueprint(named name: String, with pInfo: ParsedInfo) throws -> any Blueprint
 }

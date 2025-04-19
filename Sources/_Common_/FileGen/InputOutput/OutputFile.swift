@@ -8,12 +8,12 @@ import Foundation
 
 public protocol RenderableFile {
     var filename: String {get}
-    mutating func render() throws
+    mutating func render() async throws
 }
 
 public protocol PersistableFile {
     var filename: String {get}
-    func persist() throws
+    func persist() async throws
 }
 
 public protocol OutputFile : Sendable, PersistableFile, CustomDebugStringConvertible { //AnyObject

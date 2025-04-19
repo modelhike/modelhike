@@ -47,6 +47,10 @@ public struct CallStackItem : Sendable {
 public actor CallStack : @preconcurrency Sequence {
     private var stack: [CallStackable] = []
     
+    public func snapshot() -> [CallStackable] {
+        return stack
+    }
+    
     public func push(_ info: CallStackable) {
         stack.append(info)
     }

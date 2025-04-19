@@ -27,13 +27,23 @@ public actor GenerationContext: Context {
     public private(set) var snapshotStack = SnapshotStack()
 
     // File Generation
-    public var fileGenerator: FileGeneratorProtocol!
+    public private(set) var fileGenerator: FileGeneratorProtocol!
     var generatedFiles: [String] = []
     var generatedFolders: [String] = []
 
     public func config(_ value: OutputConfig) {
         self.config = value
         self.events = value.events
+    }
+    
+    public private(set) var blueprints: BlueprintAggregator
+    
+    public func blueprint(named name: String, with pInfo: ParsedInfo) async throws -> any Blueprint {
+        return try await blueprints.blueprint(named: name, with: pInfo)
+    }
+    
+    public func fileGenerator(_ value: FileGeneratorProtocol) {
+        self.fileGenerator = value
     }
     
     public func addGenerated(filePath: String) {
@@ -77,10 +87,11 @@ public actor GenerationContext: Context {
         self.events = config.events
         self.debugLog.flags = config.flags
         self.model = model
+        self.blueprints = BlueprintAggregator(config: config)
     }
 
-    public convenience init(model: AppModel, config: OutputConfig, data: StringDictionary) {
+    public init(model: AppModel, config: OutputConfig, data: StringDictionary) async {
         self.init(model: model, config: config)
-        self.replace(variables: data)
+        await self.replace(variables: data)
     }
 }

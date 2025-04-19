@@ -7,7 +7,7 @@
 import Foundation
 
 public struct ContextDebugLog: Sendable {
-    public var stack = CallStack()
+    public let stack = CallStack()
     public var flags = ContextDebugFlags()
     
     public func parseLines(startingFrom startKeyword : String?, till endKeyWord: String?, line: String?, lineNo : Int ) {
@@ -100,9 +100,9 @@ public struct ContextDebugLog: Sendable {
         }
     }
     
-    public func printParsedTree(for containers: SoupyScriptStmtContainerList) {
+    public func printParsedTree(for containers: SoupyScriptStmtContainerList) async {
         if flags.printParsedTree {
-            print(containers.debugDescription)
+            await print(containers.debugDescription)
         }
     }
     

@@ -195,6 +195,17 @@ extension Array {
             return false
         }
     }
+
+    @inlinable
+    public func filter(_ isIncluded: (Element) async throws -> Bool) async rethrows -> [Element] {
+        var list: [Element] = []
+        for element in self {
+            if try await isIncluded(element) {
+                list.append(element)
+            }
+        }
+        return list
+    }
 }
 
 

@@ -10,7 +10,7 @@ public protocol LineTemplateStmt: FileTemplateStatement, SendableDebugStringConv
     var state: LineTemplateStmtState { get }
     
     func execute(with ctx: Context) async throws -> String?
-    mutating func matchLine(line: String) throws -> Bool
+    mutating func matchLine(line: String) async throws -> Bool
 }
 
 extension LineTemplateStmt {
@@ -19,7 +19,7 @@ extension LineTemplateStmt {
 
     mutating func parseStmtLine() async throws {
         let line = await pInfo.parser.currentLineWithoutStmtKeyword()
-        let matched = try matchLine(line: line)
+        let matched = try await matchLine(line: line)
         
         if !matched {
             throw TemplateSoup_ParsingError.invalidStmt(pInfo)

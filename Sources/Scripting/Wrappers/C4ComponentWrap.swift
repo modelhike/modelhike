@@ -53,27 +53,33 @@ public actor C4Component_Wrap : ObjectWrapper {
     
     public var pushDataApis : [API_Wrap] { get async {
         await self.apis.compactMap({
-            if ($0.item.type == .pushData ||
-                $0.item.type == .pushDataList
+            let itemtype = await $0.item.type
+            
+            if (itemtype == .pushData ||
+                itemtype == .pushDataList
             ) { return $0 } else {return nil}    })
     }}
     
     public var mutationApis : [API_Wrap] { get async {
         await self.apis.compactMap({
-            if ($0.item.type == .create ||
-                $0.item.type == .update ||
-                $0.item.type == .delete ||
-                $0.item.type == .mutationUsingCustomLogic
+            let itemtype = await $0.item.type
+            
+            if (itemtype == .create ||
+                itemtype == .update ||
+                itemtype == .delete ||
+                itemtype == .mutationUsingCustomLogic
             ) { return $0 } else {return nil}
         })
     }}
     
     public var queryApis : [API_Wrap] { get async {
         await self.apis.compactMap({
-            if ($0.item.type == .getById ||
-                $0.item.type == .getByCustomProperties ||
-                $0.item.type == .list ||
-                $0.item.type == .listByCustomProperties
+            let itemtype = await $0.item.type
+
+            if (itemtype == .getById ||
+                itemtype == .getByCustomProperties ||
+                itemtype == .list ||
+                itemtype == .listByCustomProperties
             ) { return $0 } else {return nil}    })
     }}
     

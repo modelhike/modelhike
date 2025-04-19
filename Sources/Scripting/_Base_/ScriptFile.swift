@@ -6,7 +6,7 @@
 
 import Foundation
 
-public protocol Script: StringConvertible {
+public protocol Script: Sendable, StringConvertible {
     var name: String { get }
 }
 

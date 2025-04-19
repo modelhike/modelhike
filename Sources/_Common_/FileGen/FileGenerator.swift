@@ -8,7 +8,7 @@ import Foundation
 
 public protocol FileGeneratorProtocol: Actor {
     var base_generation_dir: OutputFolder {get}
-    func setRelativePath(_ path: String) throws
+    func setRelativePath(_ path: String) async throws
     
     func generateFile(_ filename: String, template: String, with pInfo: ParsedInfo) async throws -> TemplateRenderedFile?
     func generateFileWithData(_ filename: String, template: String, data: [String: Sendable], with pInfo: ParsedInfo) async throws -> TemplateRenderedFile?

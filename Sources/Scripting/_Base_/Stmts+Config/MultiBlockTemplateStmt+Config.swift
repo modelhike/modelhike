@@ -6,7 +6,7 @@
 
 import Foundation
 
-public protocol MultiBlockTemplateStmt : FileTemplateStatement {
+public protocol MultiBlockTemplateStmt : SendableDebugStringConvertible, FileTemplateStatement {
     var state: MutipleBlockTemplateStmtState { get }
     
     func execute(with ctx: Context) async throws -> String?
@@ -54,7 +54,7 @@ extension MultiBlockTemplateStmt {
                     
                     await ctx.debugLog.multiBlockDetected(keyWord: block.firstWord, pInfo: unIdentified.pInfo)
                     
-                    container = block.container
+                    container = await block.container
                     await state.addBlock(block)
                 } else {
                     await ctx.debugLog.multiBlockDetectFailed(pInfo: unIdentified.pInfo)
@@ -99,11 +99,27 @@ public struct MultiBlockTemplateStmtConfig<T>: FileTemplateStmtConfig, TemplateI
     }
 }
 
-public actor PartOfMultiBlockContainer {
-    let container: GenericStmtsContainer
+public protocol PartOfMultiBlockContainer: Sendable {
+    var firstWord: String { get }
+    var container: GenericStmtsContainer { get async }
+    var pInfo: ParsedInfo { get async }
+    func execute(with ctx: Context) async throws -> String?
+}
+
+public actor Generic_PartOfMultiBlockContainer: PartOfMultiBlockContainer {
+    public var container: GenericStmtsContainer
     public private(set) var pInfo: ParsedInfo
     public var lineNo: Int { return pInfo.lineNo }
-    let firstWord: String
+    public let firstWord: String
+    public var isEmpty: Bool { get async { await container.isEmpty }}
+
+    public func execute(with ctx: Context) async throws -> String? {
+        return try await container.execute(with: ctx)
+    }
+    
+    public func debugStringForChildren() async -> String {
+        return await container.debugStringForChildren()
+    }
     
     public init(firstWord: String, pInfo: ParsedInfo) {
         self.firstWord = firstWord

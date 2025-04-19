@@ -18,8 +18,8 @@ public actor C4Container : ArtifactHolder {
     public var containerType: ContainerKind
 
     public var components = C4ComponentList()
-    public internal(set) var unresolvedMembers: [ContainerModuleMember] = []
-    public internal(set) var methods: [MethodObject] = []
+    public private(set) var unresolvedMembers: [ContainerModuleMember] = []
+    public private(set) var methods: [MethodObject] = []
     
     public var types : [CodeObject] {
         get async {
@@ -43,8 +43,9 @@ public actor C4Container : ArtifactHolder {
         unresolvedMembers.append(item)
     }
     
-    public func remove(unResolved item: ContainerModuleMember) {
-        unresolvedMembers.removeAll(where: { $0.name == item.name })
+    public func remove(unResolved item: ContainerModuleMember) async {
+        let targetName = item.name
+        unresolvedMembers.removeAll(where: { $0.name == targetName })
     }
     
     public func append(_ item: MethodObject) {
@@ -66,10 +67,10 @@ public actor C4Container : ArtifactHolder {
         await components.removeAll()
     }
     
-    public nonisolated var debugDescription: String {
+    public var debugDescription: String {
         get async {
             var str =  """
-                    \(await self.name)
+                    \(self.name)
                     | components \(await self.components.count):
                     """
             str += .newLine

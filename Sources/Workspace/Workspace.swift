@@ -7,7 +7,7 @@
 import Foundation
 
 public actor Workspace {
-    public internal(set) var context: LoadContext
+    public let context: LoadContext
     public var config: OutputConfig { get async { await self.context.config }}
     
     public func config(_ value: OutputConfig) async {
@@ -15,9 +15,12 @@ public actor Workspace {
     }
     
     var model: AppModel { context.model }
-    public internal(set) var isModelsLoaded: Bool {
+    public var isModelsLoaded: Bool {
         get async { await model.isModelsLoaded }
-        set { model.isModelsLoaded = newValue }
+    }
+    
+    public func isModelsLoaded(_ newValue: Bool) async {
+        await model.isModelsLoaded(newValue)
     }
     
     public func newGenerationSandbox() async -> GenerationSandbox {
@@ -36,14 +39,12 @@ public actor Workspace {
     public func render(string input: String, data: [String : Sendable]) async throws -> String? {
         let sandbox = await newStringSandbox()
 
-        let rendering = try sandbox.render(string: input, data: data)
+        let rendering = try await sandbox.render(string: input, data: data)
         return rendering?.trim()
     }
         
     internal init() async {
         let config = PipelineConfig()
-        
-        await self.config(config)
         self.context = LoadContext(config: config)
     }
 }

@@ -11,8 +11,8 @@ public enum DtoObjectParser {
     //
     // class name (attributes)
     // /======/
-    public static func canParse(parser lineParser: LineParser) -> Bool {
-        let nextLine = lineParser.nextLine()
+    public static func canParse(parser lineParser: LineParser) async -> Bool {
+        let nextLine = await lineParser.nextLine()
         if nextLine.has(prefix: "/", filler: ModelConstants.NameUnderlineChar, suffix: "/") {
             return true
         }
@@ -20,38 +20,38 @@ public enum DtoObjectParser {
         return false
     }
     
-    public static func parse(parser: LineParser, with pInfo: ParsedInfo) throws -> DtoObject? {
-        let line = parser.currentLine()
+    public static func parse(parser: LineParser, with pInfo: ParsedInfo) async throws -> DtoObject? {
+        let line = await parser.currentLine()
         
         guard let match = line.wholeMatch(of: ModelRegEx.className_Capturing)                                                                                  else { return nil }
         
         let (_, className, attributeString, tagString) = match.output
         
-        try pInfo.ctx.events.onParse(objectName: className, with: pInfo)
+        try await pInfo.ctx.events.onParse(objectName: className, with: pInfo)
 
         let item = DtoObject(name: className.trim())
 
         //check if has attributes
         if let attributeString = attributeString {
-            ParserUtil.populateAttributes(for: item, from: attributeString)
+            await ParserUtil.populateAttributes(for: item, from: attributeString)
         }
         
         //check if has tags
         if let tagString = tagString {
-            ParserUtil.populateTags(for: item, from: tagString)
+            await ParserUtil.populateTags(for: item, from: tagString)
         }
         
-        parser.skipLine(by: 2)//skip class name and underline
+        await parser.skipLine(by: 2)//skip class name and underline
         
-        while parser.linesRemaining {
-            if parser.isCurrentLineEmptyOrCommented() { parser.skipLine(); continue }
+        while await parser.linesRemaining {
+            if await parser.isCurrentLineEmptyOrCommented() { await parser.skipLine(); continue }
 
-            guard let pInfo = parser.currentParsedInfo(level : 0) else { parser.skipLine(); continue }
-            if parser.isCurrentLineHumaneComment(pInfo) { parser.skipLine(); continue } //humane comment
+            guard let pInfo = await parser.currentParsedInfo(level : 0) else { await parser.skipLine(); continue }
+            if await parser.isCurrentLineHumaneComment(pInfo) { await parser.skipLine(); continue } //humane comment
 
             if DerivedProperty.canParse(firstWord: pInfo.firstWord) {
-                if let prop = try DerivedProperty.parse(pInfo: pInfo) {
-                    item.append(prop)
+                if let prop = try await DerivedProperty.parse(pInfo: pInfo) {
+                    await item.append(prop)
                     continue
                 } else {
                     let msg = pInfo.line
@@ -60,19 +60,19 @@ public enum DtoObjectParser {
             }
             
             if MethodObject.canParse(firstWord: pInfo.firstWord) {
-                if let method = try MethodObject.parse(pInfo: pInfo) {
-                    item.append(method)
+                if let method = try await MethodObject.parse(pInfo: pInfo) {
+                    await item.append(method)
                     continue
                 } else {
                     throw Model_ParsingError.invalidMethodLine(pInfo)
                 }
             }
             
-            if try pInfo.tryParseAnnotations(with: item) {
+            if try await pInfo.tryParseAnnotations(with: item) {
                 continue
             }
             
-            if try pInfo.tryParseAttachedSections(with: item) {
+            if try await pInfo.tryParseAttachedSections(with: item) {
                 continue
             }
             

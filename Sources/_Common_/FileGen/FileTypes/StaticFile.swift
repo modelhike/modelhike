@@ -16,10 +16,10 @@ public struct StaticFile : OutputFile {
     var contents: String? = nil
     var data: Data? = nil
 
-    public mutating func render() throws {
+    public mutating func render() async throws {
         guard let repo = repo else { return }
         
-        self.contents = try repo.readTextContents(filename: self.oldFilename, with: pInfo)
+        self.contents = try await repo.readTextContents(filename: self.oldFilename, with: pInfo)
     }
     
     public func persist() throws {

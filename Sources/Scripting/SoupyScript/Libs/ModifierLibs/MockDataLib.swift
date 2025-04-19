@@ -25,7 +25,7 @@ public struct MockDataLib {
           
           let obj = wrapped.item
           
-          return SampleJson(entity: obj, typesModel: sandbox.model.types).string()
+            return await SampleJson(entity: obj, typesModel: sandbox.model.types).string()
         }
     }
 
@@ -69,12 +69,12 @@ public struct MockDataLib {
                 case .customType(let typename):
                     if let prop = prop { //used for a property
                         if let obj = await sandbox.model.types.get(for: prop.type.objectString()) {
-                            return SampleJson(entity: obj, typesModel: sandbox.model.types)
+                            return await SampleJson(entity: obj, typesModel: sandbox.model.types)
                                 .string(openCloseBraces: true, openCloseQuotesInNames: false)
                         } else { return "" }
                     } else {
                         if let obj = await sandbox.model.types.get(for: typename) {
-                            return SampleJson(entity: obj, typesModel: sandbox.model.types)
+                            return await SampleJson(entity: obj, typesModel: sandbox.model.types)
                                 .string(openCloseBraces: true, openCloseQuotesInNames: false)
                         } else { return "" }
                     }
@@ -87,7 +87,7 @@ public struct MockDataLib {
                 default:
                     if let prop = prop { //used for a property
                         if let obj = await sandbox.model.types.get(for: prop.type.objectString()) {
-                            return SampleJson(entity: obj, typesModel: sandbox.model.types)
+                            return await SampleJson(entity: obj, typesModel: sandbox.model.types)
                                 .string(openCloseBraces: true, openCloseQuotesInNames: false)
                         } else { return "" }
                     } else {
@@ -106,7 +106,7 @@ public struct MockDataLib {
           
           let obj = wrapped.item
           
-          return SampleQueryString(api: obj, typesModel: sandbox.model.types).string
+            return await SampleQueryString(api: obj, typesModel: sandbox.model.types).string
         }
     }
 }

@@ -22,9 +22,10 @@ public actor CodeGenerationSandbox : GenerationSandbox {
     public private(set) var isSymbolsLoaded = false
 
     //MARK: event handlers
-    public var onLoadTemplate : LoadTemplateHandler {
-        get { templateSoup.onLoadTemplate }
-        set { templateSoup.onLoadTemplate = newValue }
+    public var onLoadTemplate : LoadTemplateHandler { get async { await templateSoup.onLoadTemplate }}
+
+    public func onLoadTemplate(_ newValue: @escaping LoadTemplateHandler) async {
+        await templateSoup.onLoadTemplate( newValue )
     }
     
     //MARK: Generation code
@@ -34,9 +35,9 @@ public actor CodeGenerationSandbox : GenerationSandbox {
             try await loadSymbols()
         }
         
-        if try !blueprintLoader.blueprintExists() {
+        if try await !blueprintLoader.blueprintExists() {
             let pInfo = await ParsedInfo.dummyForAppState(with: context)
-            throw EvaluationError.blueprintDoesNotExist(blueprintLoader.blueprintName, pInfo)
+            throw await EvaluationError.blueprintDoesNotExist(blueprintLoader.blueprintName, pInfo)
         }
         
         guard let container = await model.container(named: container) else {
@@ -51,26 +52,26 @@ public actor CodeGenerationSandbox : GenerationSandbox {
         
         await self.context.append(variables: variables)
 
-        self.templateSoup.repo = blueprintLoader
+        await self.templateSoup.blueprint( blueprintLoader )
         
         await context.setWorkingDirectory("/")
-        try self.setRelativePath("")
+        try await self.setRelativePath("")
         
         let pInfo = await ParsedInfo.dummyForMainFile(with: context)
         
         //handle special folders
-        if blueprintLoader.hasFolder(SpecialFolderNames.root) {
+        if await blueprintLoader.hasFolder(SpecialFolderNames.root) {
             let specialActivity = SpecialActivityCallStackItem(activityName: "Rendering Root Folder")
             await context.pushCallStack(specialActivity)
 
-            try renderSpecialFolder(SpecialFolderNames.root, to: "/", pInfo: pInfo)
+            try await renderSpecialFolder(SpecialFolderNames.root, to: "/", pInfo: pInfo)
             await context.popCallStack()
 
         } else {
             print("⚠️ Didn't find 'Root' folder in Blueprint !!!")
         }
         
-        return try templateSoup.startMainScript(with: pInfo)
+        return try await templateSoup.startMainScript(with: pInfo)
     }
     
     
@@ -92,19 +93,19 @@ public actor CodeGenerationSandbox : GenerationSandbox {
 
         let pInfo = await ParsedInfo.dummyForMainFile(with: context)
 
-        return try templateSoup.renderTemplate(string: templateString, data: data, with: pInfo)
+        return try await templateSoup.renderTemplate(string: templateString, data: data, with: pInfo)
     }
     
     public init(model: AppModel, config: OutputConfig) async {
         self.context = GenerationContext(model: model, config: config)
         self.lineParser  = LineParserDuringGeneration(identifier: "-", isStatementsPrefixedWithKeyword: true, with: context)
         
-        self.templateSoup  = TemplateSoup(context: context)
+        self.templateSoup  = await TemplateSoup(context: context)
 
         self.base_generation_dir = OutputFolder(config.output)
         self.generation_dir = self.base_generation_dir
         
-        context.fileGenerator = self
+        await context.fileGenerator(self)
 
         await setupDefaultSymbols()
     }
@@ -113,19 +114,19 @@ public actor CodeGenerationSandbox : GenerationSandbox {
     public func loadSymbols(_ sym : Set<PreDefinedSymbols>? = nil) async throws {
         if let sym = sym {
             if let _ = sym.firstIndex(of: .typescript) {
-                self.add(modifiers: TypescriptLib.functions)
+                await self.add(modifiers: TypescriptLib.functions())
                 
                 if let _ = sym.firstIndex(of: .mongodb_typescript) {
-                    self.add(modifiers: MongoDB_TypescriptLib.functions(sandbox: self))
+                    await self.add(modifiers: MongoDB_TypescriptLib.functions(sandbox: self))
                 }
             }
             
             if let _ = sym.firstIndex(of: .java) {
-                self.add(modifiers: JavaLib.functions)
+                await self.add(modifiers: JavaLib.functions())
             }
             
             //add GraphQL related fns
-            self.add(modifiers: GraphQLLib.functions)
+            await self.add(modifiers: GraphQLLib.functions())
             
             if sym.firstIndex(of: .noMocking) == nil {
                 //"no mock" is not specified; so, load default mocking
@@ -164,13 +165,13 @@ public actor CodeGenerationSandbox : GenerationSandbox {
     
     //MARK: File generation protocol
         
-    public func setRelativePath(_ path: String) throws {
+    public func setRelativePath(_ path: String) async throws {
         if path.isNotEmpty && path != "/" {
-            generation_dir = self.base_generation_dir.relativeFolder(path)
-            try generation_dir.ensureExists()
+            generation_dir = await self.base_generation_dir.relativeFolder(path)
+            try await generation_dir.ensureExists()
         } else {
             generation_dir = self.base_generation_dir
-            try generation_dir.ensureExists()
+            try await generation_dir.ensureExists()
         }
     }
     
@@ -179,10 +180,10 @@ public actor CodeGenerationSandbox : GenerationSandbox {
             return nil
         }
         
-        let file = TemplateRenderedFile(filename: filename, template: template, renderer: self.templateSoup, pInfo: pInfo)
+        var file = TemplateRenderedFile(filename: filename, template: template, renderer: self.templateSoup, pInfo: pInfo)
         
-        generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
-        try file.render()
+        await generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
+        try await file.render()
         return file
     }
     
@@ -191,52 +192,52 @@ public actor CodeGenerationSandbox : GenerationSandbox {
             return nil
         }
         
-        let file = TemplateRenderedFile(filename: filename, template: template, data: data, renderer: self.templateSoup, pInfo: pInfo)
+        var file = TemplateRenderedFile(filename: filename, template: template, data: data, renderer: self.templateSoup, pInfo: pInfo)
         
-        generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
-        try file.render()
+        await generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
+        try await file.render()
         return file
     }
     
-    public func copyFile(_ filename: String, with pInfo: ParsedInfo) throws -> StaticFile {
-        let file = StaticFile(filename: filename, repo: templateSoup.repo, to: filename, pInfo: pInfo)
+    public func copyFile(_ filename: String, with pInfo: ParsedInfo) async throws -> StaticFile {
+        var file = await StaticFile(filename: filename, repo: templateSoup.blueprint, to: filename, pInfo: pInfo)
         
-        generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
-        try file.render()
+        await generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
+        try await file.render()
         return file
     }
         
-    public func copyFile(_ filename: String, to newFilename: String, with pInfo: ParsedInfo) throws -> StaticFile {
-        let file = StaticFile(filename: filename, repo: templateSoup.repo, to: newFilename, pInfo: pInfo)
+    public func copyFile(_ filename: String, to newFilename: String, with pInfo: ParsedInfo) async throws -> StaticFile {
+        var file = await StaticFile(filename: filename, repo: templateSoup.blueprint, to: newFilename, pInfo: pInfo)
         
-        generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
-        try file.render()
+        await generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
+        try await file.render()
         return file
     }
     
-    public func copyFolder(_ foldername: String, with pInfo: ParsedInfo) throws -> StaticFolder {
-        let folder = StaticFolder(foldername: foldername, repo: templateSoup.repo, to: foldername,  pInfo: pInfo)
+    public func copyFolder(_ foldername: String, with pInfo: ParsedInfo) async throws -> StaticFolder {
+        let folder = await StaticFolder(foldername: foldername, repo: templateSoup.blueprint, to: foldername,  pInfo: pInfo)
         
-        generation_dir.add(folder) //to be persisted in the Persist Pipeline Phase
-        try folder.copyFiles()
+        await generation_dir.add(folder) //to be persisted in the Persist Pipeline Phase
+        try await folder.copyFiles()
         return folder
     }
     
-    public func copyFolder(_ foldername: String, to newPath: String, with pInfo: ParsedInfo) throws -> StaticFolder {
-        let folder = StaticFolder(foldername: foldername, repo: templateSoup.repo, to: newPath, pInfo: pInfo)
+    public func copyFolder(_ foldername: String, to newPath: String, with pInfo: ParsedInfo) async throws -> StaticFolder {
+        let folder = await StaticFolder(foldername: foldername, repo: templateSoup.blueprint, to: newPath, pInfo: pInfo)
         
-        generation_dir.add(folder) //to be persisted in the Persist Pipeline Phase
-        try folder.copyFiles()
+        await generation_dir.add(folder) //to be persisted in the Persist Pipeline Phase
+        try await folder.copyFiles()
         return folder
     }
     
-    public func renderFolder(_ foldername: String, to newPath: String, with pInfo: ParsedInfo) throws -> RenderedFolder {
+    public func renderFolder(_ foldername: String, to newPath: String, with pInfo: ParsedInfo) async throws -> RenderedFolder {
         //While rendering folder, onBeforeRenderFile is handled within the folder-rendering function
         //This is possibleas onBeforeRenderFile is part of templateSoup
         let folder = RenderedFolder(foldername: foldername, templateSoup: templateSoup, to: newPath,  pInfo: pInfo)
         
-        generation_dir.add(folder) //to be persisted in the Persist Pipeline Phase
-        try folder.renderFiles()
+        await generation_dir.add(folder) //to be persisted in the Persist Pipeline Phase
+        try await folder.renderFiles()
         return folder
     }
     
@@ -245,10 +246,10 @@ public actor CodeGenerationSandbox : GenerationSandbox {
             return nil
         }
         
-        let file = PlaceHolderFile(filename: filename, repo: templateSoup.repo, to: filename, renderer: self.templateSoup, pInfo: pInfo)
+        var file = await PlaceHolderFile(filename: filename, repo: templateSoup.blueprint, to: filename, renderer: self.templateSoup, pInfo: pInfo)
         
-        generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
-        try file.render()
+        await generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
+        try await file.render()
         return file
     }
 
@@ -257,10 +258,10 @@ public actor CodeGenerationSandbox : GenerationSandbox {
             return nil
         }
         
-        let file = PlaceHolderFile(filename: filename, repo: templateSoup.repo, to: newFilename, renderer: self.templateSoup, pInfo: pInfo)
+        var file = await PlaceHolderFile(filename: filename, repo: templateSoup.blueprint, to: newFilename, renderer: self.templateSoup, pInfo: pInfo)
         
-        generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
-        try file.render()
+        await generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
+        try await file.render()
         return file
     }
 }

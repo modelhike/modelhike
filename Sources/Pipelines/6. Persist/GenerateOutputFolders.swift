@@ -6,21 +6,21 @@
 
 import Foundation
 
-public struct GenerateOutputFoldersPass : PersistancePass {
+public actor GenerateOutputFoldersPass : PersistancePass {
     public func runIn(phase: PersistPhase, pipeline: Pipeline) async throws -> Bool {
         
-        try pipeline.config.output.deleteAllFilesAndFolders()
+        try await pipeline.config.output.deleteAllFilesAndFolders()
 
         var totalFilesGenerated: Int = 0
         var totalFoldersGenerated: Int = 0
         
-        for sandbox in pipeline.generationSandboxes {
-            let output = sandbox.base_generation_dir
+        for sandbox in await pipeline.generationSandboxes {
+            let output = await sandbox.base_generation_dir
             
-            try output.persist(with: sandbox.context)
+            try await output.persist(with: sandbox.context)
             
-            totalFilesGenerated += sandbox.context.generatedFiles.count
-            totalFoldersGenerated += sandbox.context.generatedFolders.count
+            await totalFilesGenerated += sandbox.context.generatedFiles.count
+            await totalFoldersGenerated += sandbox.context.generatedFolders.count
        }
         
         print("✅ Generated \(totalFilesGenerated) files, \(totalFoldersGenerated) folders ...")

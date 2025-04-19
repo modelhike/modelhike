@@ -6,7 +6,7 @@
 
 import Foundation
 
-public struct LoadPagesPass : LoadingPass {
+public actor LoadPagesPass : LoadingPass {
     public let folderName: String
     public var markupDocs: [MarkupDocument] = []
     
@@ -14,7 +14,7 @@ public struct LoadPagesPass : LoadingPass {
         return true
     }
     
-    public mutating func add(_ doc: MarkupDocument) {
+    public func add(_ doc: MarkupDocument) {
         markupDocs.append(doc)
     }
     

@@ -14,7 +14,7 @@ public struct SetVarStmt: LineTemplateStmt, CustomDebugStringConvertible {
     public private(set) var ValueExpression: String = ""
     public private(set) var ModifiersList: [ModifierInstance] = []
 
-    let state = BlockOrLineTemplateState()
+    public let state: LineTemplateStmtState
     
     nonisolated(unsafe)
     let setVarLineRegex = Regex {
@@ -54,7 +54,7 @@ public struct SetVarStmt: LineTemplateStmt, CustomDebugStringConvertible {
     }
 
     public func execute(with ctx: Context) async throws -> String? {
-        var actualBody: Any? = nil
+        var actualBody: Sendable? = nil
 
         guard SetVar.isNotEmpty,
             ValueExpression.isNotEmpty
@@ -73,20 +73,20 @@ public struct SetVarStmt: LineTemplateStmt, CustomDebugStringConvertible {
             if await ctx.isWorkingDirectoryVariable(variableName) {
                 if let str = actualBody as? String {
                     await ctx.debugLog.workingDirectoryChanged(str)
-                    ctx.variables[variableName] = str
+                    await ctx.variables.set(variableName, value: str)
                 }
             } else {
-                try ctx.setValueOf(variableOrObjProp: variableName, value: actualBody, with: pInfo)
+                try await ctx.setValueOf(variableOrObjProp: variableName, value: actualBody, with: pInfo)
             }
         } else {
 
             //special handling for setting current working directory
-            if ctx.isWorkingDirectoryVariable(variableName) {
+            if await ctx.isWorkingDirectoryVariable(variableName) {
                 //reset to base path
-                ctx.debugLog.workingDirectoryChanged("(base path)")
-                ctx.variables[variableName] = ""
+                await ctx.debugLog.workingDirectoryChanged("(base path)")
+                await ctx.variables.set(variableName, value: "")
             } else {
-                try ctx.setValueOf(variableOrObjProp: variableName, value: nil, with: pInfo)
+                try await ctx.setValueOf(variableOrObjProp: variableName, value: nil, with: pInfo)
             }
         }
 
@@ -106,7 +106,7 @@ public struct SetVarStmt: LineTemplateStmt, CustomDebugStringConvertible {
     }
 
     public init(_ pInfo: ParsedInfo) {
-        state=LineTemplateStmtState(keyword: Self.START_KEYWORD, pInfo: pInfo)
+        state = LineTemplateStmtState(keyword: Self.START_KEYWORD, pInfo: pInfo)
     }
 
     static let register = LineTemplateStmtConfig(keyword: START_KEYWORD) { pInfo in

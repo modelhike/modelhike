@@ -6,30 +6,171 @@
 
 import Foundation
 
-public actor API : Artifact {
+public actor APIState {
     public let attribs = Attributes()
     public let tags = Tags()
     public let annotations = Annotations()
 
-    public let name: String
+    public var name: String
     public let givenname: String
     public let dataType: ArtifactKind = .api
 
     public let entity : CodeObject
     public let type: APIType
     
-    public var path: String
-    public var baseUrl: String
-    public var version: Int
+    public let path: String
+    public let baseUrl: String
+    public let version: Int
     public private(set) var queryParams: [APIQueryParamWrapper] = []
     
-    public func get(_ key: String) -> String? {
-        return queryParams.first(where: {$0.queryParam.name == key})?.propMaping.givenString
+    public func append(queryParam: APIQueryParamWrapper) {
+        self.queryParams.append(queryParam)
     }
     
-    public func set(_ key: String, value newValue: String) {
+    public func name(_ value: String) {
+        self.name = value
+    }
+    
+    public init(entity item: CodeObject, name: String, path: String, type: APIType, version: Int = 1) async {
+        let entityname = await item.name
+        self.entity = item
+        self.type = type
+        self.baseUrl = entityname.slugify()
+        self.version = version
+        
+        self.path = path
+        
+        self.name = name
+        self.givenname = name
+    }
+}
+
+public actor GenericAPI: API {
+    public var state: APIState
+    public private(set) var name: String = ""
+
+    public init(entity item: CodeObject, type: APIType, version: Int = 1) async {
+        let entityname = await item.name
+        
+        var name = ""
+        
+        switch type {
+        case .getById:
+            name = "get\(entityname)ById"
+        case .delete:
+            name = "delete\(entityname)"
+        case .list:
+            let plural = entityname.pluralized()
+            name = "list\(plural)"
+        case .associate: //will be create for the association
+            name = "associate\(entityname)"
+        case .deassosiate: //will be delete for the association
+            name = "deassosiate\(entityname)"
+        case .activate:
+            name = "activate\(entityname)"
+        case .deactivate:
+            name = "deactivate\(entityname)"
+        case .create:
+            name = "add\(entityname)"
+        case .update:
+            name = "update\(entityname)"
+        case .getByCustomProperties:
+            name = "get\(entityname)ByCustomProps"
+        case .listByCustomProperties:
+            let plural = entityname.pluralized()
+            name = "list\(plural)ByCustomProps"
+        case .getByUsingCustomLogic:
+            name = "get\(entityname)ByCustomLogic"
+        case .listByUsingCustomLogic:
+            name = "list\(entityname)ByCustomLogic"
+        case .mutationUsingCustomLogic:
+            name = "mutation\(entityname)ByCustomLogic"
+        case .pushData:
+            let plural = entityname.pluralized()
+            name = "\(plural)Subscription"
+        case .pushDataList:
+            let plural = entityname.pluralized()
+            name = "\(plural)Subscription"
+        }
+        
+        await self.init(entity: item, name: name, type: type, version: version)
+    }
+    
+    public init(entity item: CodeObject, name: String, type: APIType, version: Int = 1) async {
+        var path: String = ""
+        
+        switch type {
+        case .getById:
+            path = ":id"
+        case .delete:
+            path = ":id"
+        case .list:
+            path = ""
+        case .associate: //will be create for the association
+            path = ""
+        case .deassosiate: //will be delete for the association
+            path = ""
+        case .activate:
+            path = "activate"
+        case .deactivate:
+            path = "deactivate"
+        case .create:
+            path = ""
+        case .update:
+            path = ""
+        case .getByCustomProperties:
+            path = ""
+        case .listByCustomProperties:
+            path = ""
+        case .getByUsingCustomLogic:
+            path = ""
+        case .listByUsingCustomLogic:
+            path = ""
+        case .mutationUsingCustomLogic:
+            path = ""
+        case .pushData:
+            path = ""
+        case .pushDataList:
+            path = ""
+        }
+        
+        self.state = await APIState(entity: item, name: name, path: path, type: type, version: version)
+        self.name = name
+    }
+    
+    public init(entity item: CodeObject, name: String, path: String, type: APIType, version: Int = 1) async {
+        self.state = await APIState(entity: item, name: name, path: path, type: type, version: version)
+        self.name = name
+    }
+}
+
+public protocol API : Artifact {
+    var state: APIState { get }
+}
+
+extension API {
+    public var entity: CodeObject { state.entity }
+    public var givenname: String { state.givenname }
+    public var attribs: Attributes { state.attribs }
+    public var annotations: Annotations { state.annotations }
+    public var tags: Tags { state.tags }
+    public var type: APIType { state.type }
+    public var dataType: ArtifactKind { state.dataType }
+    public var path: String { state.path }
+    public var baseUrl: String { state.baseUrl }
+    public var version: Int { state.version }
+
+    public var queryParams: [APIQueryParamWrapper] {
+        get async { await state.queryParams }
+    }
+    
+    public func get(_ key: String) async -> String? {
+        return await queryParams.first(where: {$0.queryParam.name == key})?.propMaping.givenString
+    }
+    
+    public func set(_ key: String, value newValue: String) async {
         let wrapped = APIQueryParamWrapper(queryParam: QueryParam_KeyMapping(key), propMaping: QueryParam_PropertyNameMapping(newValue), entity: entity)
-        queryParams.append(wrapped)
+        await state.append(queryParam: wrapped)
     }
     
     public var debugDescription: String { get async {
@@ -41,70 +182,6 @@ public actor API : Artifact {
         return str
     }}
     
-    public init(entity item: CodeObject, type: APIType, version: Int = 1) async {
-        let entityname = await item.name
-        self.entity = item
-        self.type = type
-        self.baseUrl = entityname.slugify()
-        self.version = version
-        
-        switch type {
-        case .getById:
-            self.path = ":id"
-            self.name = "get\(entityname)ById"
-        case .delete:
-            self.path = ":id"
-            self.name = "delete\(entityname)"
-        case .list:
-            self.path = ""
-            let plural = entityname.pluralized()
-            self.name = "list\(plural)"
-        case .associate: //will be create for the association
-            self.path = ""
-            self.name = "associate\(entityname)"
-        case .deassosiate: //will be delete for the association
-            self.path = ""
-            self.name = "deassosiate\(entityname)"
-        case .activate:
-            self.path = "activate"
-            self.name = "activate\(entityname)"
-        case .deactivate:
-            self.path = "deactivate"
-            self.name = "deactivate\(entityname)"
-        case .create:
-            self.path = ""
-            self.name = "add\(entityname)"
-        case .update:
-            self.path = ""
-            self.name = "update\(entityname)"
-        case .getByCustomProperties:
-            self.path = ""
-            self.name = "get\(entityname)ByCustomProps"
-        case .listByCustomProperties:
-            self.path = ""
-            let plural = entityname.pluralized()
-            self.name = "list\(plural)ByCustomProps"
-        case .getByUsingCustomLogic:
-            self.path = ""
-            self.name = "get\(entityname)ByCustomLogic"
-        case .listByUsingCustomLogic:
-            self.path = ""
-            self.name = "list\(entityname)ByCustomLogic"
-        case .mutationUsingCustomLogic:
-            self.path = ""
-            self.name = "mutation\(entityname)ByCustomLogic"
-        case .pushData:
-            self.path = ""
-            let plural = entityname.pluralized()
-            self.name = "\(plural)Subscription"
-        case .pushDataList:
-            self.path = ""
-            let plural = entityname.pluralized()
-            self.name = "\(plural)Subscription"
-        }
-        
-        self.givenname = self.name
-    }
 }
 
 public enum APIType: Sendable {
@@ -243,7 +320,7 @@ public extension CodeObject {
     
     @discardableResult
     func appendAPI(_ type : APIType) async -> API {
-        let api = await API(entity: self, type: type)
+        let api = await GenericAPI(entity: self, type: type)
         attached.append(api)
         
         if type == .list {

@@ -10,7 +10,7 @@ public enum Modifiers  {
     public static func apply<T: Sendable>(to value: T, modifiers: [ModifierInstance], with pInfo: ParsedInfo) async throws -> Sendable? {
         var result : T = value
         for modifier in modifiers {
-            if let resultValue = try modifier.applyTo(value: result, with: pInfo) as? T {
+            if let resultValue = try await modifier.applyTo(value: result, with: pInfo) as? T {
                 result = resultValue
             } else {
                 return nil

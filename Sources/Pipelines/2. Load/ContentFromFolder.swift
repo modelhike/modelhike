@@ -6,7 +6,7 @@
 
 import Foundation
 
-public struct LoadContentFromFolder : LoadingPass {
+public actor LoadContentFromFolder : LoadingPass {
     public let folderName: String
     public let afterModifiedDate: Date?
     public var markupDocs: [MarkupDocument] = []
@@ -15,7 +15,7 @@ public struct LoadContentFromFolder : LoadingPass {
         return true
     }
     
-    public mutating func add(_ doc: MarkupDocument) {
+    public func add(_ doc: MarkupDocument) {
         markupDocs.append(doc)
     }
     

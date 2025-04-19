@@ -4,7 +4,7 @@
 //  https://www.github.com/modelhike/modelhike
 //
 
-public struct PassDownAndProcessAnnotationsPass  : LoadingPass {
+public actor PassDownAndProcessAnnotationsPass: LoadingPass {
     
     public func runIn(_ ws: Workspace, phase: LoadPhase) async throws -> Bool {
         

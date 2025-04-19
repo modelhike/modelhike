@@ -21,7 +21,9 @@ public actor CodeObject_Wrap: ObjectWrapper {
 
     public var pushDataApis: [API_Wrap] { get async {
         await self.item.getAPIs().snapshot().compactMap({
-            if $0.type == .pushData || $0.type == .pushDataList {
+            let type = await $0.type
+            
+            if type == .pushData || type == .pushDataList {
                 return API_Wrap($0)
             } else {
                 return nil

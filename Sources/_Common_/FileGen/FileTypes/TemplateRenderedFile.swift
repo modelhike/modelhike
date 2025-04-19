@@ -15,15 +15,15 @@ public struct TemplateRenderedFile : OutputFile, RenderableFile {
     private let pInfo: ParsedInfo
     var contents: String? = nil
 
-    public mutating func render() throws {
+    public mutating func render() async throws {
         guard let renderer = renderer, let template = template else { return }
         
         if let data = data {
-            if let contents = try renderer.renderTemplate(fileName: template, data: data, with: pInfo) {
+            if let contents = try await renderer.renderTemplate(fileName: template, data: data, with: pInfo) {
                 self.contents = contents
             }
         } else {
-            if let contents = try renderer.renderTemplate(fileName: template, data: [:], with: pInfo) {
+            if let contents = try await renderer.renderTemplate(fileName: template, data: [:], with: pInfo) {
                 self.contents = contents
             }
         }

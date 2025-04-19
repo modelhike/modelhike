@@ -6,14 +6,14 @@
 
 import Foundation
 
-public class InlineFunctionCallContent: ContentLineItem {
+public struct InlineFunctionCallContent: ContentLineItem {
     let fnCallLine : String
     let level: Int
     public let pInfo: ParsedInfo
     var fnCall : FunctionCallStmt!
     
-    fileprivate func parseLine(_ line: String) throws {
-        let stmt = FunctionCallStmt(pInfo)
+    fileprivate mutating func parseLine(_ line: String) throws {
+        var stmt = FunctionCallStmt(pInfo)
         
         if try stmt.matchLine(line: line) {
             self.fnCall = stmt
@@ -22,9 +22,9 @@ public class InlineFunctionCallContent: ContentLineItem {
         }
     }
     
-    public func execute(with ctx: Context) throws -> String? {
+    public func execute(with ctx: Context) async throws -> String? {
         if fnCall != nil {
-            if var result = try fnCall.execute(with: ctx) {
+            if var result = try await fnCall.execute(with: ctx) {
                 //Spaces are to be automaticaly removed, when the function is called inline
                 result = result.spaceless() // remove all spaces in the body
                 return result

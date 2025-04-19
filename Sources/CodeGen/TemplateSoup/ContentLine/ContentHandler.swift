@@ -8,6 +8,8 @@ import Foundation
 import RegexBuilder
 
 public enum ContentHandler {
+    
+    nonisolated(unsafe)
     static let lineRegEx: Regex<(Substring, String, Optional<String>, Optional<String>)>  = Regex {
         Capture {
             ZeroOrMore {
@@ -26,6 +28,7 @@ public enum ContentHandler {
         printExpressionRegEx
     }
     
+    nonisolated(unsafe)
     static let inlineFnCallRegEx: Regex<(Substring, Optional<String>)> = Regex {
         Optionally {
             "={{"
@@ -41,6 +44,7 @@ public enum ContentHandler {
         }
     }
     
+    nonisolated(unsafe)
     static let printExpressionRegEx: Regex<(Substring, Optional<String>)> = Regex {
         Optionally {
             "{{"
@@ -57,12 +61,12 @@ public enum ContentHandler {
     }
     
     
-    static func parseLine(_ line: String, pInfo: ParsedInfo, level: Int) throws -> [ContentLineItem] {
+    static func parseLine(_ line: String, pInfo: ParsedInfo, level: Int) async throws -> [ContentLineItem] {
         let ctx = pInfo.ctx
         
         var items: [ContentLineItem] = []
 
-        ctx.debugLog.content(line, pInfo: pInfo)
+        await ctx.debugLog.content(line, pInfo: pInfo)
         
         let matches = line.matches(of: Self.lineRegEx )
             
@@ -77,16 +81,16 @@ public enum ContentHandler {
             }
             
             if let inlineCall = inlineCall {
-                ctx.debugLog.inlineFunctionCall(inlineCall, pInfo: pInfo)
+                await ctx.debugLog.inlineFunctionCall(inlineCall, pInfo: pInfo)
                 
                 let inlineCallContent = try InlineFunctionCallContent(fnCallLine: inlineCall, pInfo: pInfo, level: level)
                 items.append(inlineCallContent)
             }
             
             if let expression = expression {
-                ctx.debugLog.inlineExpression(expression, pInfo: pInfo)
+                await ctx.debugLog.inlineExpression(expression, pInfo: pInfo)
                 
-                let expressionContent = try PrintExpressionContent(expressionLine: expression, pInfo: pInfo, level: level)
+                let expressionContent = try await PrintExpressionContent(expressionLine: expression, pInfo: pInfo, level: level)
                 items.append(expressionContent)
             }
         }
@@ -94,14 +98,14 @@ public enum ContentHandler {
         return items
     }
     
-    public static func execute(line: String, identifier: String, with ctx: Context) throws -> String? {
+    public static func execute(line: String, identifier: String, with ctx: Context) async throws -> String? {
         var str = ""
         
-        let pInfo = ParsedInfo.dummy(line: line, identifier: identifier, with: ctx);
-        let items = try parseLine(line, pInfo: pInfo, level: 0)
+        let pInfo = await ParsedInfo.dummy(line: line, identifier: identifier, with: ctx);
+        let items = try await parseLine(line, pInfo: pInfo, level: 0)
         
         for item in items {
-            if let result = try item.execute(with: ctx) {
+            if let result = try await item.execute(with: ctx) {
                 str += result
             }
         }
@@ -109,15 +113,15 @@ public enum ContentHandler {
         return str.trim().isNotEmpty ? str : nil
     }
     
-    public static func eval(line: String, pInfo: ParsedInfo) throws -> String? {
-        return try ContentHandler.execute(line: line, identifier: pInfo.identifier, with: pInfo.ctx)
+    public static func eval(line: String, pInfo: ParsedInfo) async throws -> String? {
+        return try await ContentHandler.execute(line: line, identifier: pInfo.identifier, with: pInfo.ctx)
     }
     
-    public static func eval(expression: String, pInfo: ParsedInfo) throws -> String? {
-        return try ContentHandler.execute(line: expression, identifier: pInfo.identifier, with: pInfo.ctx)
+    public static func eval(expression: String, pInfo: ParsedInfo) async throws -> String? {
+        return try await ContentHandler.execute(line: expression, identifier: pInfo.identifier, with: pInfo.ctx)
     }
     
-    public static func eval(expression: String, with ctx: GenerationContext) throws -> String? {
-        return try ContentHandler.execute(line: expression, identifier: "Eval", with: ctx)
+    public static func eval(expression: String, with ctx: GenerationContext) async throws -> String? {
+        return try await ContentHandler.execute(line: expression, identifier: "Eval", with: ctx)
     }
 }

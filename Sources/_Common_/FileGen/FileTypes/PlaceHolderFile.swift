@@ -15,10 +15,10 @@ public struct PlaceHolderFile : OutputFile {
     let pInfo: ParsedInfo
     var contents: String? = nil
     
-    public mutating func render() throws {
+    public mutating func render() async throws {
         let data : [String: Sendable] = [:]
         
-        if let contents = try renderer.renderTemplate(fileName: self.oldFilename, data: data, with: pInfo) {
+        if let contents = try await renderer.renderTemplate(fileName: self.oldFilename, data: data, with: pInfo) {
             self.contents = contents
         }
     }

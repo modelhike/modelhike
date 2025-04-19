@@ -25,9 +25,9 @@ public actor RenderedFolder : PersistableFolder {
         }
     }
     
-    public func renderFiles() throws {
+    public func renderFiles() async throws {
         if let outputFolder {
-            try templateSoup.repo.renderFiles(foldername: foldername, to: outputFolder, using: templateSoup, with: pInfo)
+            try await templateSoup.blueprint.renderFiles(foldername: foldername, to: outputFolder, using: templateSoup, with: pInfo)
         } else {
             fatalError(#function + ": output path not set!")
         }

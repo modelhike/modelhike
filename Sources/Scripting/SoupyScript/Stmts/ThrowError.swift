@@ -40,7 +40,7 @@ public struct ThrowErrorStmt: LineTemplateStmt, CustomDebugStringConvertible {
         guard Expression.isNotEmpty else { return nil }
         
         //see if it is an expression
-        if let expn = try ContentHandler.eval(line: Expression, pInfo: pInfo) {
+        if let expn = try await ContentHandler.eval(line: Expression, pInfo: pInfo) {
             throw ParserDirective.throwErrorFromCurrentFile(pInfo.identifier, expn, pInfo)
         }
             

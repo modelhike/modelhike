@@ -16,6 +16,7 @@ public enum TemplateSoup_EvaluationError: ErrorWithMessageAndParsedInfo {
     case scriptFileDoesNotExist(String, ParsedInfo)
     case scriptFileReadingError(String, ParsedInfo)
     case nonSendablePropertyValue(String, ParsedInfo)
+    case nonSendableValueFound(String, ParsedInfo)
 
     public var info: String {
         switch (self) {
@@ -27,7 +28,8 @@ public enum TemplateSoup_EvaluationError: ErrorWithMessageAndParsedInfo {
         case .objectNotFound(let obj, _) :  return "object: \(obj) not found"
         
         case .nonSendablePropertyValue(let propname, _) :  return "property: \(propname) has non-sendable value"
-
+        case .nonSendableValueFound(let value, _) :  return "value: \(value) is non-sendable"
+            
         case .unIdentifiedStmt(let pInfo) :
             var str = "unidentified stmt >>  \(pInfo.line)"
 
@@ -59,6 +61,7 @@ public enum TemplateSoup_EvaluationError: ErrorWithMessageAndParsedInfo {
         case .objectNotFound(_, let pInfo) : pInfo
         case .unIdentifiedStmt(let pInfo) : pInfo
         case .nonSendablePropertyValue(_, let pInfo) : pInfo
+        case .nonSendableValueFound(_, let pInfo) : pInfo
         case .errorInExpression(_, let pInfo) : pInfo
         }
     }

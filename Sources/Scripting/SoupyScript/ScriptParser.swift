@@ -53,7 +53,7 @@ public extension ScriptParser {
             }
         }
         
-        let item = try ContentLine(pInfo, level: level)
+        let item = try await ContentLine(pInfo, level: level)
         await container.append(item)
     }
     

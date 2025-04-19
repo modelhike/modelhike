@@ -6,35 +6,43 @@
 
 import Foundation
 
-public typealias LoadTemplateHandler = (_ templateName: String,_ loader: Blueprint, _ pInfo: ParsedInfo) throws -> Template
-public typealias LoadScriptHandler = (_ scriptName: String,_ loader: Blueprint, _ pInfo: ParsedInfo) throws -> Script
+public typealias LoadTemplateHandler = @Sendable (_ templateName: String,_ loader: Blueprint, _ pInfo: ParsedInfo) async throws -> Template
+public typealias LoadScriptHandler = @Sendable (_ scriptName: String,_ loader: Blueprint, _ pInfo: ParsedInfo) async throws -> Script
 
 public actor TemplateSoup : TemplateRenderer {
     let context: GenerationContext
-    var repo: Blueprint
+    var blueprint: Blueprint
     
-    public var onLoadTemplate : LoadTemplateHandler = { (templateName, loader, pInfo) throws -> Template in
+    public func blueprint(_ value: Blueprint) {
+        self.blueprint = value
+    }
+    
+    public var onLoadTemplate : LoadTemplateHandler = { (templateName, loader, pInfo) async throws -> Template in
         do {
-            return try loader.loadTemplate(fileName: templateName, with: pInfo)
+            return try await loader.loadTemplate(fileName: templateName, with: pInfo)
         } catch {
             throw TemplateSoup_EvaluationError.templateDoesNotExist(templateName, pInfo)
         }
     }
     
-    public var onLoadScript : LoadScriptHandler = { (scriptName, loader, pInfo) throws -> Script in
+    public var onLoadScript : LoadScriptHandler = { (scriptName, loader, pInfo) async throws -> Script in
         do {
-            return try loader.loadScriptFile(fileName: scriptName, with: pInfo)
+            return try await loader.loadScriptFile(fileName: scriptName, with: pInfo)
         } catch {
             throw TemplateSoup_EvaluationError.scriptFileDoesNotExist(scriptName, pInfo)
         }
     }
     
-    public func loadScript(fileName: String, with pInfo: ParsedInfo) throws -> Script {
-        return try onLoadScript(fileName, repo, pInfo)
+    public func onLoadTemplate(_ newValue: @escaping LoadTemplateHandler) {
+        self.onLoadTemplate = newValue
     }
     
-    public func loadTemplate(fileName: String, with pInfo: ParsedInfo) throws -> Template {
-        return try onLoadTemplate(fileName, repo, pInfo)
+    public func loadScript(fileName: String, with pInfo: ParsedInfo) async throws -> Script {
+        return try await onLoadScript(fileName, blueprint, pInfo)
+    }
+    
+    public func loadTemplate(fileName: String, with pInfo: ParsedInfo) async throws -> Template {
+        return try await onLoadTemplate(fileName, blueprint, pInfo)
     }
     
     public func startMainScript(data: StringDictionary = [:], with pInfo: ParsedInfo) async throws -> String? {
@@ -44,7 +52,7 @@ public actor TemplateSoup : TemplateRenderer {
     
     public func runScript(fileName scriptFile: String, data: StringDictionary = [:], with pInfo: ParsedInfo) async throws -> String? {
         do {
-            let fileScript = try self.loadScript(fileName: scriptFile, with: pInfo)
+            let fileScript = try await self.loadScript(fileName: scriptFile, with: pInfo)
             
             await context.pushSnapshot()
             await context.append(variables: data)
@@ -94,13 +102,13 @@ public actor TemplateSoup : TemplateRenderer {
     public func renderTemplate(fileName templateFile: String, data: StringDictionary = [:], with pInfo: ParsedInfo) async throws -> String? {
         do {
             
-            let fileTemplate = try self.loadTemplate(fileName: templateFile, with: pInfo)
+            let fileTemplate = try await self.loadTemplate(fileName: templateFile, with: pInfo)
             
             await context.pushSnapshot()
             await context.append(variables: data)
             
             let templateEval = TemplateEvaluator()
-            let rendering = try templateEval.execute(template: fileTemplate, with: context)
+            let rendering = try await templateEval.execute(template: fileTemplate, with: context)
             
             await context.popSnapshot()
             
@@ -126,7 +134,7 @@ public actor TemplateSoup : TemplateRenderer {
         await context.append(variables: data)
         
         let templateEval = TemplateEvaluator()
-        let rendering = try templateEval.execute(template: template, with: context)
+        let rendering = try await templateEval.execute(template: template, with: context)
         
         await context.popSnapshot()
         
@@ -134,7 +142,7 @@ public actor TemplateSoup : TemplateRenderer {
         return rendering
     }
     
-    public func forEach(forInExpression expression: String, with pInfo: ParsedInfo, renderClosure: () throws -> Void ) async throws {
+    public func forEach(forInExpression expression: String, with pInfo: ParsedInfo, renderClosure: @Sendable () async throws -> Void ) async throws {
         let line = "\(ForStmt.START_KEYWORD) \(expression)"
                                                   
         guard let match = line.wholeMatch(of: ForStmt.stmtRegex ) else {
@@ -159,7 +167,7 @@ public actor TemplateSoup : TemplateRenderer {
             await loopWrap.FIRST_IN_LOOP( index == loopItems.startIndex )
             await loopWrap.LAST_IN_LOOP( index == loopItems.index(before: loopItems.endIndex))
             
-            try renderClosure()
+            try await renderClosure()
         }
         
         await context.popSnapshot()
@@ -178,19 +186,19 @@ public actor TemplateSoup : TemplateRenderer {
     }
         
     public init(loader: Blueprint, context: GenerationContext) {
-        self.repo = loader
+        self.blueprint = loader
         self.context = context
     }
 
     public init(context: GenerationContext) async {
         let path = await context.config.basePath
         let fsLoader = LocalFileBlueprintLoader(path: path, with: context)
-        self.repo = fsLoader
+        self.blueprint = fsLoader
         self.context = context
     }
 }
 
 public protocol TemplateRenderer: Sendable {
-    func renderTemplate(fileName templateFile: String, data: StringDictionary, with pInfo: ParsedInfo) throws -> String?
-    func renderTemplate(string templateString: String, identifier: String, data: StringDictionary, with pInfo: ParsedInfo) throws -> String?
+    func renderTemplate(fileName templateFile: String, data: StringDictionary, with pInfo: ParsedInfo) async throws -> String?
+    func renderTemplate(string templateString: String, identifier: String, data: StringDictionary, with pInfo: ParsedInfo) async throws -> String?
 }

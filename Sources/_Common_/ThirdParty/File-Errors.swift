@@ -26,7 +26,7 @@
 import Foundation
 
 /// Error type thrown by all of Files' throwing APIs.
-public struct FilesError<Reason>: ErrorWithMessage {
+public struct FilesError<Reason: Sendable>: ErrorWithMessage {
     /// The absolute path that the error occured at.
     public var path: String
     /// The reason that the error occured.
@@ -62,7 +62,7 @@ public struct FilesError<Reason>: ErrorWithMessage {
 }
 
 /// Enum listing reasons that a location manipulation could fail.
-public enum LocationErrorReason {
+public enum LocationErrorReason: Sendable {
     /// The location couldn't be found.
     case missing
     /// An empty path was given when refering to a file.
@@ -85,7 +85,7 @@ public enum LocationErrorReason {
 }
 
 /// Enum listing reasons that a write operation could fail.
-public enum WriteErrorReason {
+public enum WriteErrorReason: Sendable {
     /// An empty path was given when writing or creating a location.
     case emptyPath
     /// A folder couldn't be created because of an underlying system error.
@@ -99,7 +99,7 @@ public enum WriteErrorReason {
 }
 
 /// Enum listing reasons that a read operation could fail.
-public enum ReadErrorReason {
+public enum ReadErrorReason: Sendable {
     /// A file couldn't be read because of an underlying system error.
     case readFailed(Error)
     /// Failed to decode a given set of data into a string.

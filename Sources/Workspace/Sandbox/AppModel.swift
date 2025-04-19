@@ -10,8 +10,8 @@ public actor AppModel {
     let types = ParsedTypesCache()
     public internal(set) var commonModel = C4ComponentList()
     private var modules = C4ComponentList()
-    public internal(set) var containers = C4ContainerList()
-    public internal(set) var isModelsLoaded = false
+    public private(set) var containers = C4ContainerList()
+    public private(set) var isModelsLoaded = false
 
     public func resolveAndLinkItems(with ctx: LoadContext) async throws {
 
@@ -35,7 +35,7 @@ public actor AppModel {
                 try await ParserUtil.extractMixins(for: type, with: ctx)
                 
                 if let dto = type as? DtoObject {
-                    try dto.populateDerivedProperties()
+                    try await dto.populateDerivedProperties()
                 }
                 
                 //This should be done last, as the propeties for Dtos are populated only in the above steps
@@ -80,6 +80,10 @@ public actor AppModel {
         for item in modelModules {
             await modules.append(item)
         }
+    }
+    
+    internal func isModelsLoaded(_ value: Bool) {
+        self.isModelsLoaded = value
     }
     
     public init() {

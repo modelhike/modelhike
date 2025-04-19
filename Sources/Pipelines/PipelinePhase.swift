@@ -9,7 +9,7 @@ import Foundation
 public actor DiscoverPhase: PipelinePhase {
     public let name: String = "Discover"
     public private(set) var context: LoadContext
-    public var config: OutputConfig { context.config }
+    public var config: OutputConfig { get async { await context.config }}
 
     public var passes: [DiscoveringPass] = []
     public private(set) var lastRunResult: Bool = true
@@ -42,7 +42,7 @@ public actor DiscoverPhase: PipelinePhase {
 public actor LoadPhase: PipelinePhase {
     public let name: String = "Load"
     public private(set) var context: LoadContext
-    public var config: OutputConfig { context.config }
+    public var config: OutputConfig { get async { await context.config }}
 
     public var passes: [LoadingPass] = []
     public private(set) var lastRunResult: Bool = true
@@ -76,7 +76,7 @@ public actor LoadPhase: PipelinePhase {
 public actor HydratePhase: PipelinePhase {
     public let name: String = "Hydrate"
     public private(set) var context: LoadContext
-    public var config: OutputConfig { context.config }
+    public var config: OutputConfig { get async { await context.config }}
 
     public var passes: [HydrationPass] = []
     public private(set) var lastRunResult: Bool = true
@@ -109,7 +109,7 @@ public actor HydratePhase: PipelinePhase {
 public actor TransformPhase: PipelinePhase {
     public let name: String = "Transform"
     public private(set) var context: LoadContext
-    public var config: OutputConfig { context.config }
+    public var config: OutputConfig { get async { await context.config }}
 
     public var passes: [TransformationPass] = []
     public private(set) var lastRunResult: Bool = true
@@ -147,7 +147,7 @@ public actor TransformPhase: PipelinePhase {
 public actor RenderPhase: PipelinePhase {
     public let name: String = "Render"
     public private(set) var context: LoadContext
-    public var config: OutputConfig { context.config }
+    public var config: OutputConfig { get async { await context.config }}
 
     public var passes: [RenderingPass] = []
     public private(set) var lastRunResult: Bool = true
@@ -183,7 +183,7 @@ public actor RenderPhase: PipelinePhase {
 public actor PersistPhase: PipelinePhase {
     public let name: String = "Persist"
     public private(set) var context: LoadContext
-    public var config: OutputConfig { context.config }
+    public var config: OutputConfig { get async { await context.config }}
 
     public var passes: [PersistancePass] = []
     public private(set) var lastRunResult: Bool = true
@@ -214,11 +214,11 @@ public actor PersistPhase: PipelinePhase {
 }
 
 public protocol PipelinePhase: Actor {
-    associatedtype Pass
+    associatedtype Pass: Sendable
     
     var name: String { get }
     var context: LoadContext { get }
-    var config: OutputConfig { get }
+    var config: OutputConfig { get async }
 
     var passes: [Pass] { get set }
 

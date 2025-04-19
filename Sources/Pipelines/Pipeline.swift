@@ -7,7 +7,7 @@
 import Foundation
 
 public actor Pipeline {
-    var ws = Workspace()
+    var ws: Workspace
             
     let discover: DiscoverPhase
     let load: LoadPhase
@@ -20,29 +20,29 @@ public actor Pipeline {
     
     public internal(set) var generationSandboxes: [GenerationSandbox] = []
     
-    public var config: OutputConfig { ws.config }
+    public var config: OutputConfig { get async { await ws.config }}
         
     @discardableResult
     public func run(using config: OutputConfig) async throws -> Bool {
         do {
-            ws.config = config
+            await ws.config(config)
             
             return try await runPhases()
         } catch let err {
-            printError(err)
+            await printError(err)
             print("❌❌❌ TERMINATED DUE TO ERROR ❌❌❌")
             return false
         }
     }
     
-    public func render(string input: String, data: [String : Any]) throws -> String? {
+    public func render(string input: String, data: [String : Sendable]) async throws -> String? {
         do {
-            ws.config = PipelineConfig()
+            await ws.config(PipelineConfig())
             
-            return try ws.render(string: input, data: data)
+            return try await ws.render(string: input, data: data)
             
         } catch let err {
-            printError(err)
+            await printError(err)
             print("❌❌❌ TERMINATED DUE TO ERROR ❌❌❌")
             return nil
         }
@@ -70,7 +70,9 @@ public actor Pipeline {
     }
     
     public init(@PipelineBuilder _ builder: () -> [PipelinePass]) async {
-        let context = await ws.context
+        ws = await Workspace()
+        
+        let context = ws.context
         discover = DiscoverPhase(context: context)
         load = LoadPhase(context: context)
         hydrate = HydratePhase(context: context)
@@ -100,7 +102,9 @@ public actor Pipeline {
     }
     
     public init(from pipe: Pipeline, @PipelineBuilder _ builder: () -> [PipelinePass]) async {
-        let context = await ws.context
+        ws = await Workspace()
+        
+        let context = ws.context
         discover = DiscoverPhase(context: context)
         load = LoadPhase(context: context)
         hydrate = HydratePhase(context: context)
@@ -137,9 +141,9 @@ public actor Pipeline {
         phases = [discover, load, hydrate, transform, render, persist]
     }
     
-    fileprivate func printError(_ err: Error) {
+    fileprivate func printError(_ err: Error) async {
         let printer = PipelineErrorPrinter()
-        printer.printError(err, workspace: ws)
+        await printer.printError(err, workspace: ws)
     }
 }
 

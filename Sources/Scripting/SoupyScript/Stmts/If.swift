@@ -7,7 +7,7 @@
 import Foundation
 import RegexBuilder
 
-public struct IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
+public struct IfStmt: MultiBlockTemplateStmt {
     public var state: MutipleBlockTemplateStmtState
     
     static let START_KEYWORD = "if"
@@ -16,7 +16,7 @@ public struct IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
 
     public private(set) var IFCondition: String = ""
     public private(set) var elseIfBlocks : [ElseIfBlock] = []
-    public private(set) var elseBlock : PartOfMultiBlockContainer? = nil
+    public private(set) var elseBlock : Generic_PartOfMultiBlockContainer? = nil
 
     nonisolated(unsafe)
     let ifRegex = Regex {
@@ -73,7 +73,7 @@ public struct IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
             let actualStmt = line.stmtPartOnly()
             let elseMatches = actualStmt == Self.ELSE_KEYWORD
             if elseMatches {
-                let block = PartOfMultiBlockContainer(firstWord: Self.ELSE_KEYWORD, pInfo: blockLime.pInfo)
+                let block = Generic_PartOfMultiBlockContainer(firstWord: Self.ELSE_KEYWORD, pInfo: blockLime.pInfo)
                 
                 self.elseBlock = block
                 return block
@@ -115,7 +115,7 @@ public struct IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
                     
                     conditionEvalIsTrue = true
 
-                    if let body = try elseIfBlock.execute(with: ctx) {
+                    if let body = try await elseIfBlock.execute(with: ctx) {
                         rendering += body
                     }
                     break
@@ -126,7 +126,7 @@ public struct IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
             if let elseBlock = self.elseBlock, !conditionEvalIsTrue {
                 await ctx.debugLog.elseBlockExecuting(elseBlock.pInfo)
                 
-                if let body = try elseBlock.execute(with: ctx) {
+                if let body = try await elseBlock.execute(with: ctx) {
                     rendering += body
                 }
             }
@@ -147,7 +147,7 @@ public struct IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
             await str += debugStringForChildren()
             
             for elseIfBlock in elseIfBlocks {
-                if !elseIfBlock.isEmpty {
+                if await !elseIfBlock.isEmpty {
                     str +=  """
                 
                 ELSE IF stmt (level: \(pInfo.level))
@@ -156,7 +156,7 @@ public struct IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
                 
                 """
                     
-                    str += elseIfBlock.debugStringForChildren()
+                    await str += elseIfBlock.debugStringForChildren()
                 }
             }
             
@@ -168,7 +168,7 @@ public struct IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
             
             """
                 
-                str += elseBlock.debugStringForChildren()
+                str += await elseBlock.debugStringForChildren()
             }
             
             return str
@@ -185,12 +185,24 @@ public struct IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
     }
 }
 
-public class ElseIfBlock : PartOfMultiBlockContainer {
-    
+public struct ElseIfBlock: PartOfMultiBlockContainer {
+    let wrap: Generic_PartOfMultiBlockContainer
     public var condition = ""
+    public var pInfo: ParsedInfo { get async { await wrap.pInfo }}
+    public var isEmpty: Bool { get async { await wrap.isEmpty }}
+    public var firstWord: String { wrap.firstWord }
+    public var container: GenericStmtsContainer { get async { await wrap.container }}
+    
+    public func execute(with ctx: Context) async throws -> String? {
+        return try await wrap.execute(with: ctx)
+    }
+    
+    public func debugStringForChildren() async -> String {
+        return await wrap.debugStringForChildren()
+    }
     
     public init(condition: String, pInfo: ParsedInfo) {
-        super.init(firstWord: pInfo.firstWord, pInfo: pInfo)
+        wrap = Generic_PartOfMultiBlockContainer(firstWord: pInfo.firstWord, pInfo: pInfo)
         self.condition = condition
     }
 }

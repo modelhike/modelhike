@@ -7,7 +7,7 @@
 import Foundation
 import RegexBuilder
 
-public struct ForStmt: BlockTemplateStmt, CustomDebugStringConvertible {
+public struct ForStmt: BlockTemplateStmt {
     public var state: BlockTemplateStmtState
     
     static let START_KEYWORD = "for"
@@ -51,7 +51,7 @@ public struct ForStmt: BlockTemplateStmt, CustomDebugStringConvertible {
               InArrayVar.isNotEmpty,
               await children.count != 0 else { return nil }
 
-        guard let loopItems = try await ctx.valueOf(variableOrObjProp: InArrayVar, with: pInfo) as? [Any] else {
+        guard let loopItems = try await ctx.valueOf(variableOrObjProp: InArrayVar, with: pInfo) as? [Sendable] else {
             throw TemplateSoup_ParsingError.invalidExpression_VariableOrObjPropNotFound(InArrayVar, pInfo)
         }
         
@@ -60,20 +60,20 @@ public struct ForStmt: BlockTemplateStmt, CustomDebugStringConvertible {
 
         await ctx.pushSnapshot()
         var loopWrap = ForLoop_Wrap(self)
-        ctx.variables[ForStmt.LOOP_VARIABLE] = loopWrap
+        await ctx.variables.set(ForStmt.LOOP_VARIABLE, value: loopWrap)
         
         for (index, loopItem) in loopItems.enumerated() {
-            ctx.variables[loopVariableName] = loopItem
-            loopWrap.FIRST_IN_LOOP = index == loopItems.startIndex
-            loopWrap.LAST_IN_LOOP = index == loopItems.index(before: loopItems.endIndex)
+            await ctx.variables.set(loopVariableName, value: loopItem)
+            await loopWrap.FIRST_IN_LOOP( index == loopItems.startIndex )
+            await loopWrap.LAST_IN_LOOP( index == loopItems.index(before: loopItems.endIndex))
             
-            if let body = try children.execute(with: ctx) {
+            if let body = try await children.execute(with: ctx) {
                 rendering += body
             }
                 
         }
         
-        ctx.popSnapshot()
+        await ctx.popSnapshot()
         
         return rendering.isNotEmpty ? rendering : nil
     }

@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class ResourceBlueprintLoader: Blueprint {
+public actor ResourceBlueprintLoader: Blueprint {
     private var templateCache: [String: Template] = [:]
     private var scriptFileCache: [String: Script] = [:]
 
@@ -17,7 +17,7 @@ public class ResourceBlueprintLoader: Blueprint {
     public var blueprintPath: String
     public var resourceRoot: String
 
-    public func loadScriptFile(fileName: String, with pInfo: ParsedInfo) throws -> any Script {
+    public func loadScriptFile(fileName: String, with pInfo: ParsedInfo) async throws -> any Script {
         if let resourceURL = bundle.url(
             forResource: fileName,
             withExtension: TemplateConstants.ScriptExtension,
@@ -74,9 +74,9 @@ public class ResourceBlueprintLoader: Blueprint {
         }
     }
 
-    public func blueprintExists() throws -> Bool {
+    public func blueprintExists() async throws -> Bool {
         if !loadPathExists() {
-            let pInfo = ParsedInfo.dummyForAppState(with: context)
+            let pInfo = await ParsedInfo.dummyForAppState(with: context)
             throw EvaluationError.invalidAppState(
                 "Blueprint resource root folder not found!!!", pInfo)
         }
@@ -102,17 +102,17 @@ public class ResourceBlueprintLoader: Blueprint {
     }
 
     public func copyFiles(foldername: String, to outputFolder: OutputFolder, with pInfo: ParsedInfo)
-        throws
+    async throws
     {
         let folder = blueprintPath + foldername
         guard let resourceURL = bundle.resourceURL?.appendingPathComponent(folder) else { return }
 
-        try copyResourceFiles(from: resourceURL, to: outputFolder, pInfo: pInfo)
+        try await copyResourceFiles(from: resourceURL, to: outputFolder, pInfo: pInfo)
     }
 
     fileprivate func copyResourceFiles(
         from resUrl: URL, to outputFolder: OutputFolder, pInfo: ParsedInfo
-    ) throws {
+    ) async throws {
         let fm = FileManager.default
 
         do {
@@ -126,10 +126,10 @@ public class ResourceBlueprintLoader: Blueprint {
 
                     let filename = resourceName
                     let outFile = StaticFile(filename: filename, data: contents, pInfo: pInfo )
-                    outputFolder.add(outFile)
+                    await outputFolder.add(outFile)
                 } else {  //resource folder
                     let newResUrl = resUrl.appendingPathComponent(resourceName)
-                    try copyResourceFiles(
+                    try await copyResourceFiles(
                         from: newResUrl, to: outputFolder.subFolder(resourceName) , pInfo: pInfo)
                 }
             }
@@ -142,18 +142,18 @@ public class ResourceBlueprintLoader: Blueprint {
     public func renderFiles(
         foldername: String, to outputFolder: OutputFolder, using templateSoup: TemplateSoup,
         with pInfo: ParsedInfo
-    ) throws {
+    ) async throws {
         let folder = blueprintPath + foldername
         guard let resourceURL = bundle.resourceURL?.appendingPathComponent(folder) else { return }
 
-        try renderResourceFiles(
+        try await renderResourceFiles(
             from: resourceURL, to: outputFolder, using: templateSoup, with: pInfo)
     }
 
     fileprivate func renderResourceFiles(
         from resUrl: URL, to outputFolder: OutputFolder, using templateSoup: TemplateSoup,
         with pInfo: ParsedInfo
-    ) throws {
+    ) async throws {
         let fm = FileManager.default
 
         do {
@@ -170,48 +170,48 @@ public class ResourceBlueprintLoader: Blueprint {
 
                         //render the filename if it has an expression within '{{' and '}}'
                         let filename =
-                            try ContentHandler.eval(
+                        try await ContentHandler.eval(
                                 expression: actualTemplateFilename, with: templateSoup.context)
                             ?? actualTemplateFilename
 
                         let contents = try String(contentsOf: resourcePath)
 
-                        let renderClosure = { [self] (outputname: String, pInfo: ParsedInfo) in
+                        let renderClosure: RenderClosure = { [self] (outputname: String, pInfo: ParsedInfo) in
                             do {
                             let outputFilename: String = outputname.isNotEmpty ? outputname : filename
 
                             //if handler returns false, dont render file
-                            if try !self.context.events.canRender(filename: outputFilename, templatename: actualTemplateFilename, with: pInfo) {
+                                if try await !self.context.events.canRender(filename: outputFilename, templatename: actualTemplateFilename, with: pInfo) {
                                 return
                             }
                             
                             //check if parser directives to exclude file
                             if let ctx = pInfo.ctx as? GenerationContext {
-                                if let frontMatter = try FrontMatter(in: contents, filename: filename, with: ctx) {
-                                    try frontMatter.processVariables()
+                                if var frontMatter = try await FrontMatter(in: contents, filename: filename, with: ctx) {
+                                    try await frontMatter.processVariables()
                                 }
                             }
                             
-                            if let renderedString = try templateSoup.renderTemplate(
+                                if let renderedString = try await templateSoup.renderTemplate(
                                 string: contents, identifier: actualTemplateFilename, with: pInfo)
                             {
 
-                                templateSoup.context.debugLog.generatingFileInFolder(
+                                    await templateSoup.context.debugLog.generatingFileInFolder(
                                     filename, with: actualTemplateFilename, folder: outputFolder.folder)
 
                                 let outFile = TemplateRenderedFile(filename: outputFilename, contents: renderedString, pInfo: pInfo )
-                                outputFolder.add(outFile)
+                                    await outputFolder.add(outFile)
                             }
                             } catch let err {
                                 if let directive = err as? ParserDirective {
                                     if case let .excludeFile(filename) = directive {
-                                        pInfo.ctx.debugLog.excludingFile(filename)
+                                        await pInfo.ctx.debugLog.excludingFile(filename)
                                         return  //nothing to generate from this excluded file
                                     } else if case let .stopRenderingCurrentFile(filename, pInfo) = directive {
-                                        pInfo.ctx.debugLog.stopRenderingCurrentFile(filename, pInfo: pInfo)
+                                        await pInfo.ctx.debugLog.stopRenderingCurrentFile(filename, pInfo: pInfo)
                                         return  //nothing to generate from this rendering stopped file
                                     } else if case let .throwErrorFromCurrentFile(filename, errMsg, pInfo) = directive {
-                                        pInfo.ctx.debugLog.throwErrorFromCurrentFile(filename, err: errMsg, pInfo: pInfo)
+                                        await pInfo.ctx.debugLog.throwErrorFromCurrentFile(filename, err: errMsg, pInfo: pInfo)
                                         throw EvaluationError.templateRenderingError(pInfo, directive)
                                     }
                                 } else {
@@ -221,25 +221,26 @@ public class ResourceBlueprintLoader: Blueprint {
                         }
 
                         let parsingIdentifier = actualTemplateFilename
-                        if let frontMatter = try templateSoup.frontMatter(
+                        if let frontMatter = try await templateSoup.frontMatter(
                             in: contents, identifier: parsingIdentifier),
-                            let pInfo = frontMatter.hasDirective(ParserDirective.includeFor)
+                           let pInfo = await frontMatter.hasDirective(ParserDirective.includeFor)
                         {
-                            try templateSoup.forEach(forInExpression: pInfo.line, with: pInfo) {
-                                if frontMatter.hasDirective(ParserDirective.outputFilename) != nil {
-                                    if let outputFilename = try frontMatter.evalDirective(
+                            try await templateSoup.forEach(forInExpression: pInfo.line, with: pInfo) {
+                                
+                                if await frontMatter.hasDirective(ParserDirective.outputFilename) != nil {
+                                    if let outputFilename = try await frontMatter.evalDirective(
                                         ParserDirective.outputFilename, pInfo: pInfo) as? String
                                     {
-                                        try renderClosure(outputFilename, pInfo)
+                                        try await renderClosure(outputFilename, pInfo)
                                     }
                                 } else {
-                                    try renderClosure("", pInfo)
+                                    try await renderClosure("", pInfo)
                                 }
                             }
                         } else {
-                            let pInfo = ParsedInfo.dummyForFrontMatterError(
+                            let pInfo = await ParsedInfo.dummyForFrontMatterError(
                                 identifier: parsingIdentifier, with: context)
-                            try renderClosure("", pInfo)
+                            try await renderClosure("", pInfo)
                         }
 
                     } else {  //not a template file
@@ -247,19 +248,19 @@ public class ResourceBlueprintLoader: Blueprint {
                         let contents = try Data(contentsOf: resourcePath)
                         let filename = resourceName
 
-                        templateSoup.context.debugLog.copyingFileInFolder(
+                        await templateSoup.context.debugLog.copyingFileInFolder(
                             filename, folder: outputFolder.folder)
 
                         let outFile = StaticFile(filename: filename, data: contents, pInfo: pInfo )
-                        outputFolder.add(outFile)
+                        await outputFolder.add(outFile)
                     }
                 } else {  //resource folder
                     let subfoldername =
-                        try ContentHandler.eval(
+                    try await ContentHandler.eval(
                             expression: resourceName, with: templateSoup.context) ?? resourceName
 
                     let newResUrl = resUrl.appendingPathComponent(subfoldername)
-                    try renderResourceFiles(
+                    try await renderResourceFiles(
                         from: newResUrl, to: outputFolder.subFolder(resourceName) , using: templateSoup,
                         with: pInfo)
                 }

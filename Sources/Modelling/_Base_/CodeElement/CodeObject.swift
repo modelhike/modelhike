@@ -7,22 +7,24 @@
 import Foundation
 
 public protocol CodeObject: ArtifactHolderWithAttachedSections, SendableDebugStringConvertible {
-    var dataType: ArtifactKind { get set }
-    var properties: [Property] { get }
+    var dataType: ArtifactKind { get }
+    var properties: [Property] { get async }
 
     var methods: [MethodObject] { get }
-    func hasMethod(_ name: String) -> Bool
+    func hasMethod(_ name: String, isCaseSensitive: Bool) async -> Bool
+    func getMethod(_ name: String, isCaseSensitive: Bool) async -> MethodObject?
+    
+    func hasProp(_ name: String, isCaseSensitive: Bool) async -> Bool
+    func getProp(_ name: String, isCaseSensitive: Bool) async -> Property?
+    func getLastPropInRecursive(_ name: String, appModel: ParsedTypesCache) async -> Property?
+    func getArrayPropInRecursive(_ name: String, appModel: ParsedTypesCache) async -> Property?
 
-    func hasProp(_ name: String, isCaseSensitive: Bool) -> Bool
-    func getProp(_ name: String, isCaseSensitive: Bool) -> Property?
-    func getLastPropInRecursive(_ name: String, appModel: ParsedTypesCache) -> Property?
-    func getArrayPropInRecursive(_ name: String, appModel: ParsedTypesCache) -> Property?
-
-    func isSameAs(_ CodeObject: CodeObject) -> Bool
+    func isSameAs(_ CodeObject: CodeObject) async -> Bool
 
     var attached: [Artifact] { get set }
     var mixins: [CodeObject] { get set }
     func append(mixin: CodeObject)
+    func dataType(_ value: ArtifactKind)
 }
 
 typealias CodeObjectBuilder = ResultBuilder<CodeObject>
@@ -65,7 +67,7 @@ extension CodeObject {
     }
     
     public func getProp(_ name: String, isCaseSensitive: Bool = false) async -> Property? {
-        for item in properties {
+        for item in await properties {
             let item_givenname = await isCaseSensitive ? item.givenname : item.givenname.lowercased()
             let item_name = await isCaseSensitive ? item.name : item.name.lowercased()
             

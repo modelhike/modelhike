@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class DerivedProperty: CodeMember {
+public actor DerivedProperty: CodeMember {
     public let pInfo: ParsedInfo
     public var attribs = Attributes()
     public var tags = Tags()
@@ -14,12 +14,12 @@ public class DerivedProperty: CodeMember {
     public var name: String
     public var givenname: String
     public var type: DerivedPropertyKind = .derived
-    public var prop: Property?
+    public private(set) var prop: Property?
     public var obj: DomainObject?
 
     public var comment: String?
 
-    public static func parse(pInfo: ParsedInfo) throws -> DerivedProperty? {
+    public static func parse(pInfo: ParsedInfo) async throws -> DerivedProperty? {
 
         let originalLine = pInfo.line
         let firstWord = pInfo.firstWord
@@ -38,15 +38,15 @@ public class DerivedProperty: CodeMember {
 
         //check if has attributes
         if let attributeString = attributeString {
-            ParserUtil.populateAttributes(for: prop, from: attributeString)
+            await ParserUtil.populateAttributes(for: prop, from: attributeString)
         }
 
         //check if has tags
         if let tagString = tagString {
-            ParserUtil.populateTags(for: prop, from: tagString)
+            await ParserUtil.populateTags(for: prop, from: tagString)
         }
 
-        pInfo.parser.skipLine()
+        await pInfo.parser.skipLine()
 
         return prop
     }
@@ -58,14 +58,18 @@ public class DerivedProperty: CodeMember {
         }
     }
 
-    public func hasAttrib(_ name: String) -> Bool {
-        return attribs.has(name)
+    public func hasAttrib(_ name: String) async -> Bool {
+        return await attribs.has(name)
     }
 
-    public func hasAttrib(_ name: AttributeNamePresets) -> Bool {
-        return hasAttrib(name.rawValue)
+    public func hasAttrib(_ name: AttributeNamePresets) async -> Bool {
+        return await hasAttrib(name.rawValue)
     }
 
+    public func prop(_ value: Property?) {
+        self.prop = value
+    }
+    
     public init(name: String, pInfo: ParsedInfo) {
         self.givenname = name.trim()
         self.name = self.givenname.normalizeForVariableName()

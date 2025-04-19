@@ -24,7 +24,11 @@ public struct StringTemplate : Template, Script, ExpressibleByStringLiteral, Exp
     
     public var string: String { toString() }
 
-    public init(@StringConvertibleBuilder _ builder : () -> [StringConvertible]) {
+    public init(@StringConvertibleBuilder _ builder : () async  -> [StringConvertible]) async {
+        items = await builder()
+    }
+    
+    public init(@StringConvertibleBuilder _ builder : ()  -> [StringConvertible]) {
         items = builder()
     }
     

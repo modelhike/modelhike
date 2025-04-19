@@ -6,7 +6,7 @@
 
 import Foundation
 
-public protocol BlockTemplateStmt : FileTemplateStatement {
+public protocol BlockTemplateStmt : SendableDebugStringConvertible, FileTemplateStatement {
     var state: BlockTemplateStmtState { get }
     
     func execute(with ctx: Context) async throws -> String?

@@ -6,7 +6,7 @@
 
 import Foundation
 
-public protocol BlockOrLineTemplateStmt: FileTemplateStatement {
+public protocol BlockOrLineTemplateStmt: SendableDebugStringConvertible, FileTemplateStatement {
     var state: BlockOrLineTemplateStmtState { get }
     
     func execute(with ctx: Context) async throws -> String?
@@ -22,6 +22,7 @@ extension BlockOrLineTemplateStmt {
     public var endKeyword: String { state.endKeyword }
     public var isEmpty: Bool  { get async { await children.isEmpty } }
     public var lineNo: Int { return pInfo.lineNo }
+    public var isBlockVariant: Bool  { get async { await state.isBlockVariant }}
 
     private mutating func parseStmtLine_BlockVariant(line: String, lineParser: LineParser) async throws {
         let matched = try await matchLine_BlockVariant(line: line)

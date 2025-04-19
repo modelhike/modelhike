@@ -17,7 +17,7 @@ public actor C4ComponentList : ArtifactHolder, _CollectionAsyncSequence {
     
     public internal(set) var components : [C4Component] = []
     
-    public func forEachType(by transform: @escaping @Sendable (inout CodeObject, inout C4Component) async throws -> Void) async throws {
+    public func forEachType(by transform:  @Sendable (inout CodeObject, inout C4Component) async throws -> Void) async throws {
         for component in components {
             var component = component
             for type in await component.types {
@@ -31,7 +31,7 @@ public actor C4ComponentList : ArtifactHolder, _CollectionAsyncSequence {
         return components
     }
     
-    public func forEach(by transform: @escaping @Sendable (inout C4Component) async throws -> Void) async throws {
+    public func forEach(by transform: @Sendable (inout C4Component) async throws -> Void) async throws {
         
         for el in components {
             var el = el

@@ -6,7 +6,7 @@
 
 import Foundation
 
-public struct PluginsPass: TransformationPass {
+public actor PluginsPass: TransformationPass {
     public func runIn(phase: TransformPhase) async -> Bool {
         return true
     }

@@ -6,9 +6,9 @@
 
 import Foundation
 
-public enum SpecialFolderNames {
-    public static var root = "_root_"
-    public static var hooks = "_hooks_"
-    public static var renders = "_renders_"
+public enum SpecialFolderNames: Sendable {
+    public static let root = "_root_"
+    public static let hooks = "_hooks_"
+    public static let renders = "_renders_"
 
 }

@@ -80,7 +80,7 @@ public struct RenderTemplateFileStmt: LineTemplateStmt, CallStackable, CustomDeb
         await ctx.pushCallStack(self)
 
         //render the filename if it has an expression within '{{' and '}}'
-        filename = try ContentHandler.eval(line: filename, pInfo: pInfo) ?? filename
+        filename = try await ContentHandler.eval(line: filename, pInfo: pInfo) ?? filename
 
         await ctx.debugLog.generatingFile(filename, with: fromTemplate)
         if let _ = try await context.fileGenerator.generateFile(filename, template: fromTemplate, with: pInfo) {

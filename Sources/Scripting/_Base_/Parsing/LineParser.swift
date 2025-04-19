@@ -57,7 +57,7 @@ public actor GenericLineParser<T> : LineParser where T: Context {
     
     public let isStatementsPrefixedWithKeyword: Bool
     
-    public func parse(till endKeyWord: String? = nil, level: Int, lineHandler: ((_ pctx: ParsedInfo, _ stmtWord: String?) throws -> ())) async throws {
+    public func parse(till endKeyWord: String? = nil, level: Int, lineHandler: ((_ pctx: ParsedInfo, _ stmtWord: String?) async throws -> ())) async throws {
         resetFlags()
         
         while linesRemaining {
@@ -75,7 +75,7 @@ public actor GenericLineParser<T> : LineParser where T: Context {
             if isStatementsPrefixedWithKeyword {
                 guard let secondWord = pInfo.secondWord else {
                     pInfo.firstWord("")
-                    try lineHandler(pInfo, nil)
+                    try await lineHandler(pInfo, nil)
                     
                     if await !miscLineReadHandling() {break}
                     continue
@@ -100,7 +100,7 @@ public actor GenericLineParser<T> : LineParser where T: Context {
             
             await ctx.debugLog.line(curLine, pInfo: pInfo)
             
-            try lineHandler(pInfo, stmtWord)
+            try await lineHandler(pInfo, stmtWord)
             
             
             if await !miscLineReadHandling() {break}

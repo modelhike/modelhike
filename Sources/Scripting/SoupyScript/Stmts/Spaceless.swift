@@ -7,7 +7,7 @@
 import Foundation
 import RegexBuilder
 
-public struct SpacelessStmt: BlockTemplateStmt, CustomDebugStringConvertible {    
+public struct SpacelessStmt: BlockTemplateStmt {
     public var state: BlockTemplateStmtState
     
     static let START_KEYWORD = "spaceless"
@@ -35,20 +35,20 @@ public struct SpacelessStmt: BlockTemplateStmt, CustomDebugStringConvertible {
         return body.spaceless()
     }
     
-    public var debugDescription: String {
+    public var debugDescription: String { get async {
         var str =  """
         SPACE-LESS stmt (level: \(pInfo.level))
         - children:
         
         """
         
-        str += debugStringForChildren()
+        str += await debugStringForChildren()
         
         return str
-    }
+    }}
     
     public init(parseTill endKeyWord: String, pInfo: ParsedInfo) {
-        state=BlockTemplateStmtState(keyword: Self.START_KEYWORD, endKeyword: endKeyWord, pInfo: pInfo)
+        state = BlockTemplateStmtState(keyword: Self.START_KEYWORD, endKeyword: endKeyWord, pInfo: pInfo)
     }
     
     static let register = BlockTemplateStmtConfig(keyword: START_KEYWORD) { endKeyWord, pInfo in SpacelessStmt(parseTill: endKeyWord, pInfo: pInfo)

@@ -6,14 +6,14 @@
 
 import Foundation
 
-public struct DiscoverModelsPass : DiscoveringPass {
+public actor DiscoverModelsPass : DiscoveringPass {
 
     public func runIn(_ ws: Workspace, phase: DiscoverPhase) async throws -> Bool {
         var repo: ModelRepository
 
         //TODO: Also update in Load phase
         //        if config.modelLoaderType == .localFileSystem {
-        repo = LocalFileModelLoader(path: ws.config.basePath, with: ws.context)
+        repo = await LocalFileModelLoader(path: ws.config.basePath, with: ws.context)
         //let modelRepo = inlineModel(ws)
         
         if repo.probeForGenerationConfig() {
@@ -32,9 +32,9 @@ public struct DiscoverModelsPass : DiscoveringPass {
         return true
     }
     
-    fileprivate func printError(_ err: Error, workspace: Workspace) {
+    fileprivate func printError(_ err: Error, workspace: Workspace) async {
         let printer = PipelineErrorPrinter()
-        printer.printError(err, workspace: workspace)
+        await printer.printError(err, workspace: workspace)
     }
     
     public init() {

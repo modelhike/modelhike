@@ -25,9 +25,9 @@ public actor StaticFolder : PersistableFolder {
         }
     }
     
-    public func copyFiles() throws {
+    public func copyFiles() async throws {
         if let outputFolder {
-            try repo.copyFiles(foldername: foldername, to: outputFolder, with: pInfo)
+            try await repo.copyFiles(foldername: foldername, to: outputFolder, with: pInfo)
         } else {
             fatalError(#function + ": output path not set!")
         }

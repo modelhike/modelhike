@@ -15,7 +15,9 @@ public protocol Sandbox: Actor {
     var context: GenerationContext {get}
     var config: OutputConfig {get async}
     
-    var onLoadTemplate : LoadTemplateHandler {get set}
+    var onLoadTemplate : LoadTemplateHandler {get async}
+    func onLoadTemplate(_ newValue: @escaping LoadTemplateHandler) async
+    
     func loadSymbols(_ sym : Set<PreDefinedSymbols>?) async throws
     
     func render(string templateString: String, data: [String: Sendable]) async throws -> String?

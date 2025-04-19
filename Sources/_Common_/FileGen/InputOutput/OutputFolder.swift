@@ -86,7 +86,7 @@ public actor OutputFolder : SendableDebugStringConvertible {
 
         for item in items {
             if let outputPath = item.outputPath {
-                try item.persist()
+                try await item.persist()
                 await context.addGenerated(filePath: outputPath.string + item.filename)
             }
         }

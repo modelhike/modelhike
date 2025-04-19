@@ -7,20 +7,20 @@
 import Foundation
 
 public struct GraphQLLib {
-    public static var functions: [Modifier] {
-        return [
-            typename
+    public static func functions() async -> [Modifier] {
+        return await [
+            typename()
         ]
     }
 
     
-    public static var typename: Modifier {
-        return CreateModifier.withoutParams("graphql-typename") { (value: Any, pInfo: ParsedInfo) -> String? in
+    public static func typename() async -> Modifier {
+        return await CreateModifier.withoutParams("graphql-typename") { (value: Any, pInfo: ParsedInfo) -> String? in
             
             var type = PropertyKind.unKnown
             
             if let wrapped = value as? TypeProperty_Wrap {
-                type = wrapped.item.type.kind
+                type = await wrapped.item.type.kind
             } else if let info = value as? TypeInfo {
                 type = info.kind
             } else if let kind = value as? PropertyKind {

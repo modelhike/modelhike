@@ -33,7 +33,7 @@ public struct ModelLib {
 
             guard let objectName = arguments.first as? String else { return nil }
 
-            let appModel = sandbox.model.types
+            let appModel = await sandbox.model.types
             if let obj = await appModel.get(for: objectName) {
                 if let prop = await obj.getLastPropInRecursive(propName, appModel: appModel) {
                     return TypeProperty_Wrap(prop)

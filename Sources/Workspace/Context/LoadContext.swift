@@ -15,6 +15,12 @@ public actor LoadContext : Context {
     public var currentState = ContextState()
     public private(set) var config : OutputConfig
     
+    public private(set) var blueprints: BlueprintAggregator
+    
+    public func blueprint(named name: String, with pInfo: ParsedInfo) async throws -> any Blueprint {
+        return try await blueprints.blueprint(named: name, with: pInfo)
+    }
+    
     //Expression Evaluation
     public private(set) var evaluator = ExpressionEvaluator()
 
@@ -33,16 +39,18 @@ public actor LoadContext : Context {
         self.config = config
         self.debugLog.flags = config.flags
         self.model = AppModel()
+        self.blueprints = BlueprintAggregator(config: config)
     }
     
     public init(model: AppModel, config: OutputConfig) {
         self.config = config
         self.debugLog.flags = config.flags
         self.model = model
+        self.blueprints = BlueprintAggregator(config: config)
     }
     
     public init(model: AppModel, config: OutputConfig, data: StringDictionary) async {
         self.init(model: model, config: config)
-        await self.currentState.variables.replace(variables: variables)
+        await self.replace(variables: data)
     }
 }

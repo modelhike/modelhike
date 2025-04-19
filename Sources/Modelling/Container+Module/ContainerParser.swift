@@ -12,9 +12,9 @@ public enum ContainerParser {
     // ===
     // container name (attributes)
     // ===
-    public static func canParse(parser lineParser: LineParser) -> Bool {
-        let currentLine = lineParser.currentLine()
-        let nextNextLine = lineParser.lookAheadLine(by: 2)
+    public static func canParse(parser lineParser: LineParser) async -> Bool {
+        let currentLine = await lineParser.currentLine()
+        let nextNextLine = await lineParser.lookAheadLine(by: 2)
             
         if !currentLine.hasOnly(ModelConstants.NameOverlineChar) {
             return false
@@ -27,49 +27,49 @@ public enum ContainerParser {
         return true
     }
     
-    public static func parse(parser: LineParser, with ctx: LoadContext) throws -> C4Container? {
-        parser.skipLine() //skip the overline
-        let line = parser.currentLine()
+    public static func parse(parser: LineParser, with ctx: LoadContext) async throws -> C4Container? {
+        await parser.skipLine() //skip the overline
+        let line = await parser.currentLine()
         
         guard let match = line.wholeMatch(of: ModelRegEx.containerName_Capturing)                                                                                  else { return nil }
         
         let (_, containerName, attributeString, tagString) = match.output
-        let item = C4Container(name: containerName)
+        let item = await C4Container(name: containerName)
         
         //check if has attributes
         if let attributeString = attributeString {
-            ParserUtil.populateAttributes(for: item, from: attributeString)
+            await ParserUtil.populateAttributes(for: item, from: attributeString)
         }
         
         //check if has tags
         if let tagString = tagString {
-            ParserUtil.populateTags(for: item, from: tagString)
+            await ParserUtil.populateTags(for: item, from: tagString)
         }
         
-        parser.skipLine(by: 2)//skip container name and underline
+        await parser.skipLine(by: 2)//skip container name and underline
         
-        while parser.linesRemaining {
-            if parser.isCurrentLineEmptyOrCommented() { parser.skipLine(); continue }
+        while await parser.linesRemaining {
+            if await parser.isCurrentLineEmptyOrCommented() { await parser.skipLine(); continue }
             
-            guard let pInfo = parser.currentParsedInfo(level: 0) else { parser.skipLine(); continue }
-            if parser.isCurrentLineHumaneComment(pInfo) { parser.skipLine(); continue } //humane comment
+            guard let pInfo = await parser.currentParsedInfo(level: 0) else { await parser.skipLine(); continue }
+            if await parser.isCurrentLineHumaneComment(pInfo) { await parser.skipLine(); continue } //humane comment
             
             if ContainerModuleMember.canParse(firstWord: pInfo.firstWord) {
-                if let member = try ContainerModuleMember.parse(with: pInfo) {
-                    item.append(unResolved: member)
+                if let member = try await ContainerModuleMember.parse(with: pInfo) {
+                    await item.append(unResolved: member)
                     continue
                 } else {
                     throw Model_ParsingError.invalidContainerMemberLine(pInfo)
                 }
             }
             
-            if try pInfo.tryParseAnnotations(with: item) {
+            if try await pInfo.tryParseAnnotations(with: item) {
                 continue
             }
             
             if MethodObject.canParse(firstWord: pInfo.firstWord) {
-                if let method = try MethodObject.parse(pInfo: pInfo) {
-                    item.append(method)
+                if let method = try await MethodObject.parse(pInfo: pInfo) {
+                    await item.append(method)
                     continue
                 } else {
                     throw Model_ParsingError.invalidMethodLine(pInfo)

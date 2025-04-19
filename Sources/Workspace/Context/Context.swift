@@ -8,7 +8,7 @@ fileprivate let working_dir_var : String = "working_dir"
 
 public protocol Context : AnyObject, Actor {
     var config : OutputConfig {get}
-    var debugLog: ContextDebugLog {get set}
+    var debugLog: ContextDebugLog {get}
     var events: CodeGenerationEvents {get}
     var currentState: ContextState {get set}
     var variables: WorkingMemory {get}
@@ -19,6 +19,8 @@ public protocol Context : AnyObject, Actor {
     var evaluator: ExpressionEvaluator {get}
 
     func config(_ value: OutputConfig)
+    var blueprints: BlueprintAggregator { get }
+    func blueprint(named name: String, with pInfo: ParsedInfo) async throws -> any Blueprint
     
     func evaluate(expression: String, with pInfo: ParsedInfo) async throws -> Sendable?
     func evaluateCondition(expression: String, with pInfo: ParsedInfo) async throws -> Bool

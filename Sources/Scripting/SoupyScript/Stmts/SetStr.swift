@@ -7,7 +7,7 @@
 import Foundation
 import RegexBuilder
 
-public struct SetStrVarStmt: BlockOrLineTemplateStmt, CustomDebugStringConvertible {
+public struct SetStrVarStmt: BlockOrLineTemplateStmt {
     
     public var state: BlockOrLineTemplateStmtState
     
@@ -81,9 +81,9 @@ public struct SetStrVarStmt: BlockOrLineTemplateStmt, CustomDebugStringConvertib
     }
     
     public func execute(with ctx: Context) async throws -> String? {
-        var actualBody: Any? = nil
+        var actualBody: Sendable? = nil
         
-        if isBlockVariant {
+        if await isBlockVariant {
             guard SetVar.isNotEmpty,
                   await children.count != 0 else { return nil }
             
@@ -97,7 +97,7 @@ public struct SetStrVarStmt: BlockOrLineTemplateStmt, CustomDebugStringConvertib
             guard SetVar.isNotEmpty,
                   ValueExpression.isNotEmpty else { return nil }
             
-            if let body = try ContentHandler.eval(line: ValueExpression, pInfo: pInfo) {
+            if let body = try await ContentHandler.eval(line: ValueExpression, pInfo: pInfo) {
                 let modifiedBody = try await Modifiers.apply(to: body, modifiers: self.ModifiersList, with: pInfo)
                 actualBody = modifiedBody
             } else {
@@ -112,20 +112,20 @@ public struct SetStrVarStmt: BlockOrLineTemplateStmt, CustomDebugStringConvertib
             if await ctx.isWorkingDirectoryVariable(variableName) {
                 if let str = actualBody as? String {
                     await ctx.debugLog.workingDirectoryChanged(str)
-                    ctx.variables[variableName] = str
+                    await ctx.variables.set(variableName, value: str)
                 }
             } else {
-                try ctx.setValueOf(variableOrObjProp: variableName, value: actualBody, with: pInfo)
+                try await ctx.setValueOf(variableOrObjProp: variableName, value: actualBody, with: pInfo)
             }
         } else {
             
             //special handling for setting current working directory
-            if ctx.isWorkingDirectoryVariable(variableName) {
+            if await ctx.isWorkingDirectoryVariable(variableName) {
                 //reset to base path
-                ctx.debugLog.workingDirectoryChanged("(base path)")
-                ctx.variables[variableName] = ""
+                await ctx.debugLog.workingDirectoryChanged("(base path)")
+                await ctx.variables.set(variableName, value: "")
             } else {
-                try ctx.setValueOf(variableOrObjProp: variableName, value: nil, with: pInfo)
+                try await ctx.setValueOf(variableOrObjProp: variableName, value: nil, with: pInfo)
             }
         }
         
@@ -134,7 +134,7 @@ public struct SetStrVarStmt: BlockOrLineTemplateStmt, CustomDebugStringConvertib
     
     public var debugDescription: String {
         get async {
-            if self.isBlockVariant {
+            if await self.isBlockVariant {
                 var str =  """
             SET STR VAR Block stmt (level: \(pInfo.level))
             - setVar: \(self.SetVar)
@@ -143,7 +143,7 @@ public struct SetStrVarStmt: BlockOrLineTemplateStmt, CustomDebugStringConvertib
             
             """
                 
-                str += debugStringForChildren()
+                await str += debugStringForChildren()
                 
                 return str
                 

@@ -41,20 +41,20 @@ public enum APISectionParser {
                 if let match = line.wholeMatch(of: Self.customListApi_WithCondition_Regex) {
                     let (_, prop1, op, prop2) = match.output
 
-                    let api = ListAPIByCustomProperties(entity: obj)
+                    let api = await ListAPIByCustomProperties(entity: obj)
 
                     if op.trim().lowercased() == "and" {
-                        api.andCondition = true
+                        await api.andCondition(true)
                     }
 
                     if let property1 = await obj.getProp(prop1.trim(), isCaseSensitive: false) {
-                        api.properties.append(property1)
+                        await api.append(property: property1)
                     } else {
                         throw Model_ParsingError.invalidPropertyUsedInApi(prop1, pInfo)
                     }
 
                     if let property2 = await obj.getProp(prop2.trim(), isCaseSensitive: false) {
-                        api.properties.append(property2)
+                        await api.append(property: property2)
                     } else {
                         throw Model_ParsingError.invalidPropertyUsedInApi(prop2, pInfo)
                     }
@@ -64,10 +64,10 @@ public enum APISectionParser {
                 } else if let match = line.wholeMatch(of: Self.customListApi_SingleProperty_Regex) {
                     let (_, prop1) = match.output
 
-                    let api = ListAPIByCustomProperties(entity: obj)
+                    let api = await ListAPIByCustomProperties(entity: obj)
 
                     if let property1 = await obj.getProp(prop1.trim(), isCaseSensitive: false) {
-                        api.properties.append(property1)
+                        await api.append(property: property1)
                     } else {
                         throw Model_ParsingError.invalidPropertyUsedInApi(prop1, pInfo)
                     }
@@ -75,7 +75,7 @@ public enum APISectionParser {
                     apis.append(api)
                 } else if let method = try await MethodObject.parse(pInfo: pInfo, skipLine: false) {
                     //custom logic api is defined using method syntax
-                    let api = CustomLogicAPI(method: method, entity: obj)
+                    let api = await CustomLogicAPI(method: method, entity: obj)
                     apis.append(api)
                 } else {
                     throw Model_ParsingError.invalidApiLine(pInfo)

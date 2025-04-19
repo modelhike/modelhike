@@ -6,50 +6,50 @@
 
 import Foundation
 
-public struct ContainerModuleMember : Artifact {
+public actor ContainerModuleMember : Artifact {
     public var attribs = Attributes()
     public var tags = Tags()
     public var annotations = Annotations()
 
-    public var name: String = ""
-    public var givenname: String = ""
+    public let name: String
+    public let givenname: String
     public let dataType: ArtifactKind = .container
 
     public var comment: String?
     
-    public func hasAttrib(_ name: String) -> Bool {
-        return attribs.has(name)
+    public func hasAttrib(_ name: String) async -> Bool {
+        return await attribs.has(name)
     }
     
-    public func hasAttrib(_ name: AttributeNamePresets) -> Bool {
-        return hasAttrib(name.rawValue)
+    public func hasAttrib(_ name: AttributeNamePresets) async -> Bool {
+        return await hasAttrib(name.rawValue)
     }
     
-    static func parse(with pctx: ParsedInfo) throws -> ContainerModuleMember? {
+    static func parse(with pctx: ParsedInfo) async throws -> ContainerModuleMember? {
         let originalLine = pctx.line
         let firstWord = pctx.firstWord
         
-        var module = ContainerModuleMember()
 
         let line = originalLine.remainingLine(after: firstWord) //remove first word
         
         guard let match = line.wholeMatch(of: ModelRegEx.container_Member_Capturing)                                                                                else { return nil }
         
         let (_, moduleName, attributeString, tagString) = match.output
+        let modulename = moduleName.trim()
 
-        module.name = moduleName.trim()
+        var module = ContainerModuleMember(named: modulename)
         
         //check if has attributes
         if let attributeString = attributeString {
-            ParserUtil.populateAttributes(for: module, from: attributeString)
+            await ParserUtil.populateAttributes(for: module, from: attributeString)
         }
         
         //check if has tags
         if let tagString = tagString {
-            ParserUtil.populateTags(for: module, from: tagString)
+            await ParserUtil.populateTags(for: module, from: tagString)
         }
         
-        pctx.parser.skipLine()
+        await pctx.parser.skipLine()
 
         return module
     }
@@ -62,13 +62,19 @@ public struct ContainerModuleMember : Artifact {
         }
     }
     
-    public init(_ name: String) {
-        self.name = name.normalizeForVariableName()
-        self.givenname = name
+    public nonisolated var debugDescription: String {
+        get async {
+            var str =  """
+                    \(self.name)
+                    """
+            str += .newLine
+            
+            return str
+        }
     }
     
-    public init() {
-        self.name = "unKnown"
+    public init(named name: String) {
+        self.name = name.normalizeForVariableName()
         self.givenname = name
     }
     
