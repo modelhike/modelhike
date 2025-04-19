@@ -7,7 +7,7 @@
 import Foundation
 import RegexBuilder
 
-public class SetVarStmt: LineTemplateStmt, CustomDebugStringConvertible {
+public struct SetVarStmt: LineTemplateStmt, CustomDebugStringConvertible {
     static let START_KEYWORD = "set"
 
     public private(set) var SetVar: String = ""
@@ -16,6 +16,7 @@ public class SetVarStmt: LineTemplateStmt, CustomDebugStringConvertible {
 
     let state = BlockOrLineTemplateState()
     
+    nonisolated(unsafe)
     let setVarLineRegex = Regex {
         START_KEYWORD
         OneOrMore(.whitespace)
@@ -40,27 +41,27 @@ public class SetVarStmt: LineTemplateStmt, CustomDebugStringConvertible {
         CommonRegEx.comments
     }
 
-    override func matchLine(line: String) throws -> Bool {
+    public mutating func matchLine(line: String) async throws -> Bool {
         guard let match = line.wholeMatch(of: setVarLineRegex)
         else { return false }
 
         let (_, setVar, value, modifiersList) = match.output
         self.SetVar = setVar
         self.ValueExpression = value
-        self.ModifiersList = try Modifiers.parse(string: modifiersList, pInfo: pInfo)
+        self.ModifiersList = try await Modifiers.parse(string: modifiersList, pInfo: pInfo)
 
         return true
     }
 
-    public override func execute(with ctx: Context) throws -> String? {
+    public func execute(with ctx: Context) async throws -> String? {
         var actualBody: Any? = nil
 
         guard SetVar.isNotEmpty,
             ValueExpression.isNotEmpty
         else { return nil }
 
-        if let body = try ctx.evaluate(expression: ValueExpression, with: pInfo) {
-            let modifiedBody = try Modifiers.apply(
+        if let body = try await ctx.evaluate(expression: ValueExpression, with: pInfo) {
+            let modifiedBody = try await Modifiers.apply(
                 to: body, modifiers: self.ModifiersList, with: pInfo)
             actualBody = modifiedBody
         }
@@ -69,9 +70,9 @@ public class SetVarStmt: LineTemplateStmt, CustomDebugStringConvertible {
 
         if actualBody != nil {
             //special handling for setting current working directory
-            if ctx.isWorkingDirectoryVariable(variableName) {
+            if await ctx.isWorkingDirectoryVariable(variableName) {
                 if let str = actualBody as? String {
-                    ctx.debugLog.workingDirectoryChanged(str)
+                    await ctx.debugLog.workingDirectoryChanged(str)
                     ctx.variables[variableName] = str
                 }
             } else {
@@ -105,10 +106,10 @@ public class SetVarStmt: LineTemplateStmt, CustomDebugStringConvertible {
     }
 
     public init(_ pInfo: ParsedInfo) {
-        super.init(keyword: Self.START_KEYWORD, pInfo: pInfo)
+        state=LineTemplateStmtState(keyword: Self.START_KEYWORD, pInfo: pInfo)
     }
 
-    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) { pInfo in
+    static let register = LineTemplateStmtConfig(keyword: START_KEYWORD) { pInfo in
         SetVarStmt(pInfo)
     }
 }

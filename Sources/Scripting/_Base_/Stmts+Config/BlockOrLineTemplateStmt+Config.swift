@@ -11,8 +11,8 @@ public protocol BlockOrLineTemplateStmt: FileTemplateStatement {
     
     func execute(with ctx: Context) async throws -> String?
     func checkIfLineVariant(line: String) -> Bool
-    mutating func matchLine_BlockVariant(line: String) throws -> Bool
-    mutating func matchLine_LineVariant(line: String) throws -> Bool
+    mutating func matchLine_BlockVariant(line: String) async throws -> Bool
+    mutating func matchLine_LineVariant(line: String) async throws -> Bool
 }
 
 extension BlockOrLineTemplateStmt {
@@ -23,16 +23,16 @@ extension BlockOrLineTemplateStmt {
     public var isEmpty: Bool  { get async { await children.isEmpty } }
     public var lineNo: Int { return pInfo.lineNo }
 
-    private mutating func parseStmtLine_BlockVariant(line: String, lineParser: LineParser) throws {
-        let matched = try matchLine_BlockVariant(line: line)
+    private mutating func parseStmtLine_BlockVariant(line: String, lineParser: LineParser) async throws {
+        let matched = try await matchLine_BlockVariant(line: line)
 
         if !matched {
             throw TemplateSoup_ParsingError.invalidStmt(pInfo)
         }
     }
 
-    private mutating func parseStmtLine_LineVariant(line: String, lineParser: LineParser) throws {
-        let matched = try matchLine_LineVariant(line: line)
+    private mutating func parseStmtLine_LineVariant(line: String, lineParser: LineParser) async throws {
+        let matched = try await matchLine_LineVariant(line: line)
 
         if !matched {
             throw TemplateSoup_ParsingError.invalidStmt(pInfo)
@@ -46,7 +46,7 @@ extension BlockOrLineTemplateStmt {
 
     private mutating func parseStmtLineAndChildren(line: String, scriptParser: any ScriptParser) async throws {
 
-        try parseStmtLine_BlockVariant(line: line, lineParser: pInfo.parser)
+        try await parseStmtLine_BlockVariant(line: line, lineParser: pInfo.parser)
 
         try await scriptParser.parseLines(
             startingFrom: keyword, till: endKeyword, to: self.children, level: pInfo.level + 1,
@@ -58,7 +58,7 @@ extension BlockOrLineTemplateStmt {
 
         if checkIfLineVariant(line: line) {
             await state.isBlockVariant(false)
-            try parseStmtLine_LineVariant(line: line, lineParser: pInfo.parser)
+            try await parseStmtLine_LineVariant(line: line, lineParser: pInfo.parser)
         } else {
             await state.isBlockVariant(true)
             try await parseStmtLineAndChildren(line: line, scriptParser: scriptParser)

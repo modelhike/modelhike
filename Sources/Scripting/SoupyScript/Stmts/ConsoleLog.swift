@@ -36,7 +36,7 @@ public struct ConsoleLogStmt: LineTemplateStmt, CustomDebugStringConvertible {
         return true
     }
     
-    public  func execute(with ctx: Context) async throws -> String? {
+    public func execute(with ctx: Context) async throws -> String? {
         guard Expression.isNotEmpty else { return nil }
         
         //see if it is an object

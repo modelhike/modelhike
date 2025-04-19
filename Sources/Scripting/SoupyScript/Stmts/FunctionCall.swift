@@ -7,12 +7,15 @@
 import Foundation
 import RegexBuilder
 
-public class FunctionCallStmt: LineTemplateStmt, CallStackable, CustomDebugStringConvertible {
+public struct FunctionCallStmt: LineTemplateStmt, CallStackable, CustomDebugStringConvertible {
+    public var state: LineTemplateStmtState
+    
     static let START_KEYWORD = "call"
 
     public private(set) var FnName: String = ""
     public private(set) var Args: String = ""
     
+    nonisolated(unsafe)
     let stmtRegex = Regex {
         START_KEYWORD
         OneOrMore(.whitespace)
@@ -21,7 +24,7 @@ public class FunctionCallStmt: LineTemplateStmt, CallStackable, CustomDebugStrin
         CommonRegEx.comments
     }
     
-    override func matchLine(line: String) throws -> Bool {
+    public mutating func matchLine(line: String) throws -> Bool {
         guard let match = line.wholeMatch(of: stmtRegex ) else { return false }
         
         let (_, fnName, argsString) = match.output
@@ -32,17 +35,17 @@ public class FunctionCallStmt: LineTemplateStmt, CallStackable, CustomDebugStrin
         return true
     }
     
-    public override func execute(with ctx: Context) throws -> String? {
+    public func execute(with ctx: Context) async throws -> String? {
         guard FnName.isNotEmpty else { return nil }
                 
         let args = Args.getArray_UsingNamedArgsPattern()
 
-        if let templateFn  = ctx.templateFunctions[FnName] {
-            ctx.pushCallStack(self)
+        if let templateFn  = await ctx.templateFunctions[FnName] {
+            await ctx.pushCallStack(self)
             
-            let body = try templateFn.execute(args: args, pInfo: pInfo, with: ctx)
+            let body = try await templateFn.execute(args: args, pInfo: pInfo, with: ctx)
             
-            ctx.popCallStack()
+            await ctx.popCallStack()
             return body
         } else {
             throw TemplateSoup_ParsingError.templateFunctionNotFound(FnName, pInfo)
@@ -63,9 +66,9 @@ public class FunctionCallStmt: LineTemplateStmt, CallStackable, CustomDebugStrin
     public var callStackItem: CallStackItem { CallStackItem(self, pInfo: pInfo) }
     
     public init(_ pInfo: ParsedInfo) {
-        super.init(keyword: Self.START_KEYWORD, pInfo: pInfo)
+        state = LineTemplateStmtState(keyword: Self.START_KEYWORD, pInfo: pInfo)
     }
     
-    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) {pInfo in FunctionCallStmt(pInfo) }
+    static let register = LineTemplateStmtConfig(keyword: START_KEYWORD) {pInfo in FunctionCallStmt(pInfo) }
 }
 

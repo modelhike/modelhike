@@ -7,7 +7,9 @@
 import Foundation
 import RegexBuilder
 
-public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
+public struct IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
+    public var state: MutipleBlockTemplateStmtState
+    
     static let START_KEYWORD = "if"
     static let ELSE_IF_KEYWORD = "else-if"
     static let ELSE_KEYWORD = "else"
@@ -16,6 +18,7 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
     public private(set) var elseIfBlocks : [ElseIfBlock] = []
     public private(set) var elseBlock : PartOfMultiBlockContainer? = nil
 
+    nonisolated(unsafe)
     let ifRegex = Regex {
         START_KEYWORD
         OneOrMore(.whitespace)
@@ -27,6 +30,7 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
         CommonRegEx.comments
     }
     
+    nonisolated(unsafe)
     let elseIfRegex = Regex {
         ELSE_IF_KEYWORD
         OneOrMore(.whitespace)
@@ -39,11 +43,11 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
     }
     
     
-    override func checkIfSupportedAndGetBlock(blockLime: UnIdentifiedStmt) throws -> PartOfMultiBlockContainer? {
+    mutating func checkIfSupportedAndGetBlock(blockLime: UnIdentifiedStmt) async throws -> PartOfMultiBlockContainer? {
         
         var keyWord = ""
         
-        if blockLime.pInfo.parser.isStatementsPrefixedWithKeyword {
+         if await blockLime.pInfo.parser.isStatementsPrefixedWithKeyword {
             keyWord =  blockLime.pInfo.secondWord ?? ""
         } else {
             keyWord =  blockLime.pInfo.firstWord
@@ -82,7 +86,7 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
         return nil
     }
     
-    override func matchLine(line: String) throws -> Bool {
+    public mutating func matchLine(line: String) throws -> Bool {
         guard let match = line.wholeMatch(of: ifRegex ) else { return false }
 
         let (_, IFCondition) = match.output
@@ -91,23 +95,23 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
         return true
     }
     
-    public override func execute(with ctx: Context) throws -> String? {
+    public func execute(with ctx: Context) async throws -> String? {
         guard IFCondition.isNotEmpty else { return nil }
         
         var rendering = ""
         
-        if try ctx.evaluateCondition(expression: IFCondition, with: pInfo) {
-            ctx.debugLog.ifConditionSatisfied(condition: IFCondition, pInfo: self.pInfo)
+        if try await ctx.evaluateCondition(expression: IFCondition, with: pInfo) {
+            await ctx.debugLog.ifConditionSatisfied(condition: IFCondition, pInfo: self.pInfo)
             
-            if let body = try children.execute(with: ctx) {
+            if let body = try await children.execute(with: ctx) {
                 rendering += body
             }
         } else {
             var conditionEvalIsTrue = false
             
             for elseIfBlock in elseIfBlocks {
-                if try ctx.evaluateCondition(expression: elseIfBlock.condition, with: elseIfBlock.pInfo) {
-                    ctx.debugLog.elseIfConditionSatisfied(condition: elseIfBlock.condition, pInfo: elseIfBlock.pInfo)
+                if try await ctx.evaluateCondition(expression: elseIfBlock.condition, with: elseIfBlock.pInfo) {
+                    await ctx.debugLog.elseIfConditionSatisfied(condition: elseIfBlock.condition, pInfo: elseIfBlock.pInfo)
                     
                     conditionEvalIsTrue = true
 
@@ -120,7 +124,7 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
 
             //if no condition is evaluating to true
             if let elseBlock = self.elseBlock, !conditionEvalIsTrue {
-                ctx.debugLog.elseBlockExecuting(elseBlock.pInfo)
+                await ctx.debugLog.elseBlockExecuting(elseBlock.pInfo)
                 
                 if let body = try elseBlock.execute(with: ctx) {
                     rendering += body
@@ -132,49 +136,51 @@ public class IfStmt: MultiBlockTemplateStmt, CustomDebugStringConvertible {
     }
     
     public var debugDescription: String {
-        var str =  """
+        get async {
+            var str =  """
         IF stmt (level: \(pInfo.level))
         - condn: \(self.IFCondition)
         - children:
         
         """
-        
-        str += debugStringForChildren()
-        
-        for elseIfBlock in elseIfBlocks {
-            if !elseIfBlock.isEmpty {
-                str +=  """
+            
+            await str += debugStringForChildren()
+            
+            for elseIfBlock in elseIfBlocks {
+                if !elseIfBlock.isEmpty {
+                    str +=  """
                 
                 ELSE IF stmt (level: \(pInfo.level))
                 - condn: \(elseIfBlock.condition)
                 - children:
                 
                 """
-                
-                str += elseIfBlock.debugStringForChildren()
+                    
+                    str += elseIfBlock.debugStringForChildren()
+                }
             }
-        }
-        
-        if let elseBlock = self.elseBlock {
-            str +=  """
+            
+            if let elseBlock = self.elseBlock {
+                str +=  """
             
             ELSE stmt (level: \(pInfo.level))
             - children:
             
             """
+                
+                str += elseBlock.debugStringForChildren()
+            }
             
-            str += elseBlock.debugStringForChildren()
+            return str
         }
-        
-        return str
     }
     
     
     public init(parseTill endKeyWord: String, pInfo: ParsedInfo) {
-        super.init(startKeyword: Self.START_KEYWORD, endKeyword: endKeyWord, pInfo: pInfo)
+        state = MutipleBlockTemplateStmtState(keyword: Self.START_KEYWORD, endKeyword: endKeyWord, pInfo: pInfo)
     }
     
-    static var register = MultiBlockTemplateStmtConfig(keyword: START_KEYWORD) { endKeyWord, pInfo in
+    static let register = MultiBlockTemplateStmtConfig(keyword: START_KEYWORD) { endKeyWord, pInfo in
         IfStmt(parseTill: endKeyWord, pInfo: pInfo)
     }
 }

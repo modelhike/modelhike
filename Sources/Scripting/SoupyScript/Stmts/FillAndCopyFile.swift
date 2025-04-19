@@ -7,12 +7,15 @@
 import Foundation
 import RegexBuilder
 
-public class FillAndCopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible {
+public struct FillAndCopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible {
+    public var state: LineTemplateStmtState
+    
     static let START_KEYWORD = "fill-and-copy-file"
 
     public private(set) var FromFile: String = ""
     public private(set) var ToFile: String = ""
     
+    nonisolated(unsafe)
     let stmtRegex = Regex {
         START_KEYWORD
         
@@ -33,7 +36,7 @@ public class FillAndCopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible
         CommonRegEx.comments
     }
     
-    override func matchLine(line: String) throws -> Bool {
+   public mutating func matchLine(line: String) throws -> Bool {
         guard let match = line.wholeMatch(of: stmtRegex ) else { return false }
         
         let (_, fromValue, toValue) = match.output
@@ -44,39 +47,39 @@ public class FillAndCopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible
         return true
     }
     
-    public override func execute(with ctx: Context) throws -> String? {
+    public func execute(with ctx: Context) async throws -> String? {
         guard let context = ctx as? GenerationContext else { return nil }
         guard FromFile.isNotEmpty else { return nil }
         
-        if ctx.workingDirectoryString.isEmpty {
+        if await ctx.workingDirectoryString.isEmpty {
             throw TemplateSoup_EvaluationError.workingDirectoryNotSet(pInfo)
         }
         
-        guard let fromFile = try? ctx.evaluate(value: FromFile, with: pInfo) as? String
+        guard let fromFile = try? await ctx.evaluate(value: FromFile, with: pInfo) as? String
         else {
             throw TemplateSoup_ParsingError.invalidExpression_VariableOrObjPropNotFound(FromFile, pInfo)
         }
 
-        try context.fileGenerator.setRelativePath(ctx.workingDirectoryString)
+        try await context.fileGenerator.setRelativePath(ctx.workingDirectoryString)
         
         if ToFile.isEmpty {
             let fileName = fromFile
             
-            ctx.debugLog.generatingFile(fileName)
-            if let _ = try context.fileGenerator.fillPlaceholdersAndCopyFile(fileName, with: pInfo) {
+            await ctx.debugLog.generatingFile(fileName)
+            if let _ = try await context.fileGenerator.fillPlaceholdersAndCopyFile(fileName, with: pInfo) {
                 //file generated successfully
             } else {
-                ctx.debugLog.fileNotGenerated(fileName)
+                await ctx.debugLog.fileNotGenerated(fileName)
             }
         } else {
-            guard let toFile = try? ctx.evaluate(value: ToFile, with: pInfo) as? String
+            guard let toFile = try? await ctx.evaluate(value: ToFile, with: pInfo) as? String
                                                                         else { return nil }
             
-            ctx.debugLog.generatingFile(toFile)
-            if let _ = try context.fileGenerator.fillPlaceholdersAndCopyFile(fromFile, to: toFile, with: pInfo) {
+            await ctx.debugLog.generatingFile(toFile)
+            if let _ = try await context.fileGenerator.fillPlaceholdersAndCopyFile(fromFile, to: toFile, with: pInfo) {
                 //file generated successfully
             } else {
-                ctx.debugLog.fileNotGenerated(toFile)
+                await ctx.debugLog.fileNotGenerated(toFile)
             }
         }
         
@@ -95,9 +98,9 @@ public class FillAndCopyFileStmt: LineTemplateStmt, CustomDebugStringConvertible
     }
     
     public init(_ pInfo: ParsedInfo) {
-        super.init(keyword: Self.START_KEYWORD, pInfo: pInfo)
+        state = LineTemplateStmtState(keyword: Self.START_KEYWORD, pInfo: pInfo)
     }
     
-    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) {pInfo in FillAndCopyFileStmt(pInfo) }
+    static let register = LineTemplateStmtConfig(keyword: START_KEYWORD) {pInfo in FillAndCopyFileStmt(pInfo) }
 }
 

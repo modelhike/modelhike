@@ -7,11 +7,14 @@
 import Foundation
 import RegexBuilder
 
-public class RunShellCmdStmt: LineTemplateStmt, CustomDebugStringConvertible {
+public struct RunShellCmdStmt: LineTemplateStmt, CustomDebugStringConvertible {
+    public var state: LineTemplateStmtState
+    
     static let START_KEYWORD = "run-shell-cmd"
 
     public private(set) var CommandToRun: String = ""
 
+    nonisolated(unsafe)
     let stmtRegex = Regex {
         START_KEYWORD
         OneOrMore(.whitespace)
@@ -25,7 +28,7 @@ public class RunShellCmdStmt: LineTemplateStmt, CustomDebugStringConvertible {
         CommonRegEx.comments
     }
 
-    override func matchLine(line: String) throws -> Bool {
+    public mutating func matchLine(line: String) throws -> Bool {
         guard let match = line.wholeMatch(of: stmtRegex) else { return false }
 
         let (_, expn) = match.output
@@ -35,15 +38,15 @@ public class RunShellCmdStmt: LineTemplateStmt, CustomDebugStringConvertible {
         return true
     }
 
-    public override func execute(with ctx: Context) throws -> String? {
+    public func execute(with ctx: Context) async throws -> String? {
         guard CommandToRun.isNotEmpty else { return nil }
 
-        if ctx.workingDirectoryString.isEmpty {
+        if await ctx.workingDirectoryString.isEmpty {
             throw TemplateSoup_EvaluationError.workingDirectoryNotSet(pInfo)
         }
 
         print("⚙️  Running the shell command...")
-        let fullPath = ctx.config.output.path / ctx.workingDirectoryString
+        let fullPath = await ctx.config.output.path / ctx.workingDirectoryString
         let options = Shell.Options(workingDirectory: fullPath.string)
         let result = Shell.execute(command: CommandToRun, options: options)
 
@@ -76,10 +79,10 @@ public class RunShellCmdStmt: LineTemplateStmt, CustomDebugStringConvertible {
     }
 
     public init(_ pInfo: ParsedInfo) {
-        super.init(keyword: Self.START_KEYWORD, pInfo: pInfo)
+        state = LineTemplateStmtState(keyword: Self.START_KEYWORD, pInfo: pInfo)
     }
 
-    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) { pInfo in
+    static let register = LineTemplateStmtConfig(keyword: START_KEYWORD) { pInfo in
         RunShellCmdStmt(pInfo)
     }
 }
