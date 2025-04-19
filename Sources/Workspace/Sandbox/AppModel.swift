@@ -58,11 +58,15 @@ public actor AppModel {
     }
     
     public func module(named name: String) async -> C4Component? {
-        return await modules.first(where: {await $0.name == name})
+        return await modules.first(where: {
+            let itemname = await $0.name
+            let itemGivenname = await $0.givenname
+            return itemname == name || itemGivenname == name
+        })
     }
     
     public func appendToCommonModel(contentsOf items: ModelSpace) async {
-        let itemContainers = await items.containers
+        let itemContainers = items.containers
         
         for await container in itemContainers {
             await commonModel.append(contentsOf: container)

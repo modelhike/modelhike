@@ -61,31 +61,31 @@ public actor C4Component : ArtifactHolder {
     }
     
     public init(name: String = "", @ArtifactHolderBuilder _ builder: () -> [ArtifactHolder]) {
-        self.name = name.trim()
+        self.name = name.trim().normalizeForVariableName()
         self.givenname = self.name
         self.items = builder()
     }
     
     public init(name: String = "", _ items: ArtifactHolder...) {
-        self.name = name.trim()
+        self.name = name.trim().normalizeForVariableName()
         self.givenname = self.name
         self.items = items
     }
     
     public init(name: String = "", _ items: [ArtifactHolder]) {
-        self.name = name.trim()
+        self.name = name.trim().normalizeForVariableName()
         self.givenname = self.name
         self.items = items
     }
     
     public init(name: String) {
-        self.name = name.trim()
+        self.name = name.trim().normalizeForVariableName()
         self.givenname = self.name
         self.items = []
     }
     
     public init(name: Substring) {
-        self.name = String(name).trim()
+        self.name = String(name).trim().normalizeForVariableName()
         self.givenname = self.name
         self.items = []
     }

@@ -90,13 +90,13 @@ public actor C4ComponentList : ArtifactHolder, _CollectionAsyncSequence {
     }}
     
     public init(name: String = "", _ items: C4Component...) {
-        self.name = name
+        self.name = name.normalizeForVariableName()
         self.givenname = name
         self.components = items
     }
     
     public init(name: String = "", _ items: [C4Component]) {
-        self.name = name
+        self.name = name.normalizeForVariableName()
         self.givenname = name
         self.components = items
     }
