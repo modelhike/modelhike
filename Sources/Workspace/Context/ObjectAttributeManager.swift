@@ -72,7 +72,7 @@ public actor ObjectAttributeManager {
             hasDot = true
         }
 
-        if var dynamicLookup = await ctx.variables[objName] as? DynamicMemberLookup,
+        if let dynamicLookup = await ctx.variables[objName] as? DynamicMemberLookup,
            await dynamicLookup.hasSettable(property: propName)
         {
 
@@ -124,7 +124,7 @@ public actor ObjectAttributeManager {
 
         let obj = await ctx.variables[objName]
         
-        if var dynamicLookup = obj as? DynamicMemberLookup,
+        if let dynamicLookup = obj as? DynamicMemberLookup,
            await dynamicLookup.hasSettable(property: propName)
         {
 
@@ -161,7 +161,7 @@ public actor ObjectAttributeManager {
             hasDot = true
         }
 
-        if var dynamicLookup = await ctx.variables[objName] as? DynamicMemberLookup,
+        if let dynamicLookup = await ctx.variables[objName] as? DynamicMemberLookup,
            await dynamicLookup.hasSettable(property: propName)
         {
 

@@ -59,7 +59,7 @@ public struct ForStmt: BlockTemplateStmt {
         var rendering = ""
 
         await ctx.pushSnapshot()
-        var loopWrap = ForLoop_Wrap(self)
+        let loopWrap = ForLoop_Wrap(self)
         await ctx.variables.set(ForStmt.LOOP_VARIABLE, value: loopWrap)
         
         for (index, loopItem) in loopItems.enumerated() {

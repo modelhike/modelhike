@@ -134,7 +134,7 @@ public struct MongoDB_TypescriptLib {
         
         let lastProp_type_kind = await lastProp.type.kind
         
-        return await StringTemplate {
+        return StringTemplate {
                 
             switch lastProp_type_kind {
             case .int, .double :

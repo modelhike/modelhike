@@ -56,7 +56,7 @@ public actor ExpressionEvaluator {
         //LHS and RHS can be nested and can have paranthesis
         //nested paranthesis is not supported;
         //but single-level of paranthesis is allowed
-        var parser: RegularExpressionEvaluator = RegularExpressionEvaluator()
+        let parser: RegularExpressionEvaluator = RegularExpressionEvaluator()
         return try await parser.evaluate(expression: expn, pInfo: pInfo)
     }
     

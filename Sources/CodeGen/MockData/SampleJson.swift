@@ -68,7 +68,6 @@ public struct SampleJson {
     }
     
     static func toPropString(_ prop: Property, typesModel: ParsedTypesCache, includeComma: Bool, openCloseQuotesInNames: Bool) async -> String {
-        let propname = await prop.name
         let prefix = await prop.type.isArray ? " [" : ""
         var suffix = await prop.type.isArray ? "]" : ""
         if includeComma {

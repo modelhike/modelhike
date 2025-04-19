@@ -158,7 +158,7 @@ public actor TemplateSoup : TemplateRenderer {
         
         await context.pushSnapshot()
         //dummy for-stmt instantiated
-        var loopWrap = ForLoop_Wrap(ForStmt(parseTill: "", pInfo: pInfo))
+        let loopWrap = ForLoop_Wrap(ForStmt(parseTill: "", pInfo: pInfo))
         await context.variables.set(ForStmt.LOOP_VARIABLE, value: loopWrap)
         
         for (index, loopItem) in loopItems.enumerated() {

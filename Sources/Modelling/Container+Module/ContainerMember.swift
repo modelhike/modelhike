@@ -37,7 +37,7 @@ public actor ContainerModuleMember : Artifact {
         let (_, moduleName, attributeString, tagString) = match.output
         let modulename = moduleName.trim()
 
-        var module = ContainerModuleMember(named: modulename)
+        let module = ContainerModuleMember(named: modulename)
         
         //check if has attributes
         if let attributeString = attributeString {

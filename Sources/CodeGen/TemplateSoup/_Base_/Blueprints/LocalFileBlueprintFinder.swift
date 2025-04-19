@@ -22,7 +22,7 @@ public actor LocalFileBlueprintFinder: BlueprintFinder {
     
     public var blueprintsAvailable: [String] {
         var names: [String] = []
-        var folder = LocalFolder(path: rootPath)
+        let folder = LocalFolder(path: rootPath)
         
         for subFolder in folder.subFolders {
             names.append(subFolder.name)
