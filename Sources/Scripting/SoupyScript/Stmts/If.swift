@@ -43,7 +43,7 @@ public struct IfStmt: MultiBlockTemplateStmt {
     }
     
     
-    mutating func checkIfSupportedAndGetBlock(blockLime: UnIdentifiedStmt) async throws -> PartOfMultiBlockContainer? {
+    public mutating func checkIfSupportedAndGetBlock(blockLime: UnIdentifiedStmt) async throws -> PartOfMultiBlockContainer? {
         
         var keyWord = ""
         

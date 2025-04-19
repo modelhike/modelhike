@@ -11,6 +11,8 @@ public protocol MultiBlockTemplateStmt : SendableDebugStringConvertible, FileTem
     
     func execute(with ctx: Context) async throws -> String?
     mutating func matchLine(line: String) throws -> Bool
+    
+    mutating func checkIfSupportedAndGetBlock(blockLime: UnIdentifiedStmt) async throws -> PartOfMultiBlockContainer?
 }
 
 extension MultiBlockTemplateStmt {
@@ -29,8 +31,6 @@ extension MultiBlockTemplateStmt {
             throw TemplateSoup_ParsingError.invalidStmt(pInfo)
         }
     }
-    
-    func checkIfSupportedAndGetBlock(blockLime: UnIdentifiedStmt) throws -> PartOfMultiBlockContainer? { return nil }
 
     func appendText(_ item: ContentLine) async {
         await state.children.append(item)
@@ -47,10 +47,10 @@ extension MultiBlockTemplateStmt {
         var container = state.children
         
         for stmt in await stmts.snapshot() {
-            if let _ = stmt as? TextContent {
+            if let _ = stmt as? ContentLine {
                await container.append(stmt)
             } else if let unIdentified = stmt as? UnIdentifiedStmt {
-                if let block = try checkIfSupportedAndGetBlock(blockLime: unIdentified) {
+                if let block = try await checkIfSupportedAndGetBlock(blockLime: unIdentified) {
                     
                     await ctx.debugLog.multiBlockDetected(keyWord: block.firstWord, pInfo: unIdentified.pInfo)
                     
