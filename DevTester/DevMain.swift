@@ -4,29 +4,29 @@ import ModelHike
 struct Development {
     static func main() async {
         do {
-            try runTemplateStr()
+            try await runTemplateStr()
             //try await runCodebaseGeneration()
         } catch {
             print(error)
         }
     }
     
-    static func runTemplateStr() throws {
+    static func runTemplateStr() async throws {
         let templateStr = "{{ (var1 and var2) and var2}}"
-        let arr:[TestData] = [TestData(name: "n1", age: 1),
+        let arr:[TestData] = await [TestData(name: "n1", age: 1),
                           TestData(name: "n2", age: 2),
                           TestData(name: "", age: 3)]
         
-        let data: [String : Any] = ["list":arr, "var1" : true, "var2": false, "varstr": "test"]
+        let data: [String : Sendable] = ["list":arr, "var1" : true, "var2": false, "varstr": "test"]
         
-        let ws = Pipelines.empty
-        if let result = try ws.render(string: templateStr, data: data) {
+        let ws = await Pipelines.empty
+        if let result = try await ws.render(string: templateStr, data: data) {
             print(result)
         }
     }
     
     static func runCodebaseGeneration() async throws {
-        let pipeline = Pipelines.codegen
+        let pipeline = await Pipelines.codegen
         var config = Environment.debug
         config.containersToOutput = ["APIs"]
 
@@ -80,8 +80,8 @@ struct Development {
     }
     
     
-    private static func inlineModel(_ ws: Workspace) -> InlineModelLoader {
-        return InlineModelLoader(with: ws.context) {
+    private static func inlineModel(_ ws: Workspace) async -> InlineModelLoader {
+        return await InlineModelLoader(with: ws.context) {
             InlineModel {
                 """
                 ===
@@ -153,15 +153,15 @@ struct Development {
     
 }
 
-struct TestData : DynamicMemberLookup, HasAttributes {
+actor TestData : DynamicMemberLookup, HasAttributes_Actor {
     public var attribs = Attributes()
     
-    public func getValueOf(property propname: String, with pInfo: ParsedInfo) throws -> Any {
-        return self.attribs[propname] as Any
+    public func getValueOf(property propname: String, with pInfo: ParsedInfo) async throws -> Sendable? {
+        return await self.attribs[propname]
     }
     
-    public init(name: String, age: Int) {
-        self.attribs["name"] = name
-        self.attribs["age"] = name
+    public init(name: String, age: Int) async {
+        await self.attribs.set("name", value: name)
+        await self.attribs.set("age", value: name)
     }
 }
