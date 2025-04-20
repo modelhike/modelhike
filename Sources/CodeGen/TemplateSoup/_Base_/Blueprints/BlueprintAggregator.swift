@@ -27,5 +27,7 @@ public actor BlueprintAggregator: Sendable {
         if let path = config.localBlueprintsPath {
             blueprintFinders.append(LocalFileBlueprintFinder(path: path))
         }
+        
+        blueprintFinders.append(contentsOf: config.blueprints)
     }
 }

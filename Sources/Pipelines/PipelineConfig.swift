@@ -26,6 +26,8 @@ public struct PipelineConfig : OutputConfig {
     
     public var localBlueprintsPath: LocalPath?
     
+    public var blueprints: [BlueprintFinder] = []
+    
     public init() {}
 }
 
@@ -64,4 +66,7 @@ public protocol OutputConfig: Sendable {
     var errorOutput: ErrorOutputOptions {get set}
     
     var localBlueprintsPath: LocalPath? {get set}
+    
+    var blueprints: [BlueprintFinder] {get set}
+
 }
