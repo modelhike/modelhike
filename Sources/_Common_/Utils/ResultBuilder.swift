@@ -7,7 +7,7 @@
 import Foundation
 
 @resultBuilder
-public struct ResultBuilder<T> {
+public struct ResultBuilder<T>: Sendable {
     // Corresponding to the case where no component is used in the block
     @inlinable
     public static func buildBlock() ->  [T] {
