@@ -6,7 +6,7 @@
 
 import Foundation
 
-public actor GenerateCodePass : RenderingPass {
+public struct GenerateCodePass : RenderingPass {
     public func canRunIn(phase: RenderPhase) async throws -> Bool {
 
         if await !phase.context.model.isModelsLoaded {

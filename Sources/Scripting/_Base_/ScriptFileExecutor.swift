@@ -20,7 +20,7 @@ public actor ScriptFileExecutor: SoupyScriptExecutor {
         let parser = SoupyScriptParser(lineParser: lineParser, context: ctx)
 
         do {
-            await ctx.debugLog.scriptFileParsingStarting()
+            ctx.debugLog.scriptFileParsingStarting()
             try await ctx.events.onBeforeParseScriptFile?(lineParser.identifier, ctx)
             
             let curLine = await lineParser.currentLine()
@@ -33,7 +33,7 @@ public actor ScriptFileExecutor: SoupyScriptExecutor {
             if let containers = try await parser.parseContainers() {
                 await ctx.debugLog.printParsedTree(for: containers)
                 
-                await ctx.debugLog.scriptFileExecutionStarting()
+                ctx.debugLog.scriptFileExecutionStarting()
                 try await ctx.events.onBeforeExecuteScriptFile?(lineParser.identifier, ctx)
 
                 if let body = try await containers.execute(with: ctx) {

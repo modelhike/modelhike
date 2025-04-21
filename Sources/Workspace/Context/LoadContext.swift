@@ -6,7 +6,7 @@
 
 public actor LoadContext : Context {
     public let model: AppModel
-    public var debugLog = ContextDebugLog()
+    public let debugLog: ContextDebugLog
     public var events = CodeGenerationEvents()
     
     public internal(set) var symbols = ContextSymbols()
@@ -37,14 +37,14 @@ public actor LoadContext : Context {
     
     public init(config: OutputConfig) {
         self.config = config
-        self.debugLog.flags = config.flags
+        self.debugLog = ContextDebugLog(flags: config.flags)
         self.model = AppModel()
         self.blueprints = BlueprintAggregator(config: config)
     }
     
     public init(model: AppModel, config: OutputConfig) {
         self.config = config
-        self.debugLog.flags = config.flags
+        self.debugLog = ContextDebugLog(flags: config.flags)
         self.model = model
         self.blueprints = BlueprintAggregator(config: config)
     }

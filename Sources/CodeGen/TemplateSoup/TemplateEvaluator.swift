@@ -24,7 +24,7 @@ public struct TemplateEvaluator: TemplateSoupEvaluator {
         let parser = TemplateSoupParser(lineParser: lineParser, context: ctx)
 
         do {
-            await ctx.debugLog.templateParsingStarting()
+            ctx.debugLog.templateParsingStarting()
             try await ctx.events.onBeforeParseTemplate?(lineParser.identifier, ctx)
 
             let curLine = await lineParser.currentLine()
@@ -37,7 +37,7 @@ public struct TemplateEvaluator: TemplateSoupEvaluator {
             if let containers = try await parser.parseContainers() {
                 await ctx.debugLog.printParsedTree(for: containers)
 
-                await ctx.debugLog.templateExecutionStarting()
+                ctx.debugLog.templateExecutionStarting()
                 try await ctx.events.onBeforeExecuteTemplate?(lineParser.identifier, ctx)
 
                 if let body = try await containers.execute(with: ctx) {
@@ -57,13 +57,13 @@ public struct TemplateEvaluator: TemplateSoupEvaluator {
                 }
             } else if let directive = err as? ParserDirective {
                 if case let .excludeFile(filename) = directive {
-                    await ctx.debugLog.excludingFile(filename)
+                    ctx.debugLog.excludingFile(filename)
                     return nil  //nothing to generate from this excluded file
                 } else if case let .stopRenderingCurrentFile(filename, pInfo) = directive {
-                    await ctx.debugLog.stopRenderingCurrentFile(filename, pInfo: pInfo)
+                    ctx.debugLog.stopRenderingCurrentFile(filename, pInfo: pInfo)
                     return nil  //nothing to generate from this rendering stopped file
                 } else if case let .throwErrorFromCurrentFile(filename, errMsg, pInfo) = directive {
-                    await ctx.debugLog.throwErrorFromCurrentFile(filename, err: errMsg, pInfo: pInfo)
+                    ctx.debugLog.throwErrorFromCurrentFile(filename, err: errMsg, pInfo: pInfo)
                     throw EvaluationError.templateRenderingError(pInfo, directive)
                 }
             } else {

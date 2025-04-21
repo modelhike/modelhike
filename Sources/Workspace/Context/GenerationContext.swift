@@ -10,7 +10,7 @@ public typealias StringDictionary = [String: Sendable]
 
 public actor GenerationContext: Context {
     public var events = CodeGenerationEvents()
-    public var debugLog = ContextDebugLog()
+    public let debugLog: ContextDebugLog
 
     public private(set) var evaluator = ExpressionEvaluator()
 
@@ -85,7 +85,7 @@ public actor GenerationContext: Context {
     public init(model: AppModel, config: OutputConfig) {
         self.config = config
         self.events = config.events
-        self.debugLog.flags = config.flags
+        self.debugLog = ContextDebugLog(flags: config.flags)
         self.model = model
         self.blueprints = BlueprintAggregator(config: config)
     }

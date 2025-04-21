@@ -262,6 +262,9 @@ public struct ContextDebugLog: Sendable {
         }
     }
     
+    public init(flags: ContextDebugFlags) {
+        self.flags = flags
+    }
 }
 
 public struct ContextDebugFlags: Sendable {

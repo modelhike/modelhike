@@ -43,7 +43,7 @@ public actor Workspace {
         return rendering?.trim()
     }
         
-    internal init() async {
+    internal init() {
         let config = PipelineConfig()
         self.context = LoadContext(config: config)
     }

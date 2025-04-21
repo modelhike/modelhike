@@ -6,7 +6,7 @@
 
 import Foundation
 
-public actor DiscoverModelsPass : DiscoveringPass {
+public struct DiscoverModelsPass : DiscoveringPass {
 
     public func runIn(_ ws: Workspace, phase: DiscoverPhase) async throws -> Bool {
         var repo: ModelRepository

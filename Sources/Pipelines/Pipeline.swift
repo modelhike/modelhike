@@ -6,7 +6,7 @@
 
 import Foundation
 
-public actor Pipeline {
+public struct Pipeline: Sendable {
     var ws: Workspace
             
     let discover: DiscoverPhase
@@ -16,9 +16,9 @@ public actor Pipeline {
     let render: RenderPhase
     let persist: PersistPhase
     
-    var phases: [any PipelinePhase] = []
+    let phases: [any PipelinePhase]
     
-    public internal(set) var generationSandboxes: [GenerationSandbox] = []
+    public let state = PipelineState()
     
     public var config: OutputConfig { get async { await ws.config }}
         
@@ -56,7 +56,7 @@ public actor Pipeline {
                 let success = try await phase.runIn(pipeline: self)
                 if !success { lastRunResult = false; break }
             } catch let err {
-                print("❌❌ ERROR OCCURRED IN \(await phase.name) Phase ❌❌")
+                print("❌❌ ERROR OCCURRED IN \(phase.name) Phase ❌❌")
                 throw err
             }
         }
@@ -65,80 +65,94 @@ public actor Pipeline {
 
     }
     
-    public func append(sandbox: GenerationSandbox) {
-        generationSandboxes.append(sandbox)
+    public func append(sandbox: GenerationSandbox) async {
+        await state.append(sandbox: sandbox)
     }
     
-    public init(@PipelineBuilder _ builder: () -> [PipelinePass]) async {
-        ws = await Workspace()
+    public init(@PipelineBuilder _ builder: () -> [PipelinePass]) {
+        ws = Workspace()
         
         let context = ws.context
-        discover = DiscoverPhase(context: context)
-        load = LoadPhase(context: context)
-        hydrate = HydratePhase(context: context)
-        transform = TransformPhase(context: context)
-        render = RenderPhase(context: context)
-        persist = PersistPhase(context: context)
+        var discover = DiscoverPhase(context: context)
+        var load = LoadPhase(context: context)
+        var hydrate = HydratePhase(context: context)
+        var transform = TransformPhase(context: context)
+        var render = RenderPhase(context: context)
+        var persist = PersistPhase(context: context)
         
         let providedPasses = builder()
         
         for pass in providedPasses {
             if let dp = pass as? DiscoveringPass {
-                await discover.append(pass: dp)
+                discover.append(pass: dp)
             } else if let lp = pass as? LoadingPass {
-                await load.append(pass: lp)
+                load.append(pass: lp)
             } else if let hp = pass as? HydrationPass {
-                await hydrate.append(pass: hp)
+                hydrate.append(pass: hp)
             } else if let tp = pass as? TransformationPass {
-                await transform.append(pass: tp)
+                transform.append(pass: tp)
             } else if let rp = pass as? RenderingPass {
-                await render.append(pass: rp)
+                render.append(pass: rp)
             } else if let pp = pass as? PersistancePass {
-                await persist.append(pass: pp)
+                persist.append(pass: pp)
             }
         }
         
-        phases = [discover, load, hydrate, transform, render, persist]
+        self.discover = discover
+        self.load = load
+        self.hydrate = hydrate
+        self.transform = transform
+        self.render = render
+        self.persist = persist
+
+        self.phases = [discover, load, hydrate, transform, render, persist]
     }
     
     public init(from pipe: Pipeline, @PipelineBuilder _ builder: () -> [PipelinePass]) async {
-        ws = await Workspace()
+        ws = Workspace()
         
         let context = ws.context
-        discover = DiscoverPhase(context: context)
-        load = LoadPhase(context: context)
-        hydrate = HydratePhase(context: context)
-        transform = TransformPhase(context: context)
-        render = RenderPhase(context: context)
-        persist = PersistPhase(context: context)
+        var discover = DiscoverPhase(context: context)
+        var load = LoadPhase(context: context)
+        var hydrate = HydratePhase(context: context)
+        var transform = TransformPhase(context: context)
+        var render = RenderPhase(context: context)
+        var persist = PersistPhase(context: context)
         
         let providedPasses = builder()
         
-        await discover.append(passes: pipe.discover)
-        await load.append(passes: pipe.load)
-        await hydrate.append(passes: pipe.hydrate)
-        await transform.append(passes: pipe.transform)
-        await render.append(passes: pipe.render)
-        await persist.append(passes: pipe.persist)
+        discover.append(passes: pipe.discover)
+        load.append(passes: pipe.load)
+        hydrate.append(passes: pipe.hydrate)
+        transform.append(passes: pipe.transform)
+        render.append(passes: pipe.render)
+        persist.append(passes: pipe.persist)
 
         
         for pass in providedPasses {
             if let dp = pass as? DiscoveringPass {
-                await discover.append(pass: dp)
+                discover.append(pass: dp)
             } else if let lp = pass as? LoadingPass {
-                await load.append(pass: lp)
+                load.append(pass: lp)
             } else if let hp = pass as? HydrationPass {
-                await hydrate.append(pass: hp)
+                hydrate.append(pass: hp)
             } else if let tp = pass as? TransformationPass {
-                await transform.append(pass: tp)
+                transform.append(pass: tp)
             } else if let rp = pass as? RenderingPass {
-                await render.append(pass: rp)
+                render.append(pass: rp)
             } else if let pp = pass as? PersistancePass {
-                await persist.append(pass: pp)
+                persist.append(pass: pp)
             }
         }
         
-        phases = [discover, load, hydrate, transform, render, persist]
+        self.discover = discover
+        self.load = load
+        self.hydrate = hydrate
+        self.transform = transform
+        self.render = render
+        self.persist = persist
+        
+        self.phases = [discover, load, hydrate, transform, render, persist]
     }
     
     fileprivate func printError(_ err: Error) async {
@@ -149,3 +163,13 @@ public actor Pipeline {
 
 typealias PipelineBuilder = ResultBuilder<PipelinePass>
 
+public actor PipelineState {
+    public internal(set) var generationSandboxes: [GenerationSandbox] = []
+    
+    public func append(sandbox: GenerationSandbox) {
+        generationSandboxes.append(sandbox)
+    }
+    
+    public init() {
+    }
+}

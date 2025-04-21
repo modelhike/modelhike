@@ -6,7 +6,7 @@
 
 import Foundation
 
-public actor LoadModelsPass: LoadingPass {
+public struct LoadModelsPass: LoadingPass {
 
     public func runIn(_ ws: Workspace, phase: LoadPhase) async throws -> Bool {
         var repo: ModelRepository

@@ -1,7 +1,7 @@
 import ModelHike
 
 @main
-struct Development {
+struct Development: Sendable {
     static func main() async {
         do {
             try await runTemplateStr()
@@ -19,14 +19,14 @@ struct Development {
         
         let data: [String : Sendable] = ["list":arr, "var1" : true, "var2": false, "varstr": "test"]
         
-        let ws = await Pipelines.empty
+        let ws = Pipelines.empty
         if let result = try await ws.render(string: templateStr, data: data) {
             print(result)
         }
     }
     
     static func runCodebaseGeneration() async throws {
-        let pipeline = await Pipelines.codegen
+        let pipeline = Pipelines.codegen
         var config = Environment.debug
         config.containersToOutput = ["APIs"]
 

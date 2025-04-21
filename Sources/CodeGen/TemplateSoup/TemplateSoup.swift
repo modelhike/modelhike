@@ -81,13 +81,13 @@ public actor TemplateSoup : TemplateRenderer {
                 }
             } else if let directive = err as? ParserDirective {
                 if case let .excludeFile(filename) = directive {
-                    await context.debugLog.excludingFile(filename)
+                    context.debugLog.excludingFile(filename)
                     return nil  //nothing to generate from this excluded file
                 } else if case let .stopRenderingCurrentFile(filename, pInfo) = directive {
-                    await context.debugLog.stopRenderingCurrentFile(filename, pInfo: pInfo)
+                    context.debugLog.stopRenderingCurrentFile(filename, pInfo: pInfo)
                     return nil  //nothing to generate from this rendering stopped file
                 } else if case let .throwErrorFromCurrentFile(filename, errMsg, pInfo) = directive {
-                    await context.debugLog.throwErrorFromCurrentFile(filename, err: errMsg, pInfo: pInfo)
+                    context.debugLog.throwErrorFromCurrentFile(filename, err: errMsg, pInfo: pInfo)
                     throw EvaluationError.templateRenderingError(pInfo, directive)
                 }
             } else {

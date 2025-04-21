@@ -6,26 +6,24 @@
 
 import Foundation
 
-public enum Pipelines {
+public enum Pipelines: Sendable {
     
-    public static var codegen: Pipeline { get async {
-        await Pipeline {
+    public static let codegen = Pipeline {
             Discover.models()
             Load.models()
             Hydrate.models()
             Hydrate.annotations()
             Render.code()
             Persist.toOutputFolder()
-        }}}
+        }
     
-    public static var content: Pipeline { get async {
-        await Pipeline {
+    public static let content = Pipeline {
             Load.contentsFrom(folder: "contents")
             LoadPagesPass(folderName: "localFolder")
             LoadTemplatesPass(folderName: "localFolder")
-        }}}
+        }
     
-    public static var empty: Pipeline { get async {
-        await Pipeline {}
-    }}
+    public static let empty =  Pipeline {
+        
+    }
 }

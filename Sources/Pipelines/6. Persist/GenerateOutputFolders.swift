@@ -6,7 +6,7 @@
 
 import Foundation
 
-public actor GenerateOutputFoldersPass : PersistancePass {
+public struct GenerateOutputFoldersPass : PersistancePass {
     public func runIn(phase: PersistPhase, pipeline: Pipeline) async throws -> Bool {
         
         try await pipeline.config.output.deleteAllFilesAndFolders()
@@ -14,7 +14,7 @@ public actor GenerateOutputFoldersPass : PersistancePass {
         var totalFilesGenerated: Int = 0
         var totalFoldersGenerated: Int = 0
         
-        for sandbox in await pipeline.generationSandboxes {
+        for sandbox in await pipeline.state.generationSandboxes {
             let output = await sandbox.base_generation_dir
             
             try await output.persist(with: sandbox.context)

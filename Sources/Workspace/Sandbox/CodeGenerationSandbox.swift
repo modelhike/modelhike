@@ -81,7 +81,7 @@ public actor CodeGenerationSandbox : GenerationSandbox {
             print(msg)
         }
         
-        await context.debugLog.renderingFolder(fromFolder, to: toFolder)
+        context.debugLog.renderingFolder(fromFolder, to: toFolder)
         let folder = try await context.fileGenerator.renderFolder(fromFolder, to: toFolder, with: pInfo)
         return folder
     }

@@ -4,7 +4,7 @@
 //  https://www.github.com/modelhike/modelhike
 //
 
-public actor HydrateModelsPass: LoadingPass {
+public struct HydrateModelsPass: LoadingPass {
     
     public func runIn(_ ws: Workspace, phase: LoadPhase) async throws -> Bool {
         try await processAfterLoad(model: ws.model, with: ws.context)
