@@ -89,7 +89,7 @@ public struct DefaultModifiersLibrary {
     }
 
     public static func replacewith() async -> Modifier {
-        return await CreateModifier.withParams("replace") { (value: String, arguments: [Any], pInfo: ParsedInfo) throws -> String? in
+        return await CreateModifier.withParams("replace") { (value: String, arguments: [Sendable], pInfo: ParsedInfo) throws -> String? in
             if arguments.count != 2 { throw TemplateSoup_ParsingError.modifierInvalidArguments("replace", pInfo) }
             
             guard let replaceFrom = arguments.first as? String,
@@ -118,14 +118,14 @@ public struct DefaultModifiersLibrary {
     }
 
     public static func minFunction() async -> Modifier {
-        return await CreateModifier.withoutParams("min") { (arguments: [Any], pInfo: ParsedInfo) -> Double? in
+        return await CreateModifier.withoutParams("min") { (arguments: [Sendable], pInfo: ParsedInfo) -> Double? in
             guard let arguments = arguments as? [Double] else { return nil }
             return arguments.min()
         }
     }
 
     public static func maxFunction() async -> Modifier {
-        return await CreateModifier.withoutParams("max") { (arguments: [Any], pInfo: ParsedInfo) -> Double? in
+        return await CreateModifier.withoutParams("max") { (arguments: [Sendable], pInfo: ParsedInfo) -> Double? in
             guard let arguments = arguments as? [Double] else { return nil }
             return arguments.max()
         }
@@ -156,7 +156,7 @@ public struct DefaultModifiersLibrary {
     }
 
     public static func arrayJoinFunction() async -> Modifier {
-        return await CreateModifier.withParams("join") { (object: [String], arguments: [Any], pInfo: ParsedInfo) -> String? in
+        return await CreateModifier.withParams("join") { (object: [String], arguments: [Sendable], pInfo: ParsedInfo) -> String? in
             guard let separator = arguments.first as? String else { return nil }
             return object.joined(separator: separator)
         }
@@ -175,39 +175,39 @@ public struct DefaultModifiersLibrary {
     }
 
     public static func dictionaryCountFunction() async -> Modifier {
-        return await CreateModifier.withoutParams("count") { (object: [String: Any], pInfo: ParsedInfo) -> Double? in Double(object.count) }
+        return await CreateModifier.withoutParams("count") { (object: [String: Sendable], pInfo: ParsedInfo) -> Double? in Double(object.count) }
     }
 
     public static func sumFunction() async -> Modifier {
-        return await CreateModifier.withoutParams("sum") { (arguments: [Any], pInfo: ParsedInfo) -> Double? in
+        return await CreateModifier.withoutParams("sum") { (arguments: [Sendable], pInfo: ParsedInfo) -> Double? in
             guard let arguments = arguments as? [Double] else { return nil }
             return arguments.reduce(0, +)
         }
     }
 
     public static func averageFunction() async -> Modifier {
-        return await CreateModifier.withoutParams("avg") { (arguments: [Any], pInfo: ParsedInfo) -> Double? in
+        return await CreateModifier.withoutParams("avg") { (arguments: [Sendable], pInfo: ParsedInfo) -> Double? in
             guard let arguments = arguments as? [Double] else { return nil }
             return arguments.reduce(0, +) / Double(arguments.count)
         }
     }
 
     public static func sqrtFunction() async -> Modifier {
-        return await CreateModifier.withoutParams("sqrt") { (arguments: [Any], pInfo: ParsedInfo) -> Double? in
+        return await CreateModifier.withoutParams("sqrt") { (arguments: [Sendable], pInfo: ParsedInfo) -> Double? in
             guard let value = arguments.first as? Double else { return nil }
             return sqrt(value)
         }
     }
 
     public static func roundFunction() async -> Modifier {
-        return await CreateModifier.withoutParams("round") { (arguments: [Any], pInfo: ParsedInfo) -> Double? in
+        return await CreateModifier.withoutParams("round") { (arguments: [Sendable], pInfo: ParsedInfo) -> Double? in
             guard let value = arguments.first as? Double else { return nil }
             return round(value)
         }
     }
 
     public static func dateFactory() async -> Modifier {
-        return await CreateModifier.withoutParams("Date") { (arguments: [Any], pInfo: ParsedInfo) -> Date? in
+        return await CreateModifier.withoutParams("Date") { (arguments: [Sendable], pInfo: ParsedInfo) -> Date? in
             guard let arguments = arguments as? [Double], arguments.count >= 3 else { return nil }
             var components = DateComponents()
             components.calendar = Calendar(identifier: .gregorian)
@@ -222,7 +222,7 @@ public struct DefaultModifiersLibrary {
     }
 
     public static func dateFormat() async -> Modifier {
-        return await CreateModifier.withParams("format") { (object: Date, arguments: [Any], pInfo: ParsedInfo) -> String? in
+        return await CreateModifier.withParams("format") { (object: Date, arguments: [Sendable], pInfo: ParsedInfo) -> String? in
             guard let format = arguments.first as? String else { return nil }
             let dateFormatter = DateFormatter(with: format)
             return dateFormatter.string(from: object)

@@ -8,16 +8,15 @@ import Foundation
 
 public enum Modifiers  {
     public static func apply<T: Sendable>(to value: T, modifiers: [ModifierInstance], with pInfo: ParsedInfo) async throws -> Sendable? {
-        var result : T = value
         for modifier in modifiers {
-            if let resultValue = try await modifier.applyTo(value: result, with: pInfo) as? T {
-                result = resultValue
+            if let resultValue = try await modifier.applyTo(value: value, with: pInfo) {
+                return resultValue
             } else {
                 return nil
             }
         }
         
-        return result
+        return nil
     }
     
     public static func parse(string: String?, pInfo: ParsedInfo) async throws -> [ModifierInstance] {

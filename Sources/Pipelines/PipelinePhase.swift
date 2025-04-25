@@ -214,7 +214,7 @@ extension PipelinePhase {
 
     @discardableResult
     public func runIn(
-        pipeline: Pipeline, passes: [Pass], runPass: @escaping (Pass, Self) async throws -> Bool
+        pipeline: Pipeline, passes: [Pass], runPass: (Pass, Self) async throws -> Bool
     ) async throws -> Bool {
         var lastRunResult = true
 

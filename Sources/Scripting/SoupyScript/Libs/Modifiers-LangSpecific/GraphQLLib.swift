@@ -15,7 +15,7 @@ public struct GraphQLLib {
 
     
     public static func typename() async -> Modifier {
-        return await CreateModifier.withoutParams("graphql-typename") { (value: Any, pInfo: ParsedInfo) -> String? in
+        return await CreateModifier.withoutParams("graphql-typename") { (value: Sendable, pInfo: ParsedInfo) -> String? in
             
             var type = PropertyKind.unKnown
             

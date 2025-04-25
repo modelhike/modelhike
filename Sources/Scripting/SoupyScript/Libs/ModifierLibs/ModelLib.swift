@@ -29,7 +29,7 @@ public struct ModelLib {
 
     public static func getLastRecursivePropWithName(sandbox: Sandbox) async -> Modifier {
         return await CreateModifier.withParams("get-last-recursive-prop") {
-            (propName: String, arguments: [Any], pInfo: ParsedInfo) throws -> TypeProperty_Wrap? in
+            (propName: String, arguments: [Sendable], pInfo: ParsedInfo) throws -> TypeProperty_Wrap? in
 
             guard let objectName = arguments.first as? String else { return nil }
 
@@ -46,7 +46,7 @@ public struct ModelLib {
 
     public static func getAPIsforCodeObject(sandbox: Sandbox) async -> Modifier {
         return await CreateModifier.withoutParams("apis") {
-            (entity: Any, pInfo: ParsedInfo) -> [API_Wrap] in
+            (entity: Sendable, pInfo: ParsedInfo) -> [API_Wrap] in
 
             if let entityName = entity as? String,
                let entity = await sandbox.model.types.get(for: entityName)

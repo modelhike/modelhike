@@ -14,7 +14,7 @@ public struct MongoDB_TypescriptLib {
     }
     
     public static func filterString(sandbox: Sandbox) async -> Modifier {
-        return await CreateModifier.withoutParams("filter-string") { (value: Any, pInfo: ParsedInfo) -> String? in
+        return await CreateModifier.withoutParams("filter-string") { (value: Sendable, pInfo: ParsedInfo) -> String? in
             
             guard let wrapped = value as? APIParam_Wrap else {
                 return nil

@@ -16,7 +16,7 @@ public struct TypescriptLib {
 
     public static func typename() async -> Modifier {
         return await CreateModifier.withoutParams("typename") {
-            (value: Any, pInfo: ParsedInfo) -> String? in
+            (value: Sendable, pInfo: ParsedInfo) -> String? in
 
             var type = PropertyKind.unKnown
 
@@ -57,7 +57,7 @@ public struct TypescriptLib {
 
     public static func defaultValue() async -> Modifier {
         return await CreateModifier.withoutParams("default-value") {
-            (value: Any, pInfo: ParsedInfo) -> String? in
+            (value: Sendable, pInfo: ParsedInfo) -> String? in
 
             var type = PropertyKind.unKnown
 

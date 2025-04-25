@@ -12,7 +12,7 @@ public struct CreateModifier {
         return  ModifierWithoutArgs(name: name , handler: body)
     }
 
-    public static func withParams<I, T: Sendable>(_ name: String, body: @Sendable @escaping (I, [Any], ParsedInfo)  async throws -> T?) async -> Modifier {
+    public static func withParams<I, T: Sendable>(_ name: String, body: @Sendable @escaping (I, [Sendable], ParsedInfo)  async throws -> T?) async -> Modifier {
         
         return  ModifierWithUnNamedArgs(name: name, handler: body)
     }

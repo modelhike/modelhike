@@ -11,7 +11,7 @@ public struct ModifierInstanceWithoutArgs<I, T: Sendable> : ModifierInstanceWith
     private let callerType: Any.Type
     private let handler: @Sendable (I, ParsedInfo) async throws  -> T?
     
-    public func applyTo(value : Sendable, with pInfo: ParsedInfo) async throws -> Sendable {
+    public func applyTo(value : Sendable, with pInfo: ParsedInfo) async throws -> Sendable? {
         
         if let typedValue = value as? I {
             if type(of: typedValue) != self.callerType {
@@ -34,21 +34,21 @@ public struct ModifierInstanceWithoutArgs<I, T: Sendable> : ModifierInstanceWith
 public struct ModifierInstanceWithUnNamedArgs<I, T: Sendable> : ModifierInstanceWithUnNamedArgsProtocol {
     public var name : String
     public let callerType: Any.Type
-    private let handler: @Sendable (I, [Any], ParsedInfo) async throws -> T?
+    private let handler: @Sendable (I, [Sendable], ParsedInfo) async throws -> T?
     private var arguments: [String] = []
     
     public mutating func setArgsGiven(arguments: [String]) {
         self.arguments = arguments
     }
     
-    public func applyTo(value : Sendable, with pInfo: ParsedInfo) async throws -> Sendable {
+    public func applyTo(value : Sendable, with pInfo: ParsedInfo) async throws -> Sendable? {
         
         if let typedValue = value as? I {
             if type(of: typedValue) != self.callerType {
                 throw TemplateSoup_ParsingError.modifierCalledOnwrongType(self.name, String(describing: type(of: value)), pInfo)
             }
             
-            var argumentValues: [Any] = []
+            var argumentValues: [Sendable] = []
             
             for argument in arguments {
                 if let argValue = try await pInfo.ctx.evaluate(expression: argument, with: pInfo) {
@@ -65,7 +65,7 @@ public struct ModifierInstanceWithUnNamedArgs<I, T: Sendable> : ModifierInstance
         }
     }
     
-    public init(name: String, handler: @escaping @Sendable (I, [Any], ParsedInfo) async throws -> T?) {
+    public init(name: String, handler: @escaping @Sendable (I, [Sendable], ParsedInfo) async throws -> T?) {
         self.name = name
         self.callerType = I.self
         self.handler = handler
@@ -85,5 +85,5 @@ public protocol ModifierInstanceWithArgsProtocol : ModifierInstance {
 public protocol ModifierInstance: Sendable {
     var name : String {get}
     //var callerType: Any.Type {get}
-    func applyTo(value : Sendable, with pInfo: ParsedInfo) async throws -> Sendable
+    func applyTo(value : Sendable, with pInfo: ParsedInfo) async throws -> Sendable?
 }

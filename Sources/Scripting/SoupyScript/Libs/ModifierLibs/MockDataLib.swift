@@ -17,7 +17,7 @@ public struct MockDataLib {
     }
     
     private static func sampleJson(sandbox: Sandbox) async -> Modifier {
-        return await CreateModifier.withoutParams("sample-json") { (value: Any, pInfo: ParsedInfo) -> String? in
+        return await CreateModifier.withoutParams("sample-json") { (value: Sendable, pInfo: ParsedInfo) -> String? in
             
           guard let wrapped = value as? CodeObject_Wrap else {
             return nil
@@ -30,7 +30,7 @@ public struct MockDataLib {
     }
 
     private static func sampleValue(sandbox: Sandbox) async -> Modifier {
-        return await CreateModifier.withoutParams("sample-value") { (value: Any, pInfo: ParsedInfo) -> String? in
+        return await CreateModifier.withoutParams("sample-value") { (value: Sendable, pInfo: ParsedInfo) -> String? in
             
             var type = PropertyKind.unKnown
             var prefix = ""
@@ -98,7 +98,7 @@ public struct MockDataLib {
     }
         
     private static func sampleQueryString(sandbox: Sandbox) async -> Modifier {
-        return await CreateModifier.withoutParams("sample-query") { (value: Any, pInfo: ParsedInfo) -> String? in
+        return await CreateModifier.withoutParams("sample-query") { (value: Sendable, pInfo: ParsedInfo) -> String? in
             
           guard let wrapped = value as? API_Wrap else {
             return nil
