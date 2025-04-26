@@ -6,16 +6,21 @@
 
 import Foundation
 
-public struct PlaceHolderFile : OutputFile {
+public actor PlaceHolderFile : OutputFile {
     private let oldFilename: String
     public let filename: String
     private let repo: InputFileRepository
-    public var outputPath: LocalPath?
     let renderer: TemplateRenderer
     let pInfo: ParsedInfo
     var contents: String? = nil
     
-    public mutating func render() async throws {
+    public private(set) var outputPath: LocalPath?
+
+    public func outputPath(_ path: LocalPath) {
+        self.outputPath = path
+    }
+    
+    public func render() async throws {
         let data : [String: Sendable] = [:]
         
         if let contents = try await renderer.renderTemplate(fileName: self.oldFilename, data: data, with: pInfo) {

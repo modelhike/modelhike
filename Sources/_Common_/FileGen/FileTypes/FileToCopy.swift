@@ -6,14 +6,18 @@
 
 import Foundation
 
-public struct FileToCopy : CopyableFile {
-    public var outputPath: LocalPath?
+public actor FileToCopy : CopyableFile {
     
     public var filename: String { outFile.filename }
-    
     public let outFile: LocalFile
 
     let pInfo: ParsedInfo
+    
+    public private(set) var outputPath: LocalPath?
+
+    public func outputPath(_ path: LocalPath) {
+        self.outputPath = path
+    }
     
     public func persist() throws {
         if let outputPath {
@@ -22,7 +26,7 @@ public struct FileToCopy : CopyableFile {
             fatalError(#function + ": output path not set!")
         }
     }
-    
+     
     public var debugDescription: String {
         return outFile.pathString
     }

@@ -180,7 +180,7 @@ public actor CodeGenerationSandbox : GenerationSandbox {
             return nil
         }
         
-        var file = TemplateRenderedFile(filename: filename, template: template, renderer: self.templateSoup, pInfo: pInfo)
+        let file = TemplateRenderedFile(filename: filename, template: template, renderer: self.templateSoup, pInfo: pInfo)
         
         await generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
         try await file.render()
@@ -192,7 +192,7 @@ public actor CodeGenerationSandbox : GenerationSandbox {
             return nil
         }
         
-        var file = TemplateRenderedFile(filename: filename, template: template, data: data, renderer: self.templateSoup, pInfo: pInfo)
+        let file = TemplateRenderedFile(filename: filename, template: template, data: data, renderer: self.templateSoup, pInfo: pInfo)
         
         await generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
         try await file.render()
@@ -200,7 +200,7 @@ public actor CodeGenerationSandbox : GenerationSandbox {
     }
     
     public func copyFile(_ filename: String, with pInfo: ParsedInfo) async throws -> StaticFile {
-        var file = await StaticFile(filename: filename, repo: templateSoup.blueprint, to: filename, pInfo: pInfo)
+        let file = await StaticFile(filename: filename, repo: templateSoup.blueprint, to: filename, pInfo: pInfo)
         
         await generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
         try await file.render()
@@ -208,7 +208,7 @@ public actor CodeGenerationSandbox : GenerationSandbox {
     }
         
     public func copyFile(_ filename: String, to newFilename: String, with pInfo: ParsedInfo) async throws -> StaticFile {
-        var file = await StaticFile(filename: filename, repo: templateSoup.blueprint, to: newFilename, pInfo: pInfo)
+        let file = await StaticFile(filename: filename, repo: templateSoup.blueprint, to: newFilename, pInfo: pInfo)
         
         await generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
         try await file.render()
@@ -246,7 +246,7 @@ public actor CodeGenerationSandbox : GenerationSandbox {
             return nil
         }
         
-        var file = await PlaceHolderFile(filename: filename, repo: templateSoup.blueprint, to: filename, renderer: self.templateSoup, pInfo: pInfo)
+        let file = await PlaceHolderFile(filename: filename, repo: templateSoup.blueprint, to: filename, renderer: self.templateSoup, pInfo: pInfo)
         
         await generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
         try await file.render()
@@ -258,7 +258,7 @@ public actor CodeGenerationSandbox : GenerationSandbox {
             return nil
         }
         
-        var file = await PlaceHolderFile(filename: filename, repo: templateSoup.blueprint, to: newFilename, renderer: self.templateSoup, pInfo: pInfo)
+        let file = await PlaceHolderFile(filename: filename, repo: templateSoup.blueprint, to: newFilename, renderer: self.templateSoup, pInfo: pInfo)
         
         await generation_dir.add(file) //to be persisted in the Persist Pipeline Phase
         try await file.render()

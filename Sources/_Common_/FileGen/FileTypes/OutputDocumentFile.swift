@@ -6,17 +6,22 @@
 
 import Foundation
 
-public struct OutputDocumentFile : OutputFile, RenderableFile {
+public actor OutputDocumentFile : OutputFile, RenderableFile {
     public let filename: String
     private let doc: RenderableDocument
     private let renderConfig: RenderConfig
 
-    public var outputPath: LocalPath?
     var contents: String? = nil
     
     public let fileType : InputFileType
 
-    public mutating func render() throws {
+    public private(set) var outputPath: LocalPath?
+
+    public func outputPath(_ path: LocalPath) {
+        self.outputPath = path
+    }
+    
+    public func render() throws {
         self.contents = doc.render(renderConfig)
     }
     

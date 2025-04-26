@@ -6,17 +6,22 @@
 
 import Foundation
 
-public struct StaticFile : OutputFile {
+public actor StaticFile : OutputFile {
     private let oldFilename: String
     public let filename: String
 
     private let repo: InputFileRepository?
-    public var outputPath: LocalPath?
     let pInfo: ParsedInfo
     var contents: String? = nil
     var data: Data? = nil
 
-    public mutating func render() async throws {
+    public private(set) var outputPath: LocalPath?
+
+    public func outputPath(_ path: LocalPath) {
+        self.outputPath = path
+    }
+    
+    public func render() async throws {
         guard let repo = repo else { return }
         
         self.contents = try await repo.readTextContents(filename: self.oldFilename, with: pInfo)

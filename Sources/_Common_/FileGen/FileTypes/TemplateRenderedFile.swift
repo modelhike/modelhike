@@ -6,16 +6,21 @@
 
 import Foundation
 
-public struct TemplateRenderedFile : OutputFile, RenderableFile {
+public actor TemplateRenderedFile : OutputFile, RenderableFile {
     public let filename: String
     private let template: String?
-    public var outputPath: LocalPath?
     private let data: [String: Sendable]?
     private let renderer: TemplateRenderer?
     private let pInfo: ParsedInfo
     var contents: String? = nil
 
-    public mutating func render() async throws {
+    public private(set) var outputPath: LocalPath?
+
+    public func outputPath(_ path: LocalPath) {
+        self.outputPath = path
+    }
+    
+    public func render() async throws {
         guard let renderer = renderer, let template = template else { return }
         
         if let data = data {
