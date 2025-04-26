@@ -6,11 +6,11 @@
 
 import Foundation
 
-public protocol HasAttributes {
+public protocol HasAttributes: Sendable {
     var attribs: Attributes { get }
 }
 
-public protocol HasAsyncAttributes {
+public protocol HasAsyncAttributes: Sendable {
     var attribs: Attributes { get async }
 }
 

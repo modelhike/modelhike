@@ -21,14 +21,29 @@ public actor ObjectAttributeManager {
             } else {
                 throw TemplateSoup_ParsingError.invalidExpression(objName, pInfo)
             }
-        } else {
-            //attributes cannot be hierarchial
+        } else { //attributes cannot be hierarchial
+            
+            //MARK: Check diff attributes in different types of objects
+            //Revisit this repitition, in future, if needed
             if let obj = obj as? HasAttributes {
                 if await obj.attribs.has(propName) {
                     return await obj.attribs[propName]
                 }
             }
 
+            if let obj = obj as? HasAttributes_Actor {
+                if await obj.attribs.has(propName) {
+                    return await obj.attribs[propName]
+                }
+            }
+            
+            if let obj = obj as? HasAsyncAttributes {
+                if await obj.attribs.has(propName) {
+                    return await obj.attribs[propName]
+                }
+            }
+            
+            //MARK: Continue with others
             if let dynamicLookup = obj as? DynamicMemberLookup {
                 return try await dynamicLookup.getValueOf(property: propName, with: pInfo)
             }
@@ -92,6 +107,8 @@ public actor ObjectAttributeManager {
             throw TemplateSoup_ParsingError.invalidStmt(pInfo)
         }
 
+        //MARK: Check diff attributes in different types of objects
+        //Revisit this repitition, in future, if needed
         if let obj = await ctx.variables[objName] as? HasAttributes {
             if let body = try await ctx.evaluate(expression: valueExpression, with: pInfo) {
                 if let modifiedBody = try await Modifiers.apply(
@@ -105,7 +122,37 @@ public actor ObjectAttributeManager {
             await obj.attribs.removeValue(forKey: propName)
             return
         }
+        
+        if let obj = await ctx.variables[objName] as? HasAttributes_Actor {
+            if let body = try await ctx.evaluate(expression: valueExpression, with: pInfo) {
+                if let modifiedBody = try await Modifiers.apply(
+                    to: body, modifiers: modifiers, with: pInfo)
+                {
+                    await obj.attribs.set(propName, value: modifiedBody)
+                    return
+                }
+            }
 
+            await obj.attribs.removeValue(forKey: propName)
+            return
+        }
+        
+        if let obj = await ctx.variables[objName] as? HasAsyncAttributes {
+            if let body = try await ctx.evaluate(expression: valueExpression, with: pInfo) {
+                if let modifiedBody = try await Modifiers.apply(
+                    to: body, modifiers: modifiers, with: pInfo)
+                {
+                    await obj.attribs.set(propName, value: modifiedBody)
+                    return
+                }
+            }
+
+            await obj.attribs.removeValue(forKey: propName)
+            return
+        }
+        
+        //MARK:  continue with others
+        
         throw TemplateSoup_ParsingError.invalidStmt(pInfo)
 
     }
@@ -137,6 +184,8 @@ public actor ObjectAttributeManager {
             throw TemplateSoup_ParsingError.invalidStmt(pInfo)
         }
 
+        //MARK: Check diff attributes in different types of objects
+        //Revisit this repitition, in future, if needed
         if let obj = obj as? HasAttributes {
             if let body = value {
                 await obj.attribs.set(propName, value: body)
@@ -146,6 +195,26 @@ public actor ObjectAttributeManager {
             return
         }
 
+        if let obj = obj as? HasAttributes_Actor {
+            if let body = value {
+                await obj.attribs.set(propName, value: body)
+            } else {
+                await obj.attribs.removeValue(forKey: propName)
+            }
+            return
+        }
+        
+        if let obj = obj as? HasAsyncAttributes {
+            if let body = value {
+                await obj.attribs.set(propName, value: body)
+            } else {
+                await obj.attribs.removeValue(forKey: propName)
+            }
+            return
+        }
+        
+        //MARK:  continue with others
+        
         throw TemplateSoup_ParsingError.invalidStmt(pInfo)
     }
 
@@ -184,6 +253,8 @@ public actor ObjectAttributeManager {
             throw TemplateSoup_ParsingError.invalidStmt(pInfo)
         }
 
+        //MARK: Check diff attributes in different types of objects
+        //Revisit this repitition, in future, if needed
         if let obj = await ctx.variables[objName] as? HasAttributes {
             if let body = body {
                 if let modifiedBody = try await Modifiers.apply(
@@ -198,6 +269,36 @@ public actor ObjectAttributeManager {
             return
         }
 
+        if let obj = await ctx.variables[objName] as? HasAttributes_Actor {
+            if let body = body {
+                if let modifiedBody = try await Modifiers.apply(
+                    to: body, modifiers: modifiers, with: pInfo)
+                {
+                    await obj.attribs.set(propName, value: modifiedBody)
+                    return
+                }
+            }
+
+            await obj.attribs.removeValue(forKey: propName)
+            return
+        }
+        
+        if let obj = await ctx.variables[objName] as? HasAsyncAttributes {
+            if let body = body {
+                if let modifiedBody = try await Modifiers.apply(
+                    to: body, modifiers: modifiers, with: pInfo)
+                {
+                    await obj.attribs.set(propName, value: modifiedBody)
+                    return
+                }
+            }
+
+            await obj.attribs.removeValue(forKey: propName)
+            return
+        }
+        
+        //MARK:  continue with others
+        
         throw TemplateSoup_ParsingError.invalidStmt(pInfo)
     }
 
