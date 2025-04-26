@@ -103,17 +103,7 @@ public actor LocalFileBlueprintLoader: Blueprint {
 
         do {
             let inFolder = LocalFolder(path: self.blueprintPath / foldername)
-            
-            for file in inFolder.files {
-                let copyFile = FileToCopy(file: file, pInfo: pInfo)
-                await outputFolder.add(copyFile)
-            }
-            
-            //copy files from subfolders also
-            for subFolder in inFolder.subFolders {
-                let outputSubFolder = await outputFolder.subFolder(subFolder.name)
-                try await copyFiles(foldername: subFolder.name, to: outputSubFolder, with: pInfo)
-            }
+            try await copyLocalFiles(from: inFolder, to: outputFolder, with: pInfo)
             
         } catch let err {
             if err as? ErrorWithMessageAndParsedInfo != nil {
@@ -126,6 +116,21 @@ public actor LocalFileBlueprintLoader: Blueprint {
         }
     }
 
+    private func copyLocalFiles(from inFolder: LocalFolder, to outputFolder: OutputFolder, with pInfo: ParsedInfo) async throws
+    {
+
+        for file in inFolder.files {
+            let copyFile = FileToCopy(file: file, pInfo: pInfo)
+            await outputFolder.add(copyFile)
+        }
+        
+        //copy files from subfolders also
+        for subFolder in inFolder.subFolders {
+            let outputSubFolder = await outputFolder.subFolder(subFolder.name)
+            try await copyLocalFiles(from: subFolder, to: outputSubFolder, with: pInfo)
+        }
+    }
+    
     public func renderFiles(
         foldername: String, to outputFolder: OutputFolder, using templateSoup: TemplateSoup,
         with pInfo: ParsedInfo
