@@ -23,7 +23,7 @@ public struct CallStackItem : Sendable {
     
     public func renderForDisplay() -> String {
         if let pInfo = pInfo {
-            return " \(pInfo.identifier) [\(pInfo.lineNo)] \(pInfo.line)"
+            return " \(pInfo.identifier) [\(pInfo.lineNo)] >> \(pInfo.line)"
         } else if let specialActivity = specialActivityName {
             return " \(specialActivity)"
         } else {

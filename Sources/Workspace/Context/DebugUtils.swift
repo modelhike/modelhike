@@ -6,9 +6,9 @@
 
 import Foundation
 
-public struct ContextDebugLog: Sendable {
+public final class ContextDebugLog: Sendable {
     public let stack = CallStack()
-    public var flags = ContextDebugFlags()
+    public let flags: ContextDebugFlags
     
     public func parseLines(startingFrom startKeyword : String?, till endKeyWord: String?, line: String?, lineNo : Int ) {
         if flags.lineByLineParsing || flags.blockByBlockParsing {

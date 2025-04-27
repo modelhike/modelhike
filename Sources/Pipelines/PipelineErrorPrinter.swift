@@ -5,9 +5,9 @@
 //
 
 public struct PipelineErrorPrinter {
-    func printError(_ err: Error, workspace ws: Workspace) async {
-        let stack = await ws.context.debugLog.stack.snapshot()
-        let includeMemoryVariablesDump = await ws.config.errorOutput.includeMemoryVariablesDump
+    func printError(_ err: Error, context: Context) async {
+        let stack = await context.debugLog.stack.snapshot()
+        let includeMemoryVariablesDump = await context.config.errorOutput.includeMemoryVariablesDump
         
         let callStackInfo = StringTemplate {
             "[Call Stack]"
@@ -21,7 +21,7 @@ public struct PipelineErrorPrinter {
         let memoryVarsInfo = await StringTemplate {
             "[Memory]"
             
-            await dumpMemory(ws: ws)
+            await dumpMemory(context: context)
         }
         
         let extraInfo = StringTemplate {
@@ -93,8 +93,8 @@ public struct PipelineErrorPrinter {
         
     }
     
-    fileprivate func dumpMemory(ws: Workspace) async -> String{
-        let variables = await ws.context.variables.snapshot()
+    fileprivate func dumpMemory(context: Context) async -> String{
+        let variables = await context.variables.snapshot()
         
         return StringTemplate {
             for va in variables {

@@ -33,7 +33,6 @@ public extension Context {
     
     var debugInfo: DebugDictionary {
         get { currentState.debugInfo }
-        set { currentState.debugInfo = newValue }
     }
     
     var templateFunctions: TemplateFunctionMap  {

@@ -44,7 +44,7 @@ public struct LoadModelsPass: LoadingPass {
 
     fileprivate func printError(_ err: Error, workspace: Workspace) async {
         let printer = PipelineErrorPrinter()
-        await printer.printError(err, workspace: workspace)
+        await printer.printError(err, context: workspace.context)
     }
 
     public init() {

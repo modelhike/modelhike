@@ -6,12 +6,14 @@
 
 import Foundation
 
-public typealias DebugDictionary = [String: TemplateSoupExpressionDebugInfo]
+public final class ContextState: Sendable {
+    public let variables = WorkingMemory()
+    public let debugInfo = DebugDictionary()
+    public let templateFunctions = TemplateFunctionMap()
+}
 
-public struct ContextState: Sendable {
-    public internal(set) var variables = WorkingMemory()
-    public internal(set) var debugInfo: DebugDictionary = [:]
-    public internal(set) var templateFunctions = TemplateFunctionMap()
+public actor DebugDictionary{
+    var debugInfo: [String: TemplateSoupExpressionDebugInfo] = [:]
 }
 
 public actor ContextSymbols {

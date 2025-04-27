@@ -32,11 +32,6 @@ public struct DiscoverModelsPass : DiscoveringPass {
         return true
     }
     
-    fileprivate func printError(_ err: Error, workspace: Workspace) async {
-        let printer = PipelineErrorPrinter()
-        await printer.printError(err, workspace: workspace)
-    }
-    
     public init() {
     }
 }

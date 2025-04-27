@@ -27,9 +27,27 @@ public struct Pipeline: Sendable {
         do {
             await ws.config(config)
             
-            return try await runPhases()
+            var lastRunResult = true
+            
+            for phase in phases {
+                do {
+                    let success = try await phase.runIn(pipeline: self)
+                    if !success { lastRunResult = false; break }
+                    
+                } catch let err {
+                    print("❌❌ ERROR OCCURRED IN \(phase.name) Phase ❌❌")
+                    throw err
+                }
+            }
+            
+            return lastRunResult
         } catch let err {
-            await printError(err)
+            if let errWithPInfo = err as? ErrorWithMessageAndParsedInfo {
+                await printError(err, errWithPInfo.pInfo.ctx)
+            } else if let errWithMessageOnly = err as? ErrorWithMessage {
+                print( errWithMessageOnly.info )
+            }
+            
             print("❌❌❌ TERMINATED DUE TO ERROR ❌❌❌")
             return false
         }
@@ -42,27 +60,15 @@ public struct Pipeline: Sendable {
             return try await ws.render(string: input, data: data)
             
         } catch let err {
-            await printError(err)
+            if let errWithPInfo = err as? ErrorWithMessageAndParsedInfo {
+                await printError(err, errWithPInfo.pInfo.ctx)
+            } else if let errWithMessageOnly = err as? ErrorWithMessage {
+                print( errWithMessageOnly.info )
+            }
+
             print("❌❌❌ TERMINATED DUE TO ERROR ❌❌❌")
             return nil
         }
-    }
-    
-    fileprivate func runPhases() async throws -> Bool {
-        var lastRunResult = true
-        
-        for phase in phases {
-            do {
-                let success = try await phase.runIn(pipeline: self)
-                if !success { lastRunResult = false; break }
-            } catch let err {
-                print("❌❌ ERROR OCCURRED IN \(phase.name) Phase ❌❌")
-                throw err
-            }
-        }
-        
-        return lastRunResult
-
     }
     
     public func append(sandbox: GenerationSandbox) async {
@@ -155,9 +161,9 @@ public struct Pipeline: Sendable {
         self.phases = [discover, load, hydrate, transform, render, persist]
     }
     
-    fileprivate func printError(_ err: Error) async {
+    fileprivate func printError(_ err: Error, _ context: Context) async {
         let printer = PipelineErrorPrinter()
-        await printer.printError(err, workspace: ws)
+        await printer.printError(err, context: context)
     }
 }
 
