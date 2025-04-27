@@ -28,8 +28,10 @@ public actor DebugDictionary{
         self.debugInfo[key] = value
     }
     
+    //when a title is set, all existing items are removed from debug info
     public func title(_ title: String) {
         self.title = title
+        self.debugInfo.removeAll()
     }
 }
 
