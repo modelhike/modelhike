@@ -116,7 +116,7 @@ public extension ScriptParser {
             let params = paramsString.getArray_UsingUnNamedArgsPattern()
             
             let fnName = templateFnName.trim()
-            let fnContainer  = TemplateFunctionContainer(name: fnName, params: params, pInfo: pInfo)
+            let fnContainer  = TemplateFunction(name: fnName, params: params, pInfo: pInfo)
             await context.templateFunctions.set(fnName,value: fnContainer)
             
             //templateParser.lineParser.skipLine()

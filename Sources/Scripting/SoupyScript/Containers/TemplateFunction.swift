@@ -6,7 +6,7 @@
 
 import Foundation
 
-public actor TemplateFunctionContainer: SoupyScriptStmtContainer {
+public actor TemplateFunction: SoupyScriptStmtContainer {
     let container: GenericStmtsContainer
 
     let params: [String]
@@ -44,6 +44,16 @@ public actor TemplateFunctionContainer: SoupyScriptStmtContainer {
             }
         }
 
+        //add function param as debug info
+        await ctx.debugInfo.title("\(name) Function Params:-")
+        for arg in args {
+            if let value = await ctx.variables[arg.name] {
+                await ctx.debugInfo.set(arg.name, value: value)
+            } else {
+                await ctx.debugInfo.set(arg.name, value: "nil")
+            }
+        }
+            
         if let body = try await container.execute(with: ctx) {
             rendering += body
         }

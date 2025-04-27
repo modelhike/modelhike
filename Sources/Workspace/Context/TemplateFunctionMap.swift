@@ -5,7 +5,7 @@
 //
 
 public actor TemplateFunctionMap: _DictionaryAsyncSequence {
-    private var items: [String: TemplateFunctionContainer] = [:]
+    private var items: [String: TemplateFunction] = [:]
 
     public init() {
     }
@@ -18,11 +18,11 @@ public actor TemplateFunctionMap: _DictionaryAsyncSequence {
         items.removeValue(forKey: key)
     }
 
-    public subscript(key: String) -> TemplateFunctionContainer? {
+    public subscript(key: String) -> TemplateFunction? {
         get { items[key] }
     }
     
-    public func set(_ key: String, value newValue: TemplateFunctionContainer?) {
+    public func set(_ key: String, value newValue: TemplateFunction?) {
         items[key] = newValue
     }
         

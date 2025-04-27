@@ -40,7 +40,7 @@ public struct ModelLib {
                 }
             }
 
-            throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propName, pInfo)
+            throw TemplateSoup_ParsingError.invalidPropertyNameUsedInType(propName, objectName, pInfo)
         }
     }
 

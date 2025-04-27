@@ -13,7 +13,24 @@ public final class ContextState: Sendable {
 }
 
 public actor DebugDictionary{
-    var debugInfo: [String: TemplateSoupExpressionDebugInfo] = [:]
+    var debugInfo: [String: Sendable] = [:]
+    var title: String = ""
+    
+    public var hasAny: Bool {
+        return !self.debugInfo.isEmpty
+    }
+    
+    public func set(_ key: String, value: TemplateSoupExpressionDebugInfo) {
+        self.debugInfo[key] = value
+    }
+    
+    public func set(_ key: String, value: Sendable) {
+        self.debugInfo[key] = value
+    }
+    
+    public func title(_ title: String) {
+        self.title = title
+    }
 }
 
 public actor ContextSymbols {
