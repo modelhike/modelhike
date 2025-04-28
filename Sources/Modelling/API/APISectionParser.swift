@@ -8,19 +8,19 @@ import Foundation
 import RegexBuilder
 
 public enum APISectionParser {
-    public static func parse(for obj: CodeObject, lineParser parser: LineParser) throws
+    public static func parse(for obj: CodeObject, lineParser parser: LineParser) async throws
         -> [Artifact]
     {
         var apis: [Artifact] = []
 
-        while parser.linesRemaining {
-            if parser.isCurrentLineEmptyOrCommented() {
-                parser.skipLine()
+        while await parser.linesRemaining {
+            if await parser.isCurrentLineEmptyOrCommented() {
+                await parser.skipLine()
                 continue
             }
 
-            guard let pInfo = parser.currentParsedInfo(level: 0) else {
-                parser.skipLine()
+            guard let pInfo = await parser.currentParsedInfo(level: 0) else {
+                await parser.skipLine()
                 continue
             }
 
@@ -31,7 +31,7 @@ public enum APISectionParser {
                 break
             }
 
-            if try pInfo.tryParseAnnotations(with: obj) {
+            if try await pInfo.tryParseAnnotations(with: obj) {
                 continue
             }
 
@@ -41,20 +41,20 @@ public enum APISectionParser {
                 if let match = line.wholeMatch(of: Self.customListApi_WithCondition_Regex) {
                     let (_, prop1, op, prop2) = match.output
 
-                    let api = ListAPIByCustomProperties(entity: obj)
+                    let api = await ListAPIByCustomProperties(entity: obj)
 
                     if op.trim().lowercased() == "and" {
-                        api.andCondition = true
+                        await api.andCondition(true)
                     }
 
-                    if let property1 = obj.getProp(prop1.trim(), isCaseSensitive: false) {
-                        api.properties.append(property1)
+                    if let property1 = await obj.getProp(prop1.trim(), isCaseSensitive: false) {
+                        await api.append(property: property1)
                     } else {
                         throw Model_ParsingError.invalidPropertyUsedInApi(prop1, pInfo)
                     }
 
-                    if let property2 = obj.getProp(prop2.trim(), isCaseSensitive: false) {
-                        api.properties.append(property2)
+                    if let property2 = await obj.getProp(prop2.trim(), isCaseSensitive: false) {
+                        await api.append(property: property2)
                     } else {
                         throw Model_ParsingError.invalidPropertyUsedInApi(prop2, pInfo)
                     }
@@ -64,18 +64,18 @@ public enum APISectionParser {
                 } else if let match = line.wholeMatch(of: Self.customListApi_SingleProperty_Regex) {
                     let (_, prop1) = match.output
 
-                    let api = ListAPIByCustomProperties(entity: obj)
+                    let api = await ListAPIByCustomProperties(entity: obj)
 
-                    if let property1 = obj.getProp(prop1.trim(), isCaseSensitive: false) {
-                        api.properties.append(property1)
+                    if let property1 = await obj.getProp(prop1.trim(), isCaseSensitive: false) {
+                        await api.append(property: property1)
                     } else {
                         throw Model_ParsingError.invalidPropertyUsedInApi(prop1, pInfo)
                     }
 
                     apis.append(api)
-                } else if let method = try MethodObject.parse(pInfo: pInfo, skipLine: false) {
+                } else if let method = try await MethodObject.parse(pInfo: pInfo, skipLine: false) {
                     //custom logic api is defined using method syntax
-                    let api = CustomLogicAPI(method: method, entity: obj)
+                    let api = await CustomLogicAPI(method: method, entity: obj)
                     apis.append(api)
                 } else {
                     throw Model_ParsingError.invalidApiLine(pInfo)
@@ -83,12 +83,13 @@ public enum APISectionParser {
 
             }
 
-            parser.skipLine()
+            await parser.skipLine()
         }
 
         return apis
     }
 
+    nonisolated(unsafe)
     static let customListApi_SingleProperty_Regex = Regex {
         "list by"
 
@@ -102,6 +103,7 @@ public enum APISectionParser {
         CommonRegEx.comments
     }
 
+    nonisolated(unsafe)
     static let customListApi_WithCondition_Regex = Regex {
         "list by"
 

@@ -7,20 +7,20 @@
 import Foundation
 
 public struct JavaLib {
-    public static var functions: [Modifier] {
-        return [
-            typename,
-            defaultValue,
+    public static func functions() async -> [Modifier] {
+        return await [
+            typename(),
+            defaultValue(),
         ]
     }
 
-    public static var typename: Modifier {
-        return CreateModifier.withoutParams("typename") {
-            (value: Any, pInfo: ParsedInfo) -> String? in
+    public static func typename() async -> Modifier {
+        return await CreateModifier.withoutParams("typename") {
+            (value: Sendable, pInfo: ParsedInfo) -> String? in
             var type = PropertyKind.unKnown
 
             if let wrapped = value as? TypeProperty_Wrap {
-                type = wrapped.item.type.kind
+                type = await wrapped.item.type.kind
             } else if let info = value as? TypeInfo {
                 type = info.kind
             } else if let kind = value as? PropertyKind {
@@ -56,14 +56,14 @@ public struct JavaLib {
         }
     }
 
-    public static var defaultValue: Modifier {
-        return CreateModifier.withoutParams("default-value") {
-            (value: Any, pInfo: ParsedInfo) -> String? in
+    public static func defaultValue() async -> Modifier {
+        return await CreateModifier.withoutParams("default-value") {
+            (value: Sendable, pInfo: ParsedInfo) -> String? in
 
             var type = PropertyKind.unKnown
 
             if let wrapped = value as? TypeProperty_Wrap {
-                type = wrapped.item.type.kind
+                type = await wrapped.item.type.kind
             } else if let info = value as? TypeInfo {
                 type = info.kind
             } else if let kind = value as? PropertyKind {

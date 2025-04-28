@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class TextContent: ContentLineItem {
+public struct TextContent: ContentLineItem {
     let content : String
     public let pInfo: ParsedInfo
     let level: Int

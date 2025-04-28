@@ -7,12 +7,15 @@
 import Foundation
 import RegexBuilder
 
-public class RenderTemplateFileStmt: LineTemplateStmt, CallStackable, CustomDebugStringConvertible {
+public struct RenderTemplateFileStmt: LineTemplateStmt, CallStackable, CustomDebugStringConvertible {
+    public var state: LineTemplateStmtState
+    
     static let START_KEYWORD = "render-file"
 
     public private(set) var ToFile: String = ""
     public private(set) var FromTemplate: String = ""
     
+    nonisolated(unsafe)
     let stmtRegex = Regex {
         START_KEYWORD
         
@@ -33,7 +36,7 @@ public class RenderTemplateFileStmt: LineTemplateStmt, CallStackable, CustomDebu
         CommonRegEx.comments
     }
     
-    override func matchLine(line: String) throws -> Bool {
+    public mutating func matchLine(line: String) throws -> Bool {
         guard let match = line.wholeMatch(of: stmtRegex ) else { return false }
         
         let (_, fromTemplate, toFile) = match.output
@@ -44,49 +47,49 @@ public class RenderTemplateFileStmt: LineTemplateStmt, CallStackable, CustomDebu
         return true
     }
     
-    public override func execute(with ctx: Context) throws -> String? {
+    public func execute(with ctx: Context) async throws -> String? {
         guard let context = ctx as? GenerationContext else { return nil }
         guard FromTemplate.isNotEmpty else { return nil }
         
-        if ctx.workingDirectoryString.isEmpty {
+        if await ctx.workingDirectoryString.isEmpty {
             throw TemplateSoup_EvaluationError.workingDirectoryNotSet(pInfo)
         }
         
-        guard let fromTemplate = try? ctx.evaluate(value: FromTemplate, with: pInfo) as? String
+        guard let fromTemplate = try? await ctx.evaluate(value: FromTemplate, with: pInfo) as? String
         else {
             throw TemplateSoup_ParsingError.invalidExpression_VariableOrObjPropNotFound(FromTemplate, pInfo)
         }
         
-        try context.fileGenerator.setRelativePath(ctx.workingDirectoryString)
+        try await context.fileGenerator.setRelativePath(ctx.workingDirectoryString)
 
         var filename = ""
         
         if ToFile.isEmpty {
             filename = fromTemplate
         } else {
-            guard let toFile = try? ctx.evaluate(value: ToFile, with: pInfo) as? String
+            guard let toFile = try? await ctx.evaluate(value: ToFile, with: pInfo) as? String
                                                                         else { return nil }
             filename = toFile
         }
         
         //if handler returns false, dont render file
-        if try !context.events.canRender(filename: filename, templatename: self.FromTemplate, with: pInfo) {
+        if try await !context.events.canRender(filename: filename, templatename: self.FromTemplate, with: pInfo) {
             return nil
         }
         
-        ctx.pushCallStack(self)
+        await ctx.pushCallStack(self)
 
         //render the filename if it has an expression within '{{' and '}}'
-        filename = try ContentHandler.eval(line: filename, pInfo: pInfo) ?? filename
+        filename = try await ContentHandler.eval(line: filename, pInfo: pInfo) ?? filename
 
-        ctx.debugLog.generatingFile(filename, with: fromTemplate)
-        if let _ = try context.fileGenerator.generateFile(filename, template: fromTemplate, with: pInfo) {
+        await ctx.debugLog.generatingFile(filename, with: fromTemplate)
+        if let _ = try await context.fileGenerator.generateFile(filename, template: fromTemplate, with: pInfo) {
             //file generated successfully
         } else {
-            ctx.debugLog.fileNotGenerated(filename, with: fromTemplate)
+            await ctx.debugLog.fileNotGenerated(filename, with: fromTemplate)
         }
         
-        ctx.popCallStack()
+        await ctx.popCallStack()
         
         return nil
     }
@@ -105,9 +108,9 @@ public class RenderTemplateFileStmt: LineTemplateStmt, CallStackable, CustomDebu
     public var callStackItem: CallStackItem { CallStackItem(self, pInfo: pInfo) }
 
     public init(_ pInfo: ParsedInfo) {
-        super.init(keyword: Self.START_KEYWORD, pInfo: pInfo)
+        state =  LineTemplateStmtState(keyword: Self.START_KEYWORD, pInfo: pInfo)
     }
     
-    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) {pInfo in RenderTemplateFileStmt(pInfo) }
+    static let register = LineTemplateStmtConfig(keyword: START_KEYWORD) {pInfo in RenderTemplateFileStmt(pInfo) }
 }
 

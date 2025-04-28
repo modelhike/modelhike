@@ -6,45 +6,45 @@
 
 import Foundation
 
-open class Workspace {
-    public internal(set) var context: LoadContext
-    public internal(set) var config: OutputConfig {
-        didSet {
-            self.context.config = config
-            self.context.events = config.events
-        }
+public actor Workspace {
+    public let context: LoadContext
+    public var config: OutputConfig { get async { await self.context.config }}
+    
+    public func config(_ value: OutputConfig) async {
+        await self.context.config(value)
     }
     
     var model: AppModel { context.model }
-    public internal(set) var isModelsLoaded: Bool {
-        get { model.isModelsLoaded }
-        set { model.isModelsLoaded = newValue }
+    public var isModelsLoaded: Bool {
+        get async { await model.isModelsLoaded }
     }
     
-    public func newGenerationSandbox() -> GenerationSandbox {
-        let loadedVars = context.variables
-        let sandbox = CodeGenerationSandbox(model: self.model, config: config)
-        sandbox.context.append(variables: loadedVars)
+    public func isModelsLoaded(_ newValue: Bool) async {
+        await model.isModelsLoaded(newValue)
+    }
+    
+    public func newGenerationSandbox() async -> GenerationSandbox {
+        let loadedVars = await context.variables
+        let sandbox = await CodeGenerationSandbox(model: self.model, config: config)
+        await sandbox.context.append(variables: loadedVars)
         
         return sandbox
     }
     
-    public func newStringSandbox() -> Sandbox {
-        let sandbox = CodeGenerationSandbox(model: self.model, config: config)
+    public func newStringSandbox() async -> Sandbox {
+        let sandbox = await CodeGenerationSandbox(model: self.model, config: config)
         return sandbox
     }
     
-    public func render(string input: String, data: [String : Any]) throws -> String? {
-        let sandbox = newStringSandbox()
+    public func render(string input: String, data: [String : Sendable]) async throws -> String? {
+        let sandbox = await newStringSandbox()
 
-        let rendering = try sandbox.render(string: input, data: data)
+        let rendering = try await sandbox.render(string: input, data: data)
         return rendering?.trim()
     }
         
     internal init() {
         let config = PipelineConfig()
-        
-        self.config = config
         self.context = LoadContext(config: config)
     }
 }

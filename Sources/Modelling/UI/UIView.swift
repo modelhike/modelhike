@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class UIView : UIObject {
+public actor UIView : UIObject {
     public var givenname: String
     public var name: String
     public var members : [CodeMember] = []
@@ -14,13 +14,14 @@ public class UIView : UIObject {
     public var attached : [Artifact] = []
     public var mixins : [CodeObject] = []
     
-    public var attribs = Attributes()
-    public var tags = Tags()
-    public var annotations = Annotations()
+    public let attribs = Attributes()
+    public let tags = Tags()
+    public let annotations = Annotations()
     
-    public lazy var methods : [MethodObject] = { members.compactMap({
+    public var methods : [MethodObject] { get async {
+        await members.compactMap({
         if let method = $0 as? MethodObject { return method } else {return nil}
-    }) }()
+    }) }}
     
     public var dataType: ArtifactKind = .ui
     
@@ -30,9 +31,9 @@ public class UIView : UIObject {
         return self
     }
     
-    public var debugDescription: String {
+    public var debugDescription: String { get async {
         return "\(self.name) : \(self.members.count) items"
-    }
+    }}
     
     public init(name: String, @CodeMemberBuilder _ builder: () -> [CodeMember]) {
         self.givenname = name
@@ -46,25 +47,25 @@ public class UIView : UIObject {
     }
 }
 
-public protocol UIObject : ArtifactHolderWithAttachedSections, CustomDebugStringConvertible {
+public protocol UIObject : ArtifactHolderWithAttachedSections, SendableDebugStringConvertible {
     var givenname: String {get}
     var name: String {get}
     var dataType: ArtifactKind {get set}
     
-    var methods : [MethodObject] {get}
-    func hasMethod(_ name: String) -> Bool
+    var methods : [MethodObject] { get async }
+    func hasMethod(_ name: String) async -> Bool
     
-    func isSameAs(_ obj: UIObject) -> Bool
+    func isSameAs(_ obj: UIObject) async -> Bool
 }
 
 public extension UIObject {
     
-    func hasMethod(_ name: String) -> Bool {
-        return methods.contains(where: { $0.name == name})
+    func hasMethod(_ name: String) async -> Bool {
+        return await methods.contains(where: { await $0.name == name})
     }
     
-    func isSameAs(_ obj: UIObject) ->  Bool {
-        return self.givenname == obj.givenname
+    func isSameAs(_ obj: UIObject) async -> Bool {
+        return await self.givenname == obj.givenname
     }
     
     @discardableResult

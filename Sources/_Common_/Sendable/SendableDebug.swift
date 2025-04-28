@@ -7,3 +7,7 @@
 public protocol SendableDebugStringConvertible: Sendable {
     var debugDescription: String { get async }
 }
+
+public protocol SendableStringConvertible: Sendable {
+    var description: String { get async }
+}

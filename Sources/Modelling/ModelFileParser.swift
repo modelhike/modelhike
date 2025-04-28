@@ -6,88 +6,90 @@
 
 import Foundation
 
-public class ModelFileParser {
-    var modelSpace = ModelSpace()
+public actor ModelFileParser {
+    let modelSpace = ModelSpace()
     var component = C4Component()
     var subComponent : C4Component?
     var lineParser : LineParserDuringLoad
     let ctx: LoadContext
     
-    public func parse(file: LocalFile) throws -> ModelSpace {
+    public func parse(file: LocalFile) async throws -> ModelSpace {
         let lines = try file.readTextLines(ignoreEmptyLines: true)
-        return try self.parse(lines: lines, identifier: file.name)
+        return try await self.parse(lines: lines, identifier: file.name)
     }
     
-    public func parse(string: String, identifier: String) throws -> ModelSpace {
+    public func parse(string: String, identifier: String) async throws -> ModelSpace {
         let lines = string.splitIntoLines()
-        return try self.parse(lines: lines, identifier: identifier)
+        return try await self.parse(lines: lines, identifier: identifier)
     }
     
-    public func parse(lines contents: [String], identifier: String) throws -> ModelSpace {
+    public func parse(lines contents: [String], identifier: String) async throws -> ModelSpace {
         let lineParser = LineParserDuringLoad(lines: contents, identifier: identifier, isStatementsPrefixedWithKeyword: true, with: ctx, autoIncrementLineNoForEveryLoop: false)
         self.lineParser = lineParser
 
         do {
             
-            try lineParser.parse(level: 0) {pctx, _ in
-                if lineParser.isCurrentLineEmptyOrCommented() { lineParser.skipLine(); return }
+            try await lineParser.parse(level: 0) {[weak self] pctx, _ in
+                guard let self else { return }
+                
+                if await lineParser.isCurrentLineEmptyOrCommented() { await lineParser.skipLine(); return }
 
-                guard let pInfo = lineParser.currentParsedInfo(level : pctx.level) else { lineParser.skipLine(); return }
+                guard let pInfo = await lineParser.currentParsedInfo(level : pctx.level) else { await lineParser.skipLine(); return }
 
-                if ContainerParser.canParse(parser: lineParser) {
-                    try parseContainer(firstWord: pInfo.firstWord, pInfo: pInfo, parser: lineParser)
+                if await ContainerParser.canParse(parser: lineParser) {
+                    try await self.parseContainer(firstWord: pInfo.firstWord, pInfo: pInfo, parser: lineParser)
                     return
                 }
                 
-                if ModuleParser.canParse(parser: lineParser) {
-                    try parseModule(firstWord: pInfo.firstWord, pInfo: pInfo, parser: lineParser)
+                if await ModuleParser.canParse(parser: lineParser) {
+                    try await parseModule(firstWord: pInfo.firstWord, pInfo: pInfo, parser: lineParser)
                     return
                 }
                 
-                if SubModuleParser.canParse(parser: lineParser) {
-                    try parseSubModule(firstWord: pInfo.firstWord, pInfo: pInfo, parser: lineParser)
+                if await SubModuleParser.canParse(parser: lineParser) {
+                    try await parseSubModule(firstWord: pInfo.firstWord, pInfo: pInfo, parser: lineParser)
                     return
                 }
                 
                 //check for class starting
-                if DomainObjectParser.canParse(parser: lineParser) {
-                    if let item = try DomainObjectParser.parse(parser: lineParser, with: pInfo) {
-                        self.component.append(item)
+                if await DomainObjectParser.canParse(parser: lineParser) {
+                    if let item = try await DomainObjectParser.parse(parser: lineParser, with: pInfo) {
+                        await self.component.append(item)
                         return
                     } else {
                         throw Model_ParsingError.invalidDomainObjectLine(pInfo)
                     }
                 }
                 
-                if DtoObjectParser.canParse(parser: lineParser) {
-                    if let item = try DtoObjectParser.parse(parser: lineParser, with: pInfo) {
-                        self.component.append(item)
+                if await DtoObjectParser.canParse(parser: lineParser) {
+                    if let item = try await DtoObjectParser.parse(parser: lineParser, with: pInfo) {
+                        await self.component.append(item)
                         return
                     } else {
                         throw Model_ParsingError.invalidDtoObjectLine(pInfo)
                     }
                 }
                 
-                if UIViewParser.canParse(parser: lineParser) {
-                    if let item = try UIViewParser.parse(parser: lineParser, with: ctx) {
-                        self.component.append(item)
+                if await UIViewParser.canParse(parser: lineParser) {
+                    if let item = try await UIViewParser.parse(parser: lineParser, with: ctx) {
+                        await self.component.append(item)
                         return
                     } else {
                         throw Model_ParsingError.invalidUIViewLine(pInfo)
                     }
                 }
                 
-                if let subComponent = self.subComponent { //sub module active
-                    if try pInfo.tryParseAnnotations(with: subComponent) {
+                if let subComponent = await self.subComponent { //sub module active
+                    if try await pInfo.tryParseAnnotations(with: subComponent) {
                         return
                     }
                 } else {
-                    if try pInfo.tryParseAnnotations(with: self.component) {
+                    if try await pInfo.tryParseAnnotations(with: self.component) {
                         return
                     }
                 }
                                 
-                lineParser.skipLine();
+                await lineParser.skipLine();
             }
             
             return modelSpace
@@ -100,28 +102,28 @@ public class ModelFileParser {
         }
     }
     
-    func parseModule(firstWord: String, pInfo: ParsedInfo, parser: LineParser) throws {
-        if let module = try ModuleParser.parse(parser: lineParser, with: ctx) {
+    func parseModule(firstWord: String, pInfo: ParsedInfo, parser: LineParser) async throws {
+        if let module = try await ModuleParser.parse(parser: lineParser, with: ctx) {
             self.component = module
             self.subComponent = nil
-            self.modelSpace.append(module: module)
+            await self.modelSpace.append(module: module)
         } else {
             throw Model_ParsingError.invalidModuleLine(pInfo)
         }
     }
     
-    func parseSubModule(firstWord: String, pInfo: ParsedInfo, parser: LineParser) throws {
-        if let submodule = try SubModuleParser.parse(parser: lineParser, with: ctx) {
+    func parseSubModule(firstWord: String, pInfo: ParsedInfo, parser: LineParser) async throws {
+        if let submodule = try await SubModuleParser.parse(parser: lineParser, with: ctx) {
             self.subComponent = submodule
-            self.component.append(submodule: submodule)
+            await self.component.append(submodule: submodule)
         } else {
             throw Model_ParsingError.invalidSubModuleLine(pInfo)
         }
     }
     
-    func parseContainer(firstWord: String, pInfo: ParsedInfo, parser: LineParser) throws {
-        if let container = try ContainerParser.parse(parser: lineParser, with: ctx) {
-            self.modelSpace.append(container: container)
+    func parseContainer(firstWord: String, pInfo: ParsedInfo, parser: LineParser) async throws {
+        if let container = try await ContainerParser.parse(parser: lineParser, with: ctx) {
+            await self.modelSpace.append(container: container)
         } else {
             throw Model_ParsingError.invalidContainerLine(pInfo)
         }

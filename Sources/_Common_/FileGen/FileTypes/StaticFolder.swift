@@ -6,17 +6,17 @@
 
 import Foundation
 
-open class StaticFolder : PersistableFolder {
+public actor StaticFolder : PersistableFolder {
     private let repo: InputFileRepository
     public let foldername: String
     public let newFoldername: String
-    public var outputFolder: OutputFolder?
+    public private(set) var outputFolder: OutputFolder?
     let pInfo: ParsedInfo
     
-    public func persist() throws {
+    public func persist() async throws {
         if let ctx = pInfo.ctx as? GenerationContext {
             if let outputFolder {
-                try outputFolder.persist(with: ctx)
+                try await outputFolder.persist(with: ctx)
             } else {
                 fatalError(#function + ": output path not set!")
             }
@@ -25,21 +25,25 @@ open class StaticFolder : PersistableFolder {
         }
     }
     
-    public func copyFiles() throws {
+    public func copyFiles() async throws {
         if let outputFolder {
-            try repo.copyFiles(foldername: foldername, to: outputFolder, with: pInfo)
+            try await repo.copyFiles(foldername: foldername, to: outputFolder, with: pInfo)
         } else {
             fatalError(#function + ": output path not set!")
         }
     }
     
-    public var debugDescription: String {
+    public func outputFolder(baseFolder: LocalFolder) {
+        outputFolder = OutputFolder(baseFolder / self.newFoldername)
+    }
+    
+    public var debugDescription: String { get async {
         if let outputFolder {
-            return outputFolder.debugDescription + " : \(foldername) -> \(newFoldername)"
+            return await outputFolder.debugDescription + " : \(foldername) -> \(newFoldername)"
         } else {
             return "StaticFolder: \(foldername) -> \(newFoldername)"
         }
-    }
+    }}
     
     public init(foldername: String, repo: InputFileRepository, to newFoldername:String, pInfo: ParsedInfo) {
         self.repo = repo

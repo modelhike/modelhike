@@ -6,13 +6,13 @@
 
 import Foundation
 
-public struct FrontMatter {
+public struct FrontMatter: Sendable {
     private let lines: [String]
     private let parser: LineParser
     private let ctx: Context
     private var pInfo: ParsedInfo
     
-    public mutating func hasDirective(_ directive: String) async  -> ParsedInfo? {
+    public func hasDirective(_ directive: String) async  -> ParsedInfo? {
         do {
             let directiveString = "/\(directive)"
             if let rhs = try self.rhs(for: directiveString) {
@@ -26,10 +26,10 @@ public struct FrontMatter {
         
     }
     
-    public mutating func evalDirective(_ directive: String, pInfo: ParsedInfo) throws -> Any? {
+    public func evalDirective(_ directive: String, pInfo: ParsedInfo) async throws -> Any? {
         let directiveString = "/\(directive)"
         if let rhs = try self.rhs(for: directiveString) {
-            return try ContentHandler.eval(line: rhs, pInfo: pInfo)
+            return try await ContentHandler.eval(line: rhs, pInfo: pInfo)
         }
         return nil
     }
@@ -84,14 +84,15 @@ public struct FrontMatter {
     }
     
     private func setVariablesToMemory(lhs: String, rhs: String) async {
-        await ctx.variables[lhs] = rhs
+        await ctx.variables.set(lhs, value: rhs)
     }
     
-    public mutating func rhs(for lhsValueToCheck: String) throws -> String? {
+    public func rhs(for lhsValueToCheck: String) throws -> String? {
         var index = 1 // front matter starts after the separator (---) line
         
+        var pInfo2 = pInfo
         for line in lines {
-            pInfo.setLineInfo(line: line, lineNo: index)
+            pInfo2.setLineInfo(line: line, lineNo: index)
             
             let split = line.split(separator: TemplateConstants.frontMatterSplit, maxSplits: 1, omittingEmptySubsequences: true)
             if split.count == 2 {
@@ -102,7 +103,7 @@ public struct FrontMatter {
                     return rhs
                 }
             } else {
-                throw TemplateSoup_ParsingError.invalidFrontMatter(line, pInfo)
+                throw TemplateSoup_ParsingError.invalidFrontMatter(line, pInfo2)
             }
             
             index += 1

@@ -13,7 +13,7 @@ public struct DiscoverModelsPass : DiscoveringPass {
 
         //TODO: Also update in Load phase
         //        if config.modelLoaderType == .localFileSystem {
-        repo = LocalFileModelLoader(path: ws.config.basePath, with: ws.context)
+        repo = await LocalFileModelLoader(path: ws.config.basePath, with: ws.context)
         //let modelRepo = inlineModel(ws)
         
         if repo.probeForGenerationConfig() {
@@ -30,11 +30,6 @@ public struct DiscoverModelsPass : DiscoveringPass {
         }
         
         return true
-    }
-    
-    fileprivate func printError(_ err: Error, workspace: Workspace) {
-        let printer = PipelineErrorPrinter()
-        printer.printError(err, workspace: workspace)
     }
     
     public init() {

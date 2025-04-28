@@ -6,12 +6,16 @@
 
 import Foundation
 
-public class AttachedSection : ArtifactHolder {
+public actor AttachedSection : ArtifactHolder {
+   
+    public var debugDescription: String {
+        return "AttachedSection(\(name))"
+    }
+    
     public var attribs = Attributes()
     public var tags = Tags()
     public var annotations:  Annotations {
-        get { containingObject.annotations }
-        set { containingObject.annotations = newValue }
+        get async { await containingObject.annotations }
     }
 
     public var name: String = ""

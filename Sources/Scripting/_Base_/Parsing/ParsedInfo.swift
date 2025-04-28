@@ -6,7 +6,7 @@
 
 import Foundation
 
-public struct ParsedInfo : SendableEquatable {
+public struct ParsedInfo : Sendable, Equatable {
     public private(set) var line: String
     public private(set) var lineNo: Int
     public private(set) var level: Int
@@ -17,10 +17,11 @@ public struct ParsedInfo : SendableEquatable {
     public private(set) var parser: LineParser
     public private(set) var ctx: Context
     
-    public func parseAttachedItems(for obj: ArtifactHolder, with section: AttachedSection) throws -> [Artifact] {
+    public func parseAttachedItems(for obj: ArtifactHolder, with section: AttachedSection) async throws -> [Artifact] {
         if let cls = obj as? CodeObject {
-            if section.name.lowercased() == "apis" {
-                return try APISectionParser.parse(for: cls, lineParser: self.parser)
+            let name = await section.name.lowercased()
+            if name == "apis" {
+                return try await APISectionParser.parse(for: cls, lineParser: self.parser)
             }
         }
         
@@ -30,7 +31,7 @@ public struct ParsedInfo : SendableEquatable {
     public func tryParseAttachedSections(with item: ArtifactHolderWithAttachedSections) async throws -> Bool {
         if AttachedSectionParser.canParse(firstWord: self.firstWord) {
             if let section = try await AttachedSectionParser.parse(for: item, with: self) {
-                item.attachedSections[section.name] = section
+                await item.attachedSections.set(section.name, value: section)
                 return true
             } else {
                 throw Model_ParsingError.invalidAttachedSection(self)
@@ -40,10 +41,10 @@ public struct ParsedInfo : SendableEquatable {
         return false
     }
     
-    public func parseAnnotation(with item: HasAnnotations) async throws -> (any Annotation)? {
+    public func parseAnnotation(with item: HasAnnotations_Actor) async throws -> (any Annotation)? {
         if AnnotationParser.canParse(firstWord: self.firstWord) {
             if let annotation = try AnnotationParser.parse(pInfo: self) {
-                item.annotations[annotation.name] = annotation
+                await item.annotations.set(annotation.name, value:  annotation)
                 //try AnnotationProcessor.process(annotation, for: item)
                 await self.parser.skipLine()
                 return annotation
@@ -55,7 +56,7 @@ public struct ParsedInfo : SendableEquatable {
         return nil
     }
     
-    public func tryParseAnnotations(with item: HasAnnotations) async throws -> Bool {
+    public func tryParseAnnotations(with item: HasAnnotations_Actor) async throws -> Bool {
         if let _ = try await parseAnnotation(with: item) {
             return true
         } else {
@@ -67,58 +68,62 @@ public struct ParsedInfo : SendableEquatable {
         return (lhs.line == rhs.line) && (lhs.lineNo == rhs.lineNo)
     }
     
-    public static func dummy(line: String, identifier: String, with ctx: GenerationContext) async -> ParsedInfo {
+    public static func dummy(line: String, identifier: String, generationCtx ctx: GenerationContext) async -> ParsedInfo {
         let parser = DummyLineParserDuringGeneration(identifier: identifier, isStatementsPrefixedWithKeyword: true, with: ctx)
         return await ParsedInfo(parser: parser, line: line, lineNo: -1, level: 0, firstWord: "")
     }
     
-    public static func dummy(line: String, identifier: String, with ctx: LoadContext) async -> ParsedInfo {
+    public static func dummy(line: String, identifier: String, loadCtx ctx: LoadContext) async -> ParsedInfo {
         let parser = DummyLineParserDuringLoad(identifier: identifier, isStatementsPrefixedWithKeyword: true, with: ctx)
         return await ParsedInfo(parser: parser, line: line, lineNo: -1, level: 0, firstWord: "")
     }
     
-    public static func dummy(line: String, identifier: String, with ctx: Context) -> ParsedInfo {
+    public static func dummy(line: String, identifier: String, with ctx: Context) async -> ParsedInfo {
         if let loadctx = ctx as? LoadContext {
-            return dummy(line: line, identifier: identifier, with: loadctx)
+            return await dummy(line: line, identifier: identifier, loadCtx: loadctx)
         } else if let genctx = ctx as? GenerationContext {
-            return dummy(line: line, identifier: identifier, with: genctx)
+            return await dummy(line: line, identifier: identifier, generationCtx: genctx)
         } else {
             fatalError(#function + ": unknown Context passes")
         }
     }
     
-    public static func dummyForFrontMatterError(identifier: String, with ctx: Context) -> ParsedInfo {
+    public static func dummyForFrontMatterError(identifier: String, with ctx: Context) async -> ParsedInfo {
         if let loadctx = ctx as? LoadContext {
-            return dummy(line: "Front-Matter", identifier: identifier, with: loadctx)
+            return await dummy(line: "Front-Matter", identifier: identifier, with: loadctx)
         } else if let genctx = ctx as? GenerationContext {
-            return dummy(line: "Front-Matter", identifier: identifier, with: genctx)
+            return await dummy(line: "Front-Matter", identifier: identifier, with: genctx)
         } else {
             fatalError(#function + ": unknown Context passes")
         }
     }
     
-    public static func dummyForMainFile(with ctx: Context) -> ParsedInfo {
+    public static func dummyForMainFile(with ctx: Context) async -> ParsedInfo {
         if let loadctx = ctx as? LoadContext {
-            return dummy(line: "Main-File", identifier: "Main-File", with: loadctx)
+            return await dummy(line: "Main-File", identifier: "Main-File", with: loadctx)
         } else if let genctx = ctx as? GenerationContext {
-            return dummy(line: "Main-File", identifier: "Main-File", with: genctx)
+            return await dummy(line: "Main-File", identifier: "Main-File", with: genctx)
         } else {
             fatalError(#function + ": unknown Context passes")
         }
     }
     
-    public static func dummyForAppState(with ctx: Context) -> ParsedInfo {
+    public static func dummyForAppState(with ctx: Context) async -> ParsedInfo {
         if let loadctx = ctx as? LoadContext {
-            return dummy(line: "App-State", identifier: "App-State", with: loadctx)
+            return await dummy(line: "App-State", identifier: "App-State", with: loadctx)
         } else if let genctx = ctx as? GenerationContext {
-            return dummy(line: "App-State", identifier: "App-State", with: genctx)
+            return await dummy(line: "App-State", identifier: "App-State", with: genctx)
         } else {
             fatalError(#function + ": unknown Context passes")
         }
     }
     
-    public mutating func setFirstWord(_ firstWord: String) {
+    public mutating func firstWord(_ firstWord: String) {
         self.firstWord = firstWord
+    }
+    
+    public mutating func removeLine(after word: String) {
+        self.line = line.remainingLine(after: word)
     }
     
     public mutating func setLineInfo(line: String, lineNo: Int) {

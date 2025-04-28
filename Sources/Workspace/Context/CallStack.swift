@@ -23,7 +23,7 @@ public struct CallStackItem : Sendable {
     
     public func renderForDisplay() -> String {
         if let pInfo = pInfo {
-            return " \(pInfo.identifier) [\(pInfo.lineNo)] \(pInfo.line)"
+            return " \(pInfo.identifier) [\(pInfo.lineNo)] >> \(pInfo.line)"
         } else if let specialActivity = specialActivityName {
             return " \(specialActivity)"
         } else {
@@ -46,6 +46,10 @@ public struct CallStackItem : Sendable {
 
 public actor CallStack : @preconcurrency Sequence {
     private var stack: [CallStackable] = []
+    
+    public func snapshot() -> [CallStackable] {
+        return stack
+    }
     
     public func push(_ info: CallStackable) {
         stack.append(info)

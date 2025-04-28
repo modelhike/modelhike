@@ -6,16 +6,21 @@
 
 import Foundation
 
-open class OutputDocumentFile : OutputFile, RenderableFile {
+public actor OutputDocumentFile : OutputFile, RenderableFile {
     public let filename: String
     private let doc: RenderableDocument
     private let renderConfig: RenderConfig
 
-    public var outputPath: LocalPath?
     var contents: String? = nil
     
     public let fileType : InputFileType
 
+    public private(set) var outputPath: LocalPath?
+
+    public func outputPath(_ path: LocalPath) {
+        self.outputPath = path
+    }
+    
     public func render() throws {
         self.contents = doc.render(renderConfig)
     }
@@ -49,7 +54,7 @@ open class OutputDocumentFile : OutputFile, RenderableFile {
         self.fileType = type
     }
     
-    public enum InputFileType {
+    public enum InputFileType: Sendable {
         case generic, content, markup, asset
     }
 }

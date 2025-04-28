@@ -6,21 +6,22 @@
 
 import Foundation
 
-public protocol RenderableFile {
+public protocol RenderableFile: Actor {
     var filename: String {get}
-    func render() throws
+    func render() async throws
 }
 
-public protocol PersistableFile {
+public protocol PersistableFile : Actor {
     var filename: String {get}
-    func persist() throws
+    func persist() async throws
 }
 
-public protocol OutputFile : AnyObject, PersistableFile, CustomDebugStringConvertible {
-    var outputPath: LocalPath? {get set}
+public protocol OutputFile : Actor, PersistableFile, SendableDebugStringConvertible { //AnyObject
+    var outputPath: LocalPath? {get}
+    func outputPath(_ value: LocalPath)
 }
 
 public protocol CopyableFile : OutputFile {
-    var outputPath: LocalPath? {get set}
+    
 }
 

@@ -7,11 +7,11 @@
 import Foundation
 
 public enum AnnotationProcessor {
-    public static func process(_ annotation: any Annotation, for obj: HasAnnotations) throws {
+    public static func process(_ annotation: any Annotation, for obj: HasAttributes_Actor) async throws {
         switch annotation.name {
             case AnnotationConstants.listApi:
                 if let cls = obj as? CodeObject {
-                    cls.appendAPI(.list)
+                    await cls.appendAPI(.list)
                 }
             case AnnotationConstants.apisToGenerate:
                 var cls: CodeObject?
@@ -21,7 +21,7 @@ public enum AnnotationProcessor {
                 }
 
                 if let attachedSection = obj as? AttachedSection,
-                   let objcls = attachedSection.containingObject as? CodeObject {
+                   let objcls = await attachedSection.containingObject as? CodeObject {
                         cls = objcls
                 }
             
@@ -29,22 +29,22 @@ public enum AnnotationProcessor {
                    let valuesAnnotation = annotation as? ValuesAnnotation {
                     for value in valuesAnnotation.values {
                         switch value.lowercased() {
-                            case "create": cls.appendAPI(.create)
-                            case "update": cls.appendAPI(.update)
-                            case "delete": cls.appendAPI(.delete)
-                            case "get-by-id": cls.appendAPI(.getById)
-                            case "list": cls.appendAPI(.list)
-                            case "subscribe", "push-data": cls.appendAPI(.pushData)
-                            case "subscribe-list", "push-datalist": cls.appendAPI(.pushData)
-                            case "crud":
-                                cls.appendAPI(.create)
-                                cls.appendAPI(.update)
-                                cls.appendAPI(.delete)
-                                cls.appendAPI(.getById)
-                                cls.appendAPI(.list)
-                            case "none":
-                                break //nothing to add
-                            default :
+                        case "create": await cls.appendAPI(.create)
+                        case "update": await cls.appendAPI(.update)
+                        case "delete": await cls.appendAPI(.delete)
+                        case "get-by-id": await cls.appendAPI(.getById)
+                        case "list": await cls.appendAPI(.list)
+                        case "subscribe", "push-data": await cls.appendAPI(.pushData)
+                        case "subscribe-list", "push-datalist": await cls.appendAPI(.pushData)
+                        case "crud":
+                            await cls.appendAPI(.create)
+                            await cls.appendAPI(.update)
+                            await cls.appendAPI(.delete)
+                            await cls.appendAPI(.getById)
+                            await cls.appendAPI(.list)
+                        case "none":
+                            break //nothing to add
+                        default :
                             throw Model_ParsingError.invalidAnnotationLine(annotation.pInfo)
                         }
                     }

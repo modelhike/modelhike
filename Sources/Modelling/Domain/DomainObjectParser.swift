@@ -11,8 +11,8 @@ public enum DomainObjectParser {
     //
     // class name (attributes)
     // ===
-    public static func canParse(parser lineParser: LineParser) -> Bool {
-        if let nextFirstWord = lineParser.nextLine().firstWord() {
+    public static func canParse(parser lineParser: LineParser) async -> Bool {
+        if let nextFirstWord = await lineParser.nextLine().firstWord() {
             if nextFirstWord.hasOnly(ModelConstants.NameUnderlineChar) {
                 return true
             }
@@ -21,47 +21,47 @@ public enum DomainObjectParser {
         return false
     }
 
-    public static func parse(parser: LineParser, with pInfo: ParsedInfo) throws -> DomainObject? {
-        let line = parser.currentLine()
+    public static func parse(parser: LineParser, with pInfo: ParsedInfo) async throws -> DomainObject? {
+        let line = await parser.currentLine()
 
         guard let match = line.wholeMatch(of: ModelRegEx.className_Capturing) else { return nil }
 
         let (_, className, attributeString, tagString) = match.output
 
-        try pInfo.ctx.events.onParse(objectName: className, with: pInfo)
+        try await pInfo.ctx.events.onParse(objectName: className, with: pInfo)
 
         let item = DomainObject(name: className.trim())
 
         //check if has attributes
         if let attributeString = attributeString {
-            ParserUtil.populateAttributes(for: item, from: attributeString)
+            await ParserUtil.populateAttributes(for: item, from: attributeString)
         }
 
         //check if has tags
         if let tagString = tagString {
-            ParserUtil.populateTags(for: item, from: tagString)
+            await ParserUtil.populateTags(for: item, from: tagString)
         }
 
-        parser.skipLine(by: 2)  //skip class name and underline
+        await parser.skipLine(by: 2)  //skip class name and underline
 
-        while parser.linesRemaining {
-            if parser.isCurrentLineEmptyOrCommented() {
-                parser.skipLine()
+        while await parser.linesRemaining {
+            if await parser.isCurrentLineEmptyOrCommented() {
+                await parser.skipLine()
                 continue
             }
 
-            guard let pInfo = parser.currentParsedInfo(level: 0) else {
-                parser.skipLine()
+            guard let pInfo = await parser.currentParsedInfo(level: 0) else {
+                await parser.skipLine()
                 continue
             }
-            if parser.isCurrentLineHumaneComment(pInfo) {
-                parser.skipLine()
+            if await parser.isCurrentLineHumaneComment(pInfo) {
+                await parser.skipLine()
                 continue
             }  //humane comment
 
             if Property.canParse(firstWord: pInfo.firstWord) {
-                if let prop = try Property.parse(pInfo: pInfo) {
-                    item.append(prop)
+                if let prop = try await Property.parse(pInfo: pInfo) {
+                    await item.append(prop)
                     continue
                 } else {
                     throw Model_ParsingError.invalidPropertyLine(pInfo)
@@ -69,19 +69,19 @@ public enum DomainObjectParser {
             }
 
             if MethodObject.canParse(firstWord: pInfo.firstWord) {
-                if let method = try MethodObject.parse(pInfo: pInfo) {
-                    item.append(method)
+                if let method = try await MethodObject.parse(pInfo: pInfo) {
+                    await item.append(method)
                     continue
                 } else {
                     throw Model_ParsingError.invalidMethodLine(pInfo)
                 }
             }
 
-            if try pInfo.tryParseAnnotations(with: item) {
+            if try await pInfo.tryParseAnnotations(with: item) {
                 continue
             }
 
-            if try pInfo.tryParseAttachedSections(with: item) {
+            if try await pInfo.tryParseAttachedSections(with: item) {
                 continue
             }
 

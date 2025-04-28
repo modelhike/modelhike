@@ -6,91 +6,121 @@
 
 import Foundation
 
-public class C4Component_Wrap : ObjectWrapper {
-    public private(set) var item: C4Component
-    var model : AppModel
+public actor C4Component_Wrap : ObjectWrapper {
+    public let item: C4Component
+    let model : AppModel
     
-    public var attribs: Attributes {
-        get { item.attribs }
-        set { item.attribs = newValue }
-    }
+    public var attribs: Attributes { item.attribs }
 
-    public lazy var types : [CodeObject_Wrap] = { item.types.compactMap({ CodeObject_Wrap($0)})
-    }()
+    public var types: [CodeObject_Wrap] { get async {
+        await item.types.compactMap({ CodeObject_Wrap($0)})
+    }}
     
-    public lazy var embeddedTypes : [CodeObject_Wrap] = { item.types.compactMap({
-        if $0.dataType == .embeddedType {CodeObject_Wrap($0)} else {nil}})
-    }()
+    public var embeddedTypes: [CodeObject_Wrap] { get async {
+        await item.types.compactMap({
+            if await $0.dataType == .embeddedType {CodeObject_Wrap($0)} else {nil}})
+    }}
     
-    public lazy var entities : [CodeObject_Wrap] = { item.types.compactMap({
-        if $0.dataType == .entity {CodeObject_Wrap($0)} else {nil}})
-    }()
+    public var entities: [CodeObject_Wrap] { get async {
+        await item.types.compactMap({
+            if await $0.dataType == .entity {CodeObject_Wrap($0)} else {nil}})
+    }}
     
-    public lazy var dtos : [CodeObject_Wrap] = { item.types.compactMap({
-        if $0.dataType == .dto, let dto = $0 as? DtoObject {CodeObject_Wrap(dto)} else {nil}})
-    }()
+    public var dtos: [CodeObject_Wrap] { get async {
+        await item.types.compactMap({
+            if await $0.dataType == .dto, let dto = $0 as? DtoObject {CodeObject_Wrap(dto)} else {nil}})
+    }}
     
-    public lazy var entitiesAndDtos : [CodeObject_Wrap] = {
-        var list = entities
-        list.append(contentsOf: dtos)
+    public var entitiesAndDtos : [CodeObject_Wrap] { get async {
+        var list = await entities
+        await list.append(contentsOf: dtos)
         return list
-    }()
+    }}
     
-    public lazy var apis : [API_Wrap] = { item.types.flatMap({
-        $0.getAPIs().compactMap({ API_Wrap($0) })
-    }) }()
-    
-    public lazy var pushDataApis : [API_Wrap] = { self.apis.compactMap({
-        if ($0.item.type == .pushData ||
-            $0.item.type == .pushDataList 
-        ) { return $0 } else {return nil}    }) }()
-    
-    public lazy var mutationApis : [API_Wrap] = { self.apis.compactMap({
-        if ($0.item.type == .create ||
-            $0.item.type == .update ||
-            $0.item.type == .delete ||
-            $0.item.type == .mutationUsingCustomLogic
-            ) { return $0 } else {return nil}
-    }) }()
-    
-    public lazy var queryApis : [API_Wrap] = { self.apis.compactMap({
-        if ($0.item.type == .getById ||
-            $0.item.type == .getByCustomProperties ||
-            $0.item.type == .list ||
-            $0.item.type == .listByCustomProperties 
-        ) { return $0 } else {return nil}    }) }()
-    
-    public func getValueOf(property propname: String, with pInfo: ParsedInfo) throws -> Any {
-        let value: Any = switch propname {
-            case "name": item.name
-            case "types" : types
-            case "embedded-types" : embeddedTypes
-            case "has-embedded-types" : embeddedTypes.count != 0
-            case "entities" : entities
-            case "has-entities" : entities.count != 0
-            case "dtos" : dtos
-            case "has-dtos" : dtos.count != 0
-            case "entities-and-dtos" : entitiesAndDtos
-            case "push-apis" : pushDataApis
-            case "has-push-apis" : pushDataApis.count != 0
-            case "query-apis" : queryApis
-            case "has-query-apis" : queryApis.count != 0
-            case "mutation-apis" : mutationApis
-            case "has-mutation-apis" : mutationApis.count != 0
-            case "has-any-apis" : apis.count != 0
-           default:
-            //nothing found; so check in module attributes
-            if item.attribs.has(propname) {
-                item.attribs[propname] as Any
-            } else {
-                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
+    public var apis: [API_Wrap] {
+        get async {
+            var result: [API_Wrap] = []
+            
+            for type in await item.types {
+                let apis = await type.getAPIs().snapshot()
+                let converted = await apis.compactMap { API_Wrap($0) }
+                result.append(contentsOf: converted)
             }
+            
+            return result
+        }
+    }
+    
+    public var pushDataApis : [API_Wrap] { get async {
+        await self.apis.compactMap({
+            let itemtype = await $0.item.type
+            
+            if (itemtype == .pushData ||
+                itemtype == .pushDataList
+            ) { return $0 } else {return nil}    })
+    }}
+    
+    public var mutationApis : [API_Wrap] { get async {
+        await self.apis.compactMap({
+            let itemtype = await $0.item.type
+            
+            if (itemtype == .create ||
+                itemtype == .update ||
+                itemtype == .delete ||
+                itemtype == .mutationUsingCustomLogic
+            ) { return $0 } else {return nil}
+        })
+    }}
+    
+    public var queryApis : [API_Wrap] { get async {
+        await self.apis.compactMap({
+            let itemtype = await $0.item.type
+
+            if (itemtype == .getById ||
+                itemtype == .getByCustomProperties ||
+                itemtype == .list ||
+                itemtype == .listByCustomProperties
+            ) { return $0 } else {return nil}    })
+    }}
+    
+    public func getValueOf(property propname: String, with pInfo: ParsedInfo) async throws -> Sendable? {
+        let value: Sendable = switch propname {
+        case "name": await item.name
+        case "types" : await types
+        case "embedded-types" : await embeddedTypes
+        case "has-embedded-types" : await embeddedTypes.count != 0
+        case "entities" : await entities
+        case "has-entities" : await entities.count != 0
+        case "dtos" : await dtos
+        case "has-dtos" : await dtos.count != 0
+        case "entities-and-dtos" : await entitiesAndDtos
+        case "push-apis" : await pushDataApis
+        case "has-push-apis" : await pushDataApis.count != 0
+        case "query-apis" : await queryApis
+        case "has-query-apis" : await queryApis.count != 0
+        case "mutation-apis" : await mutationApis
+        case "has-mutation-apis" : await mutationApis.count != 0
+        case "has-any-apis" : await apis.count != 0
+        default:
+            //nothing found; so check in module attributes
+            try await resolveFallbackProperty(propname: propname, pInfo: pInfo)
         }
         
         return value
     }
     
-    public var debugDescription: String { item.debugDescription }
+    private func resolveFallbackProperty(propname: String, pInfo: ParsedInfo) async throws -> Sendable {
+        let attribs = item.attribs
+        if await attribs.has(propname) {
+            return await attribs[propname]
+        } else {
+            throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
+        }
+    }
+    
+    public var debugDescription: String { get async {
+        await item.debugDescription
+    }}
 
     public init(_ item: C4Component, model: AppModel ) {
         self.item = item

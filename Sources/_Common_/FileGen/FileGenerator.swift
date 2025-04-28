@@ -6,20 +6,20 @@
 
 import Foundation
 
-public protocol FileGeneratorProtocol {
+public protocol FileGeneratorProtocol: Actor {
     var base_generation_dir: OutputFolder {get}
-    mutating func setRelativePath(_ path: String) throws
+    func setRelativePath(_ path: String) async throws
     
-    func generateFile(_ filename: String, template: String, with pInfo: ParsedInfo) throws -> TemplateRenderedFile?
-    func generateFileWithData(_ filename: String, template: String, data: [String: Any], with pInfo: ParsedInfo) throws -> TemplateRenderedFile?
-    func copyFile(_ filename: String, with pInfo: ParsedInfo) throws -> StaticFile
-    func copyFile(_ filename: String, to newFilename: String, with pInfo: ParsedInfo) throws -> StaticFile
+    func generateFile(_ filename: String, template: String, with pInfo: ParsedInfo) async throws -> TemplateRenderedFile?
+    func generateFileWithData(_ filename: String, template: String, data: [String: Sendable], with pInfo: ParsedInfo) async throws -> TemplateRenderedFile?
+    func copyFile(_ filename: String, with pInfo: ParsedInfo) async throws -> StaticFile
+    func copyFile(_ filename: String, to newFilename: String, with pInfo: ParsedInfo) async throws -> StaticFile
     
-    func copyFolder(_ path: String, with pInfo: ParsedInfo) throws -> StaticFolder
-    func copyFolder(_ path: String, to newPath: String, with pInfo: ParsedInfo) throws -> StaticFolder
-    func renderFolder(_ path: String, to newPath: String, with pInfo: ParsedInfo) throws -> RenderedFolder
+    func copyFolder(_ path: String, with pInfo: ParsedInfo) async throws -> StaticFolder
+    func copyFolder(_ path: String, to newPath: String, with pInfo: ParsedInfo) async throws -> StaticFolder
+    func renderFolder(_ path: String, to newPath: String, with pInfo: ParsedInfo) async throws -> RenderedFolder
 
-    func fillPlaceholdersAndCopyFile(_ filename: String, with pInfo: ParsedInfo) throws -> PlaceHolderFile?
-    func fillPlaceholdersAndCopyFile(_ filename: String, to newFilename: String, with pInfo: ParsedInfo) throws -> PlaceHolderFile?
+    func fillPlaceholdersAndCopyFile(_ filename: String, with pInfo: ParsedInfo) async throws -> PlaceHolderFile?
+    func fillPlaceholdersAndCopyFile(_ filename: String, to newFilename: String, with pInfo: ParsedInfo) async throws -> PlaceHolderFile?
 }
 

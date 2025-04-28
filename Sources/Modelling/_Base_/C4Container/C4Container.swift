@@ -6,10 +6,10 @@
 
 import Foundation
 
-public class C4Container : ArtifactHolder {
-    public var attribs = Attributes()
-    public var tags = Tags()
-    public var annotations = Annotations()
+public actor C4Container : ArtifactHolder {
+    public let attribs = Attributes()
+    public let tags = Tags()
+    public let annotations = Annotations()
 
     public var name: String = ""
     public var givenname: String = ""
@@ -17,73 +17,84 @@ public class C4Container : ArtifactHolder {
 
     public var containerType: ContainerKind
 
-    public internal(set) var components = C4ComponentList()
-    public internal(set) var unresolvedMembers: [ContainerModuleMember] = []
-    public internal(set) var methods: [MethodObject] = []
+    public var components = C4ComponentList()
+    public private(set) var unresolvedMembers: [ContainerModuleMember] = []
+    public private(set) var methods: [MethodObject] = []
     
     public var types : [CodeObject] {
-        return components.types
+        get async {
+            return await components.types
+        }
     }
     
-    func components(_ items: C4ComponentList, appModel: AppModel) -> [C4Component_Wrap]  { return items.compactMap({ C4Component_Wrap($0, model: appModel)})
+    func components(_ items: C4ComponentList, appModel: AppModel) async -> [C4Component_Wrap] {
+        return await items.snapshot().compactMap({ C4Component_Wrap($0, model: appModel)})
     }
     
-    func getFirstModule(appModel: AppModel) -> C4Component_Wrap? {
-        return (self.components.first != nil) ? C4Component_Wrap(self.components.first!, model: appModel) : nil
+    func getFirstModule(appModel: AppModel) async -> C4Component_Wrap? {
+        if let first = await components.first {
+            return C4Component_Wrap(first, model: appModel)
+        } else {
+            return nil
+        }
     }
     
     public func append(unResolved item: ContainerModuleMember) {
         unresolvedMembers.append(item)
     }
     
-    public func remove(unResolved item: ContainerModuleMember) {
-        unresolvedMembers.removeAll(where: { $0.name == item.name })
+    public func remove(unResolved item: ContainerModuleMember) async {
+        let targetName = item.name
+        unresolvedMembers.removeAll(where: { $0.name == targetName })
     }
     
     public func append(_ item: MethodObject) {
         methods.append(item)
     }
     
-    public func append(_ item: C4Component) {
-        components.append(item)
+    public func append(_ item: C4Component) async {
+        await components.append(item)
     }
     
-    public var isEmpty: Bool { components.count == 0 }
-
-    public var first : C4Component? { components.first }
-
-    public var count: Int { components.count }
+    public var isEmpty: Bool { get async { await components.count == 0 } }
     
-    public func removeAll() {
-        components.removeAll()
+    public var first : C4Component? { get async { await components.first } }
+
+
+    public var count: Int { get async { await components.count } }
+    
+    public func removeAll() async {
+        await components.removeAll()
     }
     
     public var debugDescription: String {
-        var str =  """
+        get async {
+            var str =  """
                     \(self.name)
-                    | components \(self.components.count):
+                    | components \(await self.components.count):
                     """
-        str += .newLine
-
-        for item in components {
-            str += "| " + item.givenname + .newLine
+            str += .newLine
+            
+            for item in await components.snapshot() {
+                await str += "| " + item.givenname + .newLine
+            }
+            
+            return str
         }
-        
-        return str
     }
     
-    public init(name: String, type: ContainerKind = .unKnown, items: C4Component...) {
+    public init(name: String, type: ContainerKind = .unKnown, items: C4Component...) async {
         self.givenname = name.trim()
         self.name = self.givenname.normalizeForVariableName()
         self.containerType = type
-        self.components.append(contentsOf: items)
+       await self.components.append(contentsOf: items)
     }
     
-    public init(name: String, type: ContainerKind = .unKnown, items: [C4Component]) {
+    public init(name: String, type: ContainerKind = .unKnown, items: [C4Component]) async {
         self.givenname = name.trim()
         self.name = self.givenname.normalizeForVariableName()
         self.containerType = type
-        self.components.append(contentsOf: items)
+       await self.components.append(contentsOf: items)
     }
     
     public init(name: String, type: ContainerKind = .unKnown, items: C4ComponentList) {

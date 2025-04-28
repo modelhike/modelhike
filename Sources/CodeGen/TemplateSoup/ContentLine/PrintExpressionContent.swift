@@ -7,12 +7,13 @@
 import Foundation
 import RegexBuilder
 
-public class PrintExpressionContent: ContentLineItem {
+public struct PrintExpressionContent: ContentLineItem {
     var expression: String
     public let pInfo: ParsedInfo
     let level: Int
     var ModifiersList: [ModifierInstance] = []
 
+    nonisolated(unsafe)
     let expressionRegex = Regex {
         ZeroOrMore(.whitespace)
         Capture {
@@ -22,7 +23,7 @@ public class PrintExpressionContent: ContentLineItem {
         CommonRegEx.modifiersForExpression_Capturing
     }
     
-    fileprivate func parseLine(_ line: String) throws {
+    fileprivate mutating func parseLine(_ line: String) async throws {
         guard let match = line.wholeMatch(of: expressionRegex )
                             else {
             throw TemplateSoup_ParsingError.invalidExpression(line, pInfo)
@@ -30,14 +31,14 @@ public class PrintExpressionContent: ContentLineItem {
 
         let (_, expn, modifiersList) = match.output
         self.expression = expn
-        self.ModifiersList = try Modifiers.parse(string: modifiersList, pInfo: pInfo)
+        self.ModifiersList = try await Modifiers.parse(string: modifiersList, pInfo: pInfo)
 
     }
     
-    public func execute(with ctx: Context) throws -> String? {
+    public func execute(with ctx: Context) async throws -> String? {
         
-        if let body = try ctx.evaluate(expression: expression, with: pInfo) ,
-           let modifiedBody = try Modifiers.apply(to: body, modifiers: self.ModifiersList, with: pInfo) {
+        if let body = try await ctx.evaluate(expression: expression, with: pInfo) ,
+           let modifiedBody = try await Modifiers.apply(to: body, modifiers: self.ModifiersList, with: pInfo) {
             //if string, return it as-such; else convert to string
             if let result = modifiedBody as? String {
                 return result
@@ -65,11 +66,11 @@ public class PrintExpressionContent: ContentLineItem {
             return str
     }
     
-    public init(expressionLine: String, pInfo: ParsedInfo, level: Int) throws {
+    public init(expressionLine: String, pInfo: ParsedInfo, level: Int) async throws {
         self.expression = ""
         self.pInfo = pInfo
         self.level = level
 
-        try self.parseLine(expressionLine.trim())
+        try await self.parseLine(expressionLine.trim())
     }
 }

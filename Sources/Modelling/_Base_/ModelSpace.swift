@@ -6,27 +6,27 @@
 
 import Foundation
 
-public class ModelSpace {
+public actor ModelSpace: SendableDebugStringConvertible {
     public var name: String = ""
     
-    public internal(set) var containers = C4ContainerList()
-    public internal(set) var modules = C4ComponentList()
+    public let containers = C4ContainerList()
+    public let modules = C4ComponentList()
     
-    public func append(container item: C4Container) {
-        containers.append(item)
+    public func append(container item: C4Container) async {
+        await containers.append(item)
     }
     
-    public func append(module item: C4Component) {
-        modules.append(item)
+    public func append(module item: C4Component) async {
+        await modules.append(item)
     }
     
-    public var debugDescription: String {
+    public var debugDescription: String { get async {
         return """
         model space: \(self.name)
-        container: \(self.containers.count) containers
-        modules:\(self.modules.count) modules
+        container: \(await self.containers.count) containers
+        modules:\(await self.modules.count) modules
         """
-    }
+    }}
     
     internal init(){
         self.name = ""

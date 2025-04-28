@@ -5,31 +5,62 @@
 //
 
 public struct PipelineErrorPrinter {
-    func printError(_ err: Error, workspace ws: Workspace) {
+    func printError(_ err: Error, context: Context) async {
+        let stack = await context.debugLog.stack.snapshot()
+        let includeMemoryVariablesDump = await context.config.errorOutput.includeMemoryVariablesDump
+        
         let callStackInfo = StringTemplate {
             "[Call Stack]"
             
-            for log in ws.context.debugLog.stack {
+            for log in stack {
                 String.newLine
                 log.callStackItem.renderForDisplay()
             }
         }
         
-        let memoryVarsInfo = StringTemplate {
+        let memoryVarsInfo = await StringTemplate {
             "[Memory]"
             
-            dumpMemory(ws: ws)
+            await dumpMemory(context: context)
         }
         
-        let extraInfo = StringTemplate {
+        
+        let debugInfo = await StringTemplate {
+            "[Extra Debug Info]"
+            String.newLine
+            
+            await context.debugInfo.title
+            
+            for (k, v) in await context.debugInfo.debugInfo {
+                String.newLine
+                
+                if let sendable = v as? SendableDebugStringConvertible {
+                    "- \(k): \(await sendable.debugDescription)"
+                } else if let sendable = v as? SendableStringConvertible {
+                    "- \(k): \(await sendable.description)"
+                } else {
+                    "- \(k): \(v)"
+                }
+            }
+            
+            String.newLine
+        }
+        
+        let extraInfo = await StringTemplate {
+            if await context.debugInfo.hasAny {
+                debugInfo
+                String.newLine
+            }
+            
             callStackInfo
             
-            if ws.config.errorOutput.includeMemoryVariablesDump {
+            if includeMemoryVariablesDump {
                 String.newLine
                 String.newLine
                 memoryVarsInfo
             }
         }.toString()
+        
         
         if let parseErr = err as? ParsingError {
             let pInfo = parseErr.pInfo
@@ -90,13 +121,19 @@ public struct PipelineErrorPrinter {
         
     }
     
-    fileprivate func dumpMemory(ws: Workspace) -> String{
-        return StringTemplate {
-            for va in ws.context.variables {
+    fileprivate func dumpMemory(context: Context) async -> String{
+        let variables = await context.variables.snapshot()
+        
+        return await StringTemplate {
+            for va in variables {
                 String.newLine
                 let value = va.value
                 
-                if let arr = value as? [Any] {
+                if let sendable = value as? SendableDebugStringConvertible {
+                    "\(va.key) = \(await sendable.debugDescription)"
+                } else if let sendable = value as? SendableStringConvertible {
+                    "\(va.key) = \(await sendable.description)"
+                } else if let arr = value as? [Sendable] {
                     "\(va.key) =" + .newLine
                     for item in arr {
                         "| \(item)"

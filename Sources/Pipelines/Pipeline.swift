@@ -6,72 +6,85 @@
 
 import Foundation
 
-public class Pipeline {
-    var ws = Workspace()
+public struct Pipeline: Sendable {
+    var ws: Workspace
             
-    var discover: DiscoverPhase
-    var load: LoadPhase
-    var hydrate: HydratePhase
-    var transform: TransformPhase
-    var render: RenderPhase
-    var persist: PersistPhase
+    let discover: DiscoverPhase
+    let load: LoadPhase
+    let hydrate: HydratePhase
+    let transform: TransformPhase
+    let render: RenderPhase
+    let persist: PersistPhase
     
-    var phases: [any PipelinePhase] = []
+    let phases: [any PipelinePhase]
     
-    public internal(set) var generationSandboxes: [GenerationSandbox] = []
+    public let state = PipelineState()
     
-    public var config: OutputConfig { ws.config }
+    public var config: OutputConfig { get async { await ws.config }}
         
     @discardableResult
     public func run(using config: OutputConfig) async throws -> Bool {
         do {
-            ws.config = config
+            await ws.config(config)
             
-            return try await runPhases()
+            var lastRunResult = true
+            
+            for phase in phases {
+                do {
+                    let success = try await phase.runIn(pipeline: self)
+                    if !success { lastRunResult = false; break }
+                    
+                } catch let err {
+                    print("❌❌ ERROR OCCURRED IN \(phase.name) Phase ❌❌")
+                    throw err
+                }
+            }
+            
+            return lastRunResult
         } catch let err {
-            printError(err)
+            if let errWithPInfo = err as? ErrorWithMessageAndParsedInfo {
+                await printError(err, errWithPInfo.pInfo.ctx)
+            } else if let errWithMessageOnly = err as? ErrorWithMessage {
+                print( errWithMessageOnly.info )
+            }
+            
             print("❌❌❌ TERMINATED DUE TO ERROR ❌❌❌")
             return false
         }
     }
     
-    public func render(string input: String, data: [String : Any]) throws -> String? {
+    public func render(string input: String, data: [String : Sendable]) async throws -> String? {
         do {
-            ws.config = PipelineConfig()
+            await ws.config(PipelineConfig())
             
-            return try ws.render(string: input, data: data)
+            return try await ws.render(string: input, data: data)
             
         } catch let err {
-            printError(err)
+            if let errWithPInfo = err as? ErrorWithMessageAndParsedInfo {
+                await printError(err, errWithPInfo.pInfo.ctx)
+            } else if let errWithMessageOnly = err as? ErrorWithMessage {
+                print( errWithMessageOnly.info )
+            }
+
             print("❌❌❌ TERMINATED DUE TO ERROR ❌❌❌")
             return nil
         }
     }
     
-    fileprivate func runPhases() async throws -> Bool {
-        var lastRunResult = true
-        
-        for phase in phases {
-            do {
-                let success = try await phase.runIn(pipeline: self)
-                if !success { lastRunResult = false; break }
-            } catch let err {
-                print("❌❌ ERROR OCCURRED IN \(phase.name) Phase ❌❌")
-                throw err
-            }
-        }
-        
-        return lastRunResult
-
+    public func append(sandbox: GenerationSandbox) async {
+        await state.append(sandbox: sandbox)
     }
     
     public init(@PipelineBuilder _ builder: () -> [PipelinePass]) {
-        discover = DiscoverPhase(context: ws.context)
-        load = LoadPhase(context: ws.context)
-        hydrate = HydratePhase(context: ws.context)
-        transform = TransformPhase(context: ws.context)
-        render = RenderPhase(context: ws.context)
-        persist = PersistPhase(context: ws.context)
+        ws = Workspace()
+        
+        let context = ws.context
+        var discover = DiscoverPhase(context: context)
+        var load = LoadPhase(context: context)
+        var hydrate = HydratePhase(context: context)
+        var transform = TransformPhase(context: context)
+        var render = RenderPhase(context: context)
+        var persist = PersistPhase(context: context)
         
         let providedPasses = builder()
         
@@ -91,16 +104,26 @@ public class Pipeline {
             }
         }
         
-        phases = [discover, load, hydrate, transform, render, persist]
+        self.discover = discover
+        self.load = load
+        self.hydrate = hydrate
+        self.transform = transform
+        self.render = render
+        self.persist = persist
+
+        self.phases = [discover, load, hydrate, transform, render, persist]
     }
     
-    public init(from pipe: Pipeline, @PipelineBuilder _ builder: () -> [PipelinePass]) {
-        discover = DiscoverPhase(context: ws.context)
-        load = LoadPhase(context: ws.context)
-        hydrate = HydratePhase(context: ws.context)
-        transform = TransformPhase(context: ws.context)
-        render = RenderPhase(context: ws.context)
-        persist = PersistPhase(context: ws.context)
+    public init(from pipe: Pipeline, @PipelineBuilder _ builder: () -> [PipelinePass]) async {
+        ws = Workspace()
+        
+        let context = ws.context
+        var discover = DiscoverPhase(context: context)
+        var load = LoadPhase(context: context)
+        var hydrate = HydratePhase(context: context)
+        var transform = TransformPhase(context: context)
+        var render = RenderPhase(context: context)
+        var persist = PersistPhase(context: context)
         
         let providedPasses = builder()
         
@@ -128,14 +151,31 @@ public class Pipeline {
             }
         }
         
-        phases = [discover, load, hydrate, transform, render, persist]
+        self.discover = discover
+        self.load = load
+        self.hydrate = hydrate
+        self.transform = transform
+        self.render = render
+        self.persist = persist
+        
+        self.phases = [discover, load, hydrate, transform, render, persist]
     }
     
-    fileprivate func printError(_ err: Error) {
+    fileprivate func printError(_ err: Error, _ context: Context) async {
         let printer = PipelineErrorPrinter()
-        printer.printError(err, workspace: ws)
+        await printer.printError(err, context: context)
     }
 }
 
 typealias PipelineBuilder = ResultBuilder<PipelinePass>
 
+public actor PipelineState {
+    public internal(set) var generationSandboxes: [GenerationSandbox] = []
+    
+    public func append(sandbox: GenerationSandbox) {
+        generationSandboxes.append(sandbox)
+    }
+    
+    public init() {
+    }
+}

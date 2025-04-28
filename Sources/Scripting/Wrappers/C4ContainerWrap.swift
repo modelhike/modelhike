@@ -6,44 +6,49 @@
 
 import Foundation
 
-public class C4Container_Wrap : ObjectWrapper {
-    public private(set) var item: C4Container
+public actor C4Container_Wrap : ObjectWrapper {
+    public let item: C4Container
     var appModel : AppModel
     
-    public var attribs: Attributes {
-        get { item.attribs }
-        set { item.attribs = newValue }
-    }
+    public var attribs: Attributes { item.attribs }
 
-    public lazy var types : [CodeObject_Wrap] = { item.types.compactMap({ CodeObject_Wrap($0)})
-    }()
+    public var types : [CodeObject_Wrap] { get async {
+        await item.types.compactMap({ CodeObject_Wrap($0)})
+    }}
     
-    public lazy var apis : [API_Wrap] = { item.types.flatMap({
-        $0.getAPIs().compactMap({ API_Wrap($0) })
-    }) }()
+    public var apis : [API_Wrap] { get async {
+        await item.types.flatMap({
+            await $0.getAPIs().snapshot().compactMap({ API_Wrap($0) })
+        })
+    }}
     
-    public func getValueOf(property propname: String, with pInfo: ParsedInfo) throws -> Any {
-        let value: Any = switch propname {
-            case "name": item.name
-            case "modules" : item.components(item.components, appModel: appModel)
-            case "commons" : item.components(appModel.commonModel, appModel: appModel)
-            case "default-module" : item.getFirstModule(appModel: appModel) as Any
+    public func getValueOf(property propname: String, with pInfo: ParsedInfo) async throws -> Sendable? {
+        let value: Sendable = switch propname {
+        case "name": await item.name
+        case "modules" : await item.components(item.components, appModel: appModel)
+        case "commons" : await item.components(appModel.commonModel, appModel: appModel)
+        case "default-module" : await item.getFirstModule(appModel: appModel)
             
-            case "types" : types
-            case "has-any-apis" : apis.count != 0
+        case "types" : await types
+        case "has-any-apis" : await apis.count != 0
            default:
             //nothing found; so check in module attributes
-            if item.attribs.has(propname) {
-                item.attribs[propname] as Any
-            } else {
-                throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
-            }
+            try await resolveFallbackProperty(propname: propname, pInfo: pInfo)
         }
         
         return value
     }
     
-    public var debugDescription: String { item.debugDescription }
+    private func resolveFallbackProperty(propname: String, pInfo: ParsedInfo) async throws -> Sendable {
+        let attribs = item.attribs
+        if await attribs.has(propname) {
+            return await attribs[propname]
+        } else {
+            throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
+        }
+    }
+    
+    public var debugDescription: String { get async { await item.debugDescription }}
 
     public init(_ item: C4Container, model: AppModel ) {
         self.item = item

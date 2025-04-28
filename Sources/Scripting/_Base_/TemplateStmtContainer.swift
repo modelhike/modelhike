@@ -7,7 +7,7 @@
 import Foundation
 
 public protocol SoupyScriptStmtContainer : _CollectionAsyncSequence, SendableDebugStringConvertible, Actor {
-    func append(_ item: TemplateItem)
+    func append(_ item: TemplateItem) async
 }
 
 public actor GenericStmtsContainer : SoupyScriptStmtContainer {
@@ -19,7 +19,7 @@ public actor GenericStmtsContainer : SoupyScriptStmtContainer {
     var count: Int { items.count }
     private var currentIndex = 0
 
-    public func append(_ item: TemplateItem) {
+    public func append(_ item: TemplateItem) async {
         items.append(item)
     }
     
@@ -28,11 +28,11 @@ public actor GenericStmtsContainer : SoupyScriptStmtContainer {
         currentIndex = 0
     }
     
-    public func execute(with ctx: Context) throws -> String? {
+    public func execute(with ctx: Context) async throws -> String? {
         var str: String = ""
         
         for item in items {
-            if let result = try item.execute(with: ctx) {
+            if let result = try await item.execute(with: ctx) {
                 str += result
             }
         }
@@ -41,11 +41,11 @@ public actor GenericStmtsContainer : SoupyScriptStmtContainer {
     }
     
     // Capture a snapshot of items (for safe async access)
-    public func snapshot() -> [Sendable] {
+    public func snapshot() -> [TemplateItem] {
         return items
     }
     
-    public var debugDescription: String {
+    public var debugDescription: String { get async {
         var str =  ""
         if let name = self.name {
             str = "container: \(name) - \(self.items.count) items" + "\n"
@@ -56,7 +56,7 @@ public actor GenericStmtsContainer : SoupyScriptStmtContainer {
         str += debugStringForChildren() 
         
         return str
-    }
+    }}
     
     internal func debugStringForChildren() -> String {
         var str = ""

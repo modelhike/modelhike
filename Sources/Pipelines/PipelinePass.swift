@@ -6,71 +6,71 @@
 
 import Foundation
 
-public protocol PipelinePass {
+public protocol PipelinePass: Sendable {
 }
 
 public protocol DiscoveringPass : PipelinePass {
     func runIn(_ workspace: Workspace, phase: DiscoverPhase) async throws -> Bool
-    func canRunIn(phase: DiscoverPhase) throws -> Bool
+    func canRunIn(phase: DiscoverPhase) async throws -> Bool
 }
 
 public protocol LoadingPass : PipelinePass {
     func runIn(_ workspace: Workspace, phase: LoadPhase) async throws -> Bool
-    func canRunIn(phase: LoadPhase) throws -> Bool
+    func canRunIn(phase: LoadPhase) async throws -> Bool
 }
 
 public protocol HydrationPass : PipelinePass {
     func runIn(phase: HydratePhase) async throws -> Bool
-    func canRunIn(phase: HydratePhase) throws -> Bool
+    func canRunIn(phase: HydratePhase) async throws -> Bool
 }
 
 public protocol TransformationPass : PipelinePass {
     func runIn(phase: TransformPhase) async throws -> Bool
-    func canRunIn(phase: TransformPhase) throws -> Bool
+    func canRunIn(phase: TransformPhase) async throws -> Bool
 }
 
 public protocol RenderingPass : PipelinePass {
     func runIn(_ sandbox: GenerationSandbox, phase: RenderPhase) async throws -> Bool
-    func canRunIn(phase: RenderPhase) throws -> Bool
+    func canRunIn(phase: RenderPhase) async throws -> Bool
 }
 
 public protocol PersistancePass : PipelinePass {
     func runIn(phase: PersistPhase, pipeline: Pipeline) async throws -> Bool
-    func canRunIn(phase: PersistPhase, pipeline: Pipeline) throws -> Bool
+    func canRunIn(phase: PersistPhase, pipeline: Pipeline) async throws -> Bool
 }
 
 public extension DiscoveringPass {
-    func canRunIn(phase: DiscoverPhase) -> Bool {
+    func canRunIn(phase: DiscoverPhase) async -> Bool {
         return true
     }
 }
 
 public extension LoadingPass {
-    func canRunIn(phase: LoadPhase) -> Bool {
+    func canRunIn(phase: LoadPhase) async -> Bool {
         return true
     }
 }
 
 public extension HydrationPass {
-    func canRunIn(phase: HydratePhase) -> Bool {
+    func canRunIn(phase: HydratePhase) async -> Bool {
         return true
     }
 }
 
 public extension TransformationPass {
-    func canRunIn(phase: TransformPhase) -> Bool {
+    func canRunIn(phase: TransformPhase) async -> Bool {
         return true
     }
 }
 
 public extension RenderingPass {
-    func canRunIn(phase: RenderPhase) -> Bool {
+    func canRunIn(phase: RenderPhase) async -> Bool {
         return true
     }
 }
 
 public extension PersistancePass {
-    func canRunIn(phase: PersistPhase, pipeline: Pipeline) -> Bool {
+    func canRunIn(phase: PersistPhase, pipeline: Pipeline) async -> Bool {
         return true
     }
 }

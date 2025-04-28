@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class DtoObject : CodeObject {
+public actor DtoObject : CodeObject {
     public var givenname: String
     public var name: String
     public var members : [CodeMember] = []
@@ -18,38 +18,42 @@ public class DtoObject : CodeObject {
     public var tags = Tags()
     public var annotations = Annotations()
     
-    public lazy var derivedProperties : [DerivedProperty] = { members.compactMap({
+    public var derivedProperties : [DerivedProperty] { get async { await members.compactMap({
         if let dprop = $0 as? DerivedProperty { return dprop } else {return nil}
-    }) }()
+    }) }}
     
-    public lazy var properties : [Property] = { members.compactMap({
-        if let dprop = $0 as? DerivedProperty { return dprop.prop } else {return nil}
-    }) }()
+    public var properties : [Property] { get async { await members.compactMap({
+        if let dprop = $0 as? DerivedProperty { return await dprop.prop } else {return nil}
+    }) }}
     
-    public lazy var methods : [MethodObject] = { members.compactMap({
+    public var methods : [MethodObject] { members.compactMap({
         if let method = $0 as? MethodObject { return method } else {return nil}
-    }) }()
+    }) }
     
-    public var dataType: ArtifactKind = .unKnown
+    public private(set) var dataType: ArtifactKind = .unKnown
+
+    public func dataType(_ value: ArtifactKind) {
+        self.dataType = value
+    }
     
-    public func populateDerivedProperties() throws {
+    public func populateDerivedProperties() async throws {
         var i = 0
         
-        while i < derivedProperties.count {
-            let derivedProperty = derivedProperties[i]
+        while await i < derivedProperties.count {
+            let derivedProperty = await derivedProperties[i]
             for mixin in mixins {
-                let nameToCompare = derivedProperty.name.lowercased()
+                let nameToCompare = await derivedProperty.name.lowercased()
                 
-                if mixin.hasProp(nameToCompare) {
-                    if let prop = mixin.getProp(nameToCompare) {
-                        derivedProperty.prop = prop
+                if await mixin.hasProp(nameToCompare) {
+                    if let prop = await mixin.getProp(nameToCompare) {
+                        await derivedProperty.prop(prop)
                     }
                 }
 
             }
             
-            if derivedProperty.prop == nil { //no matching name found
-                let msg = "\(derivedProperty.givenname) in \(self.givenname)"
+            if await derivedProperty.prop == nil { //no matching name found
+                let msg = "\(await derivedProperty.givenname) in \(self.givenname)"
                 throw Model_ParsingError.invalidDerivedProperty(msg, derivedProperty.pInfo)
             }
             
@@ -63,20 +67,20 @@ public class DtoObject : CodeObject {
         return self
     }
     
-    public var debugDescription: String {
+    public var debugDescription: String { get async {
         var str =  """
                     \(self.name) :
-                    | Properties \(self.properties.count) items:
+                    | Properties \(await self.properties.count) items:
                     """
         str += .newLine
-
-        for property in properties {
-            str += "| " + property.debugDescription + .newLine
+        
+        for property in await properties {
+            await str += "| " + property.debugDescription + .newLine
             
         }
         
         return str
-    }
+    }}
     
     public init(name: String, @CodeMemberBuilder _ builder: () -> [CodeMember]) {
         self.givenname = name.trim()

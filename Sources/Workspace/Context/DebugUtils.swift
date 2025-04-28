@@ -6,9 +6,9 @@
 
 import Foundation
 
-public struct ContextDebugLog: Sendable {
-    public var stack = CallStack()
-    public var flags = ContextDebugFlags()
+public final class ContextDebugLog: Sendable {
+    public let stack = CallStack()
+    public let flags: ContextDebugFlags
     
     public func parseLines(startingFrom startKeyword : String?, till endKeyWord: String?, line: String?, lineNo : Int ) {
         if flags.lineByLineParsing || flags.blockByBlockParsing {
@@ -100,9 +100,9 @@ public struct ContextDebugLog: Sendable {
         }
     }
     
-    public func printParsedTree(for containers: SoupyScriptStmtContainerList) {
+    public func printParsedTree(for containers: SoupyScriptStmtContainerList) async {
         if flags.printParsedTree {
-            print(containers.debugDescription)
+            await print(containers.debugDescription)
         }
     }
     
@@ -262,6 +262,9 @@ public struct ContextDebugLog: Sendable {
         }
     }
     
+    public init(flags: ContextDebugFlags) {
+        self.flags = flags
+    }
 }
 
 public struct ContextDebugFlags: Sendable {

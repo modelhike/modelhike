@@ -4,13 +4,13 @@
 //  https://www.github.com/modelhike/modelhike
 //
 
-public class BlueprintAggregator {
+public actor BlueprintAggregator: Sendable {
     var blueprintFinders: [BlueprintFinder] = []
 
-    public func blueprint(named name: String, with pInfo: ParsedInfo) throws -> any Blueprint {
+    public func blueprint(named name: String, with pInfo: ParsedInfo) async throws -> any Blueprint {
         for finder in blueprintFinders {
-            if finder.hasBlueprint(named: name) {
-                return try finder.blueprint(named: name, with: pInfo)
+            if await finder.hasBlueprint(named: name) {
+                return try await finder.blueprint(named: name, with: pInfo)
             }
         }
 
@@ -23,5 +23,11 @@ public class BlueprintAggregator {
         return true
     }
 
-    public init() {}
+    public init(config: OutputConfig) {
+        if let path = config.localBlueprintsPath {
+            blueprintFinders.append(LocalFileBlueprintFinder(path: path))
+        }
+        
+        blueprintFinders.append(contentsOf: config.blueprints)
+    }
 }

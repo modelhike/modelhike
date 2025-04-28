@@ -7,17 +7,21 @@
 import Foundation
 
 public protocol HasTags {
-    var tags: Tags {get set}
+    var tags: Tags {get}
 }
 
-public class Tags {
+public protocol HasTags_Actor: Actor {
+    var tags: Tags { get async }
+}
+
+public actor Tags {
     private var items: Set<Tag> = Set()
 
-    public func processEach(by process: (Tag) throws -> Tag?) throws {
+    public func processEach(by process: (Tag) async throws -> Tag?) async throws{
         var itemsToRemove: [Tag] = []
         
         for item in items {
-            if try process(item) == nil {
+            if try await process(item) == nil {
                 itemsToRemove.append(item)
             }
         }
@@ -67,7 +71,7 @@ public class Tags {
     }
 }
 
-public struct Tag : Hashable {
+public struct Tag : Hashable, Sendable {
     public let name: String
     public let givenname: String
     public var args: [String] = []

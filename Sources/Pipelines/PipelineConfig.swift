@@ -24,24 +24,14 @@ public struct PipelineConfig : OutputConfig {
     public var flags = ContextDebugFlags()
     public var errorOutput = ErrorOutputOptions()
     
+    public var localBlueprintsPath: LocalPath?
     
-    public var localBlueprintsPath: LocalPath? {
-        didSet {
-            if let path = self.localBlueprintsPath {
-                blueprints.add(LocalFileBlueprintFinder(path: path))
-            }
-        }
-    }
-    
-    public var blueprints = BlueprintAggregator()
-    public func blueprint(named name: String, with pInfo: ParsedInfo) throws -> any Blueprint {
-        return try blueprints.blueprint(named: name, with: pInfo)
-    }
+    public var blueprints: [BlueprintFinder] = []
     
     public init() {}
 }
 
-public struct ErrorOutputOptions {
+public struct ErrorOutputOptions : Sendable{
     public var includeMemoryVariablesDump: Bool = false
     
     public init() {}
@@ -51,15 +41,15 @@ public enum BluePrintType {
     case localFileSystem, resources
 }
 
-public enum ModelLoaderType {
+public enum ModelLoaderType : Sendable{
     case localFileSystem, inMemory
 }
 
-public enum OutputArtifactType {
+public enum OutputArtifactType : Sendable{
     case container, containerGroup, systemView
 }
 
-public protocol OutputConfig {
+public protocol OutputConfig: Sendable {
     var basePath: LocalPath {get set}
     
     var outputItemType : OutputArtifactType {get set}
@@ -76,6 +66,7 @@ public protocol OutputConfig {
     var errorOutput: ErrorOutputOptions {get set}
     
     var localBlueprintsPath: LocalPath? {get set}
-    var blueprints: BlueprintAggregator {get set}
-    func blueprint(named name: String, with pInfo: ParsedInfo) throws -> any Blueprint
+    
+    var blueprints: [BlueprintFinder] {get set}
+
 }

@@ -6,9 +6,9 @@
 
 import Foundation
 
-public struct TypeInfo {
+public struct TypeInfo: Sendable {
     public var kind: PropertyKind
-    public var isArray: Bool = false
+    public var isArray: Bool
     
     static func parse(_ str: String) -> TypeInfo {
         if str.hasSuffix("[]") {
@@ -38,7 +38,25 @@ public struct TypeInfo {
         }
     }
     
-    public var isCustomType :  Bool {
+    public var isNumeric: Bool {
+        switch self.kind {
+        case .int, .double, .float:
+            return true
+        default:
+            return false
+        }
+    }
+    
+    public var isDate: Bool {
+        switch self.kind {
+        case .date, .datetime:
+            return true
+        default:
+            return false
+        }
+    }
+    
+    public var isCustomType : Bool {
         switch self.kind {
             case .customType(_):
                 return true
@@ -108,13 +126,16 @@ public struct TypeInfo {
     
     public init(_ type: PropertyKind) {
         self.kind = type
+        self.isArray = false
     }
     
     public init(_ type: PropertyKind? = nil) {
         self.kind = type ?? .unKnown
-    }
+        self.isArray = false
+   }
     
     internal init() {
         self.kind = .unKnown
+        self.isArray = false
     }
 }

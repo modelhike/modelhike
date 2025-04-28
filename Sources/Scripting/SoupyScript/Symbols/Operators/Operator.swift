@@ -6,14 +6,14 @@
 
 import Foundation
 
-public struct InfixOperator<A, B, T> : InfixOperatorProtocol {
+public struct InfixOperator<A, B, T: Sendable> : InfixOperatorProtocol {
     public var name : String
     private let lhsType: A.Type
     private let rhsType: B.Type
     private let handler: @Sendable (A, B) -> T
     public var kind : OperatorKind { .infix }
 
-    public func applyTo(lhs : Optional<Any>, rhs: Optional<Any>, pInfo: ParsedInfo) throws -> Any {
+    public func applyTo(lhs : Sendable?, rhs: Sendable?, pInfo: ParsedInfo) throws -> Sendable {
         guard let typedLhs = lhs as? A else {
             throw TemplateSoup_ParsingError.infixOperatorCalledOnwrongLhsType(self.name, String(describing: type(of: lhs)), pInfo)
         }
@@ -70,7 +70,7 @@ public struct PrefixOperator<A, T> : Operator {
 }
 
 public protocol InfixOperatorProtocol : Operator {
-    func applyTo(lhs : Optional<Any>, rhs: Optional<Any>, pInfo: ParsedInfo) throws -> Any
+    func applyTo(lhs : Sendable?, rhs: Sendable?, pInfo: ParsedInfo) throws -> Sendable
 }
 
 public protocol Operator: Sendable {

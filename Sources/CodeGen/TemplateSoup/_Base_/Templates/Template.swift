@@ -21,12 +21,11 @@ public enum TemplateStmtKind: Sendable {
 }
 
 public protocol TemplateItem: Sendable {
-    func execute(with ctx: Context) throws -> String?
+    func execute(with ctx: Context) async throws -> String?
 }
 
 public protocol TemplateItemWithParsedInfo: TemplateItem {
     var pInfo: ParsedInfo {get}
-    func execute(with ctx: Context) throws -> String?
 }
 
 public protocol TemplateItemConfig: Sendable {
@@ -40,11 +39,11 @@ public protocol TemplateItemConfig: Sendable {
 public protocol TemplateInitialiserWithArg: Sendable {
     associatedtype T
     
-    var initialiser: (String, ParsedInfo) -> T {get}
+    var initialiser: @Sendable (String, ParsedInfo) -> T {get}
 }
 
 public protocol TemplateInitialiserWithNoArg: Sendable {
     associatedtype T
     
-    var initialiser: (ParsedInfo) -> T {get}
+    var initialiser: @Sendable (ParsedInfo) -> T {get}
 }

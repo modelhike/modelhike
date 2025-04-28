@@ -9,12 +9,13 @@ import Foundation
 public struct StringTemplate : Template, Script, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     public var name: String = "string"
     
-    var items: [StringConvertible]
+    let items: [StringConvertible]
     
     @discardableResult
-    mutating func append(_ item: StringConvertible) -> Self {
-        items.append(item)
-        return self
+    static func append(_ obj: StringTemplate, with item: StringConvertible) -> Self {
+        var newItems = obj.items
+        newItems.append(item)
+        return StringTemplate(contentsOf: newItems)
     }
     
     public func toString() -> String {
@@ -23,7 +24,11 @@ public struct StringTemplate : Template, Script, ExpressibleByStringLiteral, Exp
     
     public var string: String { toString() }
 
-    public init(@StringConvertibleBuilder _ builder : () -> [StringConvertible]) {
+    public init(@StringConvertibleBuilder _ builder : () async  -> [StringConvertible]) async {
+        items = await builder()
+    }
+    
+    public init(@StringConvertibleBuilder _ builder : ()  -> [StringConvertible]) {
         items = builder()
     }
     
@@ -39,21 +44,22 @@ public struct StringTemplate : Template, Script, ExpressibleByStringLiteral, Exp
         items = [value]
     }
     
+    public init(contentsOf value: [StringConvertible]) {
+        items = value
+    }
+    
     public init(contents: String, name: String) {
         self.items = [contents]
         self.name = name
     }
     
     static func +(lhs: StringTemplate, rhs: any StringConvertible) -> StringTemplate {
-        var newLhs = lhs
-        newLhs.append(rhs)
-        return newLhs
+        return StringTemplate.append(lhs, with: rhs)
     }
     
     static func +(lhs: any StringConvertible, rhs: StringTemplate) -> StringTemplate {
-        var newRhs = rhs
-        newRhs.append(lhs)
-        return newRhs
+        return StringTemplate.append(rhs, with: lhs)
+
     }
 }
 
@@ -81,11 +87,11 @@ public struct TabChar : StringConvertible {
 }
 
 public extension String {
-    static func +=(lhs: inout StringTemplate, rhs: String) {
-        lhs.append(rhs)
+    static func +=(lhs: inout StringTemplate, rhs: String) -> StringTemplate {
+        return StringTemplate.append(lhs, with: rhs)
     }
     
-    static func +=(lhs: inout String, rhs: StringTemplate){
-        lhs += rhs.toString()
+    static func +=(lhs: inout String, rhs: StringTemplate) -> StringTemplate {
+        return StringTemplate.append(rhs, with: lhs)
     }
 }

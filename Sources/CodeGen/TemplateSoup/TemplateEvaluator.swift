@@ -8,16 +8,16 @@ import Foundation
 
 public struct TemplateEvaluator: TemplateSoupEvaluator {
 
-    public func execute(template: Template, with context: GenerationContext) throws -> String? {
+    public func execute(template: Template, with context: GenerationContext) async throws -> String? {
         let contents = template.toString()
         let lineparser = LineParserDuringGeneration(
             string: contents, identifier: template.name, isStatementsPrefixedWithKeyword: true,
             with: context)
 
-        return try execute(lineParser: lineparser, with: context)
+        return try await execute(lineParser: lineparser, with: context)
     }
 
-    public func execute(lineParser: LineParserDuringGeneration, with ctx: GenerationContext) throws
+    public func execute(lineParser: LineParserDuringGeneration, with ctx: GenerationContext) async throws
         -> String?
     {
 
@@ -25,22 +25,22 @@ public struct TemplateEvaluator: TemplateSoupEvaluator {
 
         do {
             ctx.debugLog.templateParsingStarting()
-            try ctx.events.onBeforeParseTemplate?(lineParser.identifier, ctx)
+            try await ctx.events.onBeforeParseTemplate?(lineParser.identifier, ctx)
 
-            let curLine = lineParser.currentLine()
+            let curLine = await lineParser.currentLine()
 
             if curLine.hasOnly(TemplateConstants.frontMatterIndicator) {
-                let frontMatter = try FrontMatter(lineParser: lineParser, with: ctx)
-                try frontMatter.processVariables()
+                var frontMatter = try await FrontMatter(lineParser: lineParser, with: ctx)
+                try await frontMatter.processVariables()
             }
 
-            if let containers = try parser.parseContainers() {
-                ctx.debugLog.printParsedTree(for: containers)
+            if let containers = try await parser.parseContainers() {
+                await ctx.debugLog.printParsedTree(for: containers)
 
                 ctx.debugLog.templateExecutionStarting()
-                try ctx.events.onBeforeExecuteTemplate?(lineParser.identifier, ctx)
+                try await ctx.events.onBeforeExecuteTemplate?(lineParser.identifier, ctx)
 
-                if let body = try containers.execute(with: ctx) {
+                if let body = try await containers.execute(with: ctx) {
                     return body
                 }
             }
@@ -77,5 +77,5 @@ public struct TemplateEvaluator: TemplateSoupEvaluator {
 }
 
 public protocol TemplateSoupEvaluator {
-    func execute(template: Template, with ctx: GenerationContext) throws -> String?
+    func execute(template: Template, with ctx: GenerationContext) async throws -> String?
 }

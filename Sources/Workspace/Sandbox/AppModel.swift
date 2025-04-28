@@ -6,46 +6,46 @@
 
 import Foundation
 
-open class AppModel {
-    var types = ParsedTypesCache()
+public actor AppModel {
+    let types = ParsedTypesCache()
     public internal(set) var commonModel = C4ComponentList()
     private var modules = C4ComponentList()
-    public internal(set) var containers = C4ContainerList()
-    public internal(set) var isModelsLoaded = false
+    public private(set) var containers = C4ContainerList()
+    public private(set) var isModelsLoaded = false
 
-    public func resolveAndLinkItems(with ctx: LoadContext) throws {
+    public func resolveAndLinkItems(with ctx: LoadContext) async throws {
 
         //resolve modules
-        containers.forEach { container in
-            for unresolvedMember in container.unresolvedMembers {
-                if let module = module(named: unresolvedMember.name) {
-                    container.append(module)
-                    container.remove(unResolved: unresolvedMember)
+        await containers.forEach { container in
+            for unresolvedMember in await container.unresolvedMembers {
+                if let module = await module(named: unresolvedMember.name) {
+                    await container.append(module)
+                    await container.remove(unResolved: unresolvedMember)
                 }
             }
         }
         
-        commonModel.addTypesTo(model: types)
-        containers.addTypesTo(model: types)
+        await commonModel.addTypesTo(model: types)
+        await containers.addTypesTo(model: types)
         
         //process types
-        try containers.forEach { container in
+        try await containers.forEach { container in
             
-            for type in container.types {
-                try ParserUtil.extractMixins(for: type, with: ctx)
+            for type in await container.types {
+                try await ParserUtil.extractMixins(for: type, with: ctx)
                 
                 if let dto = type as? DtoObject {
-                    try dto.populateDerivedProperties()
+                    try await dto.populateDerivedProperties()
                 }
                 
                 //This should be done last, as the propeties for Dtos are populated only in the above steps
-                for prop in type.properties {
-                    if prop.type.isCustomType {
-                        if let obj = ctx.model.types.get(for: prop.type.objectString()) {
+                for prop in await type.properties {
+                    if await prop.type.isCustomType {
+                        if let obj = await ctx.model.types.get(for: prop.type.objectString()) {
                             //change the typename according to the retrieved object;
                             //this would correctly fix the type name, even if the given name
                             //has a diff character casing or had spaces
-                            prop.type.kind = .customType(obj.name)
+                            await prop.typeKind( .customType(obj.name))
                         }
                     }
                 }
@@ -53,28 +53,41 @@ open class AppModel {
         }
     }
     
-    public func container(named name: String) -> C4Container? {
-        return containers.first(where: {$0.name == name})
+    public func container(named name: String) async -> C4Container? {
+        return await containers.first(where: {await $0.name == name})
     }
     
-    public func module(named name: String) -> C4Component? {
-        return modules.first(where: {$0.name == name})
+    public func module(named name: String) async -> C4Component? {
+        return await modules.first(where: {
+            let itemname = await $0.name
+            let itemGivenname = await $0.givenname
+            return itemname == name || itemGivenname == name
+        })
     }
     
-    public func appendToCommonModel(contentsOf items: ModelSpace) {
-        for container in items.containers {
-            commonModel.append(contentsOf: container)
+    public func appendToCommonModel(contentsOf items: ModelSpace) async {
+        let itemContainers = items.containers
+        
+        for await container in itemContainers {
+            await commonModel.append(contentsOf: container)
         }
     }
     
-    public func append(contentsOf modelSpace: ModelSpace) {
-        for item in modelSpace.containers {
-            containers.append(item)
+    public func append(contentsOf modelSpace: ModelSpace) async {
+        let modelContainers = await modelSpace.containers.snapshot()
+        let modelModules = await modelSpace.modules.snapshot()
+
+        for item in modelContainers {
+            await containers.append(item)
         }
         
-        for item in modelSpace.modules {
-            modules.append(item)
+        for item in modelModules {
+            await modules.append(item)
         }
+    }
+    
+    internal func isModelsLoaded(_ value: Bool) {
+        self.isModelsLoaded = value
     }
     
     public init() {

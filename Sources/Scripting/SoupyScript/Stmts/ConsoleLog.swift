@@ -7,11 +7,14 @@
 import Foundation
 import RegexBuilder
 
-public class ConsoleLogStmt: LineTemplateStmt, CustomDebugStringConvertible {
+public struct ConsoleLogStmt: LineTemplateStmt, CustomDebugStringConvertible {
+    public var state: LineTemplateStmtState
+    
     static let START_KEYWORD = "console-log"
 
     public private(set) var Expression: String = ""
     
+    nonisolated(unsafe)
     let stmtRegex = Regex {
         START_KEYWORD
         OneOrMore(.whitespace)
@@ -23,7 +26,7 @@ public class ConsoleLogStmt: LineTemplateStmt, CustomDebugStringConvertible {
         CommonRegEx.comments
     }
     
-    override func matchLine(line: String) throws -> Bool {
+    public mutating func matchLine(line: String) throws -> Bool {
         guard let match = line.wholeMatch(of: stmtRegex ) else { return false }
         
         let (_, expn) = match.output
@@ -33,11 +36,11 @@ public class ConsoleLogStmt: LineTemplateStmt, CustomDebugStringConvertible {
         return true
     }
     
-    public override func execute(with ctx: Context) throws -> String? {
+    public func execute(with ctx: Context) async throws -> String? {
         guard Expression.isNotEmpty else { return nil }
         
         //see if it is an object
-        if let expn = try? ctx.evaluate(value: Expression, with: pInfo) {
+        if let expn = try? await ctx.evaluate(value: Expression, with: pInfo) {
             if expn is String {
                 print("🏷️ [Line \(lineNo)] \(expn)")
             } else if let obj = deepUnwrap(expn) {
@@ -53,7 +56,7 @@ public class ConsoleLogStmt: LineTemplateStmt, CustomDebugStringConvertible {
         }
         
         //see if it is an expression
-        if let expn = try? ctx.evaluate(expression: Expression, with: pInfo) {
+        if let expn = try? await ctx.evaluate(expression: Expression, with: pInfo) {
             print("🏷️ [Line \(lineNo)] \(expn)")
             return nil
         }
@@ -73,10 +76,11 @@ public class ConsoleLogStmt: LineTemplateStmt, CustomDebugStringConvertible {
     }
     
     public init(_ pInfo: ParsedInfo) {
-        super.init(keyword: Self.START_KEYWORD, pInfo: pInfo)
+        state = LineTemplateStmtState(keyword: Self.START_KEYWORD, pInfo: pInfo)
+
     }
     
-    static var register = LineTemplateStmtConfig(keyword: START_KEYWORD) {pInfo in ConsoleLogStmt(pInfo) }
+    static let register = LineTemplateStmtConfig(keyword: START_KEYWORD) {pInfo in ConsoleLogStmt(pInfo) }
 }
 
 

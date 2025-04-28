@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class C4System: ArtifactHolder {
+public actor C4System: ArtifactHolder {
     public var attribs = Attributes()
     public var tags = Tags()
     public var annotations = Annotations()
@@ -17,41 +17,41 @@ public class C4System: ArtifactHolder {
 
     public internal(set) var containers = C4ContainerList()
 
-    public func append(_ item: C4Container) {
-        containers.append(item)
+    public func append(_ item: C4Container) async {
+        await containers.append(item)
     }
 
-    public var count: Int { containers.count }
+    public var count: Int { get async { await containers.count }}
 
-    public func removeAll() {
-        containers.removeAll()
+    public func removeAll() async {
+        await containers.removeAll()
     }
 
-    public var debugDescription: String {
+    public var debugDescription: String { get async {
         var str = """
             \(self.name)
-            containers \(self.containers.count):
+            containers \(await self.containers.count):
             """
         str += .newLine
-
-        for item in containers {
-            str += item.givenname + .newLine
-
+        
+        for item in await containers.snapshot() {
+            await str += item.givenname + .newLine
+            
         }
-
+        
         return str
-    }
+    }}
 
-    public init(name: String, items: C4Container...) {
+    public init(name: String, items: C4Container...) async {
         self.givenname = name.trim()
         self.name = self.givenname.normalizeForVariableName()
-        self.containers.append(contentsOf: items)
+        await self.containers.append(contentsOf: items)
     }
 
-    public init(name: String, items: [C4Container]) {
+    public init(name: String, items: [C4Container]) async {
         self.givenname = name.trim()
         self.name = self.givenname.normalizeForVariableName()
-        self.containers.append(contentsOf: items)
+        await self.containers.append(contentsOf: items)
     }
 
     public init(name: String, items: C4ContainerList) {

@@ -6,17 +6,50 @@
 
 import Foundation
 
-public typealias DebugDictionary = [String: TemplateSoupExpressionDebugInfo]
-
-public struct ContextState: Sendable {
-    public internal(set) var variables = WorkingMemory()
-    public internal(set) var debugInfo: DebugDictionary = [:]
-    public internal(set) var templateFunctions = TemplateFunctionMap()
+public final class ContextState: Sendable {
+    public let variables = WorkingMemory()
+    public let debugInfo = DebugDictionary()
+    public let templateFunctions = TemplateFunctionMap()
 }
 
-public struct ContextSymbols: Sendable {
+public actor DebugDictionary{
+    var debugInfo: [String: Sendable] = [:]
+    var title: String = ""
+    
+    public var hasAny: Bool {
+        return !self.debugInfo.isEmpty
+    }
+    
+    public func set(_ key: String, value: TemplateSoupExpressionDebugInfo) {
+        self.debugInfo[key] = value
+    }
+    
+    public func set(_ key: String, value: Sendable) {
+        self.debugInfo[key] = value
+    }
+    
+    //when a title is set, all existing items are removed from debug info
+    public func title(_ title: String) {
+        self.title = title
+        self.debugInfo.removeAll()
+    }
+}
+
+public actor ContextSymbols {
     public internal(set) var template = TemplateSoupSymbols()
     public internal(set) var models = ModelSymbols()
+    
+    public func addTemplate(modifiers modifiersList: [Modifier]) {
+        template.add(modifiers: modifiersList)
+    }
+    
+    public func addTemplate(stmts stmtsList: [any FileTemplateStmtConfig]) {
+        template.add(stmts: stmtsList)
+    }
+    
+    public func addTemplate(infixOperators operatorsList: [InfixOperatorProtocol]) {
+        template.add(infixOperators: operatorsList)
+    }
 }
 
 public struct TemplateSoupExpressionDebugInfo: Sendable {

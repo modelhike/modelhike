@@ -6,11 +6,11 @@
 
 import Foundation
 
-public class WebService_MonoRepo : C4Container {
-    var microServices: C4ComponentList { self.components }
-    
+public actor WebService_MonoRepo {
+    let container: C4Container
+    var microServices: C4ComponentList { get async { await container.components }}
     
     public init(name: String, microServices: C4ComponentList) {
-        super.init(name: name, items: microServices)
+        self.container = .init(name: name, items: microServices)
     }
 }

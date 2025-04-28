@@ -6,17 +6,17 @@
 
 import Foundation
 
-open class RenderedFolder : PersistableFolder {    
+public actor RenderedFolder : PersistableFolder {
     private let templateSoup: TemplateSoup
     public let foldername: String
     public let newFoldername: String
-    public var outputFolder: OutputFolder?
+    public private(set) var outputFolder: OutputFolder?
     let pInfo: ParsedInfo
     
-    public func persist() throws {
+    public func persist() async throws {
         if let ctx = pInfo.ctx as? GenerationContext {
             if let outputFolder {
-                try outputFolder.persist(with: ctx)
+                try await outputFolder.persist(with: ctx)
             } else {
                 fatalError(#function + ": output path not set!")
             }
@@ -25,21 +25,25 @@ open class RenderedFolder : PersistableFolder {
         }
     }
     
-    public func renderFiles() throws {
+    public func renderFiles() async throws {
         if let outputFolder {
-            try templateSoup.repo.renderFiles(foldername: foldername, to: outputFolder, using: templateSoup, with: pInfo)
+            try await templateSoup.blueprint.renderFiles(foldername: foldername, to: outputFolder, using: templateSoup, with: pInfo)
         } else {
             fatalError(#function + ": output path not set!")
         }
     }
     
-    public var debugDescription: String {
+    public func outputFolder(baseFolder: LocalFolder) {
+        outputFolder = OutputFolder(baseFolder / self.newFoldername)
+    }
+    
+    public var debugDescription: String { get async {
         if let outputFolder {
-            return outputFolder.debugDescription + " : \(foldername) -> \(newFoldername)"
+            return await outputFolder.debugDescription + " : \(foldername) -> \(newFoldername)"
         } else {
             return "RenderedFolder: \(foldername) -> \(newFoldername)"
         }
-    }
+    }}
     
     public init(foldername: String, templateSoup: TemplateSoup, to newFoldername: String, pInfo: ParsedInfo) {
         self.templateSoup = templateSoup
