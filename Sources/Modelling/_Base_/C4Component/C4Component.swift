@@ -16,17 +16,27 @@ public actor C4Component : ArtifactHolder {
     public let dataType: ArtifactKind = .container
 
     public internal(set) var items : [Artifact] = []
-    public internal(set) var types : [CodeObject] = []
     
     public func forEachEntity(by process: (CodeObject) throws -> Void) async throws {
-        for item in types {
+        for item in await types {
             if await item.dataType == .entity { try process(item) }
         }
      }
     
+    public var types : [CodeObject] { get async {
+        var list: [CodeObject] = []
+        for item in items {
+            if let component = item as? C4Component {
+                await list.append(contentsOf: component.types)
+            } else if let obj = item as? CodeObject {
+                list.append(obj)
+            }
+        }
+        return list
+    }}
+    
     public func append(_ item: CodeObject) {
         items.append(item)
-        types.append(item)
     }
     
     public func append(_ item: UIObject) {

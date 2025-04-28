@@ -65,11 +65,16 @@ public actor AppModel {
         })
     }
     
-    public func appendToCommonModel(contentsOf items: ModelSpace) async {
-        let itemContainers = items.containers
-        
-        for await container in itemContainers {
+    public func appendToCommonModel(contentsOf modelSpace: ModelSpace) async {
+        let modelContainers = await modelSpace.containers.snapshot()
+        let modelModules = await modelSpace.modules.snapshot()
+
+        for container in modelContainers {
             await commonModel.append(contentsOf: container)
+        }
+        
+        for module in modelModules {
+            await commonModel.append(module)
         }
     }
     
@@ -77,12 +82,12 @@ public actor AppModel {
         let modelContainers = await modelSpace.containers.snapshot()
         let modelModules = await modelSpace.modules.snapshot()
 
-        for item in modelContainers {
-            await containers.append(item)
+        for container in modelContainers {
+            await containers.append(container)
         }
         
-        for item in modelModules {
-            await modules.append(item)
+        for module in modelModules {
+            await modules.append(module)
         }
     }
     

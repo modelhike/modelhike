@@ -54,7 +54,7 @@ public actor ModelFileParser {
                 //check for class starting
                 if await DomainObjectParser.canParse(parser: lineParser) {
                     if let item = try await DomainObjectParser.parse(parser: lineParser, with: pInfo) {
-                        await self.component.append(item)
+                        await appendToComponent(item)
                         return
                     } else {
                         throw Model_ParsingError.invalidDomainObjectLine(pInfo)
@@ -63,7 +63,7 @@ public actor ModelFileParser {
                 
                 if await DtoObjectParser.canParse(parser: lineParser) {
                     if let item = try await DtoObjectParser.parse(parser: lineParser, with: pInfo) {
-                        await self.component.append(item)
+                        await appendToComponent(item)
                         return
                     } else {
                         throw Model_ParsingError.invalidDtoObjectLine(pInfo)
@@ -72,7 +72,7 @@ public actor ModelFileParser {
                 
                 if await UIViewParser.canParse(parser: lineParser) {
                     if let item = try await UIViewParser.parse(parser: lineParser, with: ctx) {
-                        await self.component.append(item)
+                        await appendToComponent(item)
                         return
                     } else {
                         throw Model_ParsingError.invalidUIViewLine(pInfo)
@@ -126,6 +126,25 @@ public actor ModelFileParser {
             await self.modelSpace.append(container: container)
         } else {
             throw Model_ParsingError.invalidContainerLine(pInfo)
+        }
+    }
+    
+    fileprivate func appendToComponent(_ item: CodeObject) async {
+        //if sub-component is actively being parsed, then add the object to it
+        if let subComponent = self.subComponent {
+            await subComponent.append(item)
+        } else {
+            await self.component.append(item)
+        }
+    }
+    
+    
+    fileprivate func appendToComponent(_ item: UIObject) async {
+        //if sub-component is actively being parsed, then add the object to it
+        if let subComponent = self.subComponent {
+            await subComponent.append(item)
+        } else {
+            await self.component.append(item)
         }
     }
     
