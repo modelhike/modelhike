@@ -3,7 +3,7 @@
 ModelHike is a joyful way to build software, in the era of AI. It is a fresh way to go from idea → model → app, at any scale.
  Zero drag. Full flow.
 
-ModelHike is your **Declarative Brain** for building software systems with confidence. With ModelHike, you are architecting software in partnership with AI, rather than just relying on AI to generate code without any understanding.
+ModelHike is your **Declarative Brain** for building software systems with confidence. From the current standard way of just doing Declarative UI, you move up to doing **Declarative Apps**! With ModelHike, you are architecting software in partnership with AI, rather than just relying on AI to generate code without any understanding.
 
 You write **ModelHike DSL** — a Markdown-inspired domain modeling system paired with a smart build engine. It blends the creativity of **GenAI** with the reliability of **structured models**, enabling you to go from zero to enterprise-grade full-stack applications — and scale far beyond the limits of prompt-based tools.
 
@@ -50,7 +50,7 @@ Anyone who had used GenAI can relate to this very real pain point in today’s G
 
 ---
 
-## 🧠 Back to Flow: Programming at Elevation - AI in Loop
+## 🧠 Back to Flow: Declarative Apps - AI in Loop
 
 Traditional programming gave developers joy through flow — the sense of rhythm when typing code and seeing features come alive.  ModelHike aims to bring that feeling back to AI-native software development. 
 
