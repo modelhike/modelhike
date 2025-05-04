@@ -15,6 +15,11 @@ public struct ResultBuilder<T>: Sendable {
     }
     
     @inlinable
+    public static func buildBlock(_ component: T) -> [T] {
+        return [component]
+    }
+    
+    @inlinable
     public static func buildBlock(_ components: T...) -> [T] {
         return components
     }
