@@ -53,6 +53,7 @@ Result: AI accelerates the unknowns, but every production build is template-driv
 | Fear of AI unpredictability | Opaque code suggestions | AI is **optional**; core generation is deterministic |
 
 
+
 With ModelHike, the idea is to move programming up a level—
 - From the weeds of line-by-line code
 - Into the elevated terrain of systems thinking and intent-driven modeling
@@ -89,8 +90,8 @@ ai:
   Iterate quickly—AI refines models; templates remain editable.
 
 2. **Review & Freeze**
-  – Open a PR, review `.dsl.md` + template diffs.  
-  – Once satisfied, run:
+    – Open a PR, review `.dsl.md` + template diffs.  
+    – Once satisfied, run:
 
   ```bash
   modelhike template freeze        # snapshot current templates
@@ -104,7 +105,7 @@ ai:
   Always yields *identical* outputs for the same commit hash.
 
 4. **Re-enable AI (optional)**
-  Need a new module? Flip `ai.enabled=true`, repeat steps 1-2, freeze again.
+    Need a new module? Flip `ai.enabled=true`, repeat steps 1-2, freeze again.
 
 > Result: AI accelerates the unknowns, but every production build is template-driven, diffable, and CI-safe.
 
@@ -112,11 +113,11 @@ ai:
 
 ## Architecture at a Glance
 ```mermaid
-graph TD
-  A[Models (Markdown DSL)] --> B[Model Compiler]
-  B --> C[Validation Engine]
-  C --> D[Template Engine]
-  D --> E[Generated Code, Docs, Diagrams]
+graph TD;
+  A[Models - Markdown DSL] --> B[Model Compiler];
+  B --> C[Validation Engine];
+  C --> D[Template Engine];
+  D --> E[Generated Code, Docs, Diagrams];
 ```
 
 ---
@@ -461,6 +462,6 @@ See you on the trail. 🏜️
 
 ----
 
-** We're building ModelHike to be the most joyful, intuitive, and structured way to develop modern software, in the era of AI.**
+> **We're building ModelHike to be the most joyful, intuitive, and structured way to develop modern software, in the era of AI.**
 
 > **Built by engineers, for engineers.** Stop fighting boilerplate and drift—describe your architecture once, generate confidently forever.
