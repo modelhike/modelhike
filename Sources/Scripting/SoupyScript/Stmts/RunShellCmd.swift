@@ -45,6 +45,7 @@ public struct RunShellCmdStmt: LineTemplateStmt, CustomDebugStringConvertible {
             throw TemplateSoup_EvaluationError.workingDirectoryNotSet(pInfo)
         }
 
+        #if os(macOS)
         print("⚙️  Running the shell command...")
         let fullPath = await ctx.config.output.path / ctx.workingDirectoryString
         let options = Shell.Options(workingDirectory: fullPath.string)
@@ -64,6 +65,10 @@ public struct RunShellCmdStmt: LineTemplateStmt, CustomDebugStringConvertible {
 
             print("✅ Finished the shell command...")
         }
+        #else
+        print("⚠️ Shell commands are not supported on this platform.")
+        print("❌ Command not executed: \(CommandToRun)")
+        #endif
 
         return nil
     }

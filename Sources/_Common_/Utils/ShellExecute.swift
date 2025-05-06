@@ -6,6 +6,7 @@
 
 import Foundation
 
+#if os(macOS)
 public enum Shell {
     public static func execute(command cmd: String, options: Options? = nil) -> Result {
         let process = Process()
@@ -93,3 +94,40 @@ public enum Shell {
         }
     }
 }
+#else
+// iOS/iPadOS/watchOS/tvOS implementation
+public enum Shell {
+    public static func execute(command cmd: String, options: Options? = nil) -> Result {
+        return Result(failedToRun: true, error: "Shell commands are not supported on this platform.")
+    }
+    
+    public struct Result {
+        public let failed: Bool
+        public let exitCode: Int32
+        public let stdout: String?
+        public let stderr: String?
+        
+        public init(failed: Bool = false, exitCode: Int32 = 0, stdout: String? = nil, stderr: String? = nil) {
+            self.failed = failed
+            self.exitCode = exitCode
+            self.stdout = stdout
+            self.stderr = stderr
+        }
+        
+        public init(failedToRun: Bool, error: String) {
+            self.failed = failedToRun
+            self.exitCode = -1
+            self.stdout = nil
+            self.stderr = error
+        }
+    }
+    
+    public struct Options {
+        public let workingDirectory: URL?
+        
+        public init(workingDirectory: String) {
+            self.workingDirectory = URL(fileURLWithPath: workingDirectory)
+        }
+    }
+}
+#endif
