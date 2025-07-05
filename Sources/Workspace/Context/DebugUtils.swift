@@ -154,12 +154,6 @@ public final class ContextDebugLog: Sendable {
         }
     }
     
-    public func excludingFile(_ filepath: String) {
-        if flags.excludedFiles {
-            print("⚠️ Excluding \(filepath) ...")
-        }
-    }
-    
     public func stopRenderingCurrentFile(_ filepath: String, pInfo: ParsedInfo) {
         if flags.renderingStoppedInFiles {
             print("⚠️ Stop Rendering \(filepath) ...")
@@ -169,6 +163,12 @@ public final class ContextDebugLog: Sendable {
     public func throwErrorFromCurrentFile(_ filepath: String, err: String, pInfo: ParsedInfo) {
         if flags.errorThrownInFiles {
             print("🚨 Error '\(err)' Thrown From \(filepath) ...")
+        }
+    }
+    
+    public func excludingFile(_ filepath: String) {
+        if flags.excludedFiles {
+            print("⚠️ Excluding \(filepath) ...")
         }
     }
     

@@ -93,25 +93,30 @@ public struct LocalFolder : Folder, LocalFileSystemItem {
         let fm = FileManager.default
 
         do {
-            let items = try fm.contentsOfDirectory(at: url, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles])
-
+            let items = try fm.contentsOfDirectory(at: url, includingPropertiesForKeys: [.isHiddenKey])
+            let keys: Set<URLResourceKey> = [.isDirectoryKey, .isRegularFileKey, .isSymbolicLinkKey, .isHiddenKey]
             for item in items {
-                if let keys = try? item.resourceValues(forKeys: [.isDirectoryKey, .isRegularFileKey, .isSymbolicLinkKey]) {
-
-                    if let isFile = keys.isRegularFile, isFile {
+                if let resourceValues = try? item.resourceValues(forKeys: keys) {
+                    // Skip files that have the hidden attribute set (but allow dot files)
+                    let isHidden = resourceValues.isHidden ?? false
+                    let filename = item.lastPathComponent
+                    let isDotFile = filename.hasPrefix(".")
+                    if isHidden && !isDotFile {
+                        continue
+                    }
+                    if let isFile = resourceValues.isRegularFile, isFile {
                         files.append(LocalFile(path: item))
-                    } else if let _ = keys.isDirectory {
+                    } else if let isDir = resourceValues.isDirectory, isDir {
                         // nothing for now
-                    } else if let isLink = keys.isSymbolicLink, isLink {
+                    } else if let isLink = resourceValues.isSymbolicLink, isLink {
                         files.append(LocalFile(path: item.resolvingSymlinksInPath()))
                     }
                 }
             }
         } catch {
-            //throw ReadError(path: path, reason: .readFailed(error))
-            return []
+            throw ReadError(path: path, reason: .readFailed(error))
+            //return []
         }
-        
         return files
     }
     
@@ -120,21 +125,26 @@ public struct LocalFolder : Folder, LocalFileSystemItem {
         let fm = FileManager.default
 
         do {
-            let items = try fm.contentsOfDirectory(at: url, includingPropertiesForKeys: nil)
-
+            let items = try fm.contentsOfDirectory(at: url, includingPropertiesForKeys: [.isHiddenKey])
+            let keys: Set<URLResourceKey> = [.isDirectoryKey, .isHiddenKey]
             for item in items {
-                if let keys = try? item.resourceValues(forKeys: [.isDirectoryKey]) {
-
-                    if let isDir = keys.isDirectory, isDir {
+                if let resourceValues = try? item.resourceValues(forKeys: keys) {
+                    // Skip folders that have the hidden attribute set (but allow dot folders)
+                    let isHidden = resourceValues.isHidden ?? false
+                    let foldername = item.lastPathComponent
+                    let isDotFolder = foldername.hasPrefix(".")
+                    if isHidden && !isDotFolder {
+                        continue
+                    }
+                    if let isDir = resourceValues.isDirectory, isDir {
                         folders.append(LocalFolder(path: item))
                     }
                 }
             }
         } catch {
-            //throw ReadError(path: path, reason: .readFailed(error))
-            return []
+            throw ReadError(path: path, reason: .readFailed(error))
+            //return []
         }
-        
         return folders
     }
     

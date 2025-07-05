@@ -50,6 +50,14 @@ public actor GenerationContext: Context {
         self.generatedFiles.append(filePath)
     }
 
+    public func addGenerated(file: LocalFile) {
+        self.addGenerated(filePath: file.pathString)
+    }
+    
+    public func addGenerated(filePath: LocalPath) {
+        self.addGenerated(filePath: filePath.string)
+    }
+    
     public func addGenerated(folderPath: LocalPath, addFileCount: Bool = true) {
         return addGenerated(folderPath: LocalFolder(path: folderPath), addFileCount: addFileCount)
     }
@@ -61,7 +69,7 @@ public actor GenerationContext: Context {
 
         if addFileCount {
             for file in files {
-                self.generatedFiles.append(file.pathString)
+                self.addGenerated(file: file)
             }
         }
         
@@ -73,7 +81,7 @@ public actor GenerationContext: Context {
                 let files = folder.files
                 
                 for file in files {
-                    self.generatedFiles.append(file.pathString)
+                    self.addGenerated(file: file)
                 }
             }
         }
