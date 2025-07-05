@@ -46,7 +46,11 @@ public actor GenerationContext: Context {
         self.fileGenerator = value
     }
     
-    public func addGenerated(filePath: String) {
+    private func addGenerated(filePath: String) {
+//        print(filePath)
+//        if filePath.hasSuffix(".env.stage") {
+//            var i = 0
+//        }
         self.generatedFiles.append(filePath)
     }
 

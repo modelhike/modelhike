@@ -114,8 +114,8 @@ public struct LocalFolder : Folder, LocalFileSystemItem {
                 }
             }
         } catch {
-            throw ReadError(path: path, reason: .readFailed(error))
-            //return []
+            //throw ReadError(path: path, reason: .readFailed(error))
+            return []
         }
         return files
     }
@@ -142,8 +142,8 @@ public struct LocalFolder : Folder, LocalFileSystemItem {
                 }
             }
         } catch {
-            throw ReadError(path: path, reason: .readFailed(error))
-            //return []
+            //throw ReadError(path: path, reason: .readFailed(error))
+            return []
         }
         return folders
     }
