@@ -1,68 +1,49 @@
-import XCTest
+import Testing
 @testable import ModelHike
 
-final class TemplateSoup_String_Tests: XCTestCase {
-    var arr:[DynamicTestObj] = []
-    var data: [String : Any] = [:]
-    
-    override func setUpWithError() throws {
-        self.arr = [DynamicTestObj(name: "n1", age: 1),
-                    DynamicTestObj(name: "n2", age: 2),
-                    DynamicTestObj(name: "", age: 3)]
+@Suite struct TemplateSoup_String_Tests {
+    let arr: [DynamicTestObj]
+    let data: [String: Sendable]
 
-        self.data = ["list":arr, "var1" : true, "var2": false, "varstr": "sfsf"]
+    init() async throws {
+        let obj1 = await DynamicTestObj(name: "n1", age: 1)
+        let obj2 = await DynamicTestObj(name: "n2", age: 2)
+        let obj3 = await DynamicTestObj(name: "", age: 3)
+        let tempArr = [obj1, obj2, obj3]
+        self.arr = tempArr
+        self.data = ["list": tempArr, "var1": true, "var2": false, "varstr": "sfsf"]
     }
 
-    override func tearDownWithError() throws {
-        self.arr = []
-        self.data = [:]
-    }
-
-    func testSimplePrint() throws {
-        // Given
+    @Test func simplePrint() async throws {
         let input = "{{ var1 }}"
-        
-        let expectedOutput = "true"
-
-        // When
-        let ws = Workspace();
-        let result = ws.render(string: input, data: data)
-
-        // Then
-        XCTAssertEqual(result, expectedOutput)
+        let ws = Workspace()
+        let result = try await ws.render(string: input, data: data)
+        #expect(result == "true")
     }
-    
-    func testExpressionPrint() throws {
-        // Given
+
+    @Test func expressionPrint() async throws {
         let input = "{{ (var1 and var2) and var2}}"
-        
-        let expectedOutput = "false"
-
-        // When
-        let ws = Workspace();
-        let result = ws.render(string: input, data: data)
-
-        // Then
-        XCTAssertEqual(result, expectedOutput)
+        let ws = Workspace()
+        let result = try await ws.render(string: input, data: data)
+        #expect(result == "false")
     }
-    
-    func testComplexTemplateWuthMacroFunctions() throws {
-        // Given
+
+    @Test func complexTemplateWithMacroFunctions() async throws {
         let input = """
             : set submodule_folder_name = "some-name"| lowercase + kebabcase //comment
             : func fn1(param1) //comment
-            : set testname2 //comment
+            : set-str testname2 //comment
             GG_Tr{{submodule_folder_name}} ={{ call fn2(param1 : "Ssf") }}=
-            : endset //comment
+            : end-set //comment
             {{testname2}}
-            : endfunc
+            : end-func
             :
             : func fn2(param1)
-             : set testname3
+             : set-str testname3
             hi
-            : endset
+            : end-set
             tyty
-            : endfunc
+            : end-func
 
             : call fn1(param1 : "Ssf")
             : for test in list
@@ -73,11 +54,11 @@ final class TemplateSoup_String_Tests: XCTestCase {
             inside if {{test.name}}
             : else
             inside else {{test.name}}
-            : endif
-            : endfor
+            : end-if
+            : end-for
 
             """
-        
+
         let expectedOutput = """
                 GG_Trsome-name tyty
                 jekii
@@ -88,21 +69,17 @@ final class TemplateSoup_String_Tests: XCTestCase {
                 inside if gg-trsome-name-tyty
                 """
 
-        // When
-        let ws = Workspace();
-        let result = ws.render(string: input, data: data)!
-
-        // Then
-        XCTAssertEqual(result, expectedOutput)
+        let ws = Workspace()
+        let result = try await ws.render(string: input, data: data)
+        #expect(result == expectedOutput)
     }
-    
-    func testSimpleNestedLoops() throws {
-        // Given
+
+    @Test func simpleNestedLoops() async throws {
         let input = """
             : for i in list
             jekii
             fsdf
-            : endfor
+            : end-for
 
             : for yi in list
             12121
@@ -110,30 +87,30 @@ final class TemplateSoup_String_Tests: XCTestCase {
             a
             : for jj in list
             a
-            : endfor
-            : endif
+            : end-for
+            : end-if
             : for q in list
             a
-            : endfor
+            : end-for
             323232
             323232323232
             323232
-            : endfor
+            : end-for
 
             : if var1
             a
-            : else if var2
+            : else-if var2
             b
             : for i in list
             jekii
             fsdf
-            : endfor
+            : end-for
             : else
             c
-            : endif
+            : end-if
 
             """
-        
+
         let expectedOutput = """
                 jekii
                 fsdf
@@ -177,24 +154,17 @@ final class TemplateSoup_String_Tests: XCTestCase {
                 a
                 """
 
-        // When
-        let ws = Workspace();
-        let result = ws.render(string: input, data: data)!
-
-        // Then
-        XCTAssertEqual(result, expectedOutput)
+        let ws = Workspace()
+        let result = try await ws.render(string: input, data: data)
+        #expect(result == expectedOutput)
     }
-    
-    struct DynamicTestObj : DynamicMemberLookup, HasAttributes {
-        public var attribs = Attributes()
-        
-        subscript(member: String) -> Any {
-            return self.attribs["name"] as Any
-        }
-        
-        public init(name: String, age: Int) {
-            self.attribs["name"] = name
-            self.attribs["age"] = name
+
+    actor DynamicTestObj: HasAttributes {
+        nonisolated let attribs = Attributes()
+
+        init(name: String, age: Int) async {
+            await attribs.set("name", value: name)
+            await attribs.set("age", value: age)
         }
     }
 }
