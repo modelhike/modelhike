@@ -32,6 +32,6 @@ public enum ModelConstants {
 
     public static let UIViewUnderlineChar = "~"
 
-    public static let ModelFile_Extension = "diagsoup"
+    public static let ModelFile_Extension = "modelhike"
     public static let ConfigFile_Extension = "tconfig"
 }
