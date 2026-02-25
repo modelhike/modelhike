@@ -8,3 +8,5 @@ DerivedData/
 .netrc
 # SpecStory explanation file
 .specstory/.what-is-this.md
+# Local testing playground — not for commit
+_Playground/
