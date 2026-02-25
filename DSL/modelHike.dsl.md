@@ -12,20 +12,26 @@ ModelHike DSL lets you capture **architecture, data models, and APIs** in a sing
 
 ## Legend 🎛️ (bookmark this!)
 
-| Pattern / Symbol   | Meaning                               | Appears where            |
+| Pattern / Symbol   | Meaning                               | Appears where            |
 | ------------------ | ------------------------------------- | ------------------------ |
 | `=== … ===`        | **Container fence** – deployable unit | File top level           |
 | `=== Module ===`   | **Module / Component**                | Inside a container       |
 | extra `=` (`====`) | **Sub‑module**                        | Nested under a module    |
 | `Class` + `====`   | **Class / Type**                      | Inside a module          |
 | `DTO` + `/===/`    | **DTO** – flattened read‑model        | Inside a module          |
+| `UIView` + `~~~~`  | **UIView** – UI component model       | Inside a module          |
+| `~ methodName(…)` | **Method** inside a class             | Inside a class           |
 | `* / - / .`        | required / optional / DTO‑only field  | Property list            |
+| `*?`               | **Conditional** required field        | Property list            |
+| `=`                | **Calculated** / derived field        | Property list            |
+| `(backend)`        | Server‑side only — excluded from DTOs | After property           |
 | `{}`               | Collection default literal            | Property default         |
 | `(key=value)`      | **Attribute** (explicit)              | After element / property |
-| `[ … ]`            | **Attribute** (inferred)              | Usually after `# APIs`   |
+| `[ … ]`            | **Attribute** (inferred)              | Usually after `# APIs`   |
 | `@`                | **Annotation** (scaffold / metadata)  | Any element              |
 | `#tag`             | **Tag** – free‑form label             | End of header / property |
 | `# APIs`           | Begin API block                       | In a module or class     |
+| `//`               | **Line comment** – ignored by parser  | Anywhere                 |
 
 ---
 
@@ -169,15 +175,38 @@ Airport Flight View (Flight View, Airport)
 
 Everything inside classes/DTOs boils down to **properties**.
 
+**Property names are human‑friendly.** Spaces are allowed — `flight Number`, `arrival Date`, `is Active`. The parser normalises them to camelCase internally (`flightNumber`, `arrivalDate`, `isActive`), but you write them however reads naturally. The original spaced name is preserved as `givenname`; the normalised form is `name`.
+
 ### 5.1 Prefixes recap
 
-* `*` — **required**
-* `-` — **optional**
-* `.` — **DTO field** (type inherited)
+| Prefix | Meaning                | Notes                                       |
+| ------ | ---------------------- | ------------------------------------------- |
+| `*`    | **required**           |                                             |
+| `-`    | **optional**           |                                             |
+| `_`    | optional (alias)       | Accepted as alias for `-`; prefer `-`       |
+| `*?`   | **conditional** req.   | `RequiredKind.conditional`                  |
+| `=`    | **calculated/derived** | Computed value; never stored directly       |
+| `.`    | **DTO field**          | Type inherited from parent; never declared  |
 
-### 5.2 Types & inference
+### 5.2 Types
 
-* Friendly names: `String`, `Float`, `Flight View`.
+| DSL name(s)                       | Meaning / PropertyKind          |
+| --------------------------------- | ------------------------------- |
+| `Int`, `Integer`                  | integer number (`.int`)         |
+| `Number`, `Decimal`, `Double`, `Float` | floating point (`.double`)  |
+| `Bool`, `Boolean`, `YesNo`, `Yes/No`   | boolean (`.bool`)           |
+| `String`, `Text`                  | string (`.string`)              |
+| `Date`                            | calendar date (`.date`)         |
+| `DateTime`                        | date + time (`.datetime`)       |
+| `Buffer`                          | binary data (`.buffer`)         |
+| `Id`                              | primary key — triggers unique index (`.id`) |
+| `Any`                             | untyped (`.any`)                |
+| `Reference@TypeName`              | foreign reference (`.reference`) |
+| `Reference@Type1,Type2`           | multi-type reference (`.multiReference`) |
+| `ExtendedReference@TypeName`      | reference with extra fields (`.extendedReference`) |
+| `CodedValue@TypeName`             | coded/enum reference (`.codedValue`) |
+| anything else                     | custom object type (`.customType`) |
+
 * `Id` → primary key & unique index.
 * Omit `: Type` if default is self‑evident.
 
@@ -258,15 +287,29 @@ Annotations start with `@` and automate tasks.
 
 ### 7.1 Built‑in catalog
 
-| Keyword    | Purpose          | Typical scope    |
-| ---------- | ---------------- | ---------------- |
-| `apis`     | CRUD scaffold    | Module / Class   |
-| `index`    | DB index         | Class            |
-| `roles`    | Access control   | Class / API      |
-| `auth`     | Auth scheme      | API block        |
-| `validate` | Custom validator | Property / Class |
+| Keyword    | Purpose                            | Typical scope    |
+| ---------- | ---------------------------------- | ---------------- |
+| `apis`     | CRUD scaffold                      | Module / Class   |
+| `no-apis`  | Suppress API generation            | Module / Class   |
+| `list-api` | Query param → property mapping for list | Class       |
+| `index`    | DB index                           | Class            |
+| `roles`    | Access control                     | Class / API      |
+| `auth`     | Auth scheme                        | API block        |
+| `validate` | Custom validator                   | Property / Class |
 
-### 7.2 Resolution rules
+### 7.2 `@list-api` mapping syntax
+
+Specifies how query parameters map to entity properties for the list endpoint. Uses `->` for direct mapping and `;` to separate multiple mappings:
+
+```modelhike
+@ list-api :: name -> name; type -> type.display
+```
+
+* Query param `name` maps to property `name`.
+* Query param `type` maps to `type.display` (dot‑path into a nested object).
+* Parsed as a `MappingAnnotation` with `mappings: [(key, value)]`.
+
+### 7.3 Resolution rules
 
 1. Closest scope wins.
 2. Same‑keyword annotations merge within scope.
@@ -309,22 +352,33 @@ Invoice #financial
 
 ## 9 · Comments ☕️
 
-Anything the parser doesn’t recognise becomes a comment—great for TODOs or design notes. Wrap multi‑word comments in quotes if you like.
+Two comment styles are supported — both are ignored by all parsers:
 
-### Key ideas
+| Style            | Syntax                             | Notes                                            |
+| ---------------- | ---------------------------------- | ------------------------------------------------ |
+| **Explicit**     | `// text`                          | Recognised comment prefix; stripped from output  |
+| **Unrecognised** | any plain line without a prefix    | Silently skipped; great for TODOs / design notes |
+| **Quoted**       | `"TODO: migrate legacy IDs by Q3"` | Quoted strings without a prefix are also skipped |
 
-| Tip                              | Example                            |
-| -------------------------------- | ---------------------------------- |
-| Use plain lines                  | `Legacy mapping to be removed`     |
-| Or quoted strings                | `"TODO: migrate legacy IDs by Q3"` |
+> Comments on property/method lines: if a line starts with `//`, the `//` prefix is stripped and the rest is discarded. Unrecognised lines that don't begin with a known prefix (`*`, `-`, `~`, `.`, `=`, `@`, `#`, etc.) are silently skipped.
+
+#### Mini‑cheatsheet
+
+```modelhike
+// This whole line is a comment
+"Legacy field — keep until migration completed"
+Legacy mapping to be removed
+```
+| Unrecognised plain line          | `Legacy mapping to be removed`     |
+| Quoted string                    | `"TODO: migrate legacy IDs by Q3"` |
 | Comments never affect generation | Safe for brainstorming             |
 
 #### Mini‑cheatsheet
 
 ```modelhike
+// deprecated — remove after migration
 "Legacy field — keep until migration completed"
 ```
-
 ---
 
 ## 10 · APIs — wiring data to the outside world 🌐
@@ -417,7 +471,82 @@ becomes:
 
 ---
 
-## 11 · Putting it all together 🧩 
+## 11 · UIViews — UI component models
+
+UIViews model UI screens or components. They use a **tilde underline** (`~~~~`) instead of `====`, and contain only annotations and API blocks — no properties.
+
+```modelhike
+My Screen View (attributes) #tags
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+@ annotation:: value
+# APIs
+...
+#
+```
+
+### Key ideas
+
+| Rule                              | Why it matters                               |
+| --------------------------------- | -------------------------------------------- |
+| `~~~~` underline (tilde chars)    | Visually distinguishes UIViews from entities |
+| Underline length = title length   | Parsing guard‑rail                            |
+| No properties                    | UIViews hold structure, not data fields      |
+| Annotations & API blocks allowed | Drive scaffolding just like entities         |
+
+#### Mini‑cheatsheet
+
+```modelhike
+Dashboard View
+~~~~~~~~~~~~~~
+@ roles:: admin
+# APIs ["/dashboard"]
+@ apis:: get-by-id
+#
+```
+
+---
+
+## 12 · Methods — behaviour inside classes
+
+Methods are declared inside a class using the `~` prefix.
+
+```modelhike
+~ methodName(param1: Type, param2: Type) : ReturnType #tags
+```
+
+* Prefix `~` maps to `ModelConstants.Member_Method`.
+* Return type after `:` is optional; if omitted the method has return type `unKnown`.
+* Parameters follow the same `name: Type` syntax as properties.
+* Produces a `MethodObject` with `parameters: [MethodParameter]` and `returnType: TypeInfo`.
+
+#### Mini‑cheatsheet
+
+```modelhike
+Order
+=====
+* id : Id
+~ calculateTotal() : Float
+~ applyDiscount(percent: Float) : Order #admin
+```
+
+---
+
+## 13 · `(backend)` attribute — server‑side‑only fields
+
+Annotate a property or import with `(backend)` to mark it as server‑side only. Blueprints use this to exclude those fields from client‑facing DTOs and schemas.
+
+```modelhike
+- audit : Audit (backend)
+- mggOrg : Reference@Organization (backend)
+```
+
+* This is an **attribute** (`attribs["backend"]`), not a keyword.
+* It has no effect on parsing — only blueprints that explicitly check for it will act on it.
+* Use it for fields like audit trails, internal org references, or server‑managed metadata.
+
+---
+
+## 14 · Putting it all together 🧩
 
 A full example combining **every** concept.
 
@@ -436,9 +565,11 @@ Order #bounded-context:Sales
 * orderId : Id
 * amount  : Float (min=0)
 - status  : String  = "NEW" (pattern=^(NEW|PAID|CANCELLED)$)
+- audit   : Audit (backend)
 
 # APIs ["/orders"]
 @ apis:: create, delete
+@ list-api :: status -> status
 ## list by status
 ## cancel(id: Id) : Order (route="/orders/{id}/cancel", method=POST, roles=admin)
 #
@@ -466,12 +597,12 @@ Sales Report (Order)
 
 This one file now describes:
 
-1. **Architecture** – one container, two modules.
-2. **Domain models** – `Order`, `Sales Report`, DTOs.
-3. **Validation & metadata** – regex, min/max, roles, tags.
-4. **API surface** – scaffolded + custom endpoints with routing.
+1. **Architecture** – one container, two modules.
+2. **Domain models** – `Order`, `Sales Report`, DTOs.
+3. **Validation & metadata** – regex, min/max, roles, tags.
+4. **API surface** – scaffolded + custom endpoints with routing.
+5. **Backend‑only fields** – `audit` excluded from client DTOs.
 
 Use it as a template: change names, tweak fields, regenerate code—done! 🚀
 
 And that’s a wrap—go forth and ModelHike like a pro! 🎉
-
