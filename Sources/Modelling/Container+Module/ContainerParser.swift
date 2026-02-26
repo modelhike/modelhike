@@ -67,12 +67,15 @@ public enum ContainerParser {
                 continue
             }
             
-            if MethodObject.canParse(firstWord: pInfo.firstWord) {
-                if let method = try await MethodObject.parse(pInfo: pInfo) {
+            if await MethodObject.canParse(parser: parser) {
+                guard let methodPInfo = await parser.currentParsedInfo(level: 0) else {
+                    await parser.skipLine(); continue
+                }
+                if let method = try await MethodObject.parse(pInfo: methodPInfo) {
                     await item.append(method)
                     continue
                 } else {
-                    throw Model_ParsingError.invalidMethodLine(pInfo)
+                    throw Model_ParsingError.invalidMethodLine(methodPInfo)
                 }
             }
             

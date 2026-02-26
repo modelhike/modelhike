@@ -46,8 +46,21 @@ public enum DtoObjectParser {
         while await parser.linesRemaining {
             if await parser.isCurrentLineEmptyOrCommented() { await parser.skipLine(); continue }
 
-            guard let pInfo = await parser.currentParsedInfo(level : 0) else { await parser.skipLine(); continue }
-            if await parser.isCurrentLineHumaneComment(pInfo) { await parser.skipLine(); continue } //humane comment
+            // Method check before humane-comment: signatures look like plain identifiers
+            if await MethodObject.canParse(parser: parser) {
+                guard let methodPInfo = await parser.currentParsedInfo(level: 0) else {
+                    await parser.skipLine(); continue
+                }
+                if let method = try await MethodObject.parse(pInfo: methodPInfo) {
+                    await item.append(method)
+                    continue
+                } else {
+                    throw Model_ParsingError.invalidMethodLine(methodPInfo)
+                }
+            }
+
+            guard let pInfo = await parser.currentParsedInfo(level: 0) else { await parser.skipLine(); continue }
+            if await parser.isCurrentLineHumaneComment(pInfo) { await parser.skipLine(); continue }
 
             if DerivedProperty.canParse(firstWord: pInfo.firstWord) {
                 if let prop = try await DerivedProperty.parse(pInfo: pInfo) {
@@ -56,15 +69,6 @@ public enum DtoObjectParser {
                 } else {
                     let msg = pInfo.line
                     throw Model_ParsingError.invalidDerivedProperty(msg, pInfo)
-                }
-            }
-            
-            if MethodObject.canParse(firstWord: pInfo.firstWord) {
-                if let method = try await MethodObject.parse(pInfo: pInfo) {
-                    await item.append(method)
-                    continue
-                } else {
-                    throw Model_ParsingError.invalidMethodLine(pInfo)
                 }
             }
             
@@ -82,4 +86,5 @@ public enum DtoObjectParser {
         
         return item
     }
+
 }

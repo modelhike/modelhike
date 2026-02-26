@@ -20,7 +20,10 @@ ModelHike DSL lets you capture **architecture, data models, and APIs** in a sing
 | `Class` + `====`   | **Class / Type**                      | Inside a module          |
 | `DTO` + `/===/`    | **DTO** – flattened read‑model        | Inside a module          |
 | `UIView` + `~~~~`  | **UIView** – UI component model       | Inside a module          |
-| `~ methodName(…)` | **Method** inside a class             | Inside a class           |
+| `methodName(…)` + `~~~~~~` | **Method** — setext header + tilde underline | After properties in a class |
+| `~ methodName(…)` | **Method** — tilde-prefix style (no underline) | After properties in a class |
+| `~~~` / ` ``` ` | **Method logic fence** – wraps the logic body | After method header |
+
 | `* / - / .`        | required / optional / DTO‑only field  | Property list            |
 | `*?`               | **Conditional** required field        | Property list            |
 | `=`                | **Calculated** / derived field        | Property list            |
@@ -508,26 +511,47 @@ Dashboard View
 
 ## 12 · Methods — behaviour inside classes
 
-Methods are declared inside a class using the `~` prefix.
+Methods appear **after all properties** in a class. Two syntaxes are supported:
+
+**Setext-header style** — signature line + `~~~~~~` tilde underline. For methods **with** a logic body. Logic starts immediately after the underline (no opening fence); closing `~~~` is mandatory.
+
+**Tilde-prefix style** — `~` prefix on the signature line. Preferred for method stubs (no logic). Supports an optional ` ``` ` fenced logic block.
+
+```modelhike
+methodName(param1: Type, param2: Type) : ReturnType #tags
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
 
 ```modelhike
 ~ methodName(param1: Type, param2: Type) : ReturnType #tags
 ```
 
-* Prefix `~` maps to `ModelConstants.Member_Method`.
+* For setext style: underline must be only `~` characters (`ModelConstants.MethodUnderlineChar`).
+* For tilde-prefix style: `~` prefix on the signature (no underline line follows).
 * Return type after `:` is optional; if omitted the method has return type `unKnown`.
 * Parameters follow the same `name: Type` syntax as properties.
 * Produces a `MethodObject` with `parameters: [MethodParameter]` and `returnType: TypeInfo`.
+* A fenced logic body may follow — see [`codelogic.dsl.md`](codelogic.dsl.md).
 
 #### Mini‑cheatsheet
 
-```modelhike
+````modelhike
 Order
 =====
-* id : Id
-~ calculateTotal() : Float
-~ applyDiscount(percent: Float) : Order #admin
-```
+* id     : Id
+* amount : Float
+
+calculateTotal() : Float
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+applyDiscount(percent: Float) : Order #admin
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+|> IF percent <= 0
+| return this
+assign self.amount = amount * (1 - percent / 100)
+return this
+~~~
+````
 
 ---
 
@@ -573,6 +597,14 @@ Order #bounded-context:Sales
 ## list by status
 ## cancel(id: Id) : Order (route="/orders/{id}/cancel", method=POST, roles=admin)
 #
+
+applyDiscount(percent: Float) : Order
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+|> IF percent <= 0
+| return this
+assign self.amount = amount * (1 - percent / 100)
+return this
+~~~
 
 Order DTO (Order)
 /===/
