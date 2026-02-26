@@ -99,6 +99,25 @@ public enum CodeLogicStmtKind: String, Sendable, Equatable {
     /// The canonical pipe-gutter keyword string for this statement kind.
     public var keyword: String { rawValue }
 
+    /// Same-depth sibling statement kinds that this block kind claims as its own children.
+    ///
+    /// Each block node struct defines its own `static siblingChildKinds`; this property
+    /// forwards to those definitions so `CodeLogicParser` can access them without depending
+    /// on the node types directly. Update the struct's set — this stays as a thin bridge.
+    public var siblingChildKinds: Set<CodeLogicStmtKind> {
+        switch self {
+        case .db:          return CodeLogicStmt.DbQueryNode.siblingChildKinds
+        case .dbUpdate:    return CodeLogicStmt.DbUpdateNode.siblingChildKinds
+        case .dbProcCall:  return CodeLogicStmt.DbProcCallNode.siblingChildKinds
+        case .dbRaw:       return CodeLogicStmt.DbRawNode.siblingChildKinds
+        case .http:        return CodeLogicStmt.HttpNode.siblingChildKinds
+        case .httpGraphQL: return CodeLogicStmt.HttpGraphQLNode.siblingChildKinds
+        case .httpRaw:     return CodeLogicStmt.HttpRawNode.siblingChildKinds
+        case .grpc:        return CodeLogicStmt.GrpcNode.siblingChildKinds
+        default:           return []
+        }
+    }
+
     /// Whether this statement kind opens a scoped block whose body lines appear at depth+1.
     public var isBlock: Bool {
         switch self {
@@ -109,9 +128,10 @@ public enum CodeLogicStmtKind: String, Sendable, Equatable {
              .compilerIf, .compilerElse,
              .pipe, .filter, .select, .map, .reduce, .`let`,
              .match, .when,
-             .db, .dbProcCall,
+             .db, .dbUpdate, .dbProcCall, .dbRaw,
              .http, .path, .query, .headers, .body,
              .httpGraphQL, .variables,
+             .httpRaw,
              .grpc, .payload, .metadata,
              .params, .sql,
              .raw, .note:

@@ -151,12 +151,25 @@ public enum CodeLogicParser {
         if isBlock { guard N >= 1 else { return nil } }
 
         let content = isBlock ? String(line.dropFirst()).trimmingCharacters(in: .whitespaces) : line
-        let parts = content.splitOnFirstWhitespace()
-        return ParsedLogicLine(
-            depth: isBlock ? N : N + 1,
-            keyword: parts.first.lowercased(),
-            expression: parts.second
-        )
+        let parts   = content.splitOnFirstWhitespace()
+        let firstWord = parts.first.lowercased()
+        let depth     = isBlock ? N : N + 1
+
+        if CodeLogicStmtKind(rawValue: firstWord) == nil {
+            if isBlock {
+                // Unknown block opener (e.g. |> CUSTOM expr): keep as .unknown, expression only.
+                return ParsedLogicLine(depth: depth, keyword: firstWord, expression: parts.second)
+            } else if parts.second.hasPrefix("=") {
+                // Bare "key = value" line inside parameter blocks (path>, body>, params>, etc.)
+                // Rewrite as assign so parseKV can extract the pair.
+                return ParsedLogicLine(depth: depth, keyword: "assign", expression: content)
+            } else {
+                // Raw text line (sql>, raw>, note> bodies) — preserve full content as expression.
+                return ParsedLogicLine(depth: depth, keyword: "unknown", expression: content)
+            }
+        }
+
+        return ParsedLogicLine(depth: depth, keyword: firstWord, expression: parts.second)
     }
 
     // MARK: - Tree assembly
@@ -178,14 +191,30 @@ public enum CodeLogicParser {
             stream.advance()
 
             let kind = CodeLogicStmtKind.parse(line.keyword)
-            let stmt = CodeLogicStmt(kind: kind, expression: line.expression)
 
-            if let next = stream.current, next.depth > baseDepth {
-                let children = await buildStatements(from: stream, baseDepth: next.depth)
-                await stmt.setChildren(children)
+            // Depth+1 children — for control-flow blocks and leaf sub-blocks (params>, sql>, etc.)
+            var children: [CodeLogicStmt] = (stream.current?.depth ?? 0) > baseDepth
+                ? await buildStatements(from: stream, baseDepth: stream.current!.depth)
+                : []
+
+            // Same-depth sibling children — db>, http>, grpc> etc. claim their following
+            // siblings (where>, include>, path>, headers>, ...) from the stream directly.
+            let claimable = kind.siblingChildKinds
+            if !claimable.isEmpty {
+                while let next = stream.current,
+                      next.depth == baseDepth,
+                      claimable.contains(CodeLogicStmtKind.parse(next.keyword)) {
+                    stream.advance()
+                    let childKind = CodeLogicStmtKind.parse(next.keyword)
+                    let grandchildren: [CodeLogicStmt] = (stream.current?.depth ?? 0) > baseDepth
+                        ? await buildStatements(from: stream, baseDepth: stream.current!.depth)
+                        : []
+                    children.append(CodeLogicStmt(kind: childKind, expression: next.expression,
+                                                  children: grandchildren))
+                }
             }
 
-            result.append(stmt)
+            result.append(CodeLogicStmt(kind: kind, expression: line.expression, children: children))
         }
 
         return result

@@ -132,15 +132,19 @@ import Testing
             |> LET order = _
             return order
             """)
-        // DB query chains sit at the same depth — flat siblings
-        #expect(logic.statements.count == 5)
-        #expect(await logic.statements[0].kind == .db)
-        #expect(await logic.statements[0].expression == "Orders")
-        #expect(await logic.statements[1].kind == .`where`)
-        #expect(await logic.statements[2].kind == .first)
-        #expect(await logic.statements[3].kind == .`let`)
-        #expect(await logic.statements[3].expression == "order = _")
-        #expect(await logic.statements[4].kind == .`return`)
+        // db> claims where/first/let as sibling children; return stands alone
+        #expect(logic.statements.count == 2)
+        let db = logic.statements[0]
+        #expect(await db.kind == .db)
+        #expect(await db.expression == "Orders")
+        let dbChildren = await db.children
+        #expect(dbChildren.count == 3)
+        #expect(await dbChildren[0].kind == .`where`)
+        #expect(await dbChildren[0].expression == "o -> o.id == orderId")
+        #expect(await dbChildren[1].kind == .first)
+        #expect(await dbChildren[2].kind == .`let`)
+        #expect(await dbChildren[2].expression == "order = _")
+        #expect(await logic.statements[1].kind == .`return`)
     }
 
     @Test func dbInsertUpdateDelete() async throws {
@@ -151,8 +155,12 @@ import Testing
             |> DB-UPDATE Orders -> o.id == id
             |> SET status = "SHIPPED"
             """)
+        #expect(update.statements.count == 1)
         #expect(await update.statements[0].kind == .dbUpdate)
-        #expect(await update.statements[1].kind == .set)
+        // set> is claimed as sibling child of db-update>
+        let updateChildren = await update.statements[0].children
+        #expect(updateChildren.count == 1)
+        #expect(await updateChildren[0].kind == .set)
 
         let delete = try await parse("|> DB-DELETE Orders -> o.id == id")
         #expect(await delete.statements[0].kind == .dbDelete)
@@ -170,14 +178,19 @@ import Testing
             |> LET user = _
             return user
             """)
-        #expect(await logic.statements[0].kind == .http)
-        #expect(await logic.statements[0].expression == "GET https://api.example.com/users/{id}")
-        #expect(await logic.statements[1].kind == .path)
-        #expect(await logic.statements[2].kind == .auth)
-        #expect(await logic.statements[2].expression == "bearer")
-        #expect(await logic.statements[3].kind == .expect)
-        #expect(await logic.statements[4].kind == .`let`)
-        #expect(await logic.statements[5].kind == .`return`)
+        // http> claims path/auth/expect/let as sibling children; return stands alone
+        #expect(logic.statements.count == 2)
+        let http = logic.statements[0]
+        #expect(await http.kind == .http)
+        #expect(await http.expression == "GET https://api.example.com/users/{id}")
+        let httpChildren = await http.children
+        #expect(httpChildren.count == 4)
+        #expect(await httpChildren[0].kind == .path)
+        #expect(await httpChildren[1].kind == .auth)
+        #expect(await httpChildren[1].expression == "bearer")
+        #expect(await httpChildren[2].kind == .expect)
+        #expect(await httpChildren[3].kind == .`let`)
+        #expect(await logic.statements[1].kind == .`return`)
     }
 
     @Test func grpcCall() async throws {
@@ -187,10 +200,15 @@ import Testing
             |  id = userId
             |> LET user = _
             """)
-        #expect(await logic.statements[0].kind == .grpc)
-        #expect(await logic.statements[0].expression == "UserService.GetUser")
-        #expect(await logic.statements[1].kind == .payload)
-        #expect(await logic.statements[2].kind == .`let`)
+        // grpc> claims payload/let as sibling children
+        #expect(logic.statements.count == 1)
+        let grpc = logic.statements[0]
+        #expect(await grpc.kind == .grpc)
+        #expect(await grpc.expression == "UserService.GetUser")
+        let grpcChildren = await grpc.children
+        #expect(grpcChildren.count == 2)
+        #expect(await grpcChildren[0].kind == .payload)
+        #expect(await grpcChildren[1].kind == .`let`)
     }
 
     // MARK: Edge cases
