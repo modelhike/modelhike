@@ -87,6 +87,14 @@ public struct FrontMatter: Sendable {
         await ctx.variables.set(lhs, value: rhs)
     }
     
+    public func rhs(for lhsValueToCheck: String, defaultValue: String) -> String {
+        if let rhs = try? rhs(for: lhsValueToCheck) {
+            return rhs
+        } else {
+            return defaultValue
+        }
+    }
+
     public func rhs(for lhsValueToCheck: String) throws -> String? {
         var index = 1 // front matter starts after the separator (---) line
         
@@ -110,6 +118,38 @@ public struct FrontMatter: Sendable {
         }
         
         return nil
+    }
+    
+
+    /// Single-pass parse of raw file contents. Advances line-by-line (mirroring the
+    /// `LineParser` pattern used throughout the engine) and returns both the front-matter
+    /// key/value pairs and the template body in one scan.
+    ///
+    /// - If no front matter is present, `values` is empty and `body` is the full contents.
+    public static func parse(contents: String) -> (values: [String: String], body: String) {
+        let lines = contents.splitIntoLines()
+        var values: [String: String] = [:]
+        var fenceCount = 0
+
+        for (index, line) in lines.enumerated() {
+            if line.hasOnly(TemplateConstants.frontMatterIndicator) {
+                fenceCount += 1
+                if fenceCount == 2 {
+                    let body = lines.dropFirst(index + 1).joined(separator: "\n")
+                    return (values, body)
+                }
+                continue
+            }
+            
+            if fenceCount == 1 {
+                let parts = line.split(separator: Character(TemplateConstants.frontMatterSplit), maxSplits: 1)
+                if parts.count == 2 {
+                    values[String(parts[0]).trim()] = String(parts[1]).trim()
+                }
+            }
+        }
+
+        return ([:], contents)
     }
     
     @discardableResult

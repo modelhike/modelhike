@@ -7,8 +7,8 @@
 import Foundation
 
 public enum SpecialFolderNames: Sendable {
-    public static let root = "_root_"
-    public static let hooks = "_hooks_"
-    public static let renders = "_renders_"
-
+    public static let root      = "_root_"
+    public static let hooks     = "_hooks_"
+    public static let renders   = "_renders_"
+    public static let modifiers = "_modifiers_"
 }

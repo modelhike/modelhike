@@ -53,12 +53,12 @@ public actor CodeGenerationSandbox : GenerationSandbox {
         await self.context.append(variables: variables)
 
         await self.templateSoup.blueprint( blueprintLoader )
-        
+
         await context.setWorkingDirectory("/")
         try await self.setRelativePath("")
-        
+
         let pInfo = await ParsedInfo.dummyForMainFile(with: context)
-        
+
         //handle special folders
         if await blueprintLoader.hasFolder(SpecialFolderNames.root) {
             let specialActivity = SpecialActivityCallStackItem(activityName: "Rendering Root Folder")
@@ -71,6 +71,16 @@ public actor CodeGenerationSandbox : GenerationSandbox {
             print("⚠️ Didn't find 'Root' folder in Blueprint !!!")
         }
         
+        if await blueprintLoader.hasFolder(SpecialFolderNames.modifiers) {
+            // Load modifiers declared as .teso files inside the blueprint's _modifiers_/ folder
+            let blueprintModifiers = try await BlueprintModifierLoader.loadModifiers(
+                from: blueprintLoader, templateSoup: templateSoup, with: pInfo)
+            if !blueprintModifiers.isEmpty {
+                await context.symbols.addTemplate(modifiers: blueprintModifiers)
+                print("ℹ️ Loaded \(blueprintModifiers.count) blueprint modifier(s) from \(SpecialFolderNames.modifiers)/")
+            }
+        }
+
         return try await templateSoup.startMainScript(with: pInfo)
     }
     

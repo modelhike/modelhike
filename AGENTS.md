@@ -545,6 +545,63 @@ let blueprint = "api-nestjs-monorepo"    // ACTIVE
 
 - **`_root_/`** — static files (and `.teso` templates) that are copied/rendered into the output root. Contains Dockerfile, env files, config files, etc.
 - There is **no** `Root/` folder in the actual blueprints; `_root_/` is the convention used.
+- **`_modifiers_/`** — blueprint-local modifier definitions. Each `.teso` file in this folder is registered as a named `Modifier`. See §9.1 below for the front-matter schema.
+
+### 9.1 Blueprint-Defined Modifiers (`_modifiers_/`)
+
+Any `.teso` file placed in the blueprint's `_modifiers_/` folder is automatically loaded and registered as a modifier before `main.ss` runs. The modifier name is the filename without the `.teso` extension.
+
+**Front-matter schema** (YAML key:value pairs between `---` fences):
+
+```
+---
+input: value          # variable name the piped value is bound to in the template
+type: String          # expected input type: String | Double | Bool | Array | Object | Any
+params: from, to      # (optional) positional argument names, comma-separated
+---
+```
+
+- All three keys are optional. Defaults: `input = "value"`, `type = Any`, no params.
+- If `params` is absent, the modifier is registered as a **no-arg** modifier: `{{ value | myModifier }}`.
+- If `params` is present, the modifier is registered as a **with-args** modifier: `{{ value | myModifier(arg1, arg2) }}`.
+- The template body renders to a `String`. Normal TemplateSoup syntax (`:if`, `:for`, `{{ expr }}`, etc.) is fully available.
+- Type mismatch at call time throws `modifierCalledOnwrongType`.
+
+**Example — no-arg modifier (`_modifiers_/javaType.teso`):**
+
+```teso
+---
+input: prop
+type: Object
+---
+:if prop.type == "String"
+String
+:end-if
+:if prop.type == "Int"
+Integer
+:end-if
+```
+
+Used as: `{{ prop | javaType }}`
+
+**Example — with-args modifier (`_modifiers_/wrap.teso`):**
+
+```teso
+---
+input: value
+type: String
+params: prefix, suffix
+---
+{{ prefix }}{{ value }}{{ suffix }}
+```
+
+Used as: `{{ value | wrap("(", ")") }}`
+
+**Implementation details:**
+- `BlueprintModifierWithoutParams` / `BlueprintModifierWithParams` — the `Modifier` definition types (in `Symbols/Modifiers/BlueprintModifier.swift`).
+- `BlueprintModifierLoader` — scans `_modifiers_/`, parses front matter, builds instances (in `Libs/BlueprintModifierLoader.swift`).
+- `InputFileRepository.listFiles(inFolder:)` — added to the blueprint protocol with a default empty implementation; `LocalFileBlueprintLoader` provides a real filesystem-backed implementation.
+- Loading happens in `CodeGenerationSandbox.generateFilesFor(container:usingBlueprintsFrom:)`, after the blueprint is set and before the root folder + `main.ss` are rendered.
 
 ### `working_dir` Variable
 

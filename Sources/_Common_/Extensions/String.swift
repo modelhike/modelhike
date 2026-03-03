@@ -8,6 +8,7 @@ import Foundation
 
 public extension String {
     var isNotEmpty: Bool { !isEmpty }
+    var nonEmpty: String? { isEmpty ? nil : self }
 
     static var empty: String { "" }
     
@@ -288,6 +289,7 @@ public extension Array where Element == String {
 
 public extension Substring {
     var isNotEmpty: Bool { !isEmpty }
+    var nonEmpty: Substring? { isEmpty ? nil : self }
 
     func firstWord() -> String? {
         return self.components(separatedBy: .whitespaces).first

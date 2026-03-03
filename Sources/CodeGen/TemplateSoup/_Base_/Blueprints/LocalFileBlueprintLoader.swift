@@ -93,6 +93,12 @@ public actor LocalFileBlueprintLoader: Blueprint {
         return inFolder.path.exists
     }
 
+    public func listFiles(inFolder foldername: String) -> [String] {
+        let folder = LocalFolder(path: self.blueprintPath / foldername)
+        guard folder.path.exists else { return [] }
+        return folder.files.map { $0.name }
+    }
+
     public func copyFiles(foldername: String, to outputFolder: OutputFolder, with pInfo: ParsedInfo)
     async throws
     {

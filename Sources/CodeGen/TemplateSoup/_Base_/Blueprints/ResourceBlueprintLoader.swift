@@ -101,6 +101,23 @@ public actor ResourceBlueprintLoader: Blueprint {
         }
     }
 
+    public func listFiles(inFolder foldername: String) -> [String] {
+        let folder = blueprintPath + foldername
+        guard let resourceURL = bundle.resourceURL?.appendingPathComponent(folder) else { return [] }
+
+        let fm = FileManager.default
+        do {
+            let resourcePaths = try fm.contentsOfDirectory(
+                at: resourceURL, includingPropertiesForKeys: nil)
+            return resourcePaths.compactMap { url in
+                let isDir = url.hasDirectoryPath 
+                return isDir ? nil : url.lastPathComponent
+            }
+        } catch {
+            return []
+        }
+    }
+
     public func copyFiles(foldername: String, to outputFolder: OutputFolder, with pInfo: ParsedInfo)
     async throws
     {
