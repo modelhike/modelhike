@@ -287,12 +287,12 @@ import Testing
             * amount : Float
 
             applyDiscount(percent: Float) : Float
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            --------------------------------------
             |> IF percent <= 0
             |return amount
             |> ELSE
             |return amount * 0.9
-            ~~~
+            ---
             """
 
         let method = try await firstMethod(in: dsl)
@@ -318,9 +318,9 @@ import Testing
             =====
             * id : Id
             calculateTax(rate: Float) : Float
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            ----------------------------------
             return amount * rate / 100
-            ~~~
+            ---
             * amount : Float
             """
 
@@ -369,15 +369,15 @@ import Testing
             * amount : Float
 
             calculateTax(rate: Float) : Float
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            ----------------------------------
             return amount * rate / 100
-            ~~~
+            ---
 
             applyDiscount(percent: Float) : Float
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            --------------------------------------
             assign discounted = amount * (1 - percent / 100)
             return discounted
-            ~~~
+            ---
             """
 
         let objects = try await allCodeObjects(in: dsl)
@@ -495,7 +495,7 @@ import Testing
             * id : Id
 
             calculateTotal() : Float
-            ~~~~~~~~~~~~~~~~~~~~~~~~~
+            -------------------------
             """
         let obj = try await firstObject(in: dsl)
         let methods = await obj.methods
@@ -517,7 +517,7 @@ import Testing
 
 
             calculateTotal() : Float
-            ~~~~~~~~~~~~~~~~~~~~~~~~~
+            -------------------------
             """
         let obj = try await firstObject(in: dsl)
         let methods = await obj.methods
@@ -538,9 +538,9 @@ import Testing
             * amount : Float
 
             applyDiscount(percent: Float) : Float
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            ---------------------------------------
             return amount * (1 - percent / 100)
-            ~~~
+            ---
             """
         let obj = try await firstObject(in: dsl)
         let props = await obj.properties
@@ -566,9 +566,9 @@ import Testing
             * id : Id
 
             calculateTax(rate: Float) : Float
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            ----------------------------------
             return 0
-            ~~~
+            ---
 
             * amount : Float
             """
@@ -594,15 +594,15 @@ import Testing
             * amount : Float
 
             calculateTax(rate: Float) : Float
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            ----------------------------------
             return amount * rate / 100
-            ~~~
+            ---
 
             applyDiscount(percent: Float) : Float
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            ---------------------------------------
             assign self.amount = amount * (1 - percent / 100)
             return this
-            ~~~
+            ---
             """
         let obj = try await firstObject(in: dsl)
         #expect(await obj.properties.count == 2)
@@ -700,10 +700,10 @@ import Testing
             ```
 
             applyDiscount(percent: Float) : Float
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            ---------------------------------------
             assign self.amount = amount * (1 - percent / 100)
             return this
-            ~~~
+            ---
             """
         let obj = try await firstObject(in: dsl)
         let methods = await obj.methods

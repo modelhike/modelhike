@@ -10,8 +10,8 @@ This document describes the **fenced block** syntax used to express method bodie
 
 Symbol | Meaning |
 ------ | ------- |
-`~~~~~~` | Setext method header underline (6+ tildes) |
-`~~~` | Opening / closing fence for **setext-style** logic blocks (opening optional) |
+`------` | Setext method header underline (6+ dashes) |
+`---` | Closing fence for **setext-style** logic blocks (no opening fence — logic starts immediately after underline) |
 ` ``` ` | Opening / closing fence for **tilde-prefix-style** logic blocks (both required) |
 `keyword` | Top-level line statement (depth 1, no `\|` prefix) |
 `\|> KEYWORD` | Depth-1 block opener — the `\|` marks it as a block, `>` confirms it |
@@ -29,9 +29,9 @@ expression | The payload / condition / argument on the same line as the keyword 
 
 ## 1. Attaching Logic to a Method
 
-### Setext-header style — `~~~~~~` underline, `~~~` fence, opening optional
+### Setext-header style — `------` underline, closing `---` fence (no opening fence)
 
-The `~~~~~~` tilde underline signals the method header. Setext style is for methods **with** a logic body. Logic starts immediately after the underline — no opening fence. The closing `~~~` is mandatory.
+The `------` dash underline signals the method header. Setext style is for methods **with** a logic body. Logic starts immediately after the underline — no opening fence. The closing `---` is mandatory.
 
 ````modelhike
 Order
@@ -40,13 +40,13 @@ Order
 * amount : Float
 
 applyDiscount(percent: Float) : Float
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------------
 |> IF percent <= 0
 |return amount
 |> ELSE
 |assign discounted = amount * (1 - percent / 100)
 |return discounted
-~~~
+---
 ````
 
 ### Tilde-prefix style — for stubs and methods without logic
@@ -66,7 +66,7 @@ Order
 ```
 `````
 
-Blank lines **inside** the fence are skipped. Only the closing fence terminates the block — the closing `~~~` is mandatory whenever a logic body is present.
+Blank lines **inside** the fence are skipped. Only the closing fence terminates the block — the closing `---` is mandatory whenever a logic body is present.
 
 ---
 
@@ -94,17 +94,17 @@ Block openers (`|> KEYWORD`) gather the lines that immediately follow at a great
 
 ````modelhike
 validate(amount: Float) : Bool
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------
 |> IF amount > 0
 |return true
 |> ELSE
 |return false
-~~~
+---
 ````
 
 ````modelhike
 classify(score: Int) : String
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------
 |> IF score >= 90
 |return "A"
 |> ELSEIF score >= 75
@@ -113,36 +113,36 @@ classify(score: Int) : String
 |return "C"
 |> ELSE
 |return "F"
-~~~
+---
 ````
 
 ### 3.2 For Loop
 
 ````modelhike
 totalRevenue(orders: Order[]) : Float
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------------
 assign total = 0
 |> FOR order in orders
 | assign total = total + order.amount
 return total
-~~~
+---
 ````
 
 ### 3.3 While Loop
 
 ````modelhike
 drain() : void
-~~~~~~~~~~~~~~
+--------------
 |> WHILE queue.hasNext
 | call process(queue.next())
-~~~
+---
 ````
 
 ### 3.4 Try / Catch / Finally
 
 ````modelhike
 saveOrder(order: Order) : Order
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------
 |> TRY
 | call repository.save(order)
 | return order
@@ -151,14 +151,14 @@ saveOrder(order: Order) : Order
 | return null
 |> FINALLY
 | call cleanup()
-~~~
+---
 ````
 
 ### 3.5 Switch / Case
 
 ````modelhike
 describe(status: String) : String
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------------
 |> SWITCH status
 | |> CASE "PENDING"
 | | return "Awaiting approval"
@@ -166,20 +166,20 @@ describe(status: String) : String
 | | return "In progress"
 | |> DEFAULT
 | | return "Unknown"
-~~~
+---
 ````
 
 ### 3.6 Compiler Directives
 
 ````modelhike
 debugInfo() : String
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
 |> #IF DEBUG
 | return "debug mode"
 |> #ELSE
 | return ""
 |> #ENDIF
-~~~
+---
 ````
 
 ---
@@ -196,18 +196,18 @@ Statement | Syntax | Description |
 
 ````modelhike
 calculateTax(amount: Float, rate: Float) : Float
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------------------------
 assign tax = amount * rate / 100
 return tax
-~~~
+---
 ````
 
 ````modelhike
 init(name: String) : void
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------
 call super.init()
 assign self.name = name
-~~~
+---
 ````
 
 ---
@@ -228,13 +228,13 @@ Statement | Syntax | Description |
 
 ````modelhike
 activeOrderTotals(orders: Order[]) : Float[]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------------------
 |> PIPE orders
 | |> FILTER o -> o.status == "ACTIVE"
 | |> MAP o -> o.amount
 | |> LET totals = _
 return totals
-~~~
+---
 ````
 
 ---
@@ -245,20 +245,20 @@ return totals
 
 ````modelhike
 getOrder(orderId: Id) : Order
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------
 |> DB Orders
 | |> WHERE o -> o.id == orderId
 | |> FIRST
 | |> LET order = _
 return order
-~~~
+---
 ````
 
 ### 6.2 Paging
 
 ````modelhike
 listOrders(skip: Int, take: Int) : Order[]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------------------
 |> DB Orders
 | |> ORDER-BY createdAt desc
 | |> SKIP skip
@@ -266,66 +266,66 @@ listOrders(skip: Int, take: Int) : Order[]
 | |> TO-LIST
 | |> LET orders = _
 return orders
-~~~
+---
 ````
 
 ### 6.3 Insert / Update / Delete
 
 ````modelhike
 createOrder(order: Order) : Order
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------------
 |> DB-INSERT Orders -> order
 return order
-~~~
+---
 ````
 
 ````modelhike
 shipOrder(id: Id) : void
-~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------
 |> DB-UPDATE Orders -> o.id == id
 | |> SET status    = "SHIPPED"
 | |> SET shippedAt = now()
-~~~
+---
 ````
 
 ````modelhike
 deleteOrder(id: Id) : void
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------
 |> DB-DELETE Orders -> o.id == id
-~~~
+---
 ````
 
 ### 6.4 Aggregation
 
 ````modelhike
 orderCountByStatus() : any
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------
 |> DB Orders
 | |> GROUP-BY o -> o.status
 | |> AGGREGATE count
 | |> LET countsByStatus = _
 return countsByStatus
-~~~
+---
 ````
 
 ### 6.5 Stored Procedure Call
 
 ````modelhike
 customerOrders(customerId: Id) : Order[]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------------------
 |> DB-PROC-CALL dbo.usp_GetCustomerOrders
 | |> PARAMS
 | |  CustomerId = customerId
 | |> LET orders = _
 return orders
-~~~
+---
 ````
 
 ### 6.6 Raw SQL (Fallback)
 
 ````modelhike
 legacySearch(term: String) : any[]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------------
 |> DB-RAW primary
 | |> SQL
 | |  SELECT * FROM Products WHERE Name LIKE @term
@@ -333,7 +333,7 @@ legacySearch(term: String) : any[]
 | |  term = "%" + term + "%"
 | |> LET results = _
 return results
-~~~
+---
 ````
 
 ### DB Statement Reference
@@ -368,7 +368,7 @@ Statement | Syntax |
 
 ````modelhike
 fetchUser(userId: Id) : User
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------
 |> HTTP GET https://users.example.com/api/users/{userId}
 | |> PATH
 | |  userId = userId
@@ -378,12 +378,12 @@ fetchUser(userId: Id) : User
 | |> EXPECT 200
 | |> LET user = _
 return user
-~~~
+---
 ````
 
 ````modelhike
 createPayment(amount: Float, token: String) : Payment
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------------------------------
 |> HTTP POST https://payments.example.com/v1/payments
 | |> BODY
 | |  amount   = amount
@@ -393,14 +393,14 @@ createPayment(amount: Float, token: String) : Payment
 | |> EXPECT 201
 | |> LET payment = _
 return payment
-~~~
+---
 ````
 
 ### 7.2 GraphQL
 
 ````modelhike
 getUserGraph(userId: Id) : User
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------
 |> HTTP-GRAPHQL https://api.example.com/graphql
 | |> QUERY
 | |  query GetUser($id: ID!) {
@@ -412,14 +412,14 @@ getUserGraph(userId: Id) : User
 | |> EXPECT 200
 | |> LET user = _
 return user
-~~~
+---
 ````
 
 ### 7.3 gRPC
 
 ````modelhike
 lookupUser(userId: Id) : User
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------
 |> GRPC UserService.GetUser
 | |> PAYLOAD
 | |  id = userId
@@ -427,20 +427,20 @@ lookupUser(userId: Id) : User
 | |  authorization = "Bearer " + token
 | |> LET user = _
 return user
-~~~
+---
 ````
 
 ### 7.4 Raw HTTP (Fallback)
 
 ````modelhike
 legacyCall() : any
-~~~~~~~~~~~~~~~~~~~
+-------------------
 |> HTTP-RAW external
 | |> RAW
 | |  httpClient.SendAsync(request)
 | |> NOTE
 | |  could not parse url/method
-~~~
+---
 ````
 
 ### HTTP Statement Reference
@@ -483,7 +483,7 @@ Order
 #
 
 applyDiscount(percent: Float) : Order
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------------
 |> IF percent <= 0
 | return this
 assign discounted = amount * (1 - percent / 100)
@@ -493,10 +493,10 @@ assign self.amount   = discounted
 | |> SET amount   = self.amount
 | |> SET discount = self.discount
 return this
-~~~
+---
 
 fetchRelatedUser(userId: Id) : User
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------------
 |> HTTP GET https://users.example.com/api/users/{userId}
 | |> PATH
 | |  userId = userId
@@ -504,7 +504,7 @@ fetchRelatedUser(userId: Id) : User
 | |> EXPECT 200
 | |> LET user = _
 return user
-~~~
+---
 ````
 
 ---
@@ -513,9 +513,9 @@ return user
 
 DSL element | Swift type |
 ----------- | ---------- |
-`methodName(...)` followed by `~~~~~~` | `MethodObject` (setext style) |
+`methodName(...)` followed by `------` | `MethodObject` (setext style) |
 `~ methodName(...)` | `MethodObject` (tilde-prefix style) |
-Logic block between `~~~` or ` ``` ` fences | `MethodObject.logic: CodeLogic?` |
+Logic block between `---` or ` ``` ` fences | `MethodObject.logic: CodeLogic?` |
 Each `\|`-prefixed line | `LogicStatement` |
 Leading `\|` count | `LogicStatement.children` nesting depth |
 Keyword (e.g. `if`, `return`) | `LogicStatementKind` |

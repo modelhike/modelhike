@@ -37,7 +37,7 @@ public enum CodeLogicParser {
     public static let fenceDelimiter = "```"
 
     /// Tilde fence used by setext methods (`~~~` — opening optional, closing required).
-    public static let setextFenceDelimiter = "~~~"
+    public static let setextFenceDelimiter = "---"
 
     // MARK: - Public API
 
@@ -58,12 +58,12 @@ public enum CodeLogicParser {
 
     /// Reads lines from `parser` as fenced logic content and returns a `CodeLogic` tree.
     ///
-    /// Call this **after** the opening fence has already been consumed (or in the implicit-start
-    /// case for setext methods where the opening fence is optional).
+    /// Call this **after** the opening fence has already been consumed (or immediately after the
+    /// setext underline, since setext methods have no opening fence — logic starts implicitly).
     ///
     /// - Parameter closingFence: The delimiter that ends the logic block.
     ///   Use `fenceDelimiter` (` ``` `) for tilde-prefix methods and
-    ///   `setextFenceDelimiter` (`~~~`) for setext methods.
+    ///   `setextFenceDelimiter` (`---`) for setext methods.
     ///
     /// Terminates on:
     /// - A line equal to `closingFence` — consumed and parsing ends successfully.

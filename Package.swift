@@ -17,6 +17,10 @@ let package = Package(
         .target(
             name: "ModelHike",
             path: "Sources",
+            exclude: [
+                "_Common_/ThirdParty/Codextended/LICENSE",
+                "_Common_/ThirdParty/Codextended/README.md"
+            ],
             swiftSettings: [
                 //.unsafeFlags([
                 //    //"-Xfrontend", "-strict-concurrency=complete",
