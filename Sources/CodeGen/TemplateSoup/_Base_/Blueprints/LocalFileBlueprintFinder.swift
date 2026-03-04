@@ -14,7 +14,7 @@ public actor LocalFileBlueprintFinder: BlueprintFinder {
     
     public func blueprint(named name: String, with pInfo: ParsedInfo) async throws -> any Blueprint {
         if let ctx = pInfo.ctx as? GenerationContext {
-            return LocalFileBlueprintLoader(blueprint: name, path: rootPath, with: ctx)
+            return LocalFileBlueprint(blueprint: name, path: rootPath, with: ctx)
         } else {
             fatalError(#function + ": unknown context passed")
         }

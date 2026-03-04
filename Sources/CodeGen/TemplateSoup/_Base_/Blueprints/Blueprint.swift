@@ -8,7 +8,7 @@ import Foundation
 
 public protocol Blueprint : InputFileRepository {
     var blueprintName: String {get}
-    func blueprintExists() async throws -> Bool
+    func exists() async throws -> Bool
     func loadTemplate(fileName: String, with pInfo: ParsedInfo) async throws -> Template
     func loadScriptFile(fileName: String, with pInfo: ParsedInfo) async throws -> Script
 }

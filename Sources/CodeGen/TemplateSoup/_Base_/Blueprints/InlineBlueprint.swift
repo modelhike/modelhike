@@ -1,5 +1,5 @@
 //
-//  InlineBlueprintLoader.swift
+//  InlineBlueprint.swift
 //  ModelHike
 //  https://www.github.com/modelhike/modelhike
 //
@@ -10,7 +10,7 @@ import Foundation
 /// Mirrors the role of `InlineModelLoader` for the model layer.
 ///
 /// ```swift
-/// let blueprint = InlineBlueprintLoader(name: "api-blueprint") {
+/// let blueprint = InlineBlueprint(name: "api-blueprint") {
 ///     InlineScript("main", contents: ":render file \"Entity.teso\"")
 ///
 ///     InlineFolder("_root_") {
@@ -26,7 +26,7 @@ import Foundation
 ///         """)
 /// }
 /// ```
-public actor InlineBlueprintLoader: Blueprint {
+public actor InlineBlueprint: Blueprint {
     public let blueprintName: String
 
     /// `[foldername: [filename_with_ext: contents]]` — root items use key `""`.
@@ -34,7 +34,7 @@ public actor InlineBlueprintLoader: Blueprint {
 
     // MARK: Blueprint
 
-    public func blueprintExists() -> Bool { true }
+    public func exists() -> Bool { true }
 
     public func loadTemplate(fileName: String, with pInfo: ParsedInfo) throws -> Template {
         let fullName = "\(fileName).\(TemplateConstants.TemplateExtension)"

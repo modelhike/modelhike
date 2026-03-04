@@ -192,7 +192,7 @@ public actor TemplateSoup : TemplateRenderer {
 
     public init(context: GenerationContext) async {
         let path = await context.config.basePath
-        let fsLoader = LocalFileBlueprintLoader(path: path, with: context)
+        let fsLoader = LocalFileBlueprint(path: path, with: context)
         self.blueprint = fsLoader
         self.context = context
     }

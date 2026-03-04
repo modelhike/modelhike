@@ -29,15 +29,15 @@ public actor CodeGenerationSandbox : GenerationSandbox {
     }
     
     //MARK: Generation code
-    public func generateFilesFor(container: String, usingBlueprintsFrom blueprintLoader: Blueprint) async throws -> String? {
+    public func generateFilesFor(container: String, usingBlueprintsFrom blueprint: Blueprint) async throws -> String? {
         
         if !isSymbolsLoaded {
             try await loadSymbols()
         }
         
-        if try await !blueprintLoader.blueprintExists() {
+        if try await !blueprint.exists() {
             let pInfo = await ParsedInfo.dummyForAppState(with: context)
-            throw await EvaluationError.blueprintDoesNotExist(blueprintLoader.blueprintName, pInfo)
+            throw await EvaluationError.blueprintDoesNotExist(blueprint.blueprintName, pInfo)
         }
         
         guard let container = await model.container(named: container) else {
@@ -52,15 +52,15 @@ public actor CodeGenerationSandbox : GenerationSandbox {
         
         await self.context.append(variables: variables)
 
-        await self.templateSoup.blueprint( blueprintLoader )
+        await self.templateSoup.blueprint( blueprint )
 
         await context.setWorkingDirectory("/")
         try await self.setRelativePath("")
 
         let pInfo = await ParsedInfo.dummyForMainFile(with: context)
 
-        if await blueprintLoader.hasFolder(SpecialFolderNames.modifiers) {
-            let blueprintModifiers = try await blueprintLoader.modifiers(templateSoup: templateSoup, with: pInfo)
+        if await blueprint.hasFolder(SpecialFolderNames.modifiers) {
+            let blueprintModifiers = try await blueprint.modifiers(templateSoup: templateSoup, with: pInfo)
             if !blueprintModifiers.isEmpty {
                 await context.symbols.addTemplate(modifiers: blueprintModifiers)
                 print("ℹ️ Loaded \(blueprintModifiers.count) blueprint modifier(s) from \(SpecialFolderNames.modifiers)/")
@@ -68,7 +68,7 @@ public actor CodeGenerationSandbox : GenerationSandbox {
         }
 
         //handle special folders
-        if await blueprintLoader.hasFolder(SpecialFolderNames.root) {
+        if await blueprint.hasFolder(SpecialFolderNames.root) {
             let specialActivity = SpecialActivityCallStackItem(activityName: "Rendering Root Folder")
             await context.pushCallStack(specialActivity)
 

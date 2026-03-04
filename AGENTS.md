@@ -526,8 +526,8 @@ A **Blueprint** is a named folder inside `localBlueprintsPath` containing `.teso
 
 | Type | Class | Description |
 |---|---|---|
-| Local filesystem | `LocalFileBlueprintLoader` | Loads from an absolute path (the external `modelhike-blueprints` repo) |
-| Swift resources | `ResourceBlueprintLoader` | Loads from embedded Swift package resources |
+| Local filesystem | `LocalFileBlueprint` | Loads from an absolute path (the external `modelhike-blueprints` repo) |
+| Swift resources | `ResourceBlueprint` | Loads from embedded Swift package resources |
 | Aggregated | `BlueprintAggregator` | Merges multiple blueprint sources |
 
 ### Current Blueprints
@@ -600,7 +600,7 @@ Used as: `{{ value | wrap("(", ")") }}`
 **Implementation details:**
 - `BlueprintModifierWithoutParams` / `BlueprintModifierWithParams` — the `Modifier` definition types (in `Symbols/Modifiers/BlueprintModifier.swift`).
 - `BlueprintModifierLoader` — scans `_modifiers_/`, parses front matter, builds instances (in `Libs/BlueprintModifierLoader.swift`).
-- `InputFileRepository.listFiles(inFolder:)` — added to the blueprint protocol with a default empty implementation; `LocalFileBlueprintLoader` provides a real filesystem-backed implementation.
+- `InputFileRepository.listFiles(inFolder:)` — added to the blueprint protocol with a default empty implementation; `LocalFileBlueprint` provides a real filesystem-backed implementation.
 - Loading happens in `CodeGenerationSandbox.generateFilesFor(container:usingBlueprintsFrom:)`, after the blueprint is set and before the root folder + `main.ss` are rendered.
 
 ### `working_dir` Variable

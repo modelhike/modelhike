@@ -13,7 +13,7 @@ public actor ResourceBlueprintFinder {
     
     public func blueprint(named name: String, with pInfo: ParsedInfo) async throws -> any Blueprint {
         if let ctx = pInfo.ctx as? GenerationContext {
-            return ResourceBlueprintLoader(blueprint: name, blueprintsRoot: blueprintsRoot, resourceRoot: resourceRoot, bundle: bundle, with: ctx)
+            return ResourceBlueprint(blueprint: name, blueprintsRoot: blueprintsRoot, resourceRoot: resourceRoot, bundle: bundle, with: ctx)
         } else {
             fatalError(#function + ": unknown context passed")
         }

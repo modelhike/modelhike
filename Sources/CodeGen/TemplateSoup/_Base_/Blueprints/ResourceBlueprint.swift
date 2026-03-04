@@ -1,12 +1,12 @@
 //
-//  ResourceBlueprintLoader.swift
+//  ResourceBlueprint.swift
 //  ModelHike
 //  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation
 
-public actor ResourceBlueprintLoader: Blueprint {
+public actor ResourceBlueprint: Blueprint {
     private var templateCache: [String: Template] = [:]
     private var scriptFileCache: [String: Script] = [:]
 
@@ -74,7 +74,7 @@ public actor ResourceBlueprintLoader: Blueprint {
         }
     }
 
-    public func blueprintExists() async throws -> Bool {
+    public func exists() async throws -> Bool {
         if !loadPathExists() {
             let pInfo = await ParsedInfo.dummyForAppState(with: context)
             throw EvaluationError.invalidAppState(

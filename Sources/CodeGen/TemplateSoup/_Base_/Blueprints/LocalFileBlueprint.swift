@@ -1,12 +1,12 @@
 //
-//  LocalFileBlueprintLoader.swift
+//  LocalFileBlueprint.swift
 //  ModelHike
 //  https://www.github.com/modelhike/modelhike
 //
 
 import Foundation
 
-public actor LocalFileBlueprintLoader: Blueprint {
+public actor LocalFileBlueprint: Blueprint {
     private var templateCache: [String: Template] = [:]
     private var scriptFileCache: [String: Script] = [:]
 
@@ -74,7 +74,7 @@ public actor LocalFileBlueprintLoader: Blueprint {
         return rootPath.exists
     }
 
-    public func blueprintExists() async throws -> Bool {
+    public func exists() async throws -> Bool {
         if !loadPathExists() {
             let pInfo = await ParsedInfo.dummyForAppState(with: context)
             throw EvaluationError.invalidAppState(
