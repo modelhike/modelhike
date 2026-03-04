@@ -14,6 +14,7 @@ public protocol Sandbox: Actor {
     var model: AppModel {get}
     var context: GenerationContext {get}
     var config: OutputConfig {get async}
+    var templateSoup: TemplateSoup {get}
     
     var onLoadTemplate : LoadTemplateHandler {get async}
     func onLoadTemplate(_ newValue: @escaping LoadTemplateHandler) async

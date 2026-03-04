@@ -27,3 +27,15 @@ public protocol InputFileRepository: Actor {
 }
 
 public typealias RenderClosure = (@Sendable (String, ParsedInfo) async throws -> Void)
+
+public extension Blueprint {
+    /// Returns all modifiers declared as `.teso` files inside this blueprint's `_modifiers_/` folder.
+    func modifiers(templateSoup: TemplateSoup, with pInfo: ParsedInfo) async throws -> [Modifier] {
+        try await BlueprintModifierLoader.loadModifiers(from: self, templateSoup: templateSoup, with: pInfo)
+    }
+
+    func modifiers(from sandbox: any Sandbox) async throws -> [Modifier] {
+        let pInfo = await ParsedInfo.dummyForMainFile(with: sandbox.context)
+        return try await modifiers(templateSoup: sandbox.templateSoup, with: pInfo)
+    }
+}

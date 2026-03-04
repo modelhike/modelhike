@@ -12,7 +12,7 @@ public actor TemplateRenderedFile : OutputFile, RenderableFile {
     private let data: [String: Sendable]?
     private let renderer: TemplateRenderer?
     private let pInfo: ParsedInfo
-    var contents: String? = nil
+    public internal(set) var contents: String? = nil
 
     public private(set) var outputPath: LocalPath?
 

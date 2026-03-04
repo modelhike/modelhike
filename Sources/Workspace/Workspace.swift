@@ -36,13 +36,17 @@ public actor Workspace {
         return sandbox
     }
     
-    public func render(string input: String, data: [String : Sendable]) async throws -> String? {
+    public func render(string input: String, data: [String: Sendable], modifiers: [Modifier] = []) async throws -> String? {
         let sandbox = await newStringSandbox()
+
+        if !modifiers.isEmpty {
+            await sandbox.context.symbols.addTemplate(modifiers: modifiers)
+        }
 
         let rendering = try await sandbox.render(string: input, data: data)
         return rendering?.trim()
     }
-        
+
     internal init() {
         let config = PipelineConfig()
         self.context = LoadContext(config: config)
