@@ -66,7 +66,8 @@ modelhike/
 ├── Tests/                      # Test suites
 │
 ├── DSL/
-│   └── modelHike.dsl.md        # Full DSL specification (Beginner → Pro guide)
+│   ├── modelHike.dsl.md        # Full DSL specification (Beginner → Pro guide)
+│   └── codelogic.dsl.md        # Fenced method-body logic block syntax reference
 │
 ├── Docs/
 │   ├── documentation.md        # Product documentation outline (partially written)
@@ -106,7 +107,7 @@ The entire `Sources/` tree is compiled as a single `ModelHike` library target. T
 
 ## 4. The ModelHike DSL
 
-**Spec file:** `DSL/modelHike.dsl.md`
+**Spec files:** `DSL/modelHike.dsl.md` (full DSL), `DSL/codelogic.dsl.md` (method logic fence syntax)
 
 The DSL is a Markdown-flavoured text format.
 
@@ -128,7 +129,7 @@ Container  (===...===)
             └─ Method          (~ prefix inside a class)
 ```
 
-> **Syntax reference:** All DSL syntax — property prefixes, type names, array notation, attribute/annotation/tag grammar, UIView syntax, method syntax, API protocol options, and the `(backend)` attribute convention — is documented in [`DSL/modelHike.dsl.md`](DSL/modelHike.dsl.md). That file is the single source of truth. **Update `DSL/modelHike.dsl.md` when any syntax changes; do not duplicate syntax here.**
+> **Syntax reference:** All DSL syntax — property prefixes, type names, array notation, attribute/annotation/tag grammar, UIView syntax, method syntax, API protocol options, and the `(backend)` attribute convention — is documented in [`DSL/modelHike.dsl.md`](DSL/modelHike.dsl.md). Fenced method-body logic block syntax (fence styles, depth rules, all statement keywords) is documented in [`DSL/codelogic.dsl.md`](DSL/codelogic.dsl.md). Those files are the single source of truth. **Update them when any syntax changes; do not duplicate syntax here.**
 
 ---
 
@@ -202,7 +203,7 @@ Modelling/
 - `C4Container` (actor) — `name`, `givenname`, `containerType` (unknown/microservices/webApp/mobileApp), `C4ComponentList`, `unresolvedMembers`.
 - `C4Component` (actor) — module; holds `CodeObject`s (domain objects, DTOs, UIViews) + submodules.
 - `DomainObject` (actor) — class with `[CodeMember]` (properties + methods), `mixins`, `attachedSections`, `Annotations`, `Attributes`, `Tags`. `properties` returns members that are `Property`; `methods` returns members that are `MethodObject`.
-- `MethodObject` (actor) — `name`, `givenname`, `parameters: [MethodParameter]`, `returnType: TypeInfo`, `body: StringTemplate`, `tags`. Parsed from `~ methodName(param: Type) : ReturnType` lines.
+- `MethodObject` (actor) — `name`, `givenname`, `parameters: [MethodParameter]`, `returnType: TypeInfo`, `logic: CodeLogic?`, `tags`. Parsed from `~ methodName(param: Type) : ReturnType` (tilde-prefix) or `methodName(...)\n------` (setext) lines. An optional fenced logic block (` ``` `, `'''`, or `"""` — 3+ chars, opening and closing must match) may follow a tilde-prefix method; setext methods use `---` as the closing fence.
 - `DtoObject` (actor) — read-model; fields reference parent types.
 - `UIView` (actor) — UI component; `dataType = .ui`.
 - `Property` (actor) — `name`, `givenname`, `type: TypeInfo`, `required: RequiredKind`, `arrayMultiplicity: MultiplicityKind`, `isUnique`, `isObjectID`, `isSearchable`, `attribs`, `tags`.

@@ -36,8 +36,31 @@ public enum CodeLogicParser {
     /// Backtick fence used by tilde-prefix methods (` ``` ` — opening required, closing required).
     public static let fenceDelimiter = "```"
 
+    /// Single-quote fence, an alternative for tilde-prefix methods (`'''` — opening required, closing required).
+    public static let singleQuoteFenceDelimiter = "'''"
+
+    /// Double-quote fence, an alternative for tilde-prefix methods (`"""` — opening required, closing required).
+    public static let doubleQuoteFenceDelimiter = "\"\"\""
+
     /// Tilde fence used by setext methods (`~~~` — opening optional, closing required).
     public static let setextFenceDelimiter = "---"
+
+    /// Returns the fence delimiter to use for closing if `line` is a recognised tilde-style
+    /// opening fence, otherwise `nil`.
+    ///
+    /// A valid opening fence is a line consisting entirely of `` ` ``, `'`, or `"` characters,
+    /// with a minimum length of 3. Any repetition count of 3 or more is accepted
+    /// (e.g. ```` ``` ````, ```` ```` ````, `''''`, `"""""` are all valid).
+    /// The returned value is the exact (trimmed) line content, so the closing fence
+    /// must match the opening fence character-for-character.
+    public static func tildeFenceDelimiter(for line: String) -> String? {
+        let trimmed = line.trim()
+        guard trimmed.count >= 3 else { return nil }
+        if trimmed.hasOnly("`") { return trimmed }
+        if trimmed.hasOnly("'") { return trimmed }
+        if trimmed.hasOnly("\"") { return trimmed }
+        return nil
+    }
 
     // MARK: - Public API
 

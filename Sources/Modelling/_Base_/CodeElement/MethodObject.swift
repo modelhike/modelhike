@@ -38,7 +38,7 @@ public actor MethodObject: CodeMember {
     /// methodName(param: Type) : ReturnType
     /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     /// ```
-    /// **Tilde style** (one DSL line consumed, logic fenced with ` ``` `):
+    /// **Tilde style** (one DSL line consumed, logic fenced with ` ``` `, `'''`, or `"""`):
     /// ```
     /// ~ methodName(param: Type) : ReturnType
     /// ```
@@ -115,17 +115,19 @@ public actor MethodObject: CodeMember {
         }
     }
 
-    /// **Tilde-prefix style** — explicit ` ``` ` opening fence is required.
-    /// If absent, the method has no logic body. Closing ` ``` ` is required.
+    /// **Tilde-prefix style** — an explicit opening fence is required.
+    /// Supported fence styles: ` ``` `, `'''`, or `"""`.
+    /// If none is present, the method has no logic body.
+    /// The closing fence must match the opening fence.
     public func parseTildeLogicIfPresent(from parser: any LineParser) async {
         while await parser.linesRemaining {
             if await parser.isCurrentLineEmptyOrCommented() { await parser.skipLine(); continue }
             break
         }
         guard await parser.linesRemaining else { return }
-        guard await parser.currentLine() == CodeLogicParser.fenceDelimiter else { return }
-        await parser.skipLine() // consume opening ```
-        if let logic = await CodeLogicParser.parseFenced(from: parser, closingFence: CodeLogicParser.fenceDelimiter) {
+        guard let fence = CodeLogicParser.tildeFenceDelimiter(for: await parser.currentLine()) else { return }
+        await parser.skipLine() // consume opening fence
+        if let logic = await CodeLogicParser.parseFenced(from: parser, closingFence: fence) {
             self.logic = logic
         }
     }

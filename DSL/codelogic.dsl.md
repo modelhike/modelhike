@@ -12,7 +12,7 @@ Symbol | Meaning |
 ------ | ------- |
 `------` | Setext method header underline (6+ dashes) |
 `---` | Closing fence for **setext-style** logic blocks (no opening fence — logic starts immediately after underline) |
-` ``` ` | Opening / closing fence for **tilde-prefix-style** logic blocks (both required) |
+` ``` ` / `'''` / `"""` | Opening / closing fence for **tilde-prefix-style** logic blocks (both required); any run of 3 or more of the same character is accepted — opening and closing must be identical |
 `keyword` | Top-level line statement (depth 1, no `\|` prefix) |
 `\|> KEYWORD` | Depth-1 block opener — the `\|` marks it as a block, `>` confirms it |
 `\|keyword` | Depth-2 line statement (one pipe = one nesting level down) |
@@ -51,7 +51,7 @@ applyDiscount(percent: Float) : Float
 
 ### Tilde-prefix style — for stubs and methods without logic
 
-Tilde-prefix is the natural choice when a method has no logic body. It also supports a ` ``` ` fenced logic block when logic is needed.
+Tilde-prefix is the natural choice when a method has no logic body. It also supports a fenced logic block when logic is needed. The opening fence can be any run of 3 or more `` ` ``, `'`, or `"` characters; the closing fence must be the exact same string as the opening fence.
 
 `````modelhike
 Order
@@ -515,7 +515,7 @@ DSL element | Swift type |
 ----------- | ---------- |
 `methodName(...)` followed by `------` | `MethodObject` (setext style) |
 `~ methodName(...)` | `MethodObject` (tilde-prefix style) |
-Logic block between `---` or ` ``` ` fences | `MethodObject.logic: CodeLogic?` |
+Logic block between `---`, ` ``` `, `'''`, or `"""` fences (3+ chars) | `MethodObject.logic: CodeLogic?` |
 Each `\|`-prefixed line | `LogicStatement` |
 Leading `\|` count | `LogicStatement.children` nesting depth |
 Keyword (e.g. `if`, `return`) | `LogicStatementKind` |

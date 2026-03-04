@@ -22,7 +22,7 @@ ModelHike DSL lets you capture **architecture, data models, and APIs** in a sing
 | `UIView` + `~~~~`  | **UIView** – UI component model       | Inside a module          |
 | `methodName(…)` + `------` | **Method** — setext header + dash underline | After properties in a class |
 | `~ methodName(…)` | **Method** — tilde-prefix style (no underline) | After properties in a class |
-| `---` / ` ``` ` | **Method logic fence** – wraps the logic body | After method header |
+| `---` / ` ``` ` / `'''` / `"""` | **Method logic fence** – wraps the logic body; tilde-style accepts 3+ repetitions of the fence character, opening and closing must match | After method header |
 
 | `* / - / .`        | required / optional / DTO‑only field  | Property list            |
 | `*?`               | **Conditional** required field        | Property list            |
@@ -515,7 +515,7 @@ Methods appear **after all properties** in a class. Two syntaxes are supported:
 
 **Setext-header style** — signature line + `------` dash underline. For methods **with** a logic body. Logic starts immediately after the underline (no opening fence); closing `---` is mandatory.
 
-**Tilde-prefix style** — `~` prefix on the signature line. Preferred for method stubs (no logic). Supports an optional ` ``` ` fenced logic block.
+**Tilde-prefix style** — `~` prefix on the signature line. Preferred for method stubs (no logic). Supports an optional fenced logic block using ` ``` `, `'''`, or `"""` — any run of 3 or more of the same character is accepted; the closing fence must be the exact same string as the opening fence.
 
 ```modelhike
 methodName(param1: Type, param2: Type) : ReturnType #tags
