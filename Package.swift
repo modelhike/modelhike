@@ -32,7 +32,8 @@ let package = Package(
         .executableTarget(
             name: "DevTester",
             dependencies: ["ModelHike"],
-            path: "DevTester"
+            path: "DevTester",
+            resources: [.process("Assets")]
         ),
         .testTarget(
             name: "ModelHikeTests",

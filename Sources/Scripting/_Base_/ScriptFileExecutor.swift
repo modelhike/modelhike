@@ -10,6 +10,11 @@ public actor ScriptFileExecutor: SoupyScriptExecutor {
     
     public func execute(script scriptFile: Script, with context: GenerationContext) async throws -> String? {
         let contents = scriptFile.toString()
+        if let recorder = await context.debugRecorder {
+            let lines = contents.splitIntoLines()
+            let file = SourceFile(identifier: scriptFile.name, fullPath: nil, content: contents, lineCount: lines.count, fileType: .soupyScript)
+            await recorder.registerSourceFile(file)
+        }
         let lineparser = LineParserDuringGeneration(string: contents, identifier: scriptFile.name, isStatementsPrefixedWithKeyword: false, with: context)
 
         return try await execute(lineParser: lineparser, with: context)
@@ -20,7 +25,7 @@ public actor ScriptFileExecutor: SoupyScriptExecutor {
         let parser = SoupyScriptParser(lineParser: lineParser, context: ctx)
 
         do {
-            ctx.debugLog.scriptFileParsingStarting()
+            ctx.debugLog.scriptFileParsingStarting(name: await lineParser.identifier)
             try await ctx.events.onBeforeParseScriptFile?(lineParser.identifier, ctx)
             
             let curLine = await lineParser.currentLine()
@@ -33,7 +38,8 @@ public actor ScriptFileExecutor: SoupyScriptExecutor {
             if let containers = try await parser.parseContainers() {
                 await ctx.debugLog.printParsedTree(for: containers)
                 
-                ctx.debugLog.scriptFileExecutionStarting()
+                let pInfo = await lineParser.currentParsedInfo(level: 0)
+                ctx.debugLog.scriptFileExecutionStarting(name: await lineParser.identifier, pInfo: pInfo)
                 try await ctx.events.onBeforeExecuteScriptFile?(lineParser.identifier, ctx)
 
                 if let body = try await containers.execute(with: ctx) {

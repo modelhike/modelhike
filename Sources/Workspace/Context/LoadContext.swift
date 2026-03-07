@@ -37,14 +37,14 @@ public actor LoadContext : Context {
     
     public init(config: OutputConfig) {
         self.config = config
-        self.debugLog = ContextDebugLog(flags: config.flags)
+        self.debugLog = ContextDebugLog(flags: config.flags, recorder: config.debugRecorder)
         self.model = AppModel()
         self.blueprints = BlueprintAggregator(config: config)
     }
     
     public init(model: AppModel, config: OutputConfig) {
         self.config = config
-        self.debugLog = ContextDebugLog(flags: config.flags)
+        self.debugLog = ContextDebugLog(flags: config.flags, recorder: config.debugRecorder)
         self.model = model
         self.blueprints = BlueprintAggregator(config: config)
     }

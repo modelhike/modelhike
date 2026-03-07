@@ -24,11 +24,27 @@ public protocol Context : AnyObject, Actor {
     
     func evaluate(expression: String, with pInfo: ParsedInfo) async throws -> Sendable?
     func evaluateCondition(expression: String, with pInfo: ParsedInfo) async throws -> Bool
+
+    /// Debug recorder for capturing events when `--debug` is active.
+    var debugRecorder: (any DebugRecorder)? { get async }
+    /// Debug stepper for breakpoint-based stepping when `--debug` is active.
+    var debugStepper: (any DebugStepper)? { get async }
+
+    /// Current variables as [String: String] for debug display (e.g. when paused at breakpoint).
+    func variablesForDebug() async -> [String: String]
 }
 
 public extension Context {
     var variables: WorkingMemory {
         get { currentState.variables }
+    }
+
+    var debugRecorder: (any DebugRecorder)? {
+        get async { await config.debugRecorder }
+    }
+
+    var debugStepper: (any DebugStepper)? {
+        get async { await config.debugStepper }
     }
     
     var debugInfo: DebugDictionary {
@@ -107,6 +123,17 @@ public extension Context {
     
     func evaluateCondition(value: Sendable, with pInfo: ParsedInfo) async -> Bool {
         return await evaluator.evaluateCondition(value: value, with: self)
+    }
+
+    func variablesForDebug() async -> [String: String] {
+        let snapshot = await variables.snapshot()
+        return snapshot.mapValues { v in
+            if let s = v as? String { return s }
+            if let n = v as? Int { return String(n) }
+            if let b = v as? Bool { return String(b) }
+            if let d = v as? Double { return String(d) }
+            return String(describing: v)
+        }
     }
     
     //manage obj attributes in the context variables

@@ -97,7 +97,7 @@ public actor GenerationContext: Context {
     public init(model: AppModel, config: OutputConfig) {
         self.config = config
         self.events = config.events
-        self.debugLog = ContextDebugLog(flags: config.flags)
+        self.debugLog = ContextDebugLog(flags: config.flags, recorder: config.debugRecorder)
         self.model = model
         self.blueprints = BlueprintAggregator(config: config)
     }

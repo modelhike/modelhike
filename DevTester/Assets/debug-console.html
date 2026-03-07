@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ModelHike Debug Console</title>
+<style>
+*{box-sizing:border-box}
+:root{--left-sidebar-width:280px;--right-sidebar-width:320px}
+body{margin:0;font-family:ui-monospace,monospace;font-size:13px;background:#1e1e1e;color:#d4d4d4;height:100vh;overflow:hidden}
+.layout{display:grid;grid-template-rows:auto auto 1fr auto auto;height:100vh}
+.header{background:#252526;padding:8px 12px;border-bottom:1px solid #333;display:flex;align-items:center;gap:12px}
+.header h1{margin:0;font-size:16px;color:#4ec9b0}
+.phases{display:flex;gap:4px;flex-wrap:wrap}
+.phase{padding:4px 8px;background:#2d2d2d;border-radius:4px;font-size:11px}
+.phase.done{background:#0e639c}
+.summary-bar{background:#202123;padding:6px 10px;border-bottom:1px solid #333;display:flex;gap:6px;flex-wrap:wrap}
+.summary-pill{background:#2d2d2d;border:1px solid #3c3c3c;border-radius:999px;padding:3px 8px;font-size:10px;color:#c5c5c5}
+.main{display:grid;grid-template-columns:minmax(220px,var(--left-sidebar-width)) 6px minmax(0,1fr) 6px minmax(240px,var(--right-sidebar-width));min-height:0}
+.panel{border-right:1px solid #333;overflow:auto;padding:8px}
+.panel-title{font-weight:600;margin-bottom:8px;color:#9cdcfe}
+.panel-subtitle{font-size:11px;color:#858585;margin-bottom:8px}
+.left-sidebar{padding:0;display:grid;grid-template-rows:auto auto 1fr;min-height:0}
+.right-sidebar{padding:0;display:grid;grid-template-rows:auto 1fr;min-height:0}
+.pane-resizer{background:#252526;border-left:1px solid #333;border-right:1px solid #333;cursor:col-resize;position:relative}
+.pane-resizer:hover,.pane-resizer.dragging{background:#2f3336}
+.pane-resizer::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:2px;height:36px;background:#4ec9b0;border-radius:999px;opacity:.5}
+.sidebar{padding:0;display:grid;grid-template-rows:auto 1fr;min-height:0}
+.sidebar-tabs{display:flex;border-bottom:1px solid #333;background:#202123;position:sticky;top:0;z-index:2}
+.sidebar-tab{flex:1;background:transparent;border:0;color:#a0a0a0;padding:8px 6px;font:inherit;font-size:11px;letter-spacing:.03em;text-transform:uppercase;cursor:pointer}
+.sidebar-tab.active{background:#252526;color:#9cdcfe;border-bottom:2px solid #4ec9b0}
+.sidebar-view{display:none;height:100%;overflow:auto;padding:8px}
+.sidebar-view.active{display:block}
+.editor-split{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) minmax(0,1fr);gap:8px;height:100%;min-height:0}
+.editor-pane{display:grid;grid-template-rows:auto auto 1fr;min-height:0}
+.panel-meta{font-size:11px;color:#858585;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.source-panel{font-family:ui-monospace,monospace;overflow:auto;border:1px solid #333;background:#1e1e1e}
+.source-line{display:flex;line-height:1.5;padding:0 4px}
+.source-line:hover{background:#2d2d2d}
+.source-line.highlight{background:#3a3a00}
+.source-line.error{background:#5a2020}
+.gutter{width:3em;text-align:right;padding-right:8px;color:#858585;user-select:none}
+.source-code{flex:1;white-space:pre-wrap;word-break:break-all}
+.events-list{font-size:12px}
+.event-item{padding:6px 8px;border-bottom:1px solid #2d2d2d;cursor:pointer}
+.event-item:hover{background:#2d2d2d}
+.event-item.selected{background:#264f78}
+.event-meta{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#858585}
+.event-label{margin-top:2px}
+.event-badge{display:inline-block;padding:2px 6px;border-radius:999px;background:#333;color:#dcdcaa;font-size:10px}
+.event-count{color:#9cdcfe}
+.vars-table{width:100%;border-collapse:collapse;font-size:12px}
+.vars-table th,.vars-table td{padding:4px 8px;text-align:left;border-bottom:1px solid #333}
+.vars-table th{color:#858585;font-weight:500}
+.model-tree{padding-left:0;list-style:none}
+.model-tree ul{padding-left:16px;list-style:none}
+.model-tree li{padding:2px 0;cursor:pointer}
+.model-tree li:hover{color:#9cdcfe}
+.toggle{display:inline-block;width:1em;margin-right:4px;cursor:pointer;user-select:none}
+.toggle.collapsed::before{content:'▶'}
+.toggle.expanded::before{content:'▼'}
+.model-tree .collapsible-content.collapsed{display:none}
+.current-file-card{background:#252526;border:1px solid #333;border-radius:4px;padding:8px;margin-bottom:8px}
+.current-file-title{font-size:12px;color:#dcdcaa}
+.current-file-meta{font-size:11px;color:#858585;margin-top:4px;display:grid;gap:3px}
+.footer{border-top:1px solid #333;background:#1f1f1f;display:grid;grid-template-rows:auto auto}
+.footer-tools{display:flex;gap:24px;flex-wrap:wrap;padding:8px}
+.timeline{min-height:22px;background:#252526;padding:2px 8px;display:flex;align-items:center;gap:6px;font-size:11px;border-top:1px solid #333}
+.timeline-slider{flex:1;height:6px;background:#3c3c3c;border-radius:4px;position:relative;cursor:pointer}
+.timeline-cursor{position:absolute;top:-2px;width:12px;height:12px;background:#4ec9b0;border-radius:50%;margin-left:-6px}
+.error-banner{background:#5a2020;padding:10px;margin:8px;border-radius:4px}
+.error-banner .msg{color:#f48771}
+.playground{padding:8px}
+.playground input{width:100%;padding:8px;background:#3c3c3c;border:1px solid #555;color:#d4d4d4;border-radius:4px;margin-bottom:8px}
+.playground pre{background:#2d2d2d;padding:8px;overflow:auto;font-size:12px}
+.tree-root{font-size:12px;padding:0 0 6px}
+.tree-node{margin-left:0}
+.tree-row{display:flex;align-items:center;gap:4px;padding:2px 8px;min-height:22px;border-radius:0;cursor:pointer}
+.tree-row:hover{background:#2a2d2e}
+.tree-row.selected{background:#094771}
+.tree-row.folder{color:#cccccc;font-weight:500}
+.tree-row.file{color:#d4d4d4}
+.tree-row.property,.tree-row.method{color:#c8c8c8}
+.tree-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tree-meta{margin-left:auto;color:#7f848e;font-size:10px}
+.tree-children{margin-left:12px}
+.tree-children.collapsed{display:none}
+.tree-empty{color:#858585;font-size:12px;padding:0 8px 6px}
+.tree-icon{width:14px;flex:0 0 14px;display:inline-flex;align-items:center;justify-content:center;color:#7f848e;font-size:10px}
+.tree-icon svg{width:14px;height:14px;display:block}
+.tree-row.file .toggle{visibility:hidden}
+.model-badge{display:inline-block;font-size:10px;line-height:1;padding:3px 5px;border-radius:999px;background:#333;color:#dcdcaa;margin-left:6px}
+</style>
+</head>
+<body>
+<div class="layout">
+<header class="header">
+<h1>ModelHike Debug Console</h1>
+<div class="phases" id="phases"></div>
+</header>
+<div class="summary-bar" id="summaryBar"></div>
+<div class="main">
+<div class="panel left-sidebar" id="filesSidebar">
+<div class="panel-title">Generated Files</div>
+<div class="panel-subtitle" id="filesMeta">Rendered files in explorer view</div>
+<div class="tree-root" id="filesTree"></div>
+</div>
+<div class="pane-resizer" id="leftSidebarResizer" title="Drag to resize files pane"></div>
+<div class="panel" style="min-height:0">
+<div class="editor-split">
+<div class="editor-pane">
+<div class="panel-title">Template Source</div>
+<div class="panel-meta" id="sourceMeta">Select an event</div>
+<div class="source-panel" id="sourcePanel"><em>Select an event</em></div>
+</div>
+<div class="editor-pane">
+<div class="panel-title">Generated Output</div>
+<div class="panel-meta" id="generatedMeta">Select a generated file</div>
+<div class="source-panel" id="generatedPanel"><em>Select a generated file</em></div>
+</div>
+</div>
+</div>
+<div class="pane-resizer" id="rightSidebarResizer" title="Drag to resize sidebar"></div>
+<div class="panel right-sidebar sidebar">
+<div class="sidebar-tabs">
+<button class="sidebar-tab active" data-tab="trace">Trace</button>
+<button class="sidebar-tab" data-tab="variables">Variables</button>
+<button class="sidebar-tab" data-tab="models">Models</button>
+</div>
+<div class="sidebar-view active" id="traceView">
+<div class="panel-title">Current File Window</div>
+<div class="panel-subtitle" id="eventWindowMeta">Showing all events</div>
+<div id="currentFileCard"></div>
+<div class="events-list" id="eventsList"></div>
+</div>
+<div class="sidebar-view" id="variablesView">
+<div class="panel-title">Variables at this point</div>
+<div id="variableInspector"><em>Select an event</em></div>
+</div>
+<div class="sidebar-view" id="modelsView">
+<div class="panel-title">Models</div>
+<div class="panel-subtitle">Containers, modules, objects, properties, and methods</div>
+<div class="model-tree" id="modelTree"></div>
+</div>
+</div>
+</div>
+<div id="errorBanner"></div>
+<div class="footer">
+<div class="footer-tools">
+<div>
+<div class="panel-title">Live Stepping</div>
+<div class="playground" style="margin:0">
+<button id="wsConnect" disabled>Connect WebSocket</button>
+<span id="wsStatus">(Post-mortem mode; live stepping requires --debug-stepping)</span>
+</div>
+</div>
+<div style="flex:1">
+<div class="panel-title">Expression Playground</div>
+<div class="playground">
+<input type="text" id="exprInput" placeholder="e.g. {{ entity.name | lowercase }}">
+<pre id="exprResult">Result will appear here</pre>
+</div>
+</div>
+</div>
+<div class="timeline">
+<span id="eventCount">0 events</span>
+<input type="range" id="timelineSlider" min="0" max="0" value="0" class="timeline-slider" style="flex:1;height:6px;cursor:pointer">
+<span id="currentEvent">-</span>
+</div>
+</div>
+<script>
+const state={session:null,selectedIndex:0,fileWindows:[],activeSidebarTab:'trace',renderToken:0,fileTreeFilterIndex:0,lastVisibleFileCount:0};
+async function load(){
+const r=await fetch('/api/session');
+state.session=await r.json();
+state.fileWindows=buildFileWindows(state.session);
+state.fileTreeFilterIndex=state.selectedIndex;
+render();
+}
+function eventType(ev){return Object.keys(ev.event)[0];}
+function eventPayload(ev){return Object.values(ev.event)[0];}
+function baseName(path){const parts=String(path||'').split('/').filter(Boolean);return parts[parts.length-1]||path||'?';}
+function compactPath(path){
+if(!path)return'?';
+const parts=String(path).split('/').filter(Boolean);
+if(parts.length<=3)return parts.join('/');
+return parts.slice(-3).join('/');
+}
+function eventLabel(ev){
+const t=eventType(ev);
+const v=eventPayload(ev);
+if(t==='fileGenerated')return'📁 '+v.outputPath;
+if(t==='fileCopied')return'📋 '+v.outputPath;
+if(t==='controlFlow')return'🔀 '+v.condition;
+if(t==='phaseStarted')return'▶ '+v.name;
+if(t==='phaseCompleted')return'✓ '+v.name;
+if(t==='workingDirChanged')return'📂 '+v.to;
+if(t==='templateStarted')return'📄 '+v.name;
+if(t==='scriptStarted')return'📜 '+v.name;
+return t;
+}
+function getSourceLocation(ev){
+const e=ev.event;
+const v=Object.values(e)[0];
+return v&&v.source?v.source:null;
+}
+function hasValidSourceLocation(loc){
+return !!(loc&&loc.fileIdentifier&&loc.lineNo>0);
+}
+function getDisplaySourceLocation(session,currentWindow){
+const selectedEvent=session.events[state.selectedIndex];
+const selectedLocation=selectedEvent?getSourceLocation(selectedEvent):null;
+if(hasValidSourceLocation(selectedLocation))return selectedLocation;
+if(currentWindow){
+for(let index=currentWindow.startIndex;index<=currentWindow.endIndex;index+=1){
+const candidate=getSourceLocation(session.events[index]);
+if(hasValidSourceLocation(candidate))return candidate;
+}
+}
+return null;
+}
+function sourceIdentifierForWindow(currentWindow,loc){
+if(currentWindow&&currentWindow.templateName)return currentWindow.templateName;
+return loc&&loc.fileIdentifier?loc.fileIdentifier:'';
+}
+function renderCodePanel(panelId,content,highlightLine){
+const lines=String(content||'').split('\n');
+const html=lines.map((l,i)=>{
+const n=i+1;
+const cls=['source-line'];
+if(highlightLine&&n===highlightLine)cls.push('highlight');
+return'<div class="'+cls.join(' ')+'"><span class="gutter">'+n+'</span><code class="source-code">'+escapeHtml(l)+'</code></div>';
+}).join('');
+document.getElementById(panelId).innerHTML=html||'<em>Empty file</em>';
+}
+function buildFileWindows(session){
+if(!session||!session.files)return[];
+return session.files.map((file,i)=>{
+const start=file.eventIndex;
+const next=session.files[i+1];
+const end=next?Math.max(start,next.eventIndex-1):Math.max(start,session.events.length-1);
+const events=session.events.slice(start,end+1);
+return{
+...file,
+index:i,
+startIndex:start,
+endIndex:end,
+eventCount:events.length,
+controlFlowCount:events.filter(ev=>eventType(ev)==='controlFlow').length,
+templateCount:events.filter(ev=>eventType(ev)==='templateStarted').length
+};
+});
+}
+function getVisibleFileWindows(){
+return (state.fileWindows||[]).filter(win=>win.startIndex<=state.fileTreeFilterIndex);
+}
+function getCurrentFileWindow(session){
+const windows=state.fileWindows||[];
+if(!windows.length)return null;
+if(state.selectedIndex<windows[0].startIndex)return null;
+let current=windows[0];
+for(const win of windows){
+if(state.selectedIndex>=win.startIndex)current=win;
+if(state.selectedIndex>=win.startIndex&&state.selectedIndex<=win.endIndex)return win;
+}
+return current;
+}
+function renderSummaryBar(session,currentWindow){
+const pills=[
+'<span class="summary-pill">Events: '+session.events.length+'</span>',
+'<span class="summary-pill">Generated files: '+(session.files?session.files.length:0)+'</span>',
+'<span class="summary-pill">Phases: '+(session.phases?session.phases.length:0)+'</span>'
+];
+if(currentWindow){
+pills.push('<span class="summary-pill">Current file: '+escapeHtml(baseName(currentWindow.outputPath))+'</span>');
+pills.push('<span class="summary-pill">Window events: '+currentWindow.eventCount+'</span>');
+}
+document.getElementById('summaryBar').innerHTML=pills.join('');
+}
+function rootOutputPath(session){
+return String(session?.config?.outputPath||'').replace(/\\/g,'/').replace(/\/+$/,'');
+}
+function relativePathParts(path,rootPath){
+const normalized=String(path||'').replace(/\\/g,'/');
+const root=String(rootPath||'').replace(/\\/g,'/').replace(/\/+$/,'');
+let relative=normalized;
+if(root&&normalized===root)relative='';
+else if(root&&normalized.startsWith(root+'/'))relative=normalized.slice(root.length+1);
+const parts=relative.split('/').filter(Boolean);
+return parts.length?parts:[baseName(normalized)];
+}
+function buildFileTree(session,fileWindows){
+const rootPath=rootOutputPath(session);
+const root={kind:'folder',name:baseName(rootPath)||'output',children:{},isRoot:true};
+fileWindows.forEach(win=>{
+const parts=relativePathParts(win.outputPath,rootPath);
+let cursor=root;
+parts.forEach((part,idx)=>{
+const isLeaf=idx===parts.length-1;
+if(!cursor.children[part]){
+cursor.children[part]={
+kind:isLeaf?'file':'folder',
+name:part,
+children:{},
+fileWindow:null
+};
+}
+if(isLeaf){
+cursor.children[part].fileWindow=win;
+}
+cursor=cursor.children[part];
+});
+});
+return root;
+}
+function sortTreeChildren(children){
+return Object.values(children||{}).sort((a,b)=>{
+if(a.kind!==b.kind)return a.kind==='folder'?-1:1;
+return a.name.localeCompare(b.name);
+});
+}
+function fileIconSVG(){
+return '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="#c5c5c5" d="M4 1.75h5.5L13 5.25V14.5a.75.75 0 0 1-.75.75h-8.5A.75.75 0 0 1 3 14.5v-12A.75.75 0 0 1 3.75 1.75H4Zm5 .75v3h3"/></svg>';
+}
+function folderIconSVG(isOpen){
+const fill=isOpen?'#dcb67a':'#cfa25e';
+return '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="'+fill+'" d="M1.75 3.5A1.75 1.75 0 0 1 3.5 1.75h2.61c.4 0 .78.14 1.08.4l1.01.85h4.3c.97 0 1.75.78 1.75 1.75v.7H1.75V3.5Zm0 2.7h12.5v6.3c0 .97-.78 1.75-1.75 1.75H3.5a1.75 1.75 0 0 1-1.75-1.75V6.2Z"/></svg>';
+}
+function renderFileTree(currentWindow){
+const el=document.getElementById('filesTree');
+const meta=document.getElementById('filesMeta');
+const sidebar=document.getElementById('filesSidebar');
+const visibleWindows=getVisibleFileWindows();
+if(!visibleWindows.length){
+el.innerHTML='<div class="tree-empty">No generated files recorded</div>';
+meta.textContent='No files generated yet at this timeline position';
+if(sidebar&&state.lastVisibleFileCount!==0)sidebar.scrollTop=0;
+state.lastVisibleFileCount=0;
+return;
+}
+meta.textContent='Root: '+(baseName(rootOutputPath(state.session))||'output')+' · showing '+visibleWindows.length+' of '+state.fileWindows.length+' files'+(currentWindow?' · selected: '+baseName(currentWindow.outputPath):'');
+el.innerHTML='';
+const tree=buildFileTree(state.session,visibleWindows);
+renderFileTreeNode(tree,el,currentWindow,true);
+if(sidebar&&visibleWindows.length<state.lastVisibleFileCount)sidebar.scrollTop=0;
+state.lastVisibleFileCount=visibleWindows.length;
+}
+function renderFileTreeNode(node,parent,currentWindow,isRoot){
+const wrapper=document.createElement('div');
+wrapper.className='tree-node';
+const row=document.createElement('div');
+row.className='tree-row '+node.kind;
+if(node.fileWindow&&currentWindow&&node.fileWindow.index===currentWindow.index){
+row.classList.add('selected');
+}
+if(node.kind==='folder'){
+const toggle=document.createElement('span');
+toggle.className='toggle expanded';
+row.appendChild(toggle);
+const icon=document.createElement('span');
+icon.className='tree-icon';
+icon.innerHTML=folderIconSVG(true);
+row.appendChild(icon);
+const label=document.createElement('span');
+label.className='tree-label';
+label.textContent=node.name;
+row.appendChild(label);
+const children=document.createElement('div');
+children.className='tree-children';
+const syncFolderChevron=()=>{
+const isOpen=!children.classList.contains('collapsed');
+icon.innerHTML=folderIconSVG(isOpen);
+};
+toggle.onclick=(e)=>{e.stopPropagation();toggle.classList.toggle('expanded');toggle.classList.toggle('collapsed');children.classList.toggle('collapsed');syncFolderChevron();};
+row.onclick=()=>{toggle.classList.toggle('expanded');toggle.classList.toggle('collapsed');children.classList.toggle('collapsed');syncFolderChevron();};
+wrapper.appendChild(row);
+sortTreeChildren(node.children).forEach(child=>renderFileTreeNode(child,children,currentWindow,false));
+wrapper.appendChild(children);
+}else{
+const spacer=document.createElement('span');
+spacer.className='toggle';
+row.appendChild(spacer);
+const icon=document.createElement('span');
+icon.className='tree-icon';
+icon.innerHTML=fileIconSVG();
+row.appendChild(icon);
+const label=document.createElement('span');
+label.className='tree-label';
+label.textContent=node.name;
+row.appendChild(label);
+const meta=document.createElement('span');
+meta.className='tree-meta';
+meta.textContent=node.fileWindow.eventCount+' ev';
+row.appendChild(meta);
+row.onclick=()=>{state.selectedIndex=node.fileWindow.startIndex;state.activeSidebarTab='trace';render();};
+wrapper.appendChild(row);
+}
+parent.appendChild(wrapper);
+}
+function renderEventsList(session,currentWindow){
+const eventsList=document.getElementById('eventsList');
+const meta=document.getElementById('eventWindowMeta');
+let displayEvents=session.events.map((event,index)=>({event,index}));
+if(currentWindow){
+displayEvents=session.events
+.slice(currentWindow.startIndex,currentWindow.endIndex+1)
+.map((event,offset)=>({event,index:currentWindow.startIndex+offset}));
+meta.textContent='Events '+(currentWindow.startIndex+1)+'-'+(currentWindow.endIndex+1)+' for '+baseName(currentWindow.outputPath);
+}else{
+meta.textContent='Showing all events';
+}
+eventsList.innerHTML=displayEvents.map(({event,index})=>{
+const type=eventType(event);
+return'<div class="event-item'+(index===state.selectedIndex?' selected':'')+'" data-idx="'+index+'">'+
+'<div class="event-meta"><span>#'+(index+1)+'</span><span class="event-badge">'+escapeHtml(type)+'</span></div>'+
+'<div class="event-label">'+escapeHtml(eventLabel(event))+'</div>'+
+'</div>';
+}).join('');
+eventsList.querySelectorAll('.event-item').forEach(el=>{
+el.onclick=()=>{state.selectedIndex=+el.dataset.idx;render();};
+});
+}
+function renderCurrentFileCard(currentWindow){
+const el=document.getElementById('currentFileCard');
+if(!currentWindow){
+el.innerHTML='';
+return;
+}
+el.innerHTML=
+'<div class="current-file-card">'+
+'<div class="current-file-title">'+escapeHtml(currentWindow.outputPath)+'</div>'+
+'<div class="current-file-meta">'+
+'<div>Object: '+escapeHtml(currentWindow.objectName||'n/a')+'</div>'+
+'<div>Template: '+escapeHtml(currentWindow.templateName||'n/a')+'</div>'+
+'<div>Working dir: '+escapeHtml(currentWindow.workingDir||'/')+'</div>'+
+'<div>Window: events '+(currentWindow.startIndex+1)+'-'+(currentWindow.endIndex+1)+' ('+currentWindow.eventCount+' total)</div>'+
+'<div>Control flow hits: '+currentWindow.controlFlowCount+' | Templates entered: '+currentWindow.templateCount+'</div>'+
+'</div>'+
+'</div>';
+}
+function renderSidebarTabs(){
+document.querySelectorAll('.sidebar-tab').forEach(btn=>{
+btn.classList.toggle('active',btn.dataset.tab===state.activeSidebarTab);
+btn.onclick=()=>{state.activeSidebarTab=btn.dataset.tab;renderSidebarTabs();};
+});
+renderSidebarViews();
+}
+function renderSidebarViews(){
+document.getElementById('traceView').classList.toggle('active',state.activeSidebarTab==='trace');
+document.getElementById('variablesView').classList.toggle('active',state.activeSidebarTab==='variables');
+document.getElementById('modelsView').classList.toggle('active',state.activeSidebarTab==='models');
+}
+function renderVariableInspector(){
+fetch('/api/memory/'+state.selectedIndex).then(r=>r.json()).then(vars=>{
+const rows=Object.entries(vars).map(([k,v])=>'<tr><td>'+escapeHtml(k)+'</td><td>'+escapeHtml(String(v))+'</td></tr>').join('');
+document.getElementById('variableInspector').innerHTML='<table class="vars-table"><tr><th>Variable</th><th>Value</th></tr>'+rows+'</table>';
+}).catch(()=>{document.getElementById('variableInspector').innerHTML='<em>No variables</em>';});
+}
+function renderSourcePanel(session,currentWindow,token){
+const sourceMeta=document.getElementById('sourceMeta');
+const loc=getDisplaySourceLocation(session,currentWindow);
+const sourceIdentifier=sourceIdentifierForWindow(currentWindow,loc);
+if(!sourceIdentifier){
+sourceMeta.textContent='No source for this selection';
+document.getElementById('sourcePanel').innerHTML='<em>No source for this event</em>';
+return;
+}
+sourceMeta.textContent=sourceIdentifier+(loc&&loc.lineNo>0?' · line '+loc.lineNo:'');
+fetch('/api/source/'+encodeURIComponent(sourceIdentifier)).then(r=>{
+if(!r.ok)throw new Error('Source not found');
+return r.json();
+}).then(f=>{
+if(token!==state.renderToken)return;
+const highlightLine=loc&&loc.fileIdentifier===f.identifier?loc.lineNo:0;
+sourceMeta.textContent=f.identifier+(highlightLine>0?' · line '+highlightLine:'');
+renderCodePanel('sourcePanel',f.content,highlightLine);
+}).catch(()=>{
+if(token!==state.renderToken)return;
+sourceMeta.textContent=sourceIdentifier+' · missing';
+document.getElementById('sourcePanel').innerHTML='<em>Source not found</em>';
+});
+}
+function renderGeneratedPanel(currentWindow,token){
+const generatedMeta=document.getElementById('generatedMeta');
+if(!currentWindow){
+generatedMeta.textContent='No generated file selected';
+document.getElementById('generatedPanel').innerHTML='<em>Select a generated file</em>';
+return;
+}
+generatedMeta.textContent=currentWindow.outputPath;
+fetch('/api/generated-file/'+currentWindow.index).then(r=>{
+if(!r.ok)throw new Error('Generated file not found');
+return r.json();
+}).then(file=>{
+if(token!==state.renderToken)return;
+generatedMeta.textContent=file.resolvedPath||currentWindow.outputPath;
+renderCodePanel('generatedPanel',file.content,0);
+}).catch(()=>{
+if(token!==state.renderToken)return;
+generatedMeta.textContent=currentWindow.outputPath;
+document.getElementById('generatedPanel').innerHTML='<em>Generated file not found on disk</em>';
+});
+}
+function setupPaneResize(resizerId,cssVar,mode){
+const resizer=document.getElementById(resizerId);
+if(!resizer||resizer.dataset.bound==='yes')return;
+resizer.dataset.bound='yes';
+let isDragging=false;
+const onPointerMove=(e)=>{
+if(!isDragging)return;
+const minWidth=220;
+const maxWidth=Math.min(700,Math.floor(window.innerWidth*0.45));
+const nextWidth=mode==='left'
+?Math.max(minWidth,Math.min(maxWidth,e.clientX))
+:Math.max(minWidth,Math.min(maxWidth,window.innerWidth-e.clientX));
+document.documentElement.style.setProperty(cssVar,nextWidth+'px');
+};
+const stopDragging=()=>{
+if(!isDragging)return;
+isDragging=false;
+resizer.classList.remove('dragging');
+document.body.style.userSelect='';
+window.removeEventListener('pointermove',onPointerMove);
+window.removeEventListener('pointerup',stopDragging);
+};
+resizer.addEventListener('pointerdown',(e)=>{
+isDragging=true;
+resizer.classList.add('dragging');
+document.body.style.userSelect='none';
+window.addEventListener('pointermove',onPointerMove);
+window.addEventListener('pointerup',stopDragging);
+e.preventDefault();
+});
+}
+function render(){
+const s=state.session;
+if(!s)return;
+const token=++state.renderToken;
+const currentWindow=getCurrentFileWindow(s);
+setupPaneResize('leftSidebarResizer','--left-sidebar-width','left');
+setupPaneResize('rightSidebarResizer','--right-sidebar-width','right');
+document.getElementById('phases').innerHTML=s.phases.map(p=>
+'<span class="phase '+(p.success?'done':'')+'">'+p.name+'</span>'
+).join('');
+renderSummaryBar(s,currentWindow);
+renderSidebarTabs();
+document.getElementById('eventCount').textContent=s.events.length+' events across '+state.fileWindows.length+' files';
+renderEventsList(s,currentWindow);
+const ev=s.events[state.selectedIndex];
+if(ev){
+renderSourcePanel(s,currentWindow,token);
+renderVariableInspector();
+}
+renderGeneratedPanel(currentWindow,token);
+document.getElementById('currentEvent').textContent=(state.selectedIndex+1)+' / '+s.events.length+(currentWindow?' · file '+(currentWindow.index+1)+' / '+state.fileWindows.length:'');
+const slider=document.getElementById('timelineSlider');
+slider.max=Math.max(0,s.events.length-1);
+slider.value=state.selectedIndex;
+slider.oninput=()=>{state.selectedIndex=+slider.value;state.fileTreeFilterIndex=state.selectedIndex;render();};
+renderCurrentFileCard(currentWindow);
+renderFileTree(currentWindow);
+}
+function renderModelTree(session){
+const tree=document.getElementById('modelTree');
+tree.innerHTML='';
+if(!session?.model?.containers?.length){
+tree.innerHTML='<div class="tree-empty">No models loaded</div>';
+return;
+}
+session.model.containers.forEach(container=>renderModelNode({
+kind:'folder',
+label:container.givenname||container.name||'?',
+meta:container.containerType||'container',
+badge:'container',
+children:(container.modules||[]).map(moduleToNode)
+},tree));
+}
+function moduleToNode(module){
+return{
+kind:'folder',
+label:module.givenname||module.name||'?',
+meta:((module.objects||[]).length)+' objects',
+badge:'module',
+children:[
+...(module.submodules||[]).map(moduleToNode),
+...(module.objects||[]).map(objectToNode)
+]
+};
+}
+function objectToNode(object){
+return{
+kind:'folder',
+label:object.givenname||object.name||'?',
+meta:((object.properties||[]).length)+' props · '+((object.methods||[]).length)+' methods',
+badge:object.kind||'object',
+children:[
+...(object.properties||[]).map(prop=>({
+kind:'property',
+label:prop.givenname||prop.name||'?',
+meta:(prop.typeName||'?')+' '+(prop.required||''),
+badge:'prop',
+children:[]
+})),
+...(object.methods||[]).map(method=>({
+kind:'method',
+label:method.givenname||method.name||'?',
+meta:'returns '+(method.returnType||'Void'),
+badge:'method',
+children:[]
+}))
+]
+};
+}
+function renderModelNode(node,parent){
+const wrapper=document.createElement('div');
+wrapper.className='tree-node';
+const row=document.createElement('div');
+row.className='tree-row '+(node.children&&node.children.length?'folder':'file')+' '+(node.kind||'');
+const hasChildren=node.children&&node.children.length;
+if(hasChildren){
+const toggle=document.createElement('span');
+toggle.className='toggle expanded';
+row.appendChild(toggle);
+const icon=document.createElement('span');
+icon.className='tree-icon';
+icon.textContent='v';
+row.appendChild(icon);
+const label=document.createElement('span');
+label.className='tree-label';
+label.textContent=node.label;
+row.appendChild(label);
+if(node.badge){
+const badge=document.createElement('span');
+badge.className='model-badge';
+badge.textContent=node.badge;
+row.appendChild(badge);
+}
+if(node.meta){
+const meta=document.createElement('span');
+meta.className='tree-meta';
+meta.textContent=node.meta;
+row.appendChild(meta);
+}
+const children=document.createElement('div');
+children.className='tree-children';
+const sync=()=>{icon.textContent=children.classList.contains('collapsed')?'>':'v';};
+toggle.onclick=(e)=>{e.stopPropagation();toggle.classList.toggle('expanded');toggle.classList.toggle('collapsed');children.classList.toggle('collapsed');sync();};
+row.onclick=()=>{toggle.classList.toggle('expanded');toggle.classList.toggle('collapsed');children.classList.toggle('collapsed');sync();};
+wrapper.appendChild(row);
+node.children.forEach(child=>renderModelNode(child,children));
+wrapper.appendChild(children);
+}else{
+const spacer=document.createElement('span');
+spacer.className='toggle';
+row.appendChild(spacer);
+const icon=document.createElement('span');
+icon.className='tree-icon';
+icon.textContent='-';
+row.appendChild(icon);
+const label=document.createElement('span');
+label.className='tree-label';
+label.textContent=node.label;
+row.appendChild(label);
+if(node.badge){
+const badge=document.createElement('span');
+badge.className='model-badge';
+badge.textContent=node.badge;
+row.appendChild(badge);
+}
+if(node.meta){
+const meta=document.createElement('span');
+meta.className='tree-meta';
+meta.textContent=node.meta;
+row.appendChild(meta);
+}
+wrapper.appendChild(row);
+}
+parent.appendChild(wrapper);
+}
+function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+load().then(()=>{
+const s=state.session;
+renderModelTree(s);
+if(s.errors&&s.errors.length){
+document.getElementById('errorBanner').innerHTML='<div class="error-banner"><span class="msg">'+s.errors.map(e=>e.message).join('; ')+'</span></div>';
+}
+render();
+});
+document.getElementById('exprInput').onkeydown=e=>{
+if(e.key==='Enter'){
+const expr=document.getElementById('exprInput').value;
+fetch('/api/evaluate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({expression:expr,eventIndex:state.selectedIndex})})
+.then(r=>r.json()).then(d=>{
+document.getElementById('exprResult').textContent=d.error||d.result||'';
+});
+}
+};
+</script>
+</body>
+</html>

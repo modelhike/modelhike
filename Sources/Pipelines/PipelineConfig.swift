@@ -28,6 +28,12 @@ public struct PipelineConfig : OutputConfig {
     
     public var blueprints: [BlueprintFinder] = []
     
+    /// When set, all debug events are captured for the debug console. Used with `--debug` flag.
+    public var debugRecorder: (any DebugRecorder)?
+    
+    /// When set, enables breakpoint stepping. Used with `--debug` flag.
+    public var debugStepper: (any DebugStepper)?
+    
     public init() {}
 }
 
@@ -68,5 +74,7 @@ public protocol OutputConfig: Sendable {
     var localBlueprintsPath: LocalPath? {get set}
     
     var blueprints: [BlueprintFinder] {get set}
-
+    
+    var debugRecorder: (any DebugRecorder)? {get set}
+    var debugStepper: (any DebugStepper)? {get set}
 }

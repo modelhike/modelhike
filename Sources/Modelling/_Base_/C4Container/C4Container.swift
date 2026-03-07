@@ -118,6 +118,6 @@ public actor C4Container : ArtifactHolder {
 }
 
 
-public enum ContainerKind : Equatable {
+public enum ContainerKind : Equatable, Sendable {
     case unKnown, microservices, webApp, mobileApp
 }

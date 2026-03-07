@@ -3,6 +3,26 @@
         {
             "type": "swift",
             "request": "launch",
+            "args": ["--debug"],
+            "cwd": "${workspaceFolder:modelhike}",
+            "name": "DevTester: Debug Console",
+            "target": "DevTester",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug DevTester"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": ["--debug", "--debug-dev", "--no-open"],
+            "cwd": "${workspaceFolder:modelhike}",
+            "name": "DevTester: Debug Console (dev assets, no browser)",
+            "target": "DevTester",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug DevTester"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
             "args": [],
             "cwd": "${workspaceFolder:modelhike}",
             "name": "Debug DevTester",

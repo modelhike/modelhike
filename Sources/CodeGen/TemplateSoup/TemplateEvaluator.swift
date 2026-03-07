@@ -10,6 +10,11 @@ public struct TemplateEvaluator: TemplateSoupEvaluator {
 
     public func execute(template: Template, with context: GenerationContext) async throws -> String? {
         let contents = template.toString()
+        if let recorder = await context.debugRecorder {
+            let lines = contents.splitIntoLines()
+            let file = SourceFile(identifier: template.name, fullPath: nil, content: contents, lineCount: lines.count, fileType: .template)
+            await recorder.registerSourceFile(file)
+        }
         let lineparser = LineParserDuringGeneration(
             string: contents, identifier: template.name, isStatementsPrefixedWithKeyword: true,
             with: context)
@@ -24,7 +29,7 @@ public struct TemplateEvaluator: TemplateSoupEvaluator {
         let parser = TemplateSoupParser(lineParser: lineParser, context: ctx)
 
         do {
-            ctx.debugLog.templateParsingStarting()
+            ctx.debugLog.templateParsingStarting(name: await lineParser.identifier)
             try await ctx.events.onBeforeParseTemplate?(lineParser.identifier, ctx)
 
             let curLine = await lineParser.currentLine()
@@ -37,7 +42,8 @@ public struct TemplateEvaluator: TemplateSoupEvaluator {
             if let containers = try await parser.parseContainers() {
                 await ctx.debugLog.printParsedTree(for: containers)
 
-                ctx.debugLog.templateExecutionStarting()
+                let pInfo = await lineParser.currentParsedInfo(level: 0)
+                ctx.debugLog.templateExecutionStarting(name: await lineParser.identifier, pInfo: pInfo)
                 try await ctx.events.onBeforeExecuteTemplate?(lineParser.identifier, ctx)
 
                 if let body = try await containers.execute(with: ctx) {

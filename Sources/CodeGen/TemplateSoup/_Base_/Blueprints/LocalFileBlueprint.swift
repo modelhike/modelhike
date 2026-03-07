@@ -200,7 +200,7 @@ public actor LocalFileBlueprint: Blueprint {
                     {
                         
                             await templateSoup.context.debugLog.generatingFileInFolder(
-                            filename, with: actualTemplateFilename, folder: outputFolder.folder)
+                            filename, with: actualTemplateFilename, folder: outputFolder.folder, pInfo: pInfo)
 
                         let outFile = TemplateRenderedFile(filename: outputFilename, contents: renderedString, pInfo: pInfo )
                             await outputFolder.add(outFile)

@@ -82,7 +82,8 @@ public struct RenderTemplateFileStmt: LineTemplateStmt, CallStackable, CustomDeb
         //render the filename if it has an expression within '{{' and '}}'
         filename = try await ContentHandler.eval(line: filename, pInfo: pInfo) ?? filename
 
-        await ctx.debugLog.generatingFile(filename, with: fromTemplate)
+        await recordDebugFileGenerated(in: context, outputPath: filename, templateName: fromTemplate)
+        
         if let _ = try await context.fileGenerator.generateFile(filename, template: fromTemplate, with: pInfo) {
             //file generated successfully
         } else {
@@ -92,6 +93,29 @@ public struct RenderTemplateFileStmt: LineTemplateStmt, CallStackable, CustomDeb
         await ctx.popCallStack()
         
         return nil
+    }
+
+    private func recordDebugFileGenerated(
+        in context: GenerationContext,
+        outputPath: String,
+        templateName: String
+    ) async {
+        let workingDir = await context.workingDirectoryString
+        var objectName: String?
+        if let entityWrap = await context.variables["entity"] as? CodeObject_Wrap {
+            objectName = await entityWrap.item.name
+        } else if let moduleWrap = await context.variables["module"] as? C4Component_Wrap {
+            objectName = await moduleWrap.item.name
+        }
+        let vars = await context.variables.snapshot()
+        context.debugLog.captureVariablesForDebug(vars)
+        await context.debugLog.recordFileGenerated(
+            outputPath: outputPath,
+            templateName: templateName,
+            objectName: objectName,
+            workingDir: workingDir,
+            source: SourceLocation(fileIdentifier: pInfo.identifier, lineNo: pInfo.lineNo, lineContent: pInfo.line, level: pInfo.level)
+        )
     }
     
     public var debugDescription: String {

@@ -32,6 +32,9 @@ public actor GenericStmtsContainer : SoupyScriptStmtContainer {
         var str: String = ""
         
         for item in items {
+            if let stepper = await ctx.debugStepper {
+                await stepper.willExecute(item: item, ctx: ctx)
+            }
             if let result = try await item.execute(with: ctx) {
                 str += result
             }

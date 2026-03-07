@@ -26,20 +26,26 @@ public struct Pipeline: Sendable {
     public func run(using config: OutputConfig) async throws -> Bool {
         do {
             await ws.config(config)
-            
+            let recorder = config.debugRecorder
             var lastRunResult = true
-            
+
             for phase in phases {
+                await recorder?.recordPhaseStarted(name: phase.name)
                 do {
                     let success = try await phase.runIn(pipeline: self)
+                    await recorder?.recordPhaseCompleted(name: phase.name, success: success, errorMessage: nil)
                     if !success { lastRunResult = false; break }
-                    
                 } catch let err {
+                    await recorder?.recordPhaseCompleted(name: phase.name, success: false, errorMessage: String(describing: err))
                     print("❌❌ ERROR OCCURRED IN \(phase.name) Phase ❌❌")
                     throw err
                 }
             }
-            
+
+            if let recorder, await ws.model.isModelsLoaded {
+                await recorder.captureModel(await ws.model)
+            }
+
             return lastRunResult
         } catch let err {
             if let errWithPInfo = err as? ErrorWithMessageAndParsedInfo {
