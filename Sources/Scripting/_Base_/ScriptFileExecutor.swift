@@ -11,8 +11,7 @@ public actor ScriptFileExecutor: SoupyScriptExecutor {
     public func execute(script scriptFile: Script, with context: GenerationContext) async throws -> String? {
         let contents = scriptFile.toString()
         if let recorder = await context.debugRecorder {
-            let lines = contents.splitIntoLines()
-            let file = SourceFile(identifier: scriptFile.name, fullPath: nil, content: contents, lineCount: lines.count, fileType: .soupyScript)
+            let file = SourceFile(identifier: scriptFile.name, fullPath: nil, content: contents, fileType: .soupyScript)
             await recorder.registerSourceFile(file)
         }
         let lineparser = LineParserDuringGeneration(string: contents, identifier: scriptFile.name, isStatementsPrefixedWithKeyword: false, with: context)

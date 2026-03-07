@@ -11,8 +11,7 @@ public struct TemplateEvaluator: TemplateSoupEvaluator {
     public func execute(template: Template, with context: GenerationContext) async throws -> String? {
         let contents = template.toString()
         if let recorder = await context.debugRecorder {
-            let lines = contents.splitIntoLines()
-            let file = SourceFile(identifier: template.name, fullPath: nil, content: contents, lineCount: lines.count, fileType: .template)
+            let file = SourceFile(identifier: template.name, fullPath: nil, content: contents, fileType: .template)
             await recorder.registerSourceFile(file)
         }
         let lineparser = LineParserDuringGeneration(

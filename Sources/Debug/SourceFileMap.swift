@@ -10,12 +10,10 @@ public actor SourceFileMap {
     private var files: [String: SourceFile] = [:]
 
     public func register(identifier: String, content: String, fullPath: String?, fileType: SourceFileType) {
-        let lines = content.components(separatedBy: .newlines)
         let file = SourceFile(
             identifier: identifier,
             fullPath: fullPath,
             content: content,
-            lineCount: lines.count,
             fileType: fileType
         )
         files[identifier] = file
@@ -57,11 +55,11 @@ public struct SourceFile: Codable, Sendable {
     public let lineCount: Int
     public let fileType: SourceFileType
 
-    public init(identifier: String, fullPath: String?, content: String, lineCount: Int, fileType: SourceFileType) {
+    public init(identifier: String, fullPath: String?, content: String, fileType: SourceFileType) {
         self.identifier = identifier
         self.fullPath = fullPath
         self.content = content
-        self.lineCount = lineCount
+        self.lineCount = content.components(separatedBy: .newlines).count
         self.fileType = fileType
     }
 }

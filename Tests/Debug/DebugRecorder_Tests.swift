@@ -43,7 +43,7 @@ import Testing
 
     @Test func registerSourceFile() async throws {
         let recorder = DefaultDebugRecorder()
-        let file = SourceFile(identifier: "main.ss", fullPath: "/path/main.ss", content: "render-file x\nend", lineCount: 2, fileType: .soupyScript)
+        let file = SourceFile(identifier: "main.ss", fullPath: "/path/main.ss", content: "render-file x\nend", fileType: .soupyScript)
         await recorder.registerSourceFile(file)
 
         let config = PipelineConfig()
