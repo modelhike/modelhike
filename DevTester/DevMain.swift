@@ -1,11 +1,20 @@
+import Foundation
+#if os(macOS)
+import AppKit
+#endif
 import ModelHike
 
 @main
 struct Development: Sendable {
     static func main() async {
+        let isDebug = CommandLine.arguments.contains("--debug")
         do {
             try await runTemplateStr()
-            //try await runCodebaseGeneration()
+            // if isDebug {
+            //     try await runCodebaseGenerationWithDebug()
+            // } else {
+            //     try await runCodebaseGeneration()
+            // }
         } catch {
             print(error)
         }
@@ -25,6 +34,80 @@ struct Development: Sendable {
         }
     }
     
+    static func runCodebaseGenerationWithDebug() async throws {
+        let args = CommandLine.arguments
+        let port = parseDebugPort(from: args) ?? 4800
+        let devAssetsPath = parseDebugDev(from: args)
+        let noOpen = args.contains("--no-open")
+
+        let pipeline = Pipelines.codegen
+        var config = Environment.debug
+        config.containersToOutput = ["APIs"]
+
+        let recorder = DefaultDebugRecorder()
+        config.debugRecorder = recorder
+        config.debugStepper = NoOpDebugStepper()
+
+        try await pipeline.run(using: config)
+
+        let session = await recorder.session(config: config)
+        let renderedOutputs = await pipeline.state.renderedOutputRecords()
+        let server = DebugHTTPServer(
+            session: session,
+            recorder: recorder,
+            pipeline: pipeline,
+            renderedOutputs: renderedOutputs,
+            port: port,
+            devAssetsPath: devAssetsPath
+        )
+        try await server.start()
+
+        // Brief delay so the server is fully listening before opening the browser
+        try? await Task.sleep(nanoseconds: 300_000_000)
+
+        #if os(macOS)
+        if args.contains("--debug") && !noOpen {
+            let url = URL(string: "http://localhost:\(port)")!
+            let opened = openURL(url)
+            if !opened {
+                print("⚠️ Could not open browser automatically. Visit http://localhost:\(port) manually.")
+            }
+        }
+        #endif
+
+        print("✅ Pipeline complete. Debug console at http://localhost:\(port)")
+        print("Press Ctrl+C to stop the server.")
+        signal(SIGINT) { _ in exit(0) }
+        while true {
+            try await Task.sleep(nanoseconds: 1_000_000_000)
+        }
+    }
+
+    #if os(macOS)
+    private static func openURL(_ url: URL) -> Bool {
+        NSWorkspace.shared.open(url)
+    }
+    #else
+    private static func openURL(_ url: URL) -> Bool { false }
+    #endif
+
+    private static func parseDebugPort(from args: [String]) -> UInt16? {
+        for arg in args {
+            if arg.hasPrefix("--debug-port=") {
+                let value = String(arg.dropFirst("--debug-port=".count))
+                return UInt16(value)
+            }
+        }
+        return nil
+    }
+
+    private static func parseDebugDev(from args: [String]) -> String? {
+        guard args.contains("--debug-dev") else { return nil }
+        let filePath = #file
+        let devTesterDir = (filePath as NSString).deletingLastPathComponent
+        return (devTesterDir as NSString).appendingPathComponent("Assets")
+    }
+
     static func runCodebaseGeneration() async throws {
         let pipeline = Pipelines.codegen
         var config = Environment.debug
