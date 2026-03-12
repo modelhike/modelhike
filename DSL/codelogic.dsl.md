@@ -138,7 +138,37 @@ drain() : void
 ---
 ````
 
-### 3.4 Try / Catch / Finally
+### 3.4 Break / Continue
+
+`BREAK` exits the nearest enclosing `FOR` or `WHILE` loop. `CONTINUE` skips to its next iteration. Both are leaf statements with an optional label to target an outer loop.
+
+````modelhike
+findFirst(items: Item[], target: String) : Item?
+--------------------------------------------------
+|> FOR item in items
+| |> IF item.isDeleted
+| | continue
+| |> IF item.name == target
+| | return item
+return nil
+---
+````
+
+````modelhike
+processQueue(limit: Int) : void
+---------------------------------
+assign count = 0
+|> WHILE queue.hasNext
+| |> IF count >= limit
+| | break
+| call process(queue.next())
+| assign count = count + 1
+---
+````
+
+### 3.5 Try / Catch / Finally / Throw
+
+`THROW` raises an error and transfers control to the nearest enclosing `CATCH`. It is the counterpart to `TRY`/`CATCH` — without it, error-handling patterns are incomplete.
 
 ````modelhike
 saveOrder(order: Order) : Order
@@ -148,13 +178,24 @@ saveOrder(order: Order) : Order
 | return order
 |> CATCH ex: DatabaseException
 | call logger.error(ex.message)
-| return null
+| throw ServiceError(ex.message)
 |> FINALLY
 | call cleanup()
 ---
 ````
 
-### 3.5 Switch / Case
+````modelhike
+withdraw(account: Account, amount: Decimal) : void
+----------------------------------------------------
+|> IF amount <= 0
+| throw InvalidAmountError("Amount must be positive")
+|> IF account.balance < amount
+| throw InsufficientFundsError("Balance too low")
+assign account.balance = account.balance - amount
+---
+````
+
+### 3.6 Switch / Case
 
 ````modelhike
 describe(status: String) : String
@@ -169,7 +210,7 @@ describe(status: String) : String
 ---
 ````
 
-### 3.6 Compiler Directives
+### 3.7 Compiler Directives
 
 ````modelhike
 debugInfo() : String
@@ -181,6 +222,28 @@ debugInfo() : String
 |> #ENDIF
 ---
 ````
+
+### Control Flow Reference
+
+Statement | Syntax | Kind | Description |
+--------- | ------ | ---- | ----------- |
+`if` | `\|> IF condition` | Block | Conditional branch |
+`elseif` | `\|> ELSEIF condition` | Block | Else-if branch |
+`else` | `\|> ELSE` | Block | Else branch |
+`for` | `\|> FOR item in collection` | Block | Iteration over a collection |
+`while` | `\|> WHILE condition` | Block | Conditional loop |
+`break` | `\| BREAK [label]` | Leaf | Exit the nearest (or labelled) loop |
+`continue` | `\| CONTINUE [label]` | Leaf | Skip to next iteration |
+`try` | `\|> TRY` | Block | Protected block |
+`catch` | `\|> CATCH var[:Type]` | Block | Error handler |
+`finally` | `\|> FINALLY` | Block | Always-run cleanup block |
+`throw` | `\| THROW expression` | Leaf | Raise an error |
+`switch` | `\|> SWITCH subject` | Block | Multi-branch switch |
+`case` | `\|> CASE value` | Block | Switch branch |
+`default` | `\|> DEFAULT` | Block | Default switch branch |
+`#if` | `\|> #IF symbol` | Block | Conditional compilation |
+`#else` | `\|> #ELSE` | Block | Else directive |
+`#endif` | `\|> #ENDIF` | Block | End directive |
 
 ---
 
@@ -336,6 +399,44 @@ return results
 ---
 ````
 
+### 6.7 Database Environment (Session Settings)
+
+`DB-ENV` is a leaf statement for database session-level configuration directives — settings that affect how the connection or query engine behaves but are not executable logic steps (e.g. `SET NOCOUNT ON`, `SET TRANSACTION ISOLATION LEVEL`, `SET IDENTITY_INSERT`).
+
+Blueprints access `node.setting` to emit the appropriate target-language equivalent: a connection property, a Spring `@Transactional` attribute, a JDBC `setAutoCommit`, etc. This makes them structurally distinct from `RAW` so blueprints can process them predictably.
+
+````modelhike
+processOrders() : void
+-----------------------
+| DB-ENV SET NOCOUNT ON
+| DB-ENV SET TRANSACTION ISOLATION LEVEL READ COMMITTED
+|> DB Orders
+| |> WHERE o -> o.status == "PENDING"
+| |> TO-LIST
+| |> LET pendingOrders = _
+---
+````
+
+````modelhike
+bulkInsert(rows: Row[]) : void
+---------------------------------
+| DB-ENV SET IDENTITY_INSERT Orders ON
+|> FOR row in rows
+| |> DB-INSERT Orders -> row
+| DB-ENV SET IDENTITY_INSERT Orders OFF
+---
+````
+
+**Common settings:**
+
+| SQL Setting | Expression value |
+|-------------|-----------------|
+| `SET NOCOUNT ON/OFF` | `SET NOCOUNT ON` |
+| `SET TRANSACTION ISOLATION LEVEL ...` | `SET TRANSACTION ISOLATION LEVEL READ COMMITTED` |
+| `SET IDENTITY_INSERT table ON/OFF` | `SET IDENTITY_INSERT Orders ON` |
+| `SET ANSI_NULLS ON/OFF` | `SET ANSI_NULLS ON` |
+| `SET QUOTED_IDENTIFIER ON/OFF` | `SET QUOTED_IDENTIFIER ON` |
+
 ### DB Statement Reference
 
 Statement | Syntax |
@@ -359,6 +460,7 @@ Statement | Syntax |
 `params` | `\|> PARAMS` (block; children are `key = value` pairs) |
 `sql` | `\|> SQL` (block; children are raw SQL lines) |
 `db-raw` | `\|> DB-RAW connectionName` |
+`db-env` | `\| DB-ENV setting` |
 
 ---
 
@@ -452,9 +554,47 @@ Statement | Syntax | Kind | Description |
 
 ---
 
-## 8. HTTP / API Statements
+## 8. Needs-Review Annotation
 
-### 7.1 REST
+`NEEDS-REVIEW` is a block opener that **flags a statement requiring manual human attention**. It is used whenever automatic conversion is not possible — for example, unstructured control flow (`GOTO`), absolute-time waits (`WAITFOR TIME`), or any construct that has no clean structural equivalent.
+
+- The **expression** (after `NEEDS-REVIEW`) is a short reason label — e.g. `GOTO`, `WAITFOR TIME`, `UNSUPPORTED SYNTAX`.
+- The **children** at depth+1 preserve the original source lines verbatim. Nothing is lost.
+- Blueprints access `node.reason` and `node.originalLines` to emit a TODO comment, a compile-time warning, an assertion, or a highlighted annotation — making these visually distinct from silent `RAW` fallbacks.
+
+````modelhike
+complexProc() : void
+---------------------
+|> NEEDS-REVIEW GOTO
+| GOTO error_handler
+|> NEEDS-REVIEW LABEL
+| error_handler:
+|> NEEDS-REVIEW WAITFOR TIME
+| WAITFOR TIME '09:00:00'
+---
+````
+
+Unlike `RAW`, which is a silent escape hatch, `NEEDS-REVIEW` communicates **intent** — a blueprint knows it should surface these prominently rather than silently emit the raw text.
+
+### Common reason labels (from SQL conversion)
+
+| Reason | Trigger |
+|--------|---------|
+| `GOTO` | `GOTO label` statement — unstructured jump |
+| `LABEL` | `label:` definition — GOTO target |
+| `WAITFOR TIME` | `WAITFOR TIME 'hh:mm:ss'` — absolute-time wait |
+| `UNSUPPORTED` | Any other unrecognised construct |
+
+### Needs-Review Reference
+
+Statement | Syntax | Kind | Notes |
+--------- | ------ | ---- | ----- |
+`needs-review` | `\|> NEEDS-REVIEW reason` | Block | Children are the preserved original lines; `reason` is a short label |
+
+
+## 9. HTTP / API Statements
+
+### 9.1 REST
 
 ````modelhike
 fetchUser(userId: Id) : User
@@ -486,7 +626,7 @@ return payment
 ---
 ````
 
-### 7.2 GraphQL
+### 9.2 GraphQL
 
 ````modelhike
 getUserGraph(userId: Id) : User
@@ -505,7 +645,7 @@ return user
 ---
 ````
 
-### 7.3 gRPC
+### 9.3 gRPC
 
 ````modelhike
 lookupUser(userId: Id) : User
@@ -520,7 +660,7 @@ return user
 ---
 ````
 
-### 7.4 Raw HTTP (Fallback)
+### 9.4 Raw HTTP (Fallback)
 
 ````modelhike
 legacyCall() : any
@@ -553,7 +693,7 @@ Statement | Syntax |
 
 ---
 
-## 9. Full Example
+## 10. Full Example
 
 ````modelhike
 === Order Service ===
@@ -599,7 +739,7 @@ return user
 
 ---
 
-## 10. How It Maps to the Domain Model
+## 11. How It Maps to the Domain Model
 
 DSL element | Swift type |
 ----------- | ---------- |

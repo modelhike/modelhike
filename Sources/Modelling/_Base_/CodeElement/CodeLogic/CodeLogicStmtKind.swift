@@ -20,9 +20,12 @@ public enum CodeLogicStmtKind: String, Sendable, Equatable {
     case `else` = "else"
     case `for`  = "for"
     case `while` = "while"
+    case `break` = "break"
+    case `continue` = "continue"
     case `try`  = "try"
     case `catch` = "catch"
     case `finally` = "finally"
+    case `throw` = "throw"
     case `switch` = "switch"
     case `case` = "case"
     case `default` = "default"
@@ -76,6 +79,16 @@ public enum CodeLogicStmtKind: String, Sendable, Equatable {
     case savepoint   = "savepoint"
     case commit      = "commit"
     case rollback    = "rollback"
+
+    // MARK: Database session / environment
+    /// `db-env> setting` — a database session-level configuration directive (e.g. SET NOCOUNT ON,
+    /// SET TRANSACTION ISOLATION LEVEL). Not executable code logic — affects connection behavior.
+    case dbEnv = "db-env"
+
+    // MARK: Review annotation
+    /// `needs-review> reason` — flags a statement that cannot be automatically converted and
+    /// requires a human to decide the correct equivalent. Children preserve the original form.
+    case needsReview = "needs-review"
 
     // MARK: HTTP / API
     case http       = "http"
@@ -136,6 +149,7 @@ public enum CodeLogicStmtKind: String, Sendable, Equatable {
              .match, .when,
              .db, .dbUpdate, .dbProcCall, .dbRaw,
              .transaction, .savepoint,
+             .needsReview,
              .http, .path, .query, .headers, .body,
              .httpGraphQL, .variables,
              .httpRaw,

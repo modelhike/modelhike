@@ -51,9 +51,15 @@ extension CodeLogicStmt {
         case elseBranch(IfNode.ElseNode)
         case forLoop(ForLoopNode)
         case whileLoop(WhileNode)
+        /// `break` — exits the nearest enclosing FOR/WHILE loop.
+        case breakStmt(BreakNode)
+        /// `continue` — skips to the next iteration of the nearest enclosing FOR/WHILE loop.
+        case continueStmt(ContinueNode)
         case tryBlock(TryNode)
         case catchClause(TryNode.CatchNode)
         case finallyBlock(TryNode.FinallyNode)
+        /// `throw expression` — raises an error; the counterpart to TRY/CATCH.
+        case throwStmt(ThrowNode)
         case switchStmt(SwitchNode)
         case caseClause(SwitchNode.CaseNode)
         case defaultCase(SwitchNode.DefaultNode)
@@ -150,6 +156,14 @@ extension CodeLogicStmt {
         /// `rollback [name]` — leaf; rolls back the current transaction, or to a named savepoint.
         case rollback(RollbackNode)
 
+        // MARK: Database environment
+        /// `db-env> setting` — leaf; a session-level database configuration directive.
+        case dbEnv(DbEnvNode)
+
+        // MARK: Review annotation
+        /// `needs-review> reason` — block opener; children preserve the original unported form.
+        case needsReview(NeedsReviewNode)
+
         // MARK: Annotation
         /// Owns: parsed `lines: [String]` from children
         case note(HttpRawNode.NoteNode)
@@ -166,6 +180,11 @@ extension CodeLogicStmt {
     public struct ForLoopNode: Sendable  { public let item: String; public let collection: String }
     public struct WhileNode: Sendable    { public let condition: String }
 
+    /// `| BREAK` — exits the nearest enclosing loop. Optional label for targeting an outer loop.
+    public struct BreakNode: Sendable    { public let label: String?; public init(label: String? = nil) { self.label = label } }
+    /// `| CONTINUE` — skips to the next iteration. Optional label for targeting an outer loop.
+    public struct ContinueNode: Sendable { public let label: String?; public init(label: String? = nil) { self.label = label } }
+
     public struct TryNode: Sendable {
         public init() {}
 
@@ -173,6 +192,9 @@ extension CodeLogicStmt {
         public struct CatchNode: Sendable   { public let variable: String; public let type: String? }
         public struct FinallyNode: Sendable { public init() {} }
     }
+
+    /// `| THROW expression` — raises an error; the counterpart to TRY/CATCH.
+    public struct ThrowNode: Sendable { public let expression: String }
 
     public struct IfNode: Sendable {
         public let condition: String
@@ -832,6 +854,46 @@ extension CodeLogicStmt {
     }
 }
 
+// MARK: - Database environment node
+
+extension CodeLogicStmt {
+
+    /// `| DB-ENV setting` — a database session-level configuration directive that affects
+    /// connection/query behavior (e.g. `SET NOCOUNT ON`, `SET TRANSACTION ISOLATION LEVEL READ COMMITTED`).
+    /// Not executable logic — emitted as an environment setup call by blueprints.
+    public struct DbEnvNode: Sendable {
+        public let setting: String
+        public init(setting: String) { self.setting = setting }
+    }
+}
+
+// MARK: - Needs-review node
+
+extension CodeLogicStmt {
+
+    /// `|> NEEDS-REVIEW reason` — flags a statement that cannot be automatically converted and
+    /// requires a human to determine the correct equivalent. Children at depth+1 preserve the
+    /// original form verbatim so no information is lost.
+    public struct NeedsReviewNode: Sendable {
+        /// Short reason string describing why review is needed (e.g. "GOTO", "WAITFOR TIME").
+        public let reason: String
+        /// Preserved original lines from depth+1 children.
+        public let originalLines: [String]
+
+        public init(reason: String, originalLines: [String] = []) {
+            self.reason = reason
+            self.originalLines = originalLines
+        }
+
+        static func parse(reason: String, from children: [CodeLogicStmt]) -> NeedsReviewNode {
+            NeedsReviewNode(
+                reason: reason,
+                originalLines: children.compactMap { $0.expression.blankToNil }
+            )
+        }
+    }
+}
+
 // MARK: - Fallback node
 
 extension CodeLogicStmt {
@@ -856,12 +918,15 @@ extension CodeLogicStmt.Node {
         case .for:
             let p = expression.slicing(around: " in ")
             return .forLoop(.init(item: p.lhs, collection: p.rhs))
-        case .while:         return .whileLoop(.init(condition: expression))
-        case .try:    return .tryBlock(.init())
+        case .while:    return .whileLoop(.init(condition: expression))
+        case .break:    return .breakStmt(.init(label: expression.blankToNil))
+        case .continue: return .continueStmt(.init(label: expression.blankToNil))
+        case .try:      return .tryBlock(.init())
         case .catch:
             let p = expression.slicing(around: ":")
             return .catchClause(.init(variable: p.lhs, type: p.rhs.blankToNil))
-        case .finally: return .finallyBlock(.init())
+        case .finally:  return .finallyBlock(.init())
+        case .throw:    return .throwStmt(.init(expression: expression))
         case .switch:  return .switchStmt(.init(subject: expression))
         case .case:    return .caseClause(.init(value: expression))
         case .default: return .defaultCase(.init())
@@ -957,6 +1022,12 @@ extension CodeLogicStmt.Node {
         case .savepoint:   return .savepoint(.init(name: expression))
         case .commit:      return .commit(.init(name: expression.blankToNil))
         case .rollback:    return .rollback(.init(name: expression.blankToNil))
+
+        // MARK: Database environment
+        case .dbEnv: return .dbEnv(.init(setting: expression))
+
+        // MARK: Review annotation
+        case .needsReview: return .needsReview(CodeLogicStmt.NeedsReviewNode.parse(reason: expression, from: children))
 
         // MARK: Annotation
         case .note: return .note(CodeLogicStmt.HttpRawNode.NoteNode.parse(content: expression, from: children))
