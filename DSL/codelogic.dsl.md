@@ -362,7 +362,97 @@ Statement | Syntax |
 
 ---
 
-## 7. HTTP / API Statements
+## 7. Transaction Control
+
+### 7.1 Simple Transaction
+
+`TRANSACTION` is a block opener — children at depth+1 are the transactional statements. An optional name identifies the transaction.
+
+````modelhike
+transferFunds(fromId: Id, toId: Id, amount: Decimal) : void
+-------------------------------------------------------------
+|> TRANSACTION transferFunds
+| |> DB-RAW connection
+| | |> SQL
+| | | UPDATE Accounts SET Balance = Balance - @amount WHERE AccountID = @fromId
+| | |> PARAMS
+| | | amount = amount
+| | | fromId = fromId
+| |> DB-RAW connection
+| | |> SQL
+| | | UPDATE Accounts SET Balance = Balance + @amount WHERE AccountID = @toId
+| | |> PARAMS
+| | | amount = amount
+| | | toId = toId
+| commit
+---
+````
+
+### 7.2 Savepoints
+
+`SAVEPOINT` is a block opener that marks a restore point inside a transaction. `ROLLBACK savepointName` undoes only the savepoint-scoped statements, while `ROLLBACK` (no name) undoes the entire transaction.
+
+````modelhike
+complexUpdate() : Int
+----------------------
+|> TRANSACTION
+| |> DB-RAW connection
+| | |> SQL
+| | | UPDATE master_table SET status = 'processing'
+| |> SAVEPOINT afterMasterUpdate
+| | |> DB-RAW connection
+| | | |> SQL
+| | | | UPDATE detail_table SET processed = 1
+| | |> SAVEPOINT afterDetailUpdate
+| | | |> DB-RAW connection
+| | | | |> SQL
+| | | | | UPDATE summary_table SET last_update = GETDATE()
+| commit
+---
+````
+
+When an error occurs, `ROLLBACK` targets a specific savepoint or the entire transaction:
+
+````modelhike
+|> CATCH error
+| rollback afterDetailUpdate
+| call log(error.message)
+````
+
+### 7.3 Transaction with Error Handling
+
+Combine `TRANSACTION` with `TRY`/`CATCH` to express the common "begin-work-commit / rollback-on-error" pattern:
+
+````modelhike
+safeTransfer(fromId: Id, toId: Id, amount: Decimal) : void
+------------------------------------------------------------
+|> TRY
+| |> TRANSACTION
+| | |> DB-RAW connection
+| | | |> SQL
+| | | | UPDATE Accounts SET Balance = Balance - @amount WHERE AccountID = @fromId
+| | | |> PARAMS
+| | | | amount = amount
+| | | | fromId = fromId
+| | commit
+|> CATCH error
+| rollback
+| raw throw TransferError(error.message)
+---
+````
+
+### Transaction Statement Reference
+
+Statement | Syntax | Kind | Description |
+--------- | ------ | ---- | ----------- |
+`transaction` | `\|> TRANSACTION [name]` | Block | Wraps an atomic scope of statements |
+`savepoint` | `\|> SAVEPOINT name` | Block | Marks a restore point; children are the scoped statements |
+`commit` | `\| COMMIT [name]` | Leaf | Commits the current (or named) transaction |
+`rollback` | `\| ROLLBACK [name]` | Leaf | Rolls back the transaction, or to a named savepoint |
+
+---
+
+## 8. HTTP / API Statements
 
 ### 7.1 REST
 
@@ -463,7 +553,7 @@ Statement | Syntax |
 
 ---
 
-## 8. Full Example
+## 9. Full Example
 
 ````modelhike
 === Order Service ===
@@ -509,7 +599,7 @@ return user
 
 ---
 
-## 9. How It Maps to the Domain Model
+## 10. How It Maps to the Domain Model
 
 DSL element | Swift type |
 ----------- | ---------- |

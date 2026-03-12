@@ -71,6 +71,12 @@ public enum CodeLogicStmtKind: String, Sendable, Equatable {
     case sql       = "sql"
     case dbRaw     = "db-raw"
 
+    // MARK: Transaction control
+    case transaction = "transaction"
+    case savepoint   = "savepoint"
+    case commit      = "commit"
+    case rollback    = "rollback"
+
     // MARK: HTTP / API
     case http       = "http"
     case path       = "path"
@@ -129,6 +135,7 @@ public enum CodeLogicStmtKind: String, Sendable, Equatable {
              .pipe, .filter, .select, .map, .reduce, .`let`,
              .match, .when,
              .db, .dbUpdate, .dbProcCall, .dbRaw,
+             .transaction, .savepoint,
              .http, .path, .query, .headers, .body,
              .httpGraphQL, .variables,
              .httpRaw,

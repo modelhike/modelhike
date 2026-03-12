@@ -140,6 +140,16 @@ extension CodeLogicStmt {
         /// Owns: parsed `fields: [AssignNode.FieldPair]`
         case grpcMetadata(GrpcNode.MetadataNode)
 
+        // MARK: Transaction control
+        /// `transaction> [name]` — block opener; children are the transactional statements.
+        case transaction(TransactionNode)
+        /// `savepoint> name` — block opener; children are the savepoint-scoped statements.
+        case savepoint(SavepointNode)
+        /// `commit [name]` — leaf; commits the current transaction (or named transaction).
+        case commit(CommitNode)
+        /// `rollback [name]` — leaf; rolls back the current transaction, or to a named savepoint.
+        case rollback(RollbackNode)
+
         // MARK: Annotation
         /// Owns: parsed `lines: [String]` from children
         case note(HttpRawNode.NoteNode)
@@ -791,6 +801,37 @@ extension CodeLogicStmt {
     }
 }
 
+// MARK: - Transaction control nodes
+
+extension CodeLogicStmt {
+
+    /// `|> TRANSACTION [name]` — wraps a scope of statements that execute atomically.
+    /// Children at depth+1 are the body of the transaction.
+    public struct TransactionNode: Sendable {
+        public let name: String?
+        public init(name: String? = nil) { self.name = name }
+    }
+
+    /// `|> SAVEPOINT name` — marks a restore point inside a transaction. Children at depth+1
+    /// are the statements covered by this savepoint; a `ROLLBACK name` undoes only these.
+    public struct SavepointNode: Sendable {
+        public let name: String
+        public init(name: String) { self.name = name }
+    }
+
+    /// `| COMMIT [name]` — commits the current (or named) transaction.
+    public struct CommitNode: Sendable {
+        public let name: String?
+        public init(name: String? = nil) { self.name = name }
+    }
+
+    /// `| ROLLBACK [name]` — rolls back the current transaction, or to a named savepoint.
+    public struct RollbackNode: Sendable {
+        public let name: String?
+        public init(name: String? = nil) { self.name = name }
+    }
+}
+
 // MARK: - Fallback node
 
 extension CodeLogicStmt {
@@ -910,6 +951,12 @@ extension CodeLogicStmt.Node {
             return .grpc(CodeLogicStmt.GrpcNode.parse(service: svc, rpcMethod: method, from: children))
         case .payload:  return .grpcPayload(CodeLogicStmt.GrpcNode.PayloadNode.parse(from: children))
         case .metadata: return .grpcMetadata(CodeLogicStmt.GrpcNode.MetadataNode.parse(from: children))
+
+        // MARK: Transaction control
+        case .transaction: return .transaction(.init(name: expression.blankToNil))
+        case .savepoint:   return .savepoint(.init(name: expression))
+        case .commit:      return .commit(.init(name: expression.blankToNil))
+        case .rollback:    return .rollback(.init(name: expression.blankToNil))
 
         // MARK: Annotation
         case .note: return .note(CodeLogicStmt.HttpRawNode.NoteNode.parse(content: expression, from: children))
