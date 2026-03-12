@@ -17,15 +17,15 @@ import Foundation
 /// Example DSL (inside a class body after a `~` method declaration):
 /// ```
 /// ~ processOrder(orderId: Id) : Order
-/// |db> Orders
-/// |where> o -> o.id == orderId
-/// |first>
-/// |let> order = _
-/// |if> order.status == "PENDING"
-/// ||assign order.status = "PROCESSING"
-/// ||db-update> Orders -> o.id == orderId
-/// |||set> status = order.status
-/// |return order
+/// |> DB Orders
+/// | |> WHERE o -> o.id == orderId
+/// | |> FIRST
+/// | |> LET order = _
+/// |> IF order.status == "PENDING"
+/// | assign order.status = "PROCESSING"
+/// | |> DB-UPDATE Orders -> o.id == orderId
+/// | | |> SET status = order.status
+/// |> RETURN order
 /// ```
 public struct CodeLogic: Sendable {
     public var statements: [CodeLogicStmt]
