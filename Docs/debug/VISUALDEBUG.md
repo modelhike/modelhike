@@ -2,7 +2,7 @@
 
 This document explains how the current ModelHike visual debugging system works, how its pieces fit together, and what is implemented versus scaffolded.
 
-It describes the system as it exists today, not just the original brainstorm in `Docs/debug-console-brainstorm.md`.
+It describes the system as it exists today, not just the original brainstorm in `.ai/brainstorm/debug-console-brainstorm.md`.
 
 ## Purpose
 

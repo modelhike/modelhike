@@ -17,11 +17,12 @@
 9. [Blueprint System](#9-blueprint-system)
 10. [Workspace, Context, and Sandbox](#10-workspace-context-and-sandbox)
 11. [DevTester Executable](#11-devtester-executable)
-12. [Tests](#12-tests)
-13. [Playground](#13-playground)
-14. [Current Project State & Known Gaps](#14-current-project-state--known-gaps)
-15. [Key Conventions & Patterns](#15-key-conventions--patterns)
-16. [Glossary](#16-glossary)
+12. [Visual Debugging](#12-visual-debugging)
+13. [Tests](#13-tests)
+14. [Playground](#14-playground)
+15. [Current Project State & Known Gaps](#15-current-project-state--known-gaps)
+16. [Key Conventions & Patterns](#16-key-conventions--patterns)
+17. [Glossary](#17-glossary)
 
 ---
 
@@ -47,12 +48,16 @@ modelhike/
 ├── Package.swift               # Swift Package definition
 ├── README.md                   # Public-facing docs (aspirational; some features not yet implemented)
 ├── AGENTS.md                   # This file — living project analysis
+├── .ai/
+│   └── brainstorm/
+│       └── debug-console-brainstorm.md  # Archived design/brainstorm notes for AI-assisted doc work
 ├── CREDITS.md
 ├── LICENSE                     # MIT
 ├── SECURITY.md
 │
 ├── Sources/                    # Main Swift library (target: ModelHike)
 │   ├── _Common_/               # Foundation utilities, file I/O, extensions
+│   ├── Debug/                  # DebugRecorder, DebugSession, DebugEvent, RenderedOutputSnapshot, etc.
 │   ├── Modelling/              # DSL parser + in-memory domain model
 │   ├── Scripting/              # SoupyScript template scripting engine
 │   ├── CodeGen/                # TemplateSoup renderer + Blueprint loading
@@ -60,8 +65,10 @@ modelhike/
 │   └── Pipelines/              # 6-phase pipeline orchestrator
 │
 ├── DevTester/                  # Executable target for development runs
-│   ├── DevMain.swift           # Entry point; currently runs full codegen pipeline
-│   └── Environment.swift       # Hardcoded dev/prod path configs
+│   ├── DevMain.swift           # Entry point; runs codegen pipeline (or debug mode with --debug)
+│   ├── Environment.swift       # Hardcoded dev/prod path configs
+│   ├── DebugServer/            # DebugHTTPServer, HTTPTypes
+│   └── Assets/                 # debug-console.html (browser UI)
 │
 ├── Tests/                      # Test suites
 │
@@ -72,6 +79,9 @@ modelhike/
 ├── Docs/
 │   ├── documentation.md        # Product documentation outline (partially written)
 │   ├── ADRs.md                 # Architecture Decision Records (minimal)
+│   ├── debug/
+│   │   ├── DEBUGGING.md        # Developer debugging guide: flags, hooks, in-template debugging
+│   │   └── VISUALDEBUG.md      # Visual debugging system: architecture, data flow, troubleshooting
 │   ├── modelHike.brand.md      # Brand guide
 │   ├── quickstart.md           # Quickstart guide
 │   └── old-detailed-readme.md  # Archived old README
@@ -721,9 +731,25 @@ Defines two `OutputConfig` presets:
 
 > **Note:** Both paths are hardcoded relative to `~/Documents/` using `SystemFolder.documents.path`. The `debug` config points outside the repo root to a sibling `modelhike-blueprints` repository that must be checked out separately.
 
+### Visual debugging (`--debug`)
+
+When `--debug` is passed, `DevMain` switches to the visual debugging flow instead of the normal code-generation run. It captures a structured debug session, starts the local debug server, and can open the browser UI for inspection.
+
+**Flags:** `--debug`, `--debug-port=<port>`, `--debug-dev` (serve HTML from Assets), `--no-open`
+
+**Full reference:** [`Docs/debug/VISUALDEBUG.md`](Docs/debug/VISUALDEBUG.md) — runtime flow, architecture, integration inventory, event emission matrix, and troubleshooting.
+
 ---
 
-## 12. Tests
+## 12. Visual Debugging
+
+ModelHike includes a browser-based visual debugger for pipeline runs. The current default experience is post-mortem inspection backed by a structured debug session, local debug server, and single-page browser UI.
+
+Live stepping is scaffolded in the library but not enabled by default in `DevTester`. See [`Docs/debug/VISUALDEBUG.md`](Docs/debug/VISUALDEBUG.md) for the full architecture, data flow, implementation inventory, limitations, and troubleshooting guidance.
+
+---
+
+## 13. Tests
 
 **Path:** `Tests/`
 
@@ -749,7 +775,7 @@ Tests end-to-end template string rendering:
 
 ---
 
-## 13. Playground
+## 14. Playground
 
 **Path:** `_Playground/` — **gitignored; local development testing only. Contents are never committed and are not documented here.**
 
@@ -757,7 +783,7 @@ Used by `DevTester` (via `Environment.debug`) to run the full pipeline against r
 
 ---
 
-## 14. Current Project State & Known Gaps
+## 15. Current Project State & Known Gaps
 
 ### What Is Working
 
@@ -773,6 +799,7 @@ Used by `DevTester` (via `Environment.debug`) to run the full pipeline against r
 - ✅ Expression evaluator (boolean/arithmetic/comparison)
 - ✅ Scoped variable isolation (snapshot stack)
 - ✅ Debug hooks (event system in `CodeGenerationEvents`)
+- ✅ Visual debugger — post-mortem browser UI for pipeline runs (`swift run DevTester --debug`); see [Docs/debug/VISUALDEBUG.md](Docs/debug/VISUALDEBUG.md)
 
 ### What Is Hardcoded / Needs Refactoring
 
@@ -818,7 +845,7 @@ No tests for:
 
 ---
 
-## 15. Key Conventions & Patterns
+## 16. Key Conventions & Patterns
 
 ### Naming Conventions
 
@@ -876,7 +903,7 @@ No tests for:
 
 ---
 
-## 16. Glossary
+## 17. Glossary
 
 | Term | Definition |
 |---|---|
@@ -904,3 +931,4 @@ No tests for:
 | **MethodObject** | A method member inside a class (prefix `~`). Has `parameters`, `returnType`, and `body`. |
 | **backend attribute** | `(backend)` on a property or field — marks it as server-side only, excluded from client schemas by blueprints that honour this convention. |
 | **MappingAnnotation** | The `@list-api` annotation value type: a list of `(key, value)` pairs expressed as `prop -> prop.sub; prop2 -> prop2`. |
+| **Visual Debugger** | Post-mortem browser-based inspection of pipeline runs. Run `swift run DevTester --debug`; captures events, source, variables, rendered output. Full docs in [Docs/debug/VISUALDEBUG.md](Docs/debug/VISUALDEBUG.md). |

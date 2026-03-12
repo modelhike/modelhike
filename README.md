@@ -40,6 +40,7 @@ Result: AI accelerates the unknowns, but every production build is template-driv
 - [Zero-Boilerplate Tests](#zero-boilerplate-tests)
 - [ADR Scaffold](#adr-scaffold-architecture-decision-records)
 - [System Requirements](#system-requirements)
+- [Visual Debugging](#visual-debugging-developers)
 - [Glossary](#glossary)
 
 ---
@@ -408,6 +409,25 @@ it('POST /payments should create a payment', async () => {
 
 ---
 
+## Visual Debugging (Developers)
+
+When developing the ModelHike pipeline or blueprints, you can run the codegen with a **visual debugger** — a browser-based UI that lets you inspect phases, generated files, template/script source, variables, and rendered output.
+
+```bash
+swift run DevTester --debug
+```
+
+| Flag | Description |
+|------|-------------|
+| `--debug` | Enable debug mode; starts HTTP server and opens browser after run |
+| `--debug-port=<port>` | HTTP server port (default: 8765) |
+| `--debug-dev` | Serve `debug-console.html` from `DevTester/Assets` (for live edits) |
+| `--no-open` | Do not auto-open the browser |
+
+The system is post-mortem: the pipeline runs to completion first, then you browse the captured session. See [Docs/debug/VISUALDEBUG.md](Docs/debug/VISUALDEBUG.md) for architecture, data flow, and troubleshooting, and [Docs/debug/DEBUGGING.md](Docs/debug/DEBUGGING.md) for the broader developer debugging guide.
+
+---
+
 ## Troubleshooting
 | Issue | Command |
 |-------|---------|
@@ -415,6 +435,7 @@ it('POST /payments should create a payment', async () => {
 | Regenerate artifacts     | `modelhike generate` |
 | Health check             | `modelhike doctor`   |
 | Template errors          | `modelhike template validate` |
+| Inspect pipeline run     | `swift run DevTester --debug` |
 
 ---
 
