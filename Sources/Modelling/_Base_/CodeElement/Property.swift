@@ -9,6 +9,7 @@ import Foundation
 public actor Property : CodeMember {
     public let pInfo: ParsedInfo
     public let attribs = Attributes()
+    public let constraints = Attributes()
     public let tags = Tags()
     
     public var name: String
@@ -19,6 +20,8 @@ public actor Property : CodeMember {
     public var isSearchable: Bool = false
     public var required: RequiredKind = .no
     public var arrayMultiplicity: MultiplicityKind = .noBounds
+    public private(set) var defaultValue: String?
+    public private(set) var validValueSet: String?
     public var comment: String?
     
     public static func parse(pInfo: ParsedInfo) async throws -> Property? {
@@ -29,12 +32,34 @@ public actor Property : CodeMember {
         
         guard let match = line.wholeMatch(of: ModelRegEx.property_Capturing)                                                    else { return nil }
         
-        let (_, propName, typeName, typeMultiplicity, attributeString, _, tagString) = match.output
+        let (
+            _,
+            propName,
+            typeName,
+            typeMultiplicity,
+            validValueSet,
+            defaultValue,
+            constraintString,
+            attributeString,
+            tagString
+        ) = match.output
         
         let givenName = propName.trim()
 
         let prop = Property(givenName, pInfo: pInfo)
         
+        if let defaultValue = defaultValue {
+            await prop.setDefaultValue(defaultValue)
+        }
+
+        if let validValueSet = validValueSet {
+            await prop.setValidValueSet(validValueSet)
+        }
+
+        if let constraintString = constraintString {
+            await ParserUtil.populateConstraints(for: prop, from: constraintString)
+        }
+
         //check if has attributes
         if let attributeString = attributeString {
             await ParserUtil.populateAttributes(for: prop, from: attributeString)
@@ -122,6 +147,18 @@ public actor Property : CodeMember {
     
     public func hasAttrib(_ name: AttributeNamePresets) async -> Bool {
         return await hasAttrib(name.rawValue)
+    }
+
+    public func hasConstraint(_ name: String) async -> Bool {
+        return await constraints.has(name)
+    }
+
+    public func setDefaultValue(_ value: String?) {
+        self.defaultValue = value?.trim()
+    }
+
+    public func setValidValueSet(_ value: String?) {
+        self.validValueSet = value?.trim()
     }
     
     public init(_ givenName: String, pInfo: ParsedInfo) {

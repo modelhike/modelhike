@@ -86,15 +86,49 @@ public enum ModelRegEx {
     }
     
     nonisolated(unsafe)
+    static let attributeSeparator: Regex<Substring> = Regex {
+        ChoiceOf {
+            ":"
+            "="
+        }
+    }
+
+    nonisolated(unsafe)
     public static let property_ValidValueSet: Regex<(Substring, String)> = Regex {
-        "{"
+        whitespace
+        "="
+        whitespace
+        "<"
         Capture {
             ZeroOrMore {
-                variable
+                whitespace
+                CommonRegEx.validValue
+                whitespace
                 Optionally(",")
             }
-        } transform: { String($0) }
-        "}"
+        } transform: { String($0).trim() }
+        ">"
+    }
+
+    nonisolated(unsafe)
+    public static let property_DefaultValue_Capturing: Regex<(Substring, String)> = Regex {
+        whitespace
+        "="
+        whitespace
+        Capture {
+            OneOrMore {
+                NegativeLookahead {
+                    whitespace
+                    ChoiceOf {
+                        "{"
+                        "("
+                        "#"
+                        "//"
+                    }
+                }
+                CharacterClass.any
+            }
+        } transform: { String($0).trim() }
     }
 
     nonisolated(unsafe)
@@ -116,7 +150,7 @@ public enum ModelRegEx {
         ZeroOrMore(.whitespace)
         
         Optionally {
-            ":"
+            attributeSeparator
             ZeroOrMore(.whitespace)
             variableValue
         }
@@ -148,7 +182,7 @@ public enum ModelRegEx {
         whitespace
         
         Optionally {
-            ":"
+            attributeSeparator
             whitespace
             Capture {
                 variableValue
@@ -164,9 +198,66 @@ public enum ModelRegEx {
         Optionally(",")
         whitespace
     }
+
+    nonisolated(unsafe)
+    static let property_ConstraintValue: Regex<Substring> = Regex {
+        OneOrMore {
+            NegativeLookahead {
+                whitespace
+                ChoiceOf {
+                    ","
+                    "}"
+                }
+            }
+            CharacterClass.any
+        }
+    }
+
+    nonisolated(unsafe)
+    static let property_Constraint: Regex<Substring> = Regex {
+        nameWithWhitespace
+        whitespace
+        "="
+        whitespace
+        property_ConstraintValue
+    }
+
+    nonisolated(unsafe)
+    public static let property_Constraints: Regex<(Substring, String)> = Regex {
+        whitespace
+        "{"
+        Capture {
+            ZeroOrMore {
+                whitespace
+                property_Constraint
+                whitespace
+                Optionally(",")
+                whitespace
+            }
+        } transform: { String($0) }
+        "}"
+        whitespace
+    }
+
+    nonisolated(unsafe)
+    public static let property_Constraint_Capturing: Regex<(Substring, String, String)> = Regex {
+        whitespace
+        Capture {
+            nameWithWhitespace
+        } transform: { String($0) }
+        whitespace
+        "="
+        whitespace
+        Capture {
+            property_ConstraintValue
+        } transform: { String($0).trim() }
+        whitespace
+        Optionally(",")
+        whitespace
+    }
     
     nonisolated(unsafe)
-    public static let property_Capturing: Regex<(Substring, String, String, Optional<String>, Optional<String>, Optional<String>, Optional<String>)> = Regex {
+    public static let property_Capturing: Regex<(Substring, String, String, Optional<String>, Optional<String>, Optional<String>, Optional<String>, Optional<String>, Optional<String>)> = Regex {
         Capture {
             nameWithWhitespace
         } transform: { String($0) }
@@ -185,11 +276,19 @@ public enum ModelRegEx {
         }
         
         Optionally {
-            attributes
+            property_ValidValueSet
         }
         
         Optionally {
-            property_ValidValueSet
+            property_DefaultValue_Capturing
+        }
+
+        Optionally {
+            property_Constraints
+        }
+
+        Optionally {
+            attributes
         }
         
         Optionally {

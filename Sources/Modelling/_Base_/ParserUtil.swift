@@ -21,6 +21,15 @@ public class ParserUtil {
             }
         }
     }
+
+    public static func populateConstraints(for property: Property, from constraintString: String) async {
+        let constraintMatches = constraintString.matches(of: ModelRegEx.property_Constraint_Capturing)
+
+        for match in constraintMatches {
+            let (_, name, value) = match.output
+            await property.constraints.set(name.trim(), value: value.trim())
+        }
+    }
     
     public static func populateTags(for artifact: HasTags_Actor, from tagString: String) async {
         let tagMatches = tagString.matches(of: ModelRegEx.tags_Capturing)

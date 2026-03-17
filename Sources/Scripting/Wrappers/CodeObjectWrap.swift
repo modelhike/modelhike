@@ -102,6 +102,16 @@ public actor TypeProperty_Wrap: ObjectWrapper {
             return await item.attribs[attributeName]
         }
 
+        if propname.hasPrefix("has-constraint-") {
+            let constraintName = propname.removingPrefix("has-constraint-")
+            return await item.hasConstraint(constraintName)
+        }
+
+        if propname.hasPrefix("constraint-") {
+            let constraintName = propname.removingPrefix("constraint-")
+            return await item.constraints[constraintName]
+        }
+
         let value: Sendable =
             switch propname {
             case "name":
@@ -131,6 +141,10 @@ public actor TypeProperty_Wrap: ObjectWrapper {
                 }
             case "obj-type": await item.type.objectString()
             case "is-required": await item.required == .yes
+            case "default-value": await item.defaultValue ?? ""
+            case "has-default-value": await item.defaultValue != nil
+            case "valid-value-set": await item.validValueSet ?? ""
+            case "has-valid-value-set": await item.validValueSet != nil
             default:
                 //nothing found; so check in module attributes
                 try await resolveFallbackProperty(propname: propname, pInfo: pInfo)
@@ -142,6 +156,8 @@ public actor TypeProperty_Wrap: ObjectWrapper {
     private func resolveFallbackProperty(propname: String, pInfo: ParsedInfo) async throws -> Sendable {
         if await item.attribs.has(propname) {
             return await item.attribs[propname]
+        } else if await item.constraints.has(propname) {
+            return await item.constraints[propname]
         } else {
             throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
         }

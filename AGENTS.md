@@ -216,7 +216,7 @@ Modelling/
 - `MethodObject` (actor) — `name`, `givenname`, `parameters: [MethodParameter]`, `returnType: TypeInfo`, `logic: CodeLogic?`, `tags`. Parsed from `~ methodName(param: Type) : ReturnType` (tilde-prefix) or `methodName(...)\n------` (setext) lines. An optional fenced logic block (` ``` `, `'''`, or `"""` — 3+ chars, opening and closing must match) may follow a tilde-prefix method; setext methods use `---` as the closing fence.
 - `DtoObject` (actor) — read-model; fields reference parent types.
 - `UIView` (actor) — UI component; `dataType = .ui`.
-- `Property` (actor) — `name`, `givenname`, `type: TypeInfo`, `required: RequiredKind`, `arrayMultiplicity: MultiplicityKind`, `isUnique`, `isObjectID`, `isSearchable`, `attribs`, `tags`.
+- `Property` (actor) — `name`, `givenname`, `type: TypeInfo`, `required: RequiredKind`, `arrayMultiplicity: MultiplicityKind`, `isUnique`, `isObjectID`, `isSearchable`, regular `attribs`, separate `constraints`, `defaultValue`, `validValueSet`, `tags`.
 - `PropertyKind` (enum) — full type system (see §4.3).
 - `TypeInfo` — `kind: PropertyKind`, `isArray: Bool`; helpers `isObject()`, `isNumeric`, `isDate`, `isReference()`, etc.
 - `APIType` (enum) — create, update, delete, getById, list, listByCustomProperties, getByCustomProperties, associate, deassosiate, activate, deactivate, pushData, pushDataList, getByUsingCustomLogic, listByUsingCustomLogic, mutationUsingCustomLogic.
@@ -499,7 +499,11 @@ Holds `DomainObject`s, `DtoObject`s, `UIView`s. Has `submodules`. Inherits from 
 | `isUnique` | Bool | |
 | `isObjectID` | Bool | |
 | `isSearchable` | Bool | |
-| `attribs` / `tags` | Metadata | Validation rules, etc. |
+| `attribs` | `Attributes` | Regular property attributes such as `(backend)` |
+| `constraints` | `Attributes` | Property-only constraints such as `{ min = 0, max = 10 }` |
+| `defaultValue` | `String?` | Scalar property default parsed from `= value` |
+| `validValueSet` | `String?` | Valid value set parsed from `= <...>` |
+| `tags` | `Tags` | Free-form property tags |
 
 ### `APIType` enum
 

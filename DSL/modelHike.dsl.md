@@ -28,7 +28,8 @@ ModelHike DSL lets you capture **architecture, data models, and APIs** in a sing
 | `*?`               | **Conditional** required field        | Property list            |
 | `=`                | **Calculated** / derived field        | Property list            |
 | `(backend)`        | Server‑side only — excluded from DTOs | After property           |
-| `{}`               | Collection default literal            | Property default         |
+| `<>`               | Valid value set literal               | Property valid value set |
+| `{key=value}`      | **Constraint** list                   | After property           |
 | `(key=value)`      | **Attribute** (explicit)              | After element / property |
 | `[ … ]`            | **Attribute** (inferred)              | Usually after `# APIs`   |
 | `@`                | **Annotation** (scaffold / metadata)  | Any element              |
@@ -126,7 +127,7 @@ Flight View (Base Flight, Timestamps)
 | Prefixes `*` `-` `.`            | Required / optional / DTO‑field            |
 | `Id` type                       | Triggers primary‑key index generation      |
 | Type inference                  | Skip `: Type` when default is self‑evident |
-| Validation via attributes       | `(min=0, pattern=…)` directly in property  |
+| Validation via constraints      | `{min=0, pattern=…}` directly in property  |
 | Human‑readable names            | Spaces & hyphens welcome                   |
 
 #### Mini‑cheatsheet
@@ -215,18 +216,18 @@ Everything inside classes/DTOs boils down to **properties**.
 
 ### 5.3 Collections made simple
 
-| Write…               | You get           | Example default    |
-| -------------------- | ----------------- | ------------------ |
-| `String[]`           | list (any length) | `{ "vip" }`        |
-| `Seat[1..*]`         | list, min 1       | `{ SeatA }`        |
-| `[string => Person]` | dictionary        | `{ admin: "Bob" }` |
+| Write…               | You get           | Example valid value set |
+| -------------------- | ----------------- | ----------------------- |
+| `String[]`           | list (any length) | `<"vip">`          |
+| `Seat[1..*]`         | list, min 1       | `<SeatA>`          |
+| `[string => Person]` | dictionary        | `<admin: "Bob">`   |
 
 ### 5.4 Defaults & validation
 
 ```modelhike
-- retries = 3                  (min=0, max=10)
-* tags  : String[] = { "vip" }
-- seats : Seat[1..*] = { S1 }  (max=10)
+- retries : Int = 3                  { min = 0, max = 10 }
+* tags    : String[] = <"vip">
+- seats   : Seat[1..*] = <S1>        { max = 10 }
 ```
 
 #### Mini‑cheatsheet
@@ -236,7 +237,7 @@ Product
 =======
 * id    : Id
 * name  : String = "Widget"
-- price : Float  = 9.99 (min=0)
+- price : Float  = 9.99 { min = 0 }
 ```
 
 ---
@@ -266,7 +267,7 @@ Order (BaseEntity, SoftDelete)
 ### 6.3 Property attributes
 
 ```modelhike
-* price : Float = 9.99 (min=0, currency="USD")
+* price : Float = 9.99 { min = 0 } (currency="USD")
 ```
 
 ### 6.4 API‑block attributes
@@ -587,8 +588,8 @@ Order #bounded-context:Sales
 @ index:: orderId (unique)
 @ roles:: admin, ops
 * orderId : Id
-* amount  : Float (min=0)
-- status  : String  = "NEW" (pattern=^(NEW|PAID|CANCELLED)$)
+* amount  : Float { min = 0 }
+- status  : String  = "NEW" { pattern = ^(NEW|PAID|CANCELLED)$ }
 - audit   : Audit (backend)
 
 # APIs ["/orders"]

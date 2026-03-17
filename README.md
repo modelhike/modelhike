@@ -180,7 +180,7 @@ export class PaymentService {
 Payment
 =======
 * id        : Id
-* amount    : Float (min=0, required)
+* amount    : Float { min = 0 }
 * customerId: Reference<User>
 - status    : Enum = "NEW" | "PENDING" | "COMPLETED" | "FAILED" 
 - createdAt : Timestamp = now()
@@ -198,6 +198,8 @@ Payment
 @ consume:: customer.verified
 #
 ```
+
+Property syntax note: valid value sets use `<...>`, property constraints use `{ ... }`, and regular attributes such as `(backend)` stay in parentheses.
 
 2. **Generate complete implementation**
 ```bash
