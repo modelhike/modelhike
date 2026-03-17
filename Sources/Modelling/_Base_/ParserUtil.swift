@@ -23,11 +23,11 @@ public class ParserUtil {
     }
 
     public static func populateConstraints(for property: Property, from constraintString: String) async {
-        let constraintMatches = constraintString.matches(of: ModelRegEx.property_Constraint_Capturing)
-
-        for match in constraintMatches {
-            let (_, name, value) = match.output
-            await property.constraints.set(name.trim(), value: value.trim())
+        do {
+            let constraints = try ConstraintParser.parseList(constraintString)
+            await property.constraints.set(constraints)
+        } catch {
+            // Keep parsing best-effort for now by ignoring malformed constraints.
         }
     }
     

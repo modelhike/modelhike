@@ -50,7 +50,7 @@ public actor MethodObject: CodeMember {
 
         guard let match = signatureLine.wholeMatch(of: ModelRegEx.method_Capturing) else { return nil }
 
-        let (_, methodName, arguments, returnType, tagString) = match.output
+        let (_, methodName, arguments, returnType, attributeString, tagString) = match.output
 
         let givenName = methodName.trim()
 
@@ -66,6 +66,10 @@ public actor MethodObject: CodeMember {
 
         if let returnType = returnType {
             await method.returnType(from: returnType)
+        }
+
+        if let attributeString = attributeString {
+            await ParserUtil.populateAttributes(for: method, from: attributeString)
         }
 
         //check if has tags

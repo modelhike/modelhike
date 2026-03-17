@@ -228,11 +228,10 @@ public enum ModelRegEx {
         "{"
         Capture {
             ZeroOrMore {
-                whitespace
-                property_Constraint
-                whitespace
-                Optionally(",")
-                whitespace
+                NegativeLookahead {
+                    "}"
+                }
+                CharacterClass.any
             }
         } transform: { String($0) }
         "}"
@@ -320,7 +319,7 @@ public enum ModelRegEx {
     }
     
     nonisolated(unsafe)
-    public static let method_Capturing: Regex<(Substring, String, String, Optional<String>, Optional<String>)> = Regex {
+    public static let method_Capturing: Regex<(Substring, String, String, Optional<String>, Optional<String>, Optional<String>)> = Regex {
         Capture {
             CommonRegEx.functionName
         } transform: { String($0) }
@@ -342,6 +341,12 @@ public enum ModelRegEx {
                 property_Type
                 Optionally("[]")
             } transform: { String($0) }
+        }
+
+        whitespace
+
+        Optionally {
+            attributes
         }
 
         whitespace

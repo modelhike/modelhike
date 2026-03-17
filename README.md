@@ -199,7 +199,7 @@ Payment
 #
 ```
 
-Property syntax note: valid value sets use `<...>`, property constraints use `{ ... }`, and regular attributes such as `(backend)` stay in parentheses.
+Property syntax note: valid value sets use `<...>`, property constraints use `{ ... }`, and regular attributes such as `(backend)` stay in parentheses. Constraints support both keyed rules like `{ min = 0 }` and predicate expressions like `{ salary > 0 }`.
 
 2. **Generate complete implementation**
 ```bash

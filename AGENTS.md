@@ -500,7 +500,7 @@ Holds `DomainObject`s, `DtoObject`s, `UIView`s. Has `submodules`. Inherits from 
 | `isObjectID` | Bool | |
 | `isSearchable` | Bool | |
 | `attribs` | `Attributes` | Regular property attributes such as `(backend)` |
-| `constraints` | `Attributes` | Property-only constraints such as `{ min = 0, max = 10 }` |
+| `constraints` | `Constraints` | Property-only constraints such as `{ min = 0, max = 10 }` or `{ salary > 0 }`, stored as structured expressions |
 | `defaultValue` | `String?` | Scalar property default parsed from `= value` |
 | `validValueSet` | `String?` | Valid value set parsed from `= <...>` |
 | `tags` | `Tags` | Free-form property tags |

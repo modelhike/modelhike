@@ -90,6 +90,9 @@ public actor TypeProperty_Wrap: ObjectWrapper {
     public let item: Property
 
     public var attribs: Attributes { item.attribs }
+    public var constraintsList: [Constraint_Wrap] { get async {
+        await item.constraints.snapshot().map(Constraint_Wrap.init)
+    }}
 
     public func getValueOf(property propname: String, with pInfo: ParsedInfo) async throws -> Sendable? {
         if propname.hasPrefix("has-attrib-") {
@@ -145,6 +148,8 @@ public actor TypeProperty_Wrap: ObjectWrapper {
             case "has-default-value": await item.defaultValue != nil
             case "valid-value-set": await item.validValueSet ?? ""
             case "has-valid-value-set": await item.validValueSet != nil
+            case "constraints": await constraintsList
+            case "has-constraints": await constraintsList.isEmpty == false
             default:
                 //nothing found; so check in module attributes
                 try await resolveFallbackProperty(propname: propname, pInfo: pInfo)
@@ -167,5 +172,153 @@ public actor TypeProperty_Wrap: ObjectWrapper {
 
     public init(_ item: Property) {
         self.item = item
+    }
+}
+
+public actor Constraint_Wrap: ObjectWrapper {
+    public let item: Constraint
+    public let attribs = Attributes()
+
+    public func getValueOf(property propname: String, with pInfo: ParsedInfo) async throws -> Sendable? {
+        switch propname {
+        case "name":
+            return item.name ?? ""
+        case "has-name":
+            return item.name != nil
+        case "kind":
+            return item.name == nil ? "predicate" : "named"
+        case "expression", "rendered":
+            return ConstraintRenderer.render(item)
+        case "value":
+            return ConstraintRenderer.renderValue(of: item)
+        case "expr":
+            return ConstraintExpr_Wrap(item.expr)
+        default:
+            throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
+        }
+    }
+
+    public var debugDescription: String {
+        get async { ConstraintRenderer.render(item) }
+    }
+
+    public init(_ item: Constraint) {
+        self.item = item
+    }
+}
+
+public actor ConstraintExpr_Wrap: ObjectWrapper {
+    public let item: ConstraintExpr
+    public let attribs = Attributes()
+
+    public func getValueOf(property propname: String, with pInfo: ParsedInfo) async throws -> Sendable? {
+        switch propname {
+        case "kind":
+            return kind
+        case "rendered":
+            return ConstraintRenderer.render(item)
+        case "name":
+            switch item {
+            case .identifier(let name), .function(let name, _):
+                return name
+            default:
+                return ""
+            }
+        case "operator":
+            switch item {
+            case .unary(let op, _):
+                return op.rawValue
+            case .binary(_, let op, _):
+                return op.rawValue
+            case .between:
+                return "between"
+            default:
+                return ""
+            }
+        case "value":
+            switch item {
+            case .integer(let value):
+                return String(value)
+            case .double(let value):
+                return String(value)
+            case .string(let value):
+                return value
+            case .boolean(let value):
+                return value ? "true" : "false"
+            case .null:
+                return "nil"
+            default:
+                return ""
+            }
+        case "lhs":
+            if case .binary(let lhs, _, _) = item {
+                return ConstraintExpr_Wrap(lhs)
+            }
+            throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
+        case "rhs":
+            if case .binary(_, _, let rhs) = item {
+                return ConstraintExpr_Wrap(rhs)
+            }
+            throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
+        case "expr":
+            if case .unary(_, let expr) = item {
+                return ConstraintExpr_Wrap(expr)
+            }
+            if case .grouped(let expr) = item {
+                return ConstraintExpr_Wrap(expr)
+            }
+            throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
+        case "arguments":
+            if case .function(_, let arguments) = item {
+                return arguments.map(ConstraintExpr_Wrap.init)
+            }
+            throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
+        case "items":
+            if case .list(let values) = item {
+                return values.map(ConstraintExpr_Wrap.init)
+            }
+            throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
+        case "lower":
+            if case .between(_, let lower, _) = item {
+                return ConstraintExpr_Wrap(lower)
+            }
+            throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
+        case "upper":
+            if case .between(_, _, let upper) = item {
+                return ConstraintExpr_Wrap(upper)
+            }
+            throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
+        default:
+            throw TemplateSoup_ParsingError.invalidPropertyNameUsedInCall(propname, pInfo)
+        }
+    }
+
+    public var debugDescription: String {
+        get async { ConstraintRenderer.render(item) }
+    }
+
+    public init(_ item: ConstraintExpr) {
+        self.item = item
+    }
+
+    private var kind: String {
+        switch item {
+        case .identifier:
+            return "identifier"
+        case .integer, .double, .string, .boolean, .null:
+            return "literal"
+        case .function:
+            return "function"
+        case .list:
+            return "list"
+        case .unary:
+            return "unary"
+        case .binary:
+            return "binary"
+        case .between:
+            return "between"
+        case .grouped:
+            return "grouped"
+        }
     }
 }

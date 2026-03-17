@@ -9,7 +9,7 @@ import Foundation
 public actor Property : CodeMember {
     public let pInfo: ParsedInfo
     public let attribs = Attributes()
-    public let constraints = Attributes()
+    public let constraints = Constraints()
     public let tags = Tags()
     
     public var name: String

@@ -127,7 +127,7 @@ Flight View (Base Flight, Timestamps)
 | Prefixes `*` `-` `.`            | Required / optional / DTO‑field            |
 | `Id` type                       | Triggers primary‑key index generation      |
 | Type inference                  | Skip `: Type` when default is self‑evident |
-| Validation via constraints      | `{min=0, pattern=…}` directly in property  |
+| Validation via constraints      | `{min=0, pattern=…}` or `{salary > 0}` directly in property |
 | Human‑readable names            | Spaces & hyphens welcome                   |
 
 #### Mini‑cheatsheet
@@ -228,6 +228,7 @@ Everything inside classes/DTOs boils down to **properties**.
 - retries : Int = 3                  { min = 0, max = 10 }
 * tags    : String[] = <"vip">
 - seats   : Seat[1..*] = <S1>        { max = 10 }
+- salary  : Float                    { salary > 0 }
 ```
 
 #### Mini‑cheatsheet
