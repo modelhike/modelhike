@@ -525,12 +525,22 @@ methodName(param1: Type, param2: Type) : ReturnType #tags
 ```
 
 ```modelhike
+view-sql
+--------
+```
+
+```modelhike
 ~ methodName(param1: Type, param2: Type) : ReturnType #tags
+```
+
+```modelhike
+~ trigger-sql
 ```
 
 * For setext style: underline must be only `-` characters (`ModelConstants.MethodUnderlineChar`).
 * For tilde-prefix style: `~` prefix on the signature (no underline line follows).
 * Return type after `:` is optional; if omitted the method has return type `unKnown`.
+* Empty `()` may be omitted for paramless methods in both styles.
 * Parameters follow the same `name: Type` syntax as properties.
 * Produces a `MethodObject` with `parameters: [MethodParameter]` and `returnType: TypeInfo`.
 * A fenced logic body may follow — see [`codelogic.dsl.md`](codelogic.dsl.md).

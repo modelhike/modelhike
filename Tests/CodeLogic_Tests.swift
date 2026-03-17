@@ -503,6 +503,27 @@ import Testing
         #expect(await methods[0].name == "calculateTotal")
     }
 
+    @Test func setextParamlessMethodNoParens() async throws {
+        let dsl = """
+            === Shop ===
+            + Items
+
+            === Items ===
+
+            Order
+            =====
+            * id : Id
+
+            view-sql
+            --------
+            """
+        let obj = try await firstObject(in: dsl)
+        let methods = await obj.methods
+        #expect(methods.count == 1)
+        #expect(await methods[0].givenname == "view-sql")
+        #expect(await methods[0].name == "view_sql")
+    }
+
     @Test func multipleEmptyLinesBeforeMethod() async throws {
         let dsl = """
             === Shop ===
@@ -631,6 +652,62 @@ import Testing
         #expect(methods.count == 1)
         #expect(await methods[0].name == "calculateTotal")
         #expect(await methods[0].logic == nil)
+    }
+
+    @Test func tildeParamlessMethodNoParens() async throws {
+        let dsl = """
+            === Shop ===
+            + Items
+
+            === Items ===
+
+            Order
+            =====
+            * id : Id
+            ~ trigger-sql
+            ```
+            |> SQL
+            | SELECT 1
+            ```
+            """
+        let obj = try await firstObject(in: dsl)
+        let methods = await obj.methods
+        #expect(methods.count == 1)
+        #expect(await methods[0].givenname == "trigger-sql")
+        let logic = try await requireLogic(of: methods[0])
+        #expect(logic.statements.count == 1)
+        #expect(await logic.statements[0].kind == .sql)
+    }
+
+    @Test func apiSectionParamlessMethodNoParens() async throws {
+        let dsl = """
+            === Shop ===
+            + Items
+
+            === Items ===
+
+            Order
+            =====
+            * id : Id
+
+            # APIs
+            ## cancel
+            #
+            """
+        let obj = try await firstObject(in: dsl)
+        let apiList = await (await obj.getAPIs()).snapshot()
+        #expect(apiList.count == 1)
+        let api = try #require(apiList.first as? CustomLogicAPI)
+        #expect(await api.method.givenname == "cancel")
+        #expect(await api.parameters.count == 0)
+    }
+
+    @Test func parsedInfoRemoveLineRefreshesWords() async throws {
+        var pInfo = await ParsedInfo.dummy(line: "## cancel(id: Id)", identifier: "test", loadCtx: ctx)
+        pInfo.removeLine(after: "##")
+        #expect(pInfo.line == "cancel(id: Id)")
+        #expect(pInfo.firstWord == "cancel(id:")
+        #expect(pInfo.secondWord == "Id)")
     }
 
     @Test func tildeMethodWithLogic() async throws {

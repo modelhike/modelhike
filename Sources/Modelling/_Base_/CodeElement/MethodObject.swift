@@ -22,8 +22,8 @@ public actor MethodObject: CodeMember {
     public var comment: String?
 
     /// Returns `true` when the current line is a method signature in either supported style:
-    ///   - **Setext**: plain `methodName(...)` with the next line being a `~~~~~~` tilde underline.
-    ///   - **Tilde**: `~ methodName(...)` prefix (no underline line required).
+    ///   - **Setext**: plain `methodName(...)` or paramless `methodName` with the next line being a method underline.
+    ///   - **Tilde**: `~ methodName(...)` or paramless `~ methodName` (no underline line required).
     public static func canParse(parser: any LineParser) async -> Bool {
         let line = await parser.currentLine()
         if isTildePrefixed(line) { return true }
@@ -38,9 +38,16 @@ public actor MethodObject: CodeMember {
     /// methodName(param: Type) : ReturnType
     /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     /// ```
+    /// ```
+    /// methodName
+    /// ----------
+    /// ```
     /// **Tilde style** (one DSL line consumed, logic fenced with ` ``` `, `'''`, or `"""`):
     /// ```
     /// ~ methodName(param: Type) : ReturnType
+    /// ```
+    /// ```
+    /// ~ methodName
     /// ```
     /// In both cases, any immediately following logic block is also parsed when `skipLine` is `true`.
     public static func parse(pInfo: ParsedInfo, skipLine: Bool = true) async throws -> MethodObject? {
@@ -48,15 +55,13 @@ public actor MethodObject: CodeMember {
         let tilde = isTildePrefixed(line)
         let signatureLine = tilde ? String(line.dropFirst()).trim() : line
 
-        guard let match = signatureLine.wholeMatch(of: ModelRegEx.method_Capturing) else { return nil }
+        guard let signature = parseSignature(signatureLine) else { return nil }
 
-        let (_, methodName, arguments, returnType, attributeString, tagString) = match.output
-
-        let givenName = methodName.trim()
+        let givenName = signature.name.trim()
 
         let method = MethodObject(givenName, pInfo: pInfo)
 
-        let matches = arguments.matches(of: CommonRegEx.namedParameters_Capturing)
+        let matches = signature.arguments.matches(of: CommonRegEx.namedParameters_Capturing)
 
         for match in matches {
             let (_, name, typeName) = match.output
@@ -64,16 +69,16 @@ public actor MethodObject: CodeMember {
             await method.append(parameter: MethodParameter(name: name, type: type))
         }
 
-        if let returnType = returnType {
+        if let returnType = signature.returnType {
             await method.returnType(from: returnType)
         }
 
-        if let attributeString = attributeString {
+        if let attributeString = signature.attributeString {
             await ParserUtil.populateAttributes(for: method, from: attributeString)
         }
 
         //check if has tags
-        if let tagString = tagString {
+        if let tagString = signature.tagString {
             await ParserUtil.populateTags(for: method, from: tagString)
         }
 
@@ -88,6 +93,40 @@ public actor MethodObject: CodeMember {
         }
 
         return method
+    }
+
+    private struct ParsedMethodSignature {
+        let name: String
+        let arguments: String
+        let returnType: String?
+        let attributeString: String?
+        let tagString: String?
+    }
+
+    private static func parseSignature(_ line: String) -> ParsedMethodSignature? {
+        if let match = line.wholeMatch(of: ModelRegEx.method_Capturing) {
+            let (_, methodName, arguments, returnType, attributeString, tagString) = match.output
+            return ParsedMethodSignature(
+                name: methodName,
+                arguments: arguments,
+                returnType: returnType,
+                attributeString: attributeString,
+                tagString: tagString
+            )
+        }
+
+        guard let match = line.wholeMatch(of: ModelRegEx.methodParamless_Capturing) else {
+            return nil
+        }
+
+        let (_, methodName, returnType, attributeString, tagString) = match.output
+        return ParsedMethodSignature(
+            name: methodName,
+            arguments: "",
+            returnType: returnType,
+            attributeString: attributeString,
+            tagString: tagString
+        )
     }
 
     /// Returns `true` when `line` begins with the `~` method prefix but is not a UIView

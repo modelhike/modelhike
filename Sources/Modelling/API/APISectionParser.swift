@@ -73,12 +73,16 @@ public enum APISectionParser {
                     }
 
                     apis.append(api)
-                } else if let method = try await MethodObject.parse(pInfo: pInfo, skipLine: false) {
-                    //custom logic api is defined using method syntax
-                    let api = await CustomLogicAPI(method: method, entity: obj)
-                    apis.append(api)
                 } else {
-                    throw Model_ParsingError.invalidApiLine(pInfo)
+                    var methodPInfo = pInfo
+                    methodPInfo.removeLine(after: pInfo.firstWord) //removes ## prefix
+                    if let method = try await MethodObject.parse(pInfo: methodPInfo, skipLine: false) {
+                        // custom logic api is defined using method syntax
+                        let api = await CustomLogicAPI(method: method, entity: obj)
+                        apis.append(api)
+                    } else {
+                        throw Model_ParsingError.invalidApiLine(pInfo)
+                    }
                 }
 
             }

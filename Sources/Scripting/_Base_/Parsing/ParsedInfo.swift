@@ -124,11 +124,13 @@ public struct ParsedInfo : Sendable, Equatable {
     
     public mutating func removeLine(after word: String) {
         self.line = line.remainingLine(after: word)
+        refreshWordsFromLine()
     }
     
     public mutating func setLineInfo(line: String, lineNo: Int) {
         self.line = line
         self.lineNo = lineNo
+        refreshWordsFromLine()
     }
     
     public init?(parser: LineParser) async {
@@ -160,6 +162,12 @@ public struct ParsedInfo : Sendable, Equatable {
         self.identifier = await parser.identifier
         
         self.ctx = await parser.ctx
+    }
+
+    private mutating func refreshWordsFromLine() {
+        let (firstWord, secondWord) = line.firstAndsecondWord()
+        self.firstWord = firstWord ?? ""
+        self.secondWord = secondWord
     }
 }
 

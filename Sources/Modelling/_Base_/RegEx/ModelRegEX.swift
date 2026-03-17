@@ -359,6 +359,39 @@ public enum ModelRegEx {
         
         CommonRegEx.comments
     }
+
+    nonisolated(unsafe)
+    public static let methodParamless_Capturing: Regex<(Substring, String, Optional<String>, Optional<String>, Optional<String>)> = Regex {
+        Capture {
+            CommonRegEx.functionName
+        } transform: { String($0) }
+
+        Optionally {
+            whitespace
+            ":"
+            whitespace
+            Capture {
+                property_Type
+                Optionally("[]")
+            } transform: { String($0) }
+        }
+
+        whitespace
+
+        Optionally {
+            attributes
+        }
+
+        whitespace
+
+        Optionally {
+            Capture {
+                tags
+            } transform: { String($0) }
+        }
+
+        CommonRegEx.comments
+    }
     
     nonisolated(unsafe)
     static let methodArgument_Capturing: Regex<(Substring, String, String)> = Regex {
