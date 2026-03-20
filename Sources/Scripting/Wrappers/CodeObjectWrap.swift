@@ -134,6 +134,16 @@ public actor TypeProperty_Wrap: ObjectWrapper {
             case "is-buffer": await item.type == .buffer
             case "is-reference": await item.type.isReference()
             case "is-extended-reference": await item.type.isExtendedReference()
+            case "reference-target":
+                (await item.type.kind).firstReferenceTarget?.targetName ?? ""
+            case "reference-field":
+                (await item.type.kind).firstReferenceTarget?.fieldName ?? ""
+            case "reference-field-type":
+                if let reference = (await item.type.kind).firstReferenceTarget {
+                    await reference.resolvedFieldTypeName() ?? ""
+                } else {
+                    ""
+                }
             case "is-coded-value": await item.type.isCodedValue()
             case "is-custom-type": await item.type.isCustomType
             case "custom-type":

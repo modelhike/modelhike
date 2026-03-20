@@ -24,7 +24,10 @@ ModelHike DSL lets you capture **architecture, data models, and APIs** in a sing
 | `~ methodName(…)` | **Method** — tilde-prefix style (no underline) | After properties in a class |
 | `---` / ` ``` ` / `'''` / `"""` | **Method logic fence** – wraps the logic body; tilde-style accepts 3+ repetitions of the fence character, opening and closing must match | After method header |
 
-| `* / - / .`        | required / optional / DTO‑only field  | Property list            |
+| `**`               | **Primary key field**              | Property list            |
+| `*`                | **Required field**                 | Property list            |
+| `-`                | **Optional field**                 | Property list            |
+| `.`                | **DTO-only field**                 | Property list            |
 | `*?`               | **Conditional** required field        | Property list            |
 | `=`                | **Calculated** / derived field        | Property list            |
 | `(backend)`        | Server‑side only — excluded from DTOs | After property           |
@@ -185,6 +188,7 @@ Everything inside classes/DTOs boils down to **properties**.
 
 | Prefix | Meaning                | Notes                                       |
 | ------ | ---------------------- | ------------------------------------------- |
+| `**`   | **primary key**        | Required field; retains its declared type   |
 | `*`    | **required**           |                                             |
 | `-`    | **optional**           |                                             |
 | `_`    | optional (alias)       | Accepted as alias for `-`; prefer `-`       |
@@ -205,13 +209,16 @@ Everything inside classes/DTOs boils down to **properties**.
 | `Buffer`                          | binary data (`.buffer`)         |
 | `Id`                              | primary key — triggers unique index (`.id`) |
 | `Any`                             | untyped (`.any`)                |
-| `Reference@TypeName`              | foreign reference (`.reference`) |
+| `Reference@TypeName`              | reference type (`.reference`) |
+| `Ref@TypeName.fieldName`          | foreign key reference, represented as `Ref@table.field` |
+| `Ref@"Type Name".fieldName`       | foreign key reference to a spaced table/type name |
 | `Reference@Type1,Type2`           | multi-type reference (`.multiReference`) |
 | `ExtendedReference@TypeName`      | reference with extra fields (`.extendedReference`) |
 | `CodedValue@TypeName`             | coded/enum reference (`.codedValue`) |
 | anything else                     | custom object type (`.customType`) |
 
-* `Id` → primary key & unique index.
+* `** field : Type` marks a primary key while preserving the declared `Type`.
+* `Id` remains available as a normal scalar type when you explicitly want that type.
 * Omit `: Type` if default is self‑evident.
 
 ### 5.3 Collections made simple

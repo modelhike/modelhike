@@ -77,7 +77,7 @@ public enum ModelRegEx {
         )
         ZeroOrMore {
             CharacterClass(
-                .anyOf("_-@ "),
+                .anyOf("_-@ .\","),
                 ("A"..."Z"),
                 ("a"..."z"),
                 ("0"..."9")

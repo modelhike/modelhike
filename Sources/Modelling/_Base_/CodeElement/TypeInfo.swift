@@ -94,20 +94,59 @@ public struct TypeInfo: Sendable {
     
     func objectString() -> String {
         switch self.kind {
-            case .reference(_):
-                return "Reference"
-            case .multiReference(_):
-                return "Reference"
-            case .extendedReference(_):
-                return "ExtendedReference"
-            case .multiExtendedReference(_):
-                return "ExtendedReference"
+            case .reference(let reference):
+                return reference.targetName.isEmpty ? "Reference" : "Ref@\(render(reference))"
+            case .multiReference(let targets):
+                return targets.isEmpty ? "Reference" : "Reference@" + targets.map(render).joined(separator: ",")
+            case .extendedReference(let target):
+                return target.targetName.isEmpty ? "ExtendedReference" : "ExtendedReference@\(render(target))"
+            case .multiExtendedReference(let targets):
+                return targets.isEmpty ? "ExtendedReference" : "ExtendedReference@" + targets.map(render).joined(separator: ",")
             case .codedValue(_):
                 return "CodedValue"
             case let .customType(typeName):
                 return typeName
             default:
                 return ""
+        }
+    }
+
+    public func typeNameString_ForDebugging() -> String {
+        switch self.kind {
+        case .unKnown:
+            return "UnKnown"
+        case .int:
+            return "Int"
+        case .double:
+            return "Double"
+        case .float:
+            return "Float"
+        case .bool:
+            return "Bool"
+        case .string:
+            return "String"
+        case .date:
+            return "Date"
+        case .datetime:
+            return "DateTime"
+        case .buffer:
+            return "Buffer"
+        case .id:
+            return "Id"
+        case .any:
+            return "Any"
+        case .reference(let reference):
+            return "Ref@\(render(reference))"
+        case .multiReference(let targets):
+            return "Reference@" + targets.map(render).joined(separator: ",")
+        case .extendedReference(let target):
+            return target.targetName.isEmpty ? "ExtendedReference" : "ExtendedReference@\(render(target))"
+        case .multiExtendedReference(let targets):
+            return "ExtendedReference@" + targets.map(render).joined(separator: ",")
+        case .codedValue(let target):
+            return "CodedValue@\(target)"
+        case .customType(let typeName):
+            return typeName
         }
     }
     
@@ -137,5 +176,13 @@ public struct TypeInfo: Sendable {
     internal init() {
         self.kind = .unKnown
         self.isArray = false
+    }
+
+    private func render(_ target: ReferenceTarget) -> String {
+        var rendered = target.targetName
+        if let fieldName = target.fieldName, fieldName.isNotEmpty {
+            rendered += ".\(fieldName)"
+        }
+        return rendered
     }
 }

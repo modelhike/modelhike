@@ -20,17 +20,43 @@ public actor ParsedTypesCache : SendableDebugStringConvertible {
     }
         
     public func get(for name: String) async -> CodeObject? {
+        let normalizedName = name.lowercased()
+        let fallbackNames = normalizedFallbackNames(for: name)
+
         for item in items {
-            let item_givenname = await item.givenname
-            let item_name = await item.name
-            
-            if item_givenname.lowercased() == name.lowercased() ||
-                item_name.lowercased() == name.lowercased() {
+            let itemNames = [
+                await item.givenname.lowercased(),
+                await item.name.lowercased(),
+            ]
+
+            if itemNames.contains(normalizedName) {
+                return item
+            }
+
+            for itemName in itemNames where fallbackNames.contains(itemName) {
                 return item
             }
         }
         return nil
     }
+
+
+    private func normalizedFallbackNames(for name: String) -> [String] {
+        var normalized: [String] = []
+        for candidate in referenceFallbackNames(for: name) {
+            normalized.append(candidate.lowercased())
+        }
+        return normalized
+    }
+
+    private func referenceFallbackNames(for name: String) -> [String] {
+        if let targets = PropertyKind.parse(name).referenceTargets {
+            targets.map(\.targetName).filter(\.isNotEmpty)
+        } else {
+            []
+        }
+    }
+
      
     public func append(_ item: CodeObject) {
         items.append(item)

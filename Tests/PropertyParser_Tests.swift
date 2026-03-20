@@ -55,6 +55,88 @@ import Testing
         #expect(rendered == ["min = 0", "salary > bonus"])
     }
 
+    @Test func primaryKeyPrefixMarksRequiredPrimaryKey() async throws {
+        let prop = try await parseProperty("** orderId : Int", firstWord: "**")
+
+        #expect(await prop.required == .yes)
+        #expect(await prop.isObjectID)
+        #expect(await prop.type.kind == .int)
+    }
+
+    @Test func refTypeWithQuotedTargetAndFieldParses() async throws {
+        let prop = try await parseProperty("* departmentId : Ref@\"Department Lookup\".departmentId", firstWord: "*")
+
+        #expect(await prop.type.kind == .reference(.init(targetName: "Department Lookup", fieldName: "departmentId")))
+    }
+
+    @Test func refTypeResolvesReferencedFieldTypeFromLoadedModel() async throws {
+        let dsl = """
+            ===
+            Company
+            ===
+            + HR
+
+            === HR ===
+
+            Department Lookup
+            =================
+            ** departmentId : Int
+            * name : String
+
+            Backup Department
+            =================
+            ** backupId : String
+
+            Employee
+            ========
+            * departmentId : Ref@"Department Lookup".departmentId
+            * departmentLink : ExtendedReference@"Department Lookup".departmentId
+            * departmentChoices : Reference@"Department Lookup".departmentId,"Backup Department".backupId
+            """
+
+        let ctx = LoadContext(config: PipelineConfig())
+        let modelSpace = try await ModelFileParser(with: ctx).parse(string: dsl, identifier: "PropertyParser_Tests")
+        await ctx.model.append(contentsOf: modelSpace)
+        try await ctx.model.resolveAndLinkItems(with: ctx)
+
+        let employee = try #require(await ctx.model.types.get(for: "Employee"))
+        let departmentId = try #require(await employee.getProp("departmentId"))
+        let departmentLink = try #require(await employee.getProp("departmentLink"))
+        let departmentChoices = try #require(await employee.getProp("departmentChoices"))
+
+        #expect(
+            await departmentId.type.kind == .reference(
+                .init(targetName: "DepartmentLookup", fieldName: "departmentId")
+            )
+        )
+        #expect(
+            await departmentLink.type.kind == .extendedReference(
+                .init(targetName: "DepartmentLookup", fieldName: "departmentId")
+            )
+        )
+        #expect(
+            await departmentChoices.type.kind == .multiReference([
+                .init(targetName: "DepartmentLookup", fieldName: "departmentId"),
+                .init(targetName: "BackupDepartment", fieldName: "backupId"),
+            ])
+        )
+
+        let departmentIdReference = try #require((await departmentId.type.kind).firstReferenceTarget)
+        let departmentIdField = try #require(departmentIdReference.fieldProperty)
+        #expect(await departmentIdField.type.typeNameString_ForDebugging() == "Int")
+
+        let departmentLinkReference = try #require((await departmentLink.type.kind).firstReferenceTarget)
+        let departmentLinkField = try #require(departmentLinkReference.fieldProperty)
+        #expect(await departmentLinkField.type.typeNameString_ForDebugging() == "Int")
+
+        let departmentChoiceReferences = try #require((await departmentChoices.type.kind).referenceTargets)
+        #expect(departmentChoiceReferences.count == 2)
+        let firstChoiceField = try #require(departmentChoiceReferences[0].fieldProperty)
+        let secondChoiceField = try #require(departmentChoiceReferences[1].fieldProperty)
+        #expect(await firstChoiceField.type.typeNameString_ForDebugging() == "Int")
+        #expect(await secondChoiceField.type.typeNameString_ForDebugging() == "String")
+    }
+
     private func parseProperty(_ line: String, firstWord: String) async throws -> Property {
         let ctx = LoadContext(config: PipelineConfig())
         var pInfo = await ParsedInfo.dummy(line: line, identifier: "PropertyParser_Tests", loadCtx: ctx)

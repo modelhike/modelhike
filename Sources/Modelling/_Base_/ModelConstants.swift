@@ -10,6 +10,7 @@ public enum ModelConstants {
     public static let Member_Optional = "-"
     public static let Member_Optional2 = "_" //underscore; sometimes mistakenly user gives this
     public static let Member_Mandatory = "*"
+    public static let Member_PrimaryKey = "**"
     public static let Member_Conditional = "*?"
     
     public static let Member_Calculated = "="

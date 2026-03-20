@@ -91,6 +91,9 @@ public actor Property : CodeMember {
         }
         
         switch firstWord {
+        case ModelConstants.Member_PrimaryKey:
+            await prop.required(.yes)
+            await prop.primaryKey(true)
         case ModelConstants.Member_Mandatory : await prop.required(.yes)
             case ModelConstants.Member_Optional, ModelConstants.Member_Optional2 :
             await prop.required(.no)
@@ -107,7 +110,7 @@ public actor Property : CodeMember {
         return prop
     }
     
-    public func typeKind(from typeName: String) {
+    public func typeKind(from typeName: String) async {
         type.kind = PropertyKind.parse(typeName)
     }
     
@@ -126,10 +129,15 @@ public actor Property : CodeMember {
     func required(_ value: RequiredKind) {
         self.required = value
     }
+
+    func primaryKey(_ value: Bool) {
+        self.isObjectID = value
+    }
     
     
     public static func canParse(firstWord: String) -> Bool {
         switch firstWord {
+            case ModelConstants.Member_PrimaryKey : return true
             case ModelConstants.Member_Mandatory : return true
             case ModelConstants.Member_Optional, ModelConstants.Member_Optional2 : return true
             default :
@@ -199,8 +207,43 @@ public actor Property : CodeMember {
 }
 
 
+public struct ReferenceTarget: Sendable {
+    public var targetName: String
+    public var fieldName: String?
+    public var targetObject: (any CodeObject)?
+    public var fieldProperty: Property?
+
+    public init(
+        targetName: String,
+        fieldName: String? = nil,
+        targetObject: (any CodeObject)? = nil,
+        fieldProperty: Property? = nil
+    ) {
+        self.targetName = targetName
+        self.fieldName = fieldName
+        self.targetObject = targetObject
+        self.fieldProperty = fieldProperty
+    }
+
+    public func resolvedFieldTypeName_ForDebugging() async -> String? {
+        guard let fieldProperty else {
+            return nil
+        }
+        return await fieldProperty.type.typeNameString_ForDebugging()
+    }
+}
+
+extension ReferenceTarget: Equatable {
+    public static func == (lhs: ReferenceTarget, rhs: ReferenceTarget) -> Bool {
+        lhs.targetName == rhs.targetName
+            && lhs.fieldName == rhs.fieldName
+    }
+}
+
 public enum PropertyKind : Equatable, Sendable {
-    case unKnown, int, double, float, bool, string, date, datetime, buffer, id, any, reference(String), multiReference([String]), extendedReference(String), multiExtendedReference([String]), codedValue(String), customType(String)
+    case unKnown, int, double, float, bool, string, date, datetime, buffer, id, any, 
+    reference(ReferenceTarget), multiReference([ReferenceTarget]), extendedReference(ReferenceTarget), 
+    multiExtendedReference([ReferenceTarget]), codedValue(String), customType(String)
     
     static func parse(_ str: String) -> PropertyKind {
         let split1 = str.trim().components(separatedBy: "@")
@@ -215,30 +258,121 @@ public enum PropertyKind : Equatable, Sendable {
             case "buffer": return .buffer
             case "id": return .id
             case "any": return .any
-            case "reference":
-                var split2 = split1.last!.components(separatedBy: ",")
+            case "reference", "ref":
+                let split2 = split1.last!.components(separatedBy: ",")
                 if split2.count > 1 { // referenced property, like Reference@Staff,Patient
-                    split2 = split2.map({$0.normalizeForVariableName()})
-                    return .multiReference(split2)
+                    return .multiReference(split2.map(referenceTarget(from:)))
                 } else if split1.count == 2 { // referenced property, like Reference@Staff
-                    return .reference(split1.last!.normalizeForVariableName())
+                    return .reference(referenceTarget(from: split1.last!))
                 } else {
-                    return .reference("")
+                    return .reference(ReferenceTarget(targetName: ""))
                 }
             case "extendedreference":
-                var split2 = split1.last!.components(separatedBy: ",")
+                let split2 = split1.last!.components(separatedBy: ",")
                 if split2.count > 1 { // referenced property, like Reference@Staff,Patient
-                    split2 = split2.map({$0.normalizeForVariableName()})
-                    return .multiExtendedReference(split2)
+                    return .multiExtendedReference(split2.map(referenceTarget(from:)))
                 } else if split1.count == 2 { // referenced property, like Reference@Staff
-                    return .extendedReference(split1.last!.normalizeForVariableName())
+                    return .extendedReference(referenceTarget(from: split1.last!))
                 } else {
-                    return .extendedReference("")
+                    return .extendedReference(ReferenceTarget(targetName: ""))
                 }
             case "codedvalue":
                 return .codedValue(split1.last!.normalizeForVariableName())
 
             default: return .customType(split1.last!.normalizeForVariableName())
+        }
+    }
+
+    private static func referenceTarget(from value: String) -> ReferenceTarget {
+        let components = referenceComponents(from: value)
+        return ReferenceTarget(
+            targetName: normalizeRawReferenceTarget(components.target),
+            fieldName: components.field?.trim().nonEmpty
+        )
+    }
+
+    private static func referenceComponents(from value: String) -> (target: String, field: String?) {
+        let trimmed = value.trim()
+        guard trimmed.isEmpty == false else {
+            return ("", nil)
+        }
+
+        // Quoted targets having spaces in name are the ambiguous case because dots can appear after
+        // the closing quote as the field separator, while spaces inside the quotes are part of the
+        // target name. Example:
+        //   `"Department Lookup".departmentId`
+        // Here we treat the final `".` sequence as "end of target, start of field path".
+        if trimmed.first == "\"",
+           let range = trimmed.range(of: "\".", options: .backwards) {
+            let target = String(trimmed[..<range.lowerBound])
+            let field = String(trimmed[range.upperBound...])
+            return (target, field)
+        }
+
+        // For unquoted targets, we intentionally split on the last dot:
+        // - `Department.departmentId`      -> target `Department`, field `departmentId`
+        // - `Sales.Department.departmentId` -> target `Sales.Department`, field `departmentId`
+        //
+        // Using the last dot preserves any namespace/schema-style prefix that belongs
+        // to the target itself, while still peeling off the referenced field name.
+        guard let lastDot = trimmed.lastIndex(of: ".") else {
+            return (trimmed, nil)
+        }
+
+        let target = String(trimmed[..<lastDot])
+        let field = String(trimmed[trimmed.index(after: lastDot)...])
+
+        return (target, field)
+    }
+
+    // Normalize only the target side of a parsed `Ref@...` expression, after
+    // `referenceComponents(from:)` has already split `target` from `field`.
+    //
+    // We preserve structure for targets that carry meaning in their original spelling:
+    // - `"Department Lookup"` -> `Department Lookup`
+    // - `Sales.Department` -> `Sales.Department`
+    // - `Department Lookup` -> `Department Lookup`
+    //
+    // In those cases we only trim whitespace and remove quotes. We do not run
+    // `normalizeForVariableName()` because that would collapse spaces or qualification
+    // that later model lookup may still need.
+    //
+    // Only simple targets like `Department` are normalized to the standard internal form.
+    private static func normalizeRawReferenceTarget(_ value: String) -> String {
+        let target = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        if target.contains("\"") || target.contains(".") || target.contains(" ") {
+            return target.replacingOccurrences(of: "\"", with: "")
+        }
+        return target.normalizeForVariableName()
+    }
+
+    public var referenceTargets: [ReferenceTarget]? {
+        switch self {
+        case .reference(let target), .extendedReference(let target):
+            return [target]
+        case .multiReference(let targets), .multiExtendedReference(let targets):
+            return targets
+        default:
+            return nil
+        }
+    }
+
+    public var firstReferenceTarget: ReferenceTarget? {
+        referenceTargets?.first
+    }
+
+    public func replacingReferenceTargets(_ targets: [ReferenceTarget]) -> PropertyKind {
+        switch self {
+        case .reference:
+            return .reference(targets.first ?? ReferenceTarget(targetName: ""))
+        case .multiReference:
+            return .multiReference(targets)
+        case .extendedReference:
+            return .extendedReference(targets.first ?? ReferenceTarget(targetName: ""))
+        case .multiExtendedReference:
+            return .multiExtendedReference(targets)
+        default:
+            return self
         }
     }
 }
