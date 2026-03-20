@@ -37,8 +37,8 @@ public actor Property : CodeMember {
             propName,
             typeName,
             typeMultiplicity,
-            validValueSet,
             defaultValue,
+            validValueSet,
             constraintString,
             attributeString,
             tagString

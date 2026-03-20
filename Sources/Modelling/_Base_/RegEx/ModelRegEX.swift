@@ -96,8 +96,6 @@ public enum ModelRegEx {
     nonisolated(unsafe)
     public static let property_ValidValueSet: Regex<(Substring, String)> = Regex {
         whitespace
-        "="
-        whitespace
         "<"
         Capture {
             ZeroOrMore {
@@ -115,11 +113,15 @@ public enum ModelRegEx {
         whitespace
         "="
         whitespace
+        NegativeLookahead {
+            "<"
+        }
         Capture {
             OneOrMore {
                 NegativeLookahead {
                     whitespace
                     ChoiceOf {
+                        "<"
                         "{"
                         "("
                         "#"
@@ -275,11 +277,11 @@ public enum ModelRegEx {
         }
         
         Optionally {
-            property_ValidValueSet
-        }
-        
-        Optionally {
             property_DefaultValue_Capturing
+        }
+
+        Optionally {
+            property_ValidValueSet
         }
 
         Optionally {

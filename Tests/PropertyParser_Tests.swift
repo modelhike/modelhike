@@ -14,13 +14,32 @@ import Testing
         #expect(await prop.attribs.has("max") == false)
     }
 
-    @Test func collectionDefaultsAreStoredSeparately() async throws {
-        let prop = try await parseProperty("- tags : String[*] = <\"vip\", \"beta\"> { max = 10 } (backend)", firstWord: "-")
+    @Test func validValueSetWithoutEqualsParsesSeparately() async throws {
+        let prop = try await parseProperty("- tags : String[*] <\"vip\", \"beta\"> { max = 10 } (backend)", firstWord: "-")
 
         #expect(await prop.defaultValue == nil)
         #expect(await prop.validValueSet == "\"vip\", \"beta\"")
         #expect(await prop.constraints.getString("max") == "10")
         #expect(await prop.attribs.has("backend"))
+    }
+
+    @Test func validValueSetAndDefaultCanCoexist() async throws {
+        let prop = try await parseProperty("* status : String = \"NEW\" <\"NEW\", \"ACTIVE\", \"DONE\">", firstWord: "*")
+
+        #expect(await prop.validValueSet == "\"NEW\", \"ACTIVE\", \"DONE\"")
+        #expect(await prop.defaultValue == "\"NEW\"")
+    }
+
+    @Test func validValueSetWithEqualsIsRejected() async throws {
+        let prop = try await parsePropertyIfPossible("- tags : String[*] = <\"vip\", \"beta\">", firstWord: "-")
+
+        #expect(prop == nil)
+    }
+
+    @Test func validValueSetAfterDefaultIsRequiredWhenBothExist() async throws {
+        let prop = try await parsePropertyIfPossible("* status : String <\"NEW\", \"ACTIVE\", \"DONE\"> = \"NEW\"", firstWord: "*")
+
+        #expect(prop == nil)
     }
 
     @Test func predicateConstraintsCanUseComparisons() async throws {
@@ -147,6 +166,13 @@ import Testing
         }
 
         return prop
+    }
+
+    private func parsePropertyIfPossible(_ line: String, firstWord: String) async throws -> Property? {
+        let ctx = LoadContext(config: PipelineConfig())
+        var pInfo = await ParsedInfo.dummy(line: line, identifier: "PropertyParser_Tests", loadCtx: ctx)
+        pInfo.firstWord(firstWord)
+        return try await Property.parse(pInfo: pInfo)
     }
 }
 

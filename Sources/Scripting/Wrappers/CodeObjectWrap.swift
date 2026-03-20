@@ -140,7 +140,7 @@ public actor TypeProperty_Wrap: ObjectWrapper {
                 (await item.type.kind).firstReferenceTarget?.fieldName ?? ""
             case "reference-field-type":
                 if let reference = (await item.type.kind).firstReferenceTarget {
-                    await reference.resolvedFieldTypeName() ?? ""
+                    await reference.resolvedFieldTypeName_ForDebugging() ?? ""
                 } else {
                     ""
                 }

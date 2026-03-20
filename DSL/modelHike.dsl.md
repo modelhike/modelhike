@@ -232,11 +232,14 @@ Everything inside classes/DTOs boils down to **properties**.
 ### 5.4 Defaults & validation
 
 ```modelhike
-- retries : Int = 3                  { min = 0, max = 10 }
-* tags    : String[] = <"vip">
-- seats   : Seat[1..*] = <S1>        { max = 10 }
-- salary  : Float                    { salary > 0 }
+- retries : Int = 3                          { min = 0, max = 10 }
+* tags    : String[] <"vip">
+- seats   : Seat[1..*] <S1>                  { max = 10 }
+- status  : String = "NEW" <"NEW", "ACTIVE", "DONE">
+- salary  : Float                            { salary > 0 }
 ```
+
+When both are present, write the default first and the valid value set second: `= value <...>`.
 
 #### Mini‑cheatsheet
 
