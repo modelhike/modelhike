@@ -1,0 +1,64 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:modelhike}",
+            "name": "Debug modelhike",
+            "target": "modelhike",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug modelhike"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:modelhike}",
+            "name": "Release modelhike",
+            "target": "modelhike",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release modelhike"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:modelhike}",
+            "name": "Debug modelhike-mcp",
+            "target": "modelhike-mcp",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug modelhike-mcp"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:modelhike}",
+            "name": "Release modelhike-mcp",
+            "target": "modelhike-mcp",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release modelhike-mcp"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:modelhike}",
+            "name": "Debug DevTester_MCP",
+            "target": "DevTester_MCP",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug DevTester_MCP"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:modelhike}",
+            "name": "Release DevTester_MCP",
+            "target": "DevTester_MCP",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release DevTester_MCP"
+        }
+    ]
+}
