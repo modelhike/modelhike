@@ -40,8 +40,8 @@ modelhike-smart-cli/
 
 ## Requirements
 
-- macOS
-- Swift 6 toolchain
+- Cross-platform (macOS / Windows / Linux)
+- Swift 6.2 toolchain
 
 The package manifest uses Swift tools `6.2`. The `modelhike` and `modelhike-blueprints` upstream packages are resolved automatically as remote dependencies via Swift Package Manager.
 
