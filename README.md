@@ -1,6 +1,6 @@
 # ModelHike - Declarative Apps
 
-> **Stop letting AI hallucinate your architecture.** ModelHike provides deterministic code generation through Agent Skills and MCP tools, backed by a true intent compiler. 
+> **Stop letting AI hallucinate your code.** ModelHike provides deterministic code generation through Agent Skills and MCP tools, backed by a true intent compiler. 
 
 ---
 
@@ -177,3 +177,9 @@ Ready for production code generation immediately. Layer in your own custom bluep
 - [`docs/smart-cli-philosophy.md`](docs/smart-cli-philosophy.md) — The design principles behind an AI-native CLI.
 - [`docs/architecture.md`](docs/architecture.md) — How the generative engine works internally.
 - [`AGENTS.md`](AGENTS.md) — Guidance for AI agents working inside this specific repo.
+
+---
+
+## 📜 License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
