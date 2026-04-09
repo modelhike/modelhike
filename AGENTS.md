@@ -8,7 +8,7 @@
 
 **ModelHike Smart CLI** is a non-interactive command-line interface and MCP (Model Context Protocol) server for [ModelHike](https://github.com/modelhike/modelhike) — a deterministic code generation engine driven by `.modelhike` model files.
 
-ModelHike is not a code generator that uses AI. It is a **deterministic compilation target for AI**. The `.modelhike` file is the intermediate representation between human intent and production code. Any AI can write to it. ModelHike guarantees the output.
+ModelHike is not a code generator that uses AI. It is a **deterministic compilation target for AI**. The `.modelhike` file is the source of truth between human intent and production code. Any AI can write to it. ModelHike guarantees the output.
 
 This package provides the structured interface layer: the CLI and MCP server handle parsing inputs, invoking the ModelHike pipeline at the correct phase, and returning structured, machine-readable results. The AI handles the creative part (turning intent into a model). ModelHike handles the deterministic part (validating and generating from the model). Clean separation of concerns.
 

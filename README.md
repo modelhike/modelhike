@@ -1,22 +1,22 @@
-# ModelHike - MCP Server & Smart CLI
+# ModelHike - Declarative Apps
 
-> Give your AI agent deterministic code generation — through MCP tools backed by the [ModelHike](https://github.com/modelhike/modelhike-lib) architecture compiler.
-
----
-
-This package gives AI agents structured tool access to validate, explain, inspect, and generate code from `.modelhike` model files. The primary interface is an **MCP server** (`modelhike-mcp`) that any MCP-aware agent — Cursor, Windsurf, Claude Code, or your own tooling — can call over stdio. A direct **Smart CLI** (`modelhike`) exposes the same engine for shell scripting, CI pipelines, and debugging.
+> **Declarative Apps are here.** Give your AI agent deterministic code generation — through Agent Skills and MCP tools backed by the [ModelHike](https://github.com/modelhike/modelhike) architecture compiler.
 
 ---
 
-## The App Model Is The IR
+## 🚀 The Declarative App Paradigm
 
-When you ask an AI to generate a backend, you get code. When you ask it again, you get different code. There's no source of truth, no diff, no way to reason about what changed.
+We used to write code. Then we asked AI to write code for us. But code is the wrong abstraction for AI generation. 
 
-ModelHike changes the contract:
+When you ask an AI to generate a backend, you get a massive wall of code. When you ask it again, you get different code. There's no stable source of truth, no diff, no way for the AI to reason about what changed.
+
+**ModelHike introduces the Declarative App.**
+
+Instead of struggling with generated spaghetti code, you and your AI build a declarative model of your application. 
 
 > The AI writes the **model**. ModelHike writes the **code**.
 
-The `.modelhike` file is the intermediate representation — a markdown-inspired DSL that sits between natural-language intent and generated production code. It is stable, diffable, and reviewable. Any AI can write to it. ModelHike guarantees the always deterministic output.
+The `.modelhike` file is the source of truth — a markdown-inspired DSL that sits between natural-language intent and generated production code. It is stable, diffable, and reviewable. Any AI can write to it. ModelHike guarantees the always-deterministic code generation output.
 
 ```
 ===
@@ -65,6 +65,8 @@ Containers, modules, entities, properties, methods, references, blueprint tags �
 ```
 
 Every tool call returns structured JSON. Every diagnostic carries a stable code, a source location, and machine-actionable suggestions. The agent drives the entire loop through MCP tool calls — no shell, no parsing, no human in the loop until the final approval.
+
+This package gives AI agents structured tool access to validate, explain, inspect, and generate code from `.modelhike` model files. The primary interface is an **MCP server** (`modelhike-mcp`) that any MCP-aware agent — Cursor, Windsurf, Claude Code, or your own tooling — can call over stdio. A direct **Smart CLI** (`modelhike`) exposes the same engine for shell scripting, CI pipelines, and debugging.
 
 ---
 

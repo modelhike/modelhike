@@ -35,15 +35,15 @@ ModelHike is responsible for:
 
 That split is the product.
 
-## The `.modelhike` File as IR
+## The `.modelhike` File as Source of Truth
 
-The `.modelhike` file is the intermediate representation between:
+The `.modelhike` file is the source of truth between:
 
 - human intent
 - AI reasoning
 - deterministic code generation
 
-Because the IR is textual and structured:
+Because the source of truth is textual and structured:
 
 - it can be versioned
 - it can be diffed

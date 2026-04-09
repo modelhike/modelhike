@@ -11,7 +11,7 @@
 ModelHike is not a code generator that uses AI. It is a deterministic compilation target for AI.
 
 - AI turns intent into `.modelhike` content.
-- ModelHike validates that IR and generates deterministic output from it.
+- ModelHike validates that source of truth and generates deterministic output from it.
 - This package makes that loop accessible from a CLI and from MCP.
 
 ## What “Smart CLI” Means
