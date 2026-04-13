@@ -1,12 +1,13 @@
 import Foundation
+import ModelHike
 
 public struct FixAction: Codable, Sendable, Equatable {
-    public let code: String
+    public let code: DiagnosticErrorCode
     public let message: String
     public let action: String
     public let line: Int
 
-    public init(code: String, message: String, action: String, line: Int) {
+    public init(code: DiagnosticErrorCode, message: String, action: String, line: Int) {
         self.code = code
         self.message = message
         self.action = action

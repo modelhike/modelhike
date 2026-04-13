@@ -35,6 +35,7 @@ enum DiagnosticExtractor {
             diagnostics.append(
                 Diagnostic(
                     severity: .error,
+                    code: error.code,
                     message: error.message,
                     source: map(error.source)
                 )
@@ -45,9 +46,26 @@ enum DiagnosticExtractor {
     }
 
     static func singleError(_ error: Error) -> [Diagnostic] {
-        [
+        if let richError = error as? any ModelHike.ErrorWithMessageAndParsedInfo {
+            return [
+                Diagnostic(
+                    severity: .error,
+                    code: (error as? any ModelHike.ErrorCodeProviding)?.diagnosticErrorCode,
+                    message: richError.info,
+                    source: SourceRef(
+                        fileIdentifier: richError.pInfo.identifier,
+                        lineNo: richError.pInfo.lineNo,
+                        lineContent: richError.pInfo.line,
+                        level: richError.pInfo.level
+                    )
+                )
+            ]
+        }
+
+        return [
             Diagnostic(
                 severity: .error,
+                code: (error as? any ModelHike.ErrorCodeProviding)?.diagnosticErrorCode,
                 message: String(describing: error)
             )
         ]
@@ -94,7 +112,7 @@ enum DiagnosticExtractor {
             let source = diagnostic.source
             let key = [
                 diagnostic.severity.rawValue,
-                diagnostic.code ?? "",
+                diagnostic.code?.rawValue ?? "",
                 diagnostic.message,
                 source?.fileIdentifier ?? "",
                 String(source?.lineNo ?? 0),
@@ -109,8 +127,8 @@ enum DiagnosticExtractor {
             if $0.severity.rank != $1.severity.rank {
                 return $0.severity.rank < $1.severity.rank
             }
-            if ($0.code ?? "") != ($1.code ?? "") {
-                return ($0.code ?? "") < ($1.code ?? "")
+            if ($0.code?.rawValue ?? "") != ($1.code?.rawValue ?? "") {
+                return ($0.code?.rawValue ?? "") < ($1.code?.rawValue ?? "")
             }
             return $0.message < $1.message
         }

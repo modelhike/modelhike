@@ -397,8 +397,9 @@ public struct ModelHikeEngine: Sendable {
             // Filter by codes if provided
             var filteredDiagnostics: [Diagnostic] = []
             if let filterCodes = codes, !filterCodes.isEmpty {
+                let normalizedCodes = Set(filterCodes)
                 for diag in allDiagnostics {
-                    if filterCodes.contains(diag.code ?? "") {
+                    if let code = diag.code, normalizedCodes.contains(code.rawValue) {
                         filteredDiagnostics.append(diag)
                     }
                 }
@@ -430,7 +431,7 @@ public struct ModelHikeEngine: Sendable {
     private struct PendingFix {
         let lineNo: Int
         let action: FixAction
-        let apply: (String) -> String  // transforms the line
+        let apply: (inout [String], Int) -> Bool // transforms the line
     }
 
     private func collectFixes(for diagnostics: [Diagnostic], in content: String) -> ([PendingFix], [Diagnostic]) {
@@ -444,7 +445,7 @@ public struct ModelHikeEngine: Sendable {
             }
 
             switch code {
-            case "W301":
+            case .w301:
                 // Extract the unresolved type name from lineContent (e.g. "* owner: CustomerProfile")
                 guard let unresolvedType = extractUnresolvedTypeName(from: source.lineContent) else {
                     unfixable.append(diagnostic)
@@ -483,8 +484,35 @@ public struct ModelHikeEngine: Sendable {
                         action: "Replaced '\(capturedUnresolved)' with '\(capturedResolved)'",
                         line: source.lineNo
                     ),
-                    apply: { line in
-                        line.replacingOccurrences(of: capturedUnresolved, with: capturedResolved)
+                    apply: { lines, lineIndex in
+                        let before = lines[lineIndex]
+                        let after = before.replacingOccurrences(of: capturedUnresolved, with: capturedResolved)
+                        guard after != before else { return false }
+                        lines[lineIndex] = after
+                        return true
+                    }
+                ))
+
+            case .e618:
+                guard diagnostic.message.contains("Insert a blank line before") else {
+                    unfixable.append(diagnostic)
+                    continue
+                }
+
+                fixes.append(PendingFix(
+                    lineNo: source.lineNo,
+                    action: FixAction(
+                        code: code,
+                        message: diagnostic.message,
+                        action: "Inserted blank line before line \(source.lineNo)",
+                        line: source.lineNo
+                    ),
+                    apply: { lines, lineIndex in
+                        if lineIndex > 0, lines[lineIndex - 1].trimmingCharacters(in: .whitespaces).isEmpty {
+                            return false
+                        }
+                        lines.insert("", at: lineIndex)
+                        return true
                     }
                 ))
 
@@ -510,14 +538,11 @@ public struct ModelHikeEngine: Sendable {
 
         for lineNo in fixesByLine.keys.sorted(by: >) {
             let lineIndex = lineNo - 1
-            guard lineIndex >= 0, lineIndex < lines.count else { continue }
+            guard lineIndex >= 0, lineIndex <= lines.count else { continue }
 
             if let lineFixes = fixesByLine[lineNo] {
                 for fix in lineFixes {
-                    let before = lines[lineIndex]
-                    let after = fix.apply(before)
-                    if after != before {
-                        lines[lineIndex] = after
+                    if fix.apply(&lines, lineIndex) {
                         applied.append(fix.action)
                     }
                 }
@@ -586,7 +611,7 @@ public struct ModelHikeEngine: Sendable {
                 // Check 2: types resolved (W301)
                 var hasUnresolvedTypes = false
                 for diag in validationResult.diagnostics {
-                    if diag.code == "W301" {
+                    if diag.code == .w301 {
                         hasUnresolvedTypes = true
                         break
                     }
@@ -603,7 +628,7 @@ public struct ModelHikeEngine: Sendable {
                 // Check 3: references resolved (W302)
                 var hasUnresolvedRefs = false
                 for diag in validationResult.diagnostics {
-                    if diag.code == "W302" {
+                    if diag.code == .w302 {
                         hasUnresolvedRefs = true
                         break
                     }
@@ -620,7 +645,7 @@ public struct ModelHikeEngine: Sendable {
                 // Check 4: no duplicates (W304-W306)
                 var hasDuplicates = false
                 for diag in validationResult.diagnostics {
-                    if let code = diag.code, ["W304", "W305", "W306"].contains(code) {
+                    if let code = diag.code, [.w304, .w305, .w306].contains(code) {
                         hasDuplicates = true
                         break
                     }
@@ -637,7 +662,7 @@ public struct ModelHikeEngine: Sendable {
                 // Check 5: module references (W303)
                 var hasUnresolvedModules = false
                 for diag in validationResult.diagnostics {
-                    if diag.code == "W303" {
+                    if diag.code == .w303 {
                         hasUnresolvedModules = true
                         break
                     }

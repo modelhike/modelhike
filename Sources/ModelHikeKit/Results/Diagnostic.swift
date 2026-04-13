@@ -1,4 +1,5 @@
 import Foundation
+import ModelHike
 
 public enum DiagnosticSeverity: String, Codable, Sendable, CaseIterable {
     case error
@@ -61,14 +62,14 @@ public struct Suggestion: Codable, Sendable, Equatable {
 
 public struct Diagnostic: Codable, Sendable, Equatable {
     public let severity: DiagnosticSeverity
-    public let code: String?
+    public let code: DiagnosticErrorCode?
     public let message: String
     public let source: SourceRef?
     public let suggestions: [Suggestion]
 
     public init(
         severity: DiagnosticSeverity,
-        code: String? = nil,
+        code: DiagnosticErrorCode? = nil,
         message: String,
         source: SourceRef? = nil,
         suggestions: [Suggestion] = []

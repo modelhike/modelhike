@@ -206,7 +206,7 @@ enum OutputFormatter {
             if !result.applied.isEmpty {
                 lines.append("Applied fixes: \(result.applied.count)")
                 for action in result.applied {
-                    lines.append("  - [\(action.code)] \(action.action) (line \(action.line))")
+                    lines.append("  - [\(action.code.rawValue)] \(action.action) (line \(action.line))")
                 }
             }
             if !result.remaining.isEmpty {
@@ -292,7 +292,7 @@ enum OutputFormatter {
 
     private static func formatDiagnostics(_ diagnostics: [Diagnostic]) -> [String] {
         diagnostics.map { diagnostic in
-            let code = diagnostic.code.map { "[\($0)] " } ?? ""
+            let code = diagnostic.code.map { "[\($0.rawValue)] " } ?? ""
             let source = diagnostic.source.map { " (\($0.fileIdentifier):\($0.lineNo))" } ?? ""
             return "- \(diagnostic.severity.icon) \(code)\(diagnostic.message)\(source)"
         }
