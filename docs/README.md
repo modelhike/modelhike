@@ -8,7 +8,7 @@
 
 ## Positioning
 
-ModelHike is not a code generator that uses AI. It is a deterministic compilation target for AI.
+ModelHike is not a code generator that uses AI. It is an intent compiler and deterministic compilation target for AI.
 
 - AI turns intent into `.modelhike` content.
 - ModelHike validates that source of truth and generates deterministic output from it.

@@ -122,11 +122,11 @@ This keeps the product consistent whether it is used:
 
 ## Product Summary
 
-ModelHike Smart CLI is not “AI codegen.”
+ModelHike Smart CLI is not “AI codegen” or prompt-guessed.
 
 It is:
 
-- a deterministic compiler interface for `.modelhike`
+- a deterministic intent compiler interface for `.modelhike`
 - designed for human use
 - designed for AI-agent use
-- designed to keep architecture discussion natural-language-first while generation stays deterministic
+- designed to keep architecture discussion intent-native while generation stays deterministic

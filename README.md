@@ -1,20 +1,23 @@
-# ModelHike - Declarative Apps
+# ModelHike — The Intent Compiler
 
-> **Stop letting AI hallucinate your code.** ModelHike provides deterministic code generation through Agent Skills and MCP tools, backed by a true intent compiler. 
+> **Diff the why, not the what.** 
+> ModelHike is the intent compiler for the AI era. Generate deterministic system diagrams and production-ready code from a single declarative intent.
 
+Available: Agent Skills and MCP tools
 ---
 
-## 🚀 The Declarative App Paradigm
+## 🚀 Intent-Native Development
 
 We used to write code. Then we asked AI to write code for us. But raw source code is the wrong abstraction for AI generation. 
 
 When you ask an AI to generate a backend, you get a massive wall of code. When you ask it to modify that code later, you get a diff full of unintended consequences. There's no stable source of truth, no pure view of the architecture, and no way for the AI to reliably reason about what changed.
 
-**ModelHike introduces the Declarative App.**
+**ModelHike is Intent-native. Not prompt-guessed.**
 
-Instead of struggling with generated spaghetti code, you and your AI build a declarative model of your application. 
+Instead of struggling with generated spaghetti code, you and your AI build a declarative intent of your application. 
 
-> The AI writes the **model**. ModelHike writes the **code**.
+> **Source intent is the new source code.**
+> Code is downstream now.
 
 The `.modelhike` file is the ultimate source of truth — a markdown-inspired DSL that sits between natural-language intent and generated production code. It is stable, diffable, and reviewable. Any AI can write to it. ModelHike guarantees the always-deterministic code generation output.
 
